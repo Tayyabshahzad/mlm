@@ -8,7 +8,7 @@ use Inertia\Inertia;
 
  
 Route::get('/',[FrontEndController::class , 'index'])->name('index');
-
+Route::post('/email-submit',[FrontEndController::class , 'emailSubmit'])->name('email.submit');
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
 //         'canLogin' => Route::has('login'),

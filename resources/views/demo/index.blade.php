@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Global Visioners International </title>
+	<title> Global Visioners International </title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->	
@@ -20,8 +20,7 @@
 <!--===============================================================================================-->
 </head>
 <body>
-	
-	
+
 	<div class="bg-img1 size1 overlay1" style="background-image: url('{{ asset("under-process/images/bg01.jpg") }}');">
 		<div class="size1 p-l-15 p-r-15 p-t-10 p-b-50">
 			<div class="flex-w flex-sb-m p-l-75 p-r-60 p-b-165 respon1">
@@ -46,15 +45,32 @@
 
 			<div class="wsize1 m-lr-auto">
                  
-				<p class="txt-center l1-txt1 p-b-60">
-                   
+               
+
+				<p class="txt-center l1-txt1 p-b-15">
 					Global Visioners International is <span class="l1-txt2">Coming Soon</span>,  <br>follow us for update now!
 				</p>
 
-				<form class="w-full flex-w flex-c-m validate-form">
+                @if ($errors->any())
+                    @foreach ($errors->all() as $error)
+                        <p class="txt-center l1-txt text-white p-b-15" >
+                            <b class="l1-txt1s" style="color:orange">   {{ $error }} </b>
+                        </p>
+                    @endforeach 
+                @endif
 
+
+                @if (session('success')) 
+                    <p class="txt-center l1-txt text-white p-b-15">
+                        <b class="l1-txt1s" style="color:green">   {{ session('success') }} </b>
+                    </p>
+                @endif
+                
+
+				<form class="w-full flex-w flex-c-m validate-form" action="{{ route('email.submit') }}" method="post">
+                    @csrf
 					<div class="wrap-input100 validate-input m-b-20" data-validate = "Valid email is required: ex@abc.xyz">
-						<input class="input100 placeholder0 m1-txt1" type="text" name="email" placeholder="Email Address">
+						<input class="input100 placeholder0 m1-txt1" required type="text" name="email" placeholder="Email Address">
 						<span class="focus-input100"></span>
 					</div>
 					
