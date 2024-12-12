@@ -76,7 +76,7 @@
 					
 					
 					<button class="flex-c-m size3 m1-txt2 how-btn1 trans-04 m-b-20">
-						Subscribe
+						Notify Me
 					</button>
 				</form>
 				
