@@ -1,153 +1,242 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="no-js" lang="en">
 <head>
-	<title> Global Visioners International </title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-<!--===============================================================================================-->	
-	<link rel="icon" type="image/png" href="{{ asset('under-process/images/icons/favicon.ico')}}"/>
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('under-process/vendor/bootstrap/css/bootstrap.min.css')}}">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('under-process/fonts/font-awesome-4.7.0/css/font-awesome.min.css')}}">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('under-process/vendor/animate/animate.css')}}">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('under-process/vendor/select2/select2.min.css')}}">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('under-process/css/util.css')}}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('under-process/css/main.css')}}">
-<!--===============================================================================================-->
+
+    <!--- basic page needs
+    ================================================== -->
+    <meta charset="utf-8">
+    <title>Global Visioners International</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- mobile specific metas
+    ================================================== -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSS
+    ================================================== -->
+    <link rel="stylesheet" href="{{ asset('coming-soon/css/base.css') }}">
+    <link rel="stylesheet" href="{{ asset('coming-soon/css/vendor.css') }}">
+    <link rel="stylesheet" href="{{ asset('coming-soon/css/main.css') }}">
+
+    <!-- script
+    ================================================== -->
+    <script src="{{ asset('coming-soon/js/modernizr.js') }}"></script>
+    <script src="{{ asset('coming-soon/js/pace.min.js') }}"></script>
+
+    <!-- favicons
+    ================================================== -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="{{ asset('coming-soon/favicon.ico')}}" type="image/x-icon">
+
 </head>
+
 <body>
 
-	<div class="bg-img1 size1 overlay1" style="background-image: url('{{ asset("under-process/images/bg01.jpg") }}');">
-		<div class="size1 p-l-15 p-r-15 p-t-10 p-b-50">
-			<div class="flex-w flex-sb-m p-l-75 p-r-60 p-b-165 respon1">
-				<div class="wrappic1 m-r-30 m-t-10 m-b-10">
-					
-				</div>
+    <!-- home
+    ================================================== -->
+    <main class="s-home s-home--particles">
 
-				<div class="flex-w m-t-10 m-b-10">
-					<a href="#" class="size4 flex-c-m how-social trans-04 m-r-5 m-b-3 m-t-3">
-						<i class="fa fa-facebook"></i>
-					</a>
+        <div id="particles-js" class="home-particles"></div>
+        
+        <div class="gradient-overlay"></div>
 
-					<a href="#" class="size4 flex-c-m how-social trans-04 m-r-5 m-b-3 m-t-3">
-						<i class="fa fa-twitter"></i>
-					</a>
+        <div class="home-content">
 
-					<a href="#" class="size4 flex-c-m how-social trans-04 m-r-5 m-b-3 m-t-3">
-						<i class="fa fa-youtube-play"></i>
-					</a>
-				</div>
-			</div>
+            <div class="home-logo">
+                <a href="index-particles.html">
+                    <img src="{{ asset('coming-soon/images/crop.png')}}" style="" alt="Homepage">
+                </a>
+            </div>
 
-			<div class="wsize1 m-lr-auto">
-                 
-               
+            <div class="row home-content__main">
 
-				<p class="txt-center l1-txt1 p-b-15">
-					Global Visioners International is <span class="l1-txt2">Coming Soon</span>,  <br>follow us for update now!
-				</p>
+                <div class="col-eight home-content__text pull-right">
+                    <h3>Welcome to Global Visioners International</h3>
+                    <h1 style="font-size: 30px;">
+                        Something Amazing is Coming Soon
+                    </h1>
 
-                @if ($errors->any())
-                    @foreach ($errors->all() as $error)
-                        <p class="txt-center l1-txt text-white p-b-15" >
-                            <b class="l1-txt1s" style="color:orange">   {{ $error }} </b>
-                        </p>
-                    @endforeach 
-                @endif
-
-
-                @if (session('success')) 
-                    <p class="txt-center l1-txt text-white p-b-15">
-                        <b class="l1-txt1s" style="color:green">   {{ session('success') }} </b>
+                    <p>
+                        At Global Visioners International, we're building something extraordinary for you.
+                        <br/>
+                        Our new website is under construction, and we can’t wait to unveil it. Stay tuned as we craft a platform that reflects our vision of excellence and innovation.
+                        <br/>
+                        Here’s a glimpse of what’s ahead:
+                        <ul>
+                            <li>Inspiring solutions for your business needs.</li>
+                            <li>Cutting-edge insights and updates.</li>
+                            <li>A seamless, user-friendly experience.</li>
+                        </ul>
+                        We appreciate your patience and look forward to sharing our journey with you.<br/>
                     </p>
-                @endif
+
+
+                    
+                </div>  <!-- end home-content__text -->
+
+                <div class="col-four home-content__counter">
+                    <h3>Launching In</h3>
+
+                    <div class="home-content__clock">
+                        <div class="top">
+                            <div class="time days">
+                                325
+                                <span>Days</span>
+                            </div>
+                        </div>    
+                        <div class="time hours">
+                            09
+                            <span>H</span>
+                        </div>
+                        <div class="time minutes">
+                            54
+                            <span>M</span>
+                        </div>
+                        <div class="time seconds">
+                            30
+                            <span>S</span>
+                        </div>
+                    </div>  <!-- end home-content__clock -->
+                </div>  <!-- end home-content__counter -->
+
+            </div>  <!-- end home-content__main -->
+
+            <ul class="home-social">
+                <li>
+                <a href="#0"><i class="fab fa-facebook-f" aria-hidden="true"></i><span>Facebook</span></a>
+                </li>
+                <li>
+                <a href="#0"><i class="fab fa-twitter" aria-hidden="true"></i><span>Twiiter</span></a>
+                </li>
+                <li>
+                <a href="#0"><i class="fab fa-instagram" aria-hidden="true"></i><span>Instagram</span></a>
+                </li>
+                <li>
+                <a href="#0"><i class="fab fa-behance" aria-hidden="true"></i><span>Behance</span></a>
+                </li>
+                <li>
+                <a href="#0"><i class="fab fa-dribbble" aria-hidden="true"></i><span>Dribbble</span></a>
+                </li>
+            </ul> <!-- end home-social -->
+
+            <div class="row home-copyright">
+                <span>Copyright Global Visioners International 2024-25</span> 
+              
+            </div> <!-- end home-copyright -->
+
+
+            <div class="home-content__line"></div>
+
+        </div> <!-- end home-content -->
+
+    </main> <!-- end s-home -->
+
+
+    <!-- info
+    ================================================== -->
+    <a class="info-toggle" href="#0">
+        <span class="info-menu-icon"></span>
+    </a>
+
+    <div class="s-info">
+
+        <div class="row info-wrapper">
+
+            <div class="col-seven tab-full info-main">
+                <h1>We are Global Visioners International.</h1>
+                 
+                
+            </div>
+
+            <div class="col-four tab-full pull-right info-contact">
+
                 
 
-				<form class="w-full flex-w flex-c-m validate-form" action="{{ route('email.submit') }}" method="post">
-                    @csrf
-					<div class="wrap-input100 validate-input m-b-20" data-validate = "Valid email is required: ex@abc.xyz">
-						<input class="input100 placeholder0 m1-txt1" required type="text" name="email" placeholder="Email Address">
-						<span class="focus-input100"></span>
-					</div>
-					
-					
-					<button class="flex-c-m size3 m1-txt2 how-btn1 trans-04 m-b-20">
-						Notify Me
-					</button>
-				</form>
-				
-				<p class="txt-center s1-txt1 p-t-5">
-					And don’t worry, we hate spam too! You can unsubcribe at anytime.
-				</p>
-			</div>
-				
+                <div class="info-block">
+                    <h3>Find Us On</h3>
+                    
+                    <ul class="info-social">
+                        <li>
+                            <a href="#0"><i class="fab fa-facebook" aria-hidden="true"></i>
+                            <span>Facebook</span></a>
+                        </li>
+                        <li>
+                            <a href="#0"><i class="fab fa-twitter" aria-hidden="true"></i>
+                            <span>Twiiter</span></a>
+                        </li>
+                        <li>
+                            <a href="#0"><i class="fab fa-instagram" aria-hidden="true"></i>
+                            <span>Instagram</span></a>
+                        </li>
+                        <li>
+                            <a href="#0"><i class="fab fa-behance" aria-hidden="true"></i>
+                            <span>Behance</span></a>
+                        </li>
+                        <li>
+                            <a href="#0"><i class="fab fa-dribbble" aria-hidden="true"></i>
+                            <span>Dribbble</span></a>
+                        </li>
+                    </ul>
+                </div>
+                
+            </div>  <!-- end info contact -->
 
-			<div class="flex-w flex-c-m cd100 wsize1 m-lr-auto p-t-116">
-				<div class="flex-col-c-m size2 bor1 m-l-10 m-r-10 m-b-15">
-					<span class="l1-txt3 p-b-9 days">30</span>
-					<span class="s1-txt2">Days</span>
-				</div>
+        </div>  <!-- end info wrapper -->
 
-				<div class="flex-col-c-m size2 bor1 m-l-10 m-r-10 m-b-15">
-					<span class="l1-txt3 p-b-9 hours">17</span>
-					<span class="s1-txt2">Hours</span>
-				</div>
-
-				<div class="flex-col-c-m size2 bor1 m-l-10 m-r-10 m-b-15">
-					<span class="l1-txt3 p-b-9 minutes">50</span>
-					<span class="s1-txt2">Minutes</span>
-				</div>
-
-				<div class="flex-col-c-m size2 bor1 m-l-10 m-r-10 m-b-15">
-					<span class="l1-txt3 p-b-9 seconds">39</span>
-					<span class="s1-txt2">Seconds</span>
-				</div>
-			</div>
-		</div>
-	</div>
+    </div> <!-- end s-info -->
 
 
+    <!-- preloader
+    ================================================== -->
+    <div id="preloader">
+        <div id="loader">
+            <div class="line-scale-pulse-out">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Java Script
+    ================================================== -->
+    <script src="{{ asset('coming-soon/js/jquery-3.2.1.min.js')}}"></script>
+    <script src="{{ asset('coming-soon/js/plugins.js')}}"></script>
+    <script src="{{ asset('coming-soon/js/polygons.js')}}"></script>
+    <script src="{{ asset('coming-soon/js/main.js')}}"></script>
+	<script>
+		// Pass the end date from Laravel to JavaScript
+		const endDate = new Date("{{ $endDate->format('Y-m-d H:i:s') }}").getTime();
+	
+		// Update the countdown every second
+		const timer = setInterval(function () {
+			const now = new Date().getTime();
+			const timeLeft = endDate - now;
+	
+			if (timeLeft <= 0) {
+				clearInterval(timer);
+				document.querySelector('.home-content__clock').innerHTML = 'The wait is over!';
+				return;
+			}
+	
+			// Calculate days, hours, minutes, and seconds
+			const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+			const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+			const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+			const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+	
+			// Update the counter in the HTML
+			document.querySelector('.time.days').innerHTML = `${days} <span>Days</span>`;
+			document.querySelector('.time.hours').innerHTML = `${hours} <span>H</span>`;
+			document.querySelector('.time.minutes').innerHTML = `${minutes} <span>M</span>`;
+			document.querySelector('.time.seconds').innerHTML = `${seconds} <span>S</span>`;
+		}, 1000);
+	</script>
 	
 
-<!--===============================================================================================-->	
-	<script src="{{ asset('under-process/vendor/jquery/jquery-3.2.1.min.js')}}"></script>
-<!--===============================================================================================-->
-	<script src="{{ asset('under-process/vendor/bootstrap/js/popper.js')}}"></script>
-	<script src="{{ asset('under-process/vendor/bootstrap/js/bootstrap.min.js')}}"></script>
-<!--===============================================================================================-->
-	<script src="{{ asset('under-process/vendor/select2/select2.min.js')}}"></script>
-<!--===============================================================================================-->
-	<script src="{{ asset('under-process/vendor/countdowntime/moment.min.js')}}"></script>
-	<script src="{{ asset('under-process/vendor/countdowntime/moment-timezone.min.js')}}"></script>
-	<script src="{{ asset('under-process/vendor/countdowntime/moment-timezone-with-data.min.js')}}"></script>
-	<script src="{{ asset('under-process/vendor/countdowntime/countdowntime.js')}}"></script>
-	<script>
-        const endDate = @json($endDate);
-        const endtime = moment(endDate); 
-        $('.cd100').countdown100({
-            endtimeYear: endtime.year(),
-            endtimeMonth: endtime.month() + 1, // Month is 0-indexed
-            endtimeDate: endtime.date(),
-            endtimeHours: endtime.hour(),
-            endtimeMinutes: endtime.minute(),
-            endtimeSeconds: endtime.second(),
-            timeZone: ""
-        });
-	</script>
-<!--===============================================================================================-->
-	<script src="{{ asset('under-process/vendor/tilt/tilt.jquery.min.js')}}"></script>
-	<script >
-		$('.js-tilt').tilt({
-			scale: 1.1
-		})
-	</script>
-<!--===============================================================================================-->
-	<script src="{{ asset('under-process/js/main.js')}}"></script>
-
 </body>
+
 </html>
