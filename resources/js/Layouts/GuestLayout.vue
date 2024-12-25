@@ -9,7 +9,7 @@ defineProps({
     },  
 }); 
 const screenWidth = ref(window.innerWidth);
-const baseURL = ref('http://globalvisioners.com/'); 
+const baseURL = ref('http://globalvisioners.com/'); ///add the link 
 const updateScreenWidth = () => {
   screenWidth.value = window.innerWidth;
 };
