@@ -13,6 +13,9 @@
 		<div class="form-group">
 			<label class="font-size-h6 font-weight-bolder text-dark">Email</label>
 			<input class="form-control form-control-solid h-auto py-6 px-6 rounded-md" type="text" name="email" autocomplete="off"  required/>
+			@error('email')
+            	<div class="text-danger">{{ $message }}</div>
+            @enderror
 		</div>
 		<!--end::Form group-->
 		<!--begin::Form group-->
@@ -21,6 +24,9 @@
 				<label class="font-size-h6 font-weight-bolder text-dark pt-5">Password</label> 
 			</div>
 			<input class="form-control form-control-solid h-auto py-6 px-6 rounded-md" type="password" name="password" autocomplete="off"  required/>
+			@error('password')
+            	<div class="text-danger">{{ $message }}</div>
+            @enderror
 		</div>
 		<!--end::Form group-->
 		<!--begin::Action-->
