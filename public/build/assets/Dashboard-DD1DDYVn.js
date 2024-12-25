@@ -1,0 +1,1 @@
+import{_ as e}from"./AuthLayout-XeHIMlEw.js";import{f as r,a,u as t,F as o,o as s,Z as n}from"./app-BGMQ2aX4.js";const p={__name:"Dashboard",setup(_){return(c,m)=>(s(),r(o,null,[a(t(n),{title:"Dashboard de"}),a(e)],64))}};export{p as default};
