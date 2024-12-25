@@ -15,10 +15,23 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('username')->unique(); 
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->unsignedBigInteger('sponsor_id')->nullable();
+             
+            $table->boolean('phone_verified')->default(false);   
+            $table->boolean('is_active')->default(false);   // Store Phone verification status
+            $table->string('phone_number')->nullable();   
+            $table->boolean('can_login')->default(false);
             $table->rememberToken();
             $table->timestamps();
+            $table->foreign('sponsor_id')
+            ->references('id')
+            ->on('users')
+            ->onDelete('cascade')
+            ->onUpdate('cascade'); 
+
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

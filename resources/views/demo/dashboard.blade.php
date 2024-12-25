@@ -7,9 +7,7 @@
             <!--begin::Info-->
             <div class="d-flex align-items-center flex-wrap mr-2">
                 <!--begin::Page Title-->
-                <h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">Dashboard</h5>
-                <!--end::Page Title-->
-                <!--begin::Actions-->
+                <h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">Dashboard</h5> 
                 <div class="subheader-separator subheader-separator-ver mt-2 mb-2 mr-4 bg-gray-200"></div>
                 <span class="text-muted font-weight-bold mr-4">Level 1 </span>
                 <div class="kt-widget__content">
@@ -22,6 +20,17 @@
                     </div>
                     
                 </div>
+
+                <div class="subheader-separator subheader-separator-ver mt-2 mb-2 mr-4 bg-gray-200 ml-2"></div>
+                <span class="text-muted font-weight-bold mr-4">PV Balance </span>
+                <div class="kt-widget__content">
+                    <div class="kt-widget__section">
+                        <strong>100</strong>
+                        
+                    </div>
+                    
+                </div>
+                
                 <!--end::Actions-->
             </div>
             <!--end::Info-->
@@ -130,11 +139,8 @@
     </div>
     <!--end::Subheader-->
     <!--begin::Entry-->
-    <div class="d-flex flex-column-fluid">
-        <!--begin::Container-->
-        <div class="container">
-            <!--begin::Dashboard-->
-            <!--begin::Row-->
+    <div class="d-flex flex-column-fluid"> 
+        <div class="container"> 
             <div class="row">
                  
                 <div class="col-lg-6 col-xxl-4">
@@ -244,6 +250,24 @@
                                         <a href="#" class="text-primary"><small>#reward</small></a>.</div>
                                     <!--end::Desc-->
                                 </div>
+
+
+                                <div class="timeline-item align-items-start mt-10">
+                                    <!--begin::Label-->
+                                    <div style="width:60%!important" class="timeline-label font-weight-bolder text-dark-75 font-size-lg">Online Wallet</div>
+                                    <!--end::Label-->
+                                    <!--begin::Badge-->
+                                    <div class="timeline-badge">
+                                        <i class="fa fa-genderless text-info icon-xl"></i>
+                                    </div>
+                                    <!--end::Badge-->
+                                    <!--begin::Desc-->
+                                    <div class="timeline-content font-weight-bolder font-size-lg text-dark-75 pl-3">150 PV
+                                        <a href="#" class="text-primary"><small>#O</small></a>.</div>
+                                    <!--end::Desc-->
+                                </div>
+
+
                                 <!--end::Item-->
                             </div>
                             <!--end::Timeline-->
@@ -1063,9 +1087,7 @@
 
                 </div>
             </div>
-            <div class="row">
-
-                
+            <div class="row"> 
                 <div class="col-xl-6">
                     <!--begin::Stats Widget 22-->
                     <div class="card card-custom bgi-no-repeat card-stretch gutter-b" style="background-position: right top; background-size: 30% auto; background-image: url(assets/media/svg/shapes/abstract-3.svg)">
@@ -1105,9 +1127,7 @@
                     </div>
                     <!--end::Stats Widget 23-->
                 </div> 
-            </div>
-            <!--end::Row-->
-            <!--begin::Row-->
+            </div> 
             <div class="row">
                 <div class="col-lg-12 " id="div1">
                     <!--begin::Mixed Widget 14-->
@@ -1194,9 +1214,7 @@
                     </div>
                     <!--end::Advance Table Widget 4-->
                 </div>
-            </div>
-             
-
+            </div> 
             <div class="row">
                 <div class="col-lg-12">
                     <!--begin::Card-->
@@ -1214,8 +1232,7 @@
                     </div>
                     <!--end::Card-->
                 </div> 
-            </div>
-
+            </div> 
             <div class="row">
                 <div class="col-lg-12">
                     <!--begin::Card-->
@@ -1234,9 +1251,7 @@
                     <!--end::Card-->
                 </div>
             </div>
-        </div>
-        
-        <!--end::Container-->
+        </div> 
     </div>
     <!--end::Entry-->
 </div>
