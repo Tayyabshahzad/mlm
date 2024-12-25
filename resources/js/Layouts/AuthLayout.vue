@@ -8,7 +8,7 @@
 
 	<div id="kt_header_mobile" class="header-mobile align-items-center header-mobile-fixed"> 
 			<a href="index.html">
-				<img alt="Logo" src="assets/media/logos/logo-light.png" />
+				<!-- <img alt="Logo" src=" " /> -->
 			</a> 
 			<div class="d-flex align-items-center"> 
 				<button class="btn p-0 burger-icon burger-icon-left" id="kt_aside_mobile_toggle">
@@ -48,7 +48,7 @@
 					<div class="brand flex-column-auto" id="kt_brand">
 						<!--begin::Logo-->
 						<a href="index.html" class="brand-logo">
-							<img alt="Logo" src="assets/media/logos/logo-light.png" />
+							<!-- <img alt="Logo"   /> -->
 						</a>
 						<!--end::Logo-->
 						<!--begin::Toggle-->
@@ -1219,7 +1219,7 @@
 									<!--begin::Toggle-->
 									<div class="topbar-item" data-toggle="dropdown" data-offset="10px,0px">
 										<div class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1">
-											<img class="h-20px w-20px rounded-sm" src="assets/media/svg/flags/226-united-states.svg" alt="" />
+											<!-- <img class="h-20px w-20px rounded-sm" src=" " alt="" /> -->
 										</div>
 									</div>
 									<!--end::Toggle-->
@@ -1230,9 +1230,8 @@
 											<!--begin::Item-->
 											<li class="navi-item">
 												<a href="#" class="navi-link">
-													<span class="symbol symbol-20 mr-3">
-														<img src="assets/media/svg/flags/226-united-states.svg" alt="" />
-													</span>
+													
+														
 													<span class="navi-text">English</span>
 												</a>
 											</li>
@@ -1240,9 +1239,8 @@
 											<!--begin::Item-->
 											<li class="navi-item active">
 												<a href="#" class="navi-link">
-													<span class="symbol symbol-20 mr-3">
-														<img src="assets/media/svg/flags/128-spain.svg" alt="" />
-													</span>
+													
+														
 													<span class="navi-text">Spanish</span>
 												</a>
 											</li>
@@ -1250,9 +1248,8 @@
 											<!--begin::Item-->
 											<li class="navi-item">
 												<a href="#" class="navi-link">
-													<span class="symbol symbol-20 mr-3">
-														<img src="assets/media/svg/flags/162-germany.svg" alt="" />
-													</span>
+													
+														
 													<span class="navi-text">German</span>
 												</a>
 											</li>
@@ -1260,9 +1257,8 @@
 											<!--begin::Item-->
 											<li class="navi-item">
 												<a href="#" class="navi-link">
-													<span class="symbol symbol-20 mr-3">
-														<img src="assets/media/svg/flags/063-japan.svg" alt="" />
-													</span>
+													
+														
 													<span class="navi-text">Japanese</span>
 												</a>
 											</li>
@@ -1270,9 +1266,8 @@
 											<!--begin::Item-->
 											<li class="navi-item">
 												<a href="#" class="navi-link">
-													<span class="symbol symbol-20 mr-3">
-														<img src="assets/media/svg/flags/195-france.svg" alt="" />
-													</span>
+													
+														
 													<span class="navi-text">French</span>
 												</a>
 											</li>
@@ -1628,7 +1623,7 @@
 							<div class="d-flex align-items-center flex-wrap mb-5">
 								<div class="symbol symbol-50 symbol-light mr-5">
 									<span class="symbol-label">
-										<img src="assets/media/svg/misc/006-plurk.svg" class="h-50 align-self-center" alt="" />
+										<!-- <img src=" k.svg" class="h-50 align-self-center" alt="" /> -->
 									</span>
 								</div>
 								<div class="d-flex flex-column flex-grow-1 mr-2">
@@ -1642,7 +1637,7 @@
 							<div class="d-flex align-items-center flex-wrap mb-5">
 								<div class="symbol symbol-50 symbol-light mr-5">
 									<span class="symbol-label">
-										<img src="assets/media/svg/misc/015-telegram.svg" class="h-50 align-self-center" alt="" />
+										<!-- <img src=" gram.svg" class="h-50 align-self-center" alt="" /> -->
 									</span>
 								</div>
 								<div class="d-flex flex-column flex-grow-1 mr-2">
@@ -1656,7 +1651,7 @@
 							<div class="d-flex align-items-center flex-wrap mb-5">
 								<div class="symbol symbol-50 symbol-light mr-5">
 									<span class="symbol-label">
-										<img src="assets/media/svg/misc/003-puzzle.svg" class="h-50 align-self-center" alt="" />
+										<!-- <img src=" le.svg" class="h-50 align-self-center" alt="" /> -->
 									</span>
 								</div>
 								<div class="d-flex flex-column flex-grow-1 mr-2">
@@ -1670,7 +1665,7 @@
 							<div class="d-flex align-items-center flex-wrap mb-5">
 								<div class="symbol symbol-50 symbol-light mr-5">
 									<span class="symbol-label">
-										<img src="assets/media/svg/misc/005-bebo.svg" class="h-50 align-self-center" alt="" />
+										<!-- <img src=" .svg" class="h-50 align-self-center" alt="" /> -->
 									</span>
 								</div>
 								<div class="d-flex flex-column flex-grow-1 mr-2">
@@ -1684,7 +1679,7 @@
 							<div class="d-flex align-items-center flex-wrap">
 								<div class="symbol symbol-50 symbol-light mr-5">
 									<span class="symbol-label">
-										<img src="assets/media/svg/misc/014-kickstarter.svg" class="h-50 align-self-center" alt="" />
+										<!-- <img src=" starter.svg" class="h-50 align-self-center" alt="" /> -->
 									</span>
 								</div>
 								<div class="d-flex flex-column flex-grow-1 mr-2">
@@ -2243,7 +2238,7 @@
 									<div class="d-flex flex-column mb-5 align-items-start">
 										<div class="d-flex align-items-center">
 											<div class="symbol symbol-circle symbol-40 mr-3">
-												<img alt="Pic" src="assets/media/users/300_12.jpg"/>
+												<!-- <img alt="Pic" src="assets/media/users/300_12.jpg"/> -->
 											</div>
 											<div>
 												<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Matt Pears</a>
@@ -2261,7 +2256,7 @@
 												<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
 											</div>
 											<div class="symbol symbol-circle symbol-40 ml-3">
-												<img alt="Pic" src="assets/media/users/300_21.jpg"/>
+												<!-- <img alt="Pic" src="assets/media/users/300_21.jpg"/> -->
 											</div>
 										</div>
 										<div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">Hey there, we’re just writing to let you know that you’ve been subscribed to a repository on GitHub.</div>
@@ -2271,7 +2266,7 @@
 									<div class="d-flex flex-column mb-5 align-items-start">
 										<div class="d-flex align-items-center">
 											<div class="symbol symbol-circle symbol-40 mr-3">
-												<img alt="Pic" src="assets/media/users/300_21.jpg"/>
+												<!-- <img alt="Pic" src="assets/media/users/300_21.jpg"/> -->
 											</div>
 											<div>
 												<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Matt Pears</a>
@@ -2289,7 +2284,7 @@
 												<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
 											</div>
 											<div class="symbol symbol-circle symbol-40 ml-3">
-												<img alt="Pic" src="assets/media/users/300_21.jpg"/>
+												<!-- <img alt="Pic" src="assets/media/users/300_21.jpg"/> -->
 											</div>
 										</div>
 										<div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">You’ll receive notifications for all issues, pull requests!</div>
@@ -2299,7 +2294,7 @@
 									<div class="d-flex flex-column mb-5 align-items-start">
 										<div class="d-flex align-items-center">
 											<div class="symbol symbol-circle symbol-40 mr-3">
-												<img alt="Pic" src="assets/media/users/300_12.jpg"/>
+												<!-- <img alt="Pic" src="assets/media/users/300_12.jpg"/> -->
 											</div>
 											<div>
 												<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Matt Pears</a>
@@ -2318,7 +2313,7 @@
 												<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
 											</div>
 											<div class="symbol symbol-circle symbol-40 ml-3">
-												<img alt="Pic" src="assets/media/users/300_21.jpg"/>
+												<!-- <img alt="Pic" src="assets/media/users/300_21.jpg"/> -->
 											</div>
 										</div>
 										<div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">Discover what students who viewed Learn Figma - UI/UX Design. Essential Training also viewed</div>
@@ -2328,7 +2323,7 @@
 									<div class="d-flex flex-column mb-5 align-items-start">
 										<div class="d-flex align-items-center">
 											<div class="symbol symbol-circle symbol-40 mr-3">
-												<img alt="Pic" src="assets/media/users/300_12.jpg"/>
+												<!-- <img alt="Pic" src="assets/media/users/300_12.jpg"/> -->
 											</div>
 											<div>
 												<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Matt Pears</a>
@@ -2346,7 +2341,7 @@
 												<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
 											</div>
 											<div class="symbol symbol-circle symbol-40 ml-3">
-												<img alt="Pic" src="assets/media/users/300_21.jpg"/>
+												<!-- <img alt="Pic" src="assets/media/users/300_21.jpg"/> -->
 											</div>
 										</div>
 										<div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">Company BBQ to celebrate the last quater achievements and goals. Food and drinks provided</div>

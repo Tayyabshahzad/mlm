@@ -23,9 +23,11 @@ class RegisteredUserController extends Controller
     public function create(Request $request, $ref = null)
     {
           
-        return Inertia::render('Auth/Register', [
-            'refLink' => $ref,  
-        ]);
+        // return Inertia::render('Auth/Register', [
+        //     'refLink' => $ref,  
+        // ]);
+
+        return view('auth.register',compact('ref'));
     }
 
     /**

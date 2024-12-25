@@ -5,23 +5,21 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig({
     plugins: [
         laravel({
-            input: [
-                'resources/js/app.js',
-                'resources/css/app.css',
-
-            ],
+            input: ['resources/js/app.js', 'resources/css/app.css'],
             refresh: true,
         }),
-        vue({
-            template: {
-                transformAssetUrls: {
-                    base: null,
-                    includeAbsolute: false,
-                },
-            },
-        }),
+        vue(),
     ],
-    optimizeDeps: {
-        include: ['moment'],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: undefined,
+            },
+        },
+    },
+    resolve: {
+        alias: {
+            'core-js': 'core-js'
+        },
     },
 });
