@@ -529,7 +529,7 @@
 									<div class="d-flex flex-wrap mb-4">
 										<a href="#" class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2">
 											<i class="flaticon-share mr-2 font-size-lg"></i>
-											 {{env('APP_URL').'register/ref/'. Auth::user()->reflink->link }}
+											 {{env('APP_URL').'/register/ref/'. Auth::user()->reflink->link }}
 										</a> 
 									</div> 
 
@@ -545,7 +545,7 @@
 									<!--begin::Toggle-->
 									<div class="topbar-item" data-toggle="dropdown" data-offset="10px,0px">
 										<div class="btn btn-icon btn-clean btn-lg btn-dropdown mr-1">
-											 dddd
+											  
 										</div>
 									</div>
 									<!--end::Toggle-->
