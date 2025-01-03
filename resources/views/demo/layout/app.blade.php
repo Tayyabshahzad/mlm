@@ -25,7 +25,7 @@
 		<link href="{{ asset('assets/css/themes/layout/brand/dark.css')}}" rel="stylesheet" type="text/css" />
 		<link href="{{ asset('assets/css/themes/layout/aside/dark.css')}}" rel="stylesheet" type="text/css" />
 		<!--end::Layout Themes-->
-		<link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico')}}" />
+		<link rel="shortcut icon" href="{{ asset('assets/custom-images/logo-50x50.jpeg')}}" />
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js"></script> <!-- Include GoJS -->
 		<style>
 			.second-div {
@@ -57,8 +57,8 @@
 		<!--begin::Header Mobile-->
 		<div id="kt_header_mobile" class="header-mobile align-items-center header-mobile-fixed">
 			<!--begin::Logo-->
-			<a href="index.html">
-				<img alt="Logo" src="assets/media/logos/logo-light.png" />
+			<a href="{{ route('dashboard') }}">
+				<img alt="Logo" src="{{ asset('assets/custom-images/gvi-icon.png') }}"  width="30%"/>
 			</a>
 			<!--end::Logo-->
 			<!--begin::Toolbar-->
@@ -66,14 +66,10 @@
 				<!--begin::Aside Mobile Toggle-->
 				<button class="btn p-0 burger-icon burger-icon-left" id="kt_aside_mobile_toggle">
 					<span></span>
-				</button>
-				<!--end::Aside Mobile Toggle-->
-				<!--begin::Header Menu Mobile Toggle-->
+				</button> 
 				<button class="btn p-0 burger-icon ml-4" id="kt_header_mobile_toggle">
 					<span></span>
-				</button>
-				<!--end::Header Menu Mobile Toggle-->
-				<!--begin::Topbar Mobile Toggle-->
+				</button> 
 				<button class="btn btn-hover-text-primary p-0 ml-2" id="kt_header_mobile_topbar_toggle">
 					<span class="svg-icon svg-icon-xl">
 						<!--begin::Svg Icon | path:assets/media/svg/icons/General/User.svg-->
@@ -96,15 +92,11 @@
 			<!--begin::Page-->
 			<div class="d-flex flex-row flex-column-fluid page">
 				<!--begin::Aside-->
-				<div class="aside aside-left aside-fixed d-flex flex-column flex-row-auto" id="kt_aside">
-					<!--begin::Brand-->
-					<div class="brand flex-column-auto" id="kt_brand">
-						<!--begin::Logo-->
+				<div class="aside aside-left aside-fixed d-flex flex-column flex-row-auto" id="kt_aside"> 
+					<div class="brand flex-column-auto" id="kt_brand"> 
 						<a href="index.html" class="brand-logo">
-							<img alt="Logo" src="{{ asset('assets/media/logos/logo-light.png')}}" />
-						</a>
-						<!--end::Logo-->
-						<!--begin::Toggle-->
+							<img alt="Logo" src="{{ asset('assets/custom-images/gvi-text.png') }}"  width="60%"/>
+						</a> 
 						<button class="brand-toggle btn btn-sm px-0" id="kt_aside_toggle">
 							<span class="svg-icon svg-icon svg-icon-xl">
 								<!--begin::Svg Icon | path:assets/media/svg/icons/Navigation/Angle-double-left.svg-->
@@ -117,8 +109,7 @@
 								</svg>
 								<!--end::Svg Icon-->
 							</span>
-						</button>
-						<!--end::Toolbar-->
+						</button> 
 					</div>
 					<!--end::Brand-->
 					<!--begin::Aside Menu-->
@@ -341,6 +332,15 @@
 													<span class="menu-text">Rank</span>
 												</a>
 											</li>
+
+											<li class="menu-item" aria-haspopup="true">
+												<a href="{{ route('show.transaction.history') }}" class="menu-link">
+													<i class="menu-bullet menu-bullet-dot">
+														<span></span>
+													</i>
+													<span class="menu-text">Transactions</span>
+												</a>
+											</li>
 										</ul>
 									</div>
 								</li>
@@ -473,12 +473,12 @@
 										</ul>
 									</div>
 								</li> 
-
+								@role('admin')
 								<li class="menu-section">
 									<h4 class="menu-text">User Details</h4>
 									<i class="menu-icon ki ki-bold-more-hor icon-md"></i>
 								</li>
-								<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
+								<li class="menu-item menu-item-submenu @if(request()->is('users*'))  menu-item-open @endif "" aria-haspopup="true" data-menu-toggle="hover">
 									<a href="javascript:;" class="menu-link menu-toggle">
 										<span class="svg-icon menu-icon">
 											<!--begin::Svg Icon | path:assets/media/svg/icons/Design/PenAndRuller.svg-->
@@ -497,7 +497,7 @@
 										<i class="menu-arrow"></i>
 										<ul class="menu-subnav"> 
 											<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
-												<a href="{{ route('genealogy.team.members') }}" class="menu-link menu-toggle">
+												<a href="{{ route('users.index') }}" class="menu-link menu-toggle">
 													<i class="menu-bullet menu-bullet-dot">
 														<span></span>
 													</i>
@@ -507,6 +507,7 @@
 										</ul>
 									</div>
 								</li> 
+								@endrole
 							</ul>
 							<!--end::Menu Nav-->
 						</div>

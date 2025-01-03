@@ -36,6 +36,7 @@ class Profile extends Model
         'branch_name',
         'branch_code',
         'bank_name',
+        'cnic'
 
 
     ];

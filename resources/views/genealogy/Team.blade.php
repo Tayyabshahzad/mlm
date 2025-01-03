@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genealogy Chart</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js"></script> <!-- Include GoJS -->
+@extends('demo.layout.app')
+@section('title','Genealogy Team')
+@section('custom_css')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js"></script>
     <style>
         #diagramDiv {
             width: 100%;
@@ -12,68 +9,79 @@
             border: 1px solid lightgray;
         }
     </style>
-</head>
-<body>
-    <div class="col-lg-12">
-        <div id="diagramDiv"></div>
-        <script>
-            function init() {
-                const $ = go.GraphObject.make;
+@endsection
 
-                const myDiagram = $(go.Diagram, "diagramDiv", {
-                    layout: $(go.TreeLayout, { angle: 90, layerSpacing: 35 }),
-                });
+@section('content')
+<!--begin::Content-->
+<div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+    <div class="subheader py-2 py-lg-6 subheader-solid" id="kt_subheader">
+        <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+            <div class="d-flex align-items-center flex-wrap mr-1">
+                <div class="d-flex align-items-baseline flex-wrap mr-5">
+                    <h5 class="text-dark font-weight-bold my-1 mr-5">Genealogy</h5>
+                    <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2 font-size-sm">
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('dashboard') }}" class="text-muted">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="#" class="text-muted">Genealogy</a>
+                        </li>    
+                        <li class="breadcrumb-item">
+                            <a href="" class="text-muted">My Team</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div> 
 
-                myDiagram.nodeTemplate = $(
-                    go.Node,
-                    "Auto",
-                    $(
-                        go.Shape,
-                        "RoundedRectangle",
-                        { fill: "white", strokeWidth: 2, stroke: "#00d9ff" }
-                    ),
-                    $(
-                        go.Panel,
-                        "Table",
-                        { margin: 8 },
-                        $(go.Picture, "https://via.placeholder.com/50", {
-                            row: 0,
-                            alignment: go.Spot.Center,
-                            width: 50,
-                            height: 50,
-                        }),
-                        $(
-                            go.TextBlock,
-                            { row: 1, margin: 4, font: "bold 12px sans-serif", stroke: "#333" },
-                            new go.Binding("text", "name")
-                        )
-                    )
-                );
+    <div class="flex-column-fluid"> 
+        <div class="container-fluid"> 
+            <div class="card card-custom gutter-b"> 
+                <div class="card-body py-2 "> 
+                    <div id="diagramDiv"></div>
+                </div> 
+            </div> 
+        </div> 
+    </div> 
+</div> 
+<!--end::Content-->
+@endsection
 
-                myDiagram.linkTemplate = $(
-                    go.Link,
-                    { routing: go.Link.Orthogonal, corner: 5 },
-                    $(go.Shape, { strokeWidth: 2, stroke: "#00d9ff" })
-                );
+@section('page_js')
 
-                const nodeDataArray = [
-                    { key: 0, name: "Root Parent" },
-                    { key: 1, parent: 0, name: "Child 1" },
-                    { key: 2, parent: 0, name: "Child 2" },
-                    { key: 3, parent: 0, name: "Child 3" },
-                    { key: 4, parent: 0, name: "Child 4" },
-                    { key: 5, parent: 0, name: "Child 5" },
-                    { key: 6, parent: 1, name: "Sub-Child 1" },
-                    { key: 7, parent: 1, name: "Sub-Child 2" },
-                    { key: 8, parent: 2, name: "Sub-Child 3" },
-                    { key: 9, parent: 3, name: "Sub-Child 4" },
-                ];
+<script>
+    function init() {
+        const $ = go.GraphObject.make;
+        const myDiagram = $(go.Diagram, "diagramDiv", {
+            layout: $(go.TreeLayout, { angle: 90, layerSpacing: 35 }),
+        });
 
-                myDiagram.model = new go.TreeModel(nodeDataArray);
-            }
+        myDiagram.nodeTemplate = $(go.Node, "Auto",
+            $(go.Shape, "RoundedRectangle", { fill: "white", strokeWidth: 2, stroke: "#00d9ff" }),
+            $(go.Panel, "Table", { margin: 8 },
+                $(go.Picture,
+                    { row: 0, alignment: go.Spot.Center, width: 50, height: 50 },
+                    new go.Binding("source", "image") // Bind the source property to the "image" field
+                ),
+                $(go.TextBlock, { row: 1, margin: 4, font: "bold 12px sans-serif", stroke: "#333" },
+                    new go.Binding("text", "name"))
+            )
+        );
 
-            init();
-        </script>
-    </div>
-</body>
-</html>
+        myDiagram.linkTemplate = $(go.Link,
+            { routing: go.Link.Orthogonal, corner: 5 },
+            $(go.Shape, { strokeWidth: 2, stroke: "#00d9ff" })
+        );
+
+        // Use the nodeDataArray passed from the controller
+        const nodeDataArray = @json($nodeDataArray);
+
+        myDiagram.model = new go.TreeModel(nodeDataArray);
+    }
+
+    init();
+</script>
+
+
+@endsection

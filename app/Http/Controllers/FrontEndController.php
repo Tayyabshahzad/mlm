@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CompanyAgreement;
 use App\Models\Otp;
 use App\Models\Profile;
 use App\Models\Subscription;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,11 +15,16 @@ use Inertia\Inertia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use App\Rules\OtpExists;
+use setasign\Fpdi\Fpdi;
+use Illuminate\Support\Facades\Mail;
+use App\Models\ReferralLink;
+use Illuminate\Support\Facades\DB;
+
 class FrontEndController extends Controller
 {
     public function index(){
-        $endDate = Carbon::now()->addMonth()->startOfMonth()->addDays(4)->setTime(12, 0, 0);
-        return view('demo.index',compact('endDate'));
+        $endDate = Carbon::now()->addMonth()->startOfMonth()->addDays(4)->setTime(12, 0, 0); 
+        return view('frontEnd.index',compact('endDate'));
     }
     public function emailSubmit(Request $request){
         $request->validate([
@@ -61,6 +68,9 @@ class FrontEndController extends Controller
                 'last_name' => 'required|string|max:255',
                 'gender' => 'required|in:0,1',
                 'phone' => 'required|string|max:15|phone:PK',
+                'cnic' => 'required|string|max:255',
+                'cnic_front' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+                'cnic_back' => 'required|image|mimes:jpg,jpeg,png|max:2048', 
             ],
             [
                 'phone.phone' =>'Please provide a valid phone number in the correct format for Pakistan.'
@@ -70,15 +80,13 @@ class FrontEndController extends Controller
         elseif ($request->step == 2) {
             
             $validated = $request->validate([
-                'email' => 'string|email|max:255',
-                'address' => 'required|string|max:255',
-                'city' => 'required|string|max:255',
-                'state' => 'required|string|max:255',
-                'country' => 'required|string|max:255',
-                'postal_code' => 'string|max:255',
-                'cnic_front' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-                'cnic_back' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-                'postal_code' => 'string|max:255',
+                'email' => 'nullable|string|email|max:255',
+                'address' => 'string|max:255',
+                'city' => 'nullable|string|max:255',
+                'state' => 'nullable|string|max:255',
+                'country' => 'nullable|string|max:255',
+                'postal_code' => 'nullable|string|max:255',
+                
             ]);
         } 
 
@@ -151,6 +159,24 @@ class FrontEndController extends Controller
         $profile->save(); 
         // Return response (you can redirect or send back a success message)
         return redirect()->back()->with('success', 'Profile updated successfully');
+    }
+
+    public function agreementRequest(){
+        $user = auth::user();
+       
+      
+        if($user->profile){
+            if($user->profile->cnic == null){
+                return redirect()->back()->with('error', 'Please Add CNIC Details First.');
+            }else{
+                  $this->updatePdf($user->profile); 
+                 Mail::to($user->email)->send(new CompanyAgreement($user));
+                 return redirect()->back()->with('success', 'An Agreement has been sent to your email.');
+            }
+        }else{
+            return redirect()->back()->with('error', 'Please Complete Your Profile First.');
+        } 
+      
     }
 
     public function changePassword(){
@@ -256,6 +282,118 @@ class FrontEndController extends Controller
         return redirect()->back()->with('success', 'Phone Number Verification has been completed.');
 
     }
+
+    public function updatePdf($userDetails)
+    { 
+        $pdf = new Fpdi();  
+        $existingPdfPath = public_path('documents/agreement.pdf');  
+        $updatedPdfPath = public_path("documents/agreement-{$userDetails->user['id']}.pdf");  
+        $pdf->AddPage();
+        $pdf->setSourceFile($existingPdfPath);
+        $template = $pdf->importPage(1);
+        $pdf->useTemplate($template);  
+        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->SetTextColor(0, 0, 0);  
+        $pdf->SetXY(55, 61); // X and Y coordinates
+        $pdf->Write(0, $userDetails['first_name']);  
+        $pdf->SetXY(105, 61); // X and Y coordinates
+        $pdf->Write(0, $userDetails['last_name']);  
+        $pdf->SetXY(80, 66); // X and Y coordinates
+        $pdf->Write(0, $userDetails['cnic']);  
+        $pdf->SetXY(65, 70); // X and Y coordinates
+        $pdf->Write(0, $userDetails['address']);  
+        $pdf->SetXY(83, 100); // X and Y coordinates
+        $pdf->Write(0, $userDetails->user->username);   
+        $pdf->SetXY(50, 31); 
+        $pdf->Write(0, now()->format('Y-m-d'));  
+        $pdf->SetXY(57, 175); // X and Y coordinates
+        $pdf->Write(0, $userDetails->user->name);   
+        $pdf->SetXY(57, 185); // X and Y coordinates
+        $pdf->Write(0, $userDetails['cnic']);   
+        // Save the updated PDF
+        $pdf->Output($updatedPdfPath, 'F'); 
+        return $updatedPdfPath;
+    }
+        
+
+    public function bulkRegisterUsers()
+    {
+        $parentUsername = 'Admin-1st-child-10'; 
+        $parent = User::where('username', $parentUsername)->firstOrFail();
+        $parentId = $parent->id;  
+        DB::beginTransaction();
+        try {
+            // Loop to create 50 users
+            for ($i = 1; $i <= 10; $i++) {
+                $name = "Admin-2nd-child-$i";
+                $email = "Admin-2nd-child-$i@example.com";
+                $password = Hash::make('password'); // Default password
+                $username = "Admin-2nd-child-$i"; 
+                // Create user
+                $newUser = User::create([
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => $password,
+                    'username' => $username,
+                    'is_active' => true,
+                    'phone_verified' => true,
+                    'sponsor_id' => $parentId,
+                ]);
+
+                // Assign default role
+                $newUser->assignRole('member');
+
+                // Generate referral link
+                ReferralLink::create([
+                    'user_id' => $newUser->id,
+                    'link' => $username,
+                ]);
+
+                // Update referral tree
+                $this->registerUser($parentId, $newUser->id);
+            }
+
+            DB::commit();
+            return response()->json(['message' => '50 users successfully registered under ' . $parentUsername]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
+       
+    }
+
+    function registerUser($parentId, $newUserId) {
+        DB::beginTransaction(); 
+        try {
+            // Step 1: Insert direct relationship (level = 1)
+            DB::table('referral_trees')->insertOrIgnore([
+                'ancestor_id' => $parentId,
+                'descendant_id' => $newUserId,
+                'level' => 1,
+            ]);
+    
+            // Step 2: Propagate ancestor relationships
+            $ancestors = DB::table('referral_trees')
+                ->where('descendant_id', $parentId)
+                ->get();
+    
+            foreach ($ancestors as $ancestor) {
+                DB::table('referral_trees')->insertOrIgnore([
+                    'ancestor_id' => $ancestor->ancestor_id,
+                    'descendant_id' => $newUserId,
+                    'level' => $ancestor->level + 1,
+                ]);
+            }
+    
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+
     
 
 

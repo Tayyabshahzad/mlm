@@ -149,7 +149,7 @@
                                 </div>  
 
                                 <div class="card-toolbar">
-                                    <button type="submit" class="btn btn-success mr-2">Update Changes</button> 
+                                    <button type="submit" class="btn btn-success mr-2 rounded-0">Update Changes</button> 
                                 </div>
                             </div>
                             <!--end::Body-->

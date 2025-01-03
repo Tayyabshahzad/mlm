@@ -116,7 +116,7 @@
 
         <!-- Submit Button -->
         <div class="card-toolbar">
-            <button type="submit" class="btn btn-success mr-2">Update Password</button>
+            <button type="submit" class="btn btn-success mr-2 rounded-0">Update Password</button>
         </div>
 
     </div>

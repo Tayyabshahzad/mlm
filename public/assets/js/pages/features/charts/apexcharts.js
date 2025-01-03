@@ -117,15 +117,31 @@ var KTApexChartsDemo = function () {
 		const apexChart = "#chart_3";
 		var options = {
 			series: [{
-				name: 'Net Profit',
+				name: 'Online',
 				data: [44, 55, 57, 56, 61, 58, 63, 60, 66]
 			}, {
-				name: 'Revenue',
+				name: 'Direct/Indirect',
 				data: [76, 85, 101, 98, 87, 105, 91, 114, 94]
-			}, {
-				name: 'Free Cash Flow',
+			},
+			{
+				name: 'Rewards',
 				data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
-			}],
+			},
+			{
+				name: 'ROI',
+				data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
+			},
+			{
+				name: 'Profit Share',
+				data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
+			},
+			{
+				name: 'Rank',
+				data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
+			}
+			
+		
+		],
 			chart: {
 				type: 'bar',
 				height: 350
@@ -133,8 +149,7 @@ var KTApexChartsDemo = function () {
 			plotOptions: {
 				bar: {
 					horizontal: false,
-					columnWidth: '55%',
-					endingShape: 'rounded'
+					columnWidth: '55%', 
 				},
 			},
 			dataLabels: {
@@ -150,7 +165,7 @@ var KTApexChartsDemo = function () {
 			},
 			yaxis: {
 				title: {
-					text: '$ (thousands)'
+					text: '(PV)'
 				}
 			},
 			fill: {
@@ -159,11 +174,11 @@ var KTApexChartsDemo = function () {
 			tooltip: {
 				y: {
 					formatter: function (val) {
-						return "$ " + val + " thousands"
+						return   val + " PV"
 					}
 				}
 			},
-			colors: [primary, success, warning]
+			colors: [primary, success, warning, info, danger]
 		};
 
 		var chart = new ApexCharts(document.querySelector(apexChart), options);

@@ -138,7 +138,9 @@
                             <div class="card-title align-items-start flex-column">
                                 <h3 class="card-label font-weight-bolder text-dark">Account Information</h3>
                                 <span class="text-muted font-weight-bold font-size-sm mt-1">Update your account information</span>
+                                
                             </div> 
+                            
                         </div>
                         <!--end::Header-->
                         <!--begin::Form-->
@@ -171,6 +173,7 @@
                                             </div>
                                             <input type="email" class="form-control form-control-lg form-control-solid"
                                             name="email"
+                                             
                                             value="{{ old('email', $profile->email ?? '') }}" 
                                             placeholder="Alternative Email" />
                                         </div>
@@ -191,7 +194,7 @@
                                 </div> 
 
                                 <div class="form-group row">
-                                    <label class="col-xl-3 col-lg-3 col-form-label">Address</label>
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Address <span class="text-danger">*</span> </label>
                                     <div class="col-lg-9 col-xl-6">
                                         <div class="input-group input-group-lg input-group-solid"> 
                                             <input type="text" class="form-control form-control-lg form-control-solid" 
@@ -216,7 +219,7 @@
                                         <div class="input-group input-group-lg input-group-solid"> 
                                             <input type="text" class="form-control form-control-lg form-control-solid"
                                             name="city"
-                                            required
+                                             
                                             value="{{ old('city', $profile->city ?? '') }}"  
                                             placeholder="City" />
                                         </div>
@@ -234,7 +237,7 @@
                                         <div class="input-group input-group-lg input-group-solid"> 
                                             <input type="text" class="form-control form-control-lg form-control-solid"
                                             name="state"
-                                            required
+                                             
                                             value="{{ old('state', $profile->state ?? '') }}"  
                                             placeholder="State #" />
                                         </div>
@@ -252,7 +255,7 @@
                                         <div class="input-group input-group-lg input-group-solid"> 
                                             <input type="text" class="form-control form-control-lg form-control-solid"
                                             name="country"
-                                            required
+                                             
                                             value="{{ old('country', $profile->country ?? '') }}"  
                                             placeholder="Country #"  />
                                         </div>
@@ -282,70 +285,10 @@
                                         @enderror
 
                                     </div>
-                                </div> 
-
-                                <div class="form-group row">
-                                    <div class="col-lg-6">
-                                        CNIC  - Front 
-                                    </div>
-                                    <label class="col-xl-3 col-lg-3 col-form-label"> CNIC  - Back </label>
-                                    <div class="col-lg-9 col-xl-6">
-                                        <div class="image-input image-input-outline" id="kt_cnic_front" 
-                                        style="background-image: url({{ asset('assets/custom-images/dummy-card.jpg') }})"> 
-                                            <div class="image-input-wrapper" 
-                                            style="background-image:url({{asset(Auth::user()->getFirstMediaUrl('user_document_cnic_front')) }})"></div>
-                                            <label class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow" data-action="change" data-toggle="tooltip" title="" data-original-title="Change avatar">
-                                                <i class="fa fa-pen icon-sm text-muted"></i>
-                                                <input type="file" name="cnic_front" accept=".png, .jpg, .jpeg" />
-                                                <input type="hidden" name="cnic_front_remove" />
-                                            </label>
-                                            <span class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow" data-action="cancel" data-toggle="tooltip" title="Cancel avatar">
-                                                <i class="ki ki-bold-close icon-xs text-muted"></i>
-                                            </span>
-                                            <span class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow" data-action="remove" data-toggle="tooltip" title="Remove avatar">
-                                                <i class="ki ki-bold-close icon-xs text-muted"></i>
-                                            </span>
-                                        </div>
-                                        <span class="form-text text-muted">Allowed file types: png, jpg, jpeg.</span>
-                                        @error('cnic_front')
-                                            <div class="text-danger mt-2">
-                                                <small>{{ $message }}</small>
-                                            </div>
-                                        @enderror
-
-
-                                    </div> 
-                                    <div class="col-lg-9 col-xl-6">
-                                        <div class="image-input image-input-outline" id="kt_cnic_back" 
-                                        style="background-image: url({{ asset('assets/custom-images/dummy-card.jpg') }})"> 
-                                            <div class="image-input-wrapper" 
-                                            style="background-image:url({{asset(Auth::user()->getFirstMediaUrl('user_document_cnic_back')) }})"></div>
-                                            <label class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow" data-action="change" data-toggle="tooltip" title="" data-original-title="Change avatar">
-                                                <i class="fa fa-pen icon-sm text-muted"></i>
-                                                <input type="file" name="cnic_back" accept=".png, .jpg, .jpeg" />
-                                                <input type="hidden" name="cnic_back_remove" />
-                                            </label>
-                                            <span class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow" data-action="cancel" data-toggle="tooltip" title="Cancel avatar">
-                                                <i class="ki ki-bold-close icon-xs text-muted"></i>
-                                            </span>
-                                            <span class="btn btn-xs btn-icon btn-circle btn-white btn-hover-text-primary btn-shadow" data-action="remove" data-toggle="tooltip" title="Remove avatar">
-                                                <i class="ki ki-bold-close icon-xs text-muted"></i>
-                                            </span>
-                                        </div>
-                                        <span class="form-text text-muted">Allowed file types: png, jpg, jpeg.</span>
-                                        @error('cnic_back')
-                                        <div class="text-danger mt-2">
-                                            <small>{{ $message }}</small>
-                                        </div>
-                                    @enderror
-                                    </div>  
-                                </div>
-
-                               
-
+                                </div>  
 
                                 <div class="card-toolbar">
-                                    <button type="submit" class="btn btn-success mr-2">Update Profile</button> 
+                                    <button type="submit" class="btn btn-success mr-2 rounded-0">Update Profile</button> 
                                 </div>
                             </div>
                             
@@ -365,8 +308,7 @@
 @endsection
 @section('page_js')
 <script>
-      new KTImageInput('kt_cnic_front'); 
-     new KTImageInput('kt_cnic_back'); 
+     
 </script>
     
 @endsection

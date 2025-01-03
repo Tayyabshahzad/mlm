@@ -35,10 +35,10 @@
     
     <!--end::Subheader-->
     <!--begin::Entry-->
-    <div class="  flex-column-fluid"> 
-        <div class="container"> 
+    <div class="  sflex-column-fluid"> 
+        <div class="container-fluid"> 
             <div class="card card-custom gutter-b"> 
-                <div class="card-body py-0 ">
+                <div class="card-body py-2 ">
                     <!--begin::Table-->
                     <div class="table-responsive">
                         <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_4">
@@ -49,6 +49,7 @@
                                     <th style="min-width: 110px"> <span class="text-info">Email</span>  </span> </th>
                                     <th style="min-width: 110px"> <span class="text-info">PV Balance</span>  </span> </th>
                                     <th style="min-width: 120px">Joining Date</th> 
+                                    <th style="min-width: 120px">Detail</th> 
                                     <th style="min-width: 120px">Status</th> 
                                 </tr>
                             </thead>
@@ -69,6 +70,20 @@
                                     </td> 
                                     <td>
                                         <span class="text-dark-75 font-weight-bolder d-block font-size-lg">{{ $teamMember->created_at }}</span> 
+                                    </td> 
+
+                                    <td>
+                                         
+
+                                         <button type="button" 
+                                            data-toggle="modal"
+                                            data-target="#userDetails"
+                                            data-id="{{ $teamMember->id }}"
+                                            class="btn btn-sm btn-outline-primary btn-outline-info user-details-btn"> 
+                                            <i     class="flaticon-medical "></i>
+                                        </button>
+
+
                                     </td> 
                                     <td>
                                         <button type="button" 
@@ -125,8 +140,33 @@
             </form>
         </div>
     </div>
+</div> 
+<div class="modal fade" id="userDetails" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">  Member Details </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+            </div> 
+                <div class="modal-body">
+                    <div id="loading-spinner" style="display: none; text-align: center;">
+                        <p>Loading...</p>
+                    </div>
+                    <div id="user-details-content">
+                        <!-- Content will be populated dynamically -->
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+                  
+                </div>
+            
+        </div>
+    </div>
 </div>
-  
  
 <!--end::Content-->
 @endsection
@@ -140,6 +180,48 @@
     });
 });
         
+
+$(document).ready(function () {
+    // When modal is triggered
+    $('.user-details-btn').on('click', function () {
+        var memberId = $(this).data('id');
+        $('#member_id').val(memberId); // Set hidden input value
+        $('#user-details-content').html(''); // Clear previous content
+        $('#loading-spinner').show(); // Show loader 
+        $.ajax({
+            url: '/genealogy/team/members/details',  
+            method: 'GET',
+            data: { id: memberId },
+            success: function (response) {
+                $('#loading-spinner').hide(); // Hide loader
+                if (response.success) {
+                    var userDetails = `
+                        <p><strong>Name:</strong> ${response.data.name}</p>
+                        <p><strong>Email:</strong> ${response.data.email}</p>
+                        <p><strong>Joined:</strong> ${response.data.created_at}</p>
+                        <p><strong>Status:</strong> ${response.data.status}</p>
+                    `;
+                    if (response.data.amount_proof) {
+                        userDetails += `
+                            <p><strong>Amount Proof:</strong></p>
+                            <img src="${response.data.amount_proof}" alt="Amount Proof Image" style="max-width: 100%; height: auto;" />
+                        `;
+                    } else {
+                        userDetails += `<p><strong>Amount Proof:</strong> Not Available</p>`;
+                    }
+                    $('#user-details-content').html(userDetails);
+                } else {
+                    $('#user-details-content').html('<p>Error fetching user details.</p>');
+                }
+            },
+            error: function () {
+                $('#loading-spinner').hide(); // Hide loader
+                $('#user-details-content').html('<p>Unable to fetch user details.</p>');
+            }
+        });
+    });
+}); 
+
     </script>
     
 @endsection

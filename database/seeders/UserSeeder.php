@@ -30,41 +30,41 @@ class UserSeeder extends Seeder
 
         ReferralLink::create([
             'user_id' => $adminUser->id,
-            'link' => $this->generateReferralCode()
+            'link' => $adminUser->username
         ]); 
 
 
         $adminUser->assignRole('admin');
 
         // Member User
-        $editorUser = User::create([
-            'name' => 'Member User',
-            'email' => 'member@gmail.com',
-            'username' =>'member_11',
-            'is_active' => true,
-            'phone_verified' => true,
-            'password' => FacadesHash::make('Google@123'), // Set a secure password
-        ]);
-        $editorUser->assignRole('member');
-        ReferralLink::create([
-            'user_id' => $editorUser->id,
-            'link' => $this->generateReferralCode()
-        ]); 
+        // $editorUser = User::create([
+        //     'name' => 'Member User',
+        //     'email' => 'member@gmail.com',
+        //     'username' =>'member_11',
+        //     'is_active' => true,
+        //     'phone_verified' => true,
+        //     'password' => FacadesHash::make('Google@123'), // Set a secure password
+        // ]);
+        // $editorUser->assignRole('member');
+        // ReferralLink::create([
+        //     'user_id' => $editorUser->id,
+        //     'link' => $editorUser->username
+        // ]); 
 
-         // Operator User
-         $operator = User::create([
-            'name' => 'Operator User',
-            'email' => 'operatot@gmail.com',
-            'username' =>'operator_11',
-            'is_active' => true,
-            'phone_verified' => true,
-            'password' => FacadesHash::make('Google@123'), // Set a secure password
-        ]);
-        ReferralLink::create([
-            'user_id' => $operator->id,
-            'link' => $this->generateReferralCode()
-        ]); 
-        $operator->assignRole('operator');
+        //  // Operator User
+        //  $operator = User::create([
+        //     'name' => 'Operator User',
+        //     'email' => 'operatot@gmail.com',
+        //     'username' =>'operator_11',
+        //     'is_active' => true,
+        //     'phone_verified' => true,
+        //     'password' => FacadesHash::make('Google@123'), // Set a secure password
+        // ]);
+        // ReferralLink::create([
+        //     'user_id' => $operator->id,
+        //     'link' => $operator->username
+        // ]); 
+        // $operator->assignRole('operator');
     }
 
     protected function generateReferralCode()

@@ -6,5 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReferralTree extends Model
 {
-    protected $fillable = ['user_id', 'parent_id', 'level']; 
+    protected $fillable = ['ancestor_id', 'descendant_id', 'level'];
+
+    public function ancestor()
+    {
+        return $this->belongsTo(User::class, 'ancestor_id');
+    }
+
+    public function descendant()
+    {
+        return $this->belongsTo(User::class, 'descendant_id');
+    }
 }

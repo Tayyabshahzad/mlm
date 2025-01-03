@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('username')->unique(); 
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->unsignedBigInteger('sponsor_id')->nullable();
-             
+            $table->unsignedBigInteger('sponsor_id')->nullable(); 
+            $table->decimal('current_pv_balance')->default(0);;  
             $table->boolean('phone_verified')->default(false);   
             $table->boolean('is_active')->default(false);   // Store Phone verification status
             $table->string('phone_number')->nullable();   

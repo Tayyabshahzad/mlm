@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\PVTransaction;
 use App\Models\ReferralLink;
 use App\Models\ReferralTree;
 use App\Models\User;
+use App\Models\UserWallet;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
@@ -36,26 +39,26 @@ class RegisteredUserController extends Controller
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
-    {  
-        
+    {
+         
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:'.User::class,
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'email' => 'required|string|email|max:255|unique:'.User::class,
+            'username' => 'required|string|max:255|unique:' . User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'referral_link' => [
                 'required',
-                'string', 
+                'string',
                 'exists:referral_links,link',
             ],
             'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-        ]); 
-        $referralLink = ReferralLink::where('link', $request->referral_link)->first();   
+        ]);
+       
+        $referralLink = ReferralLink::where('link', $request->referral_link)->first(); 
         $baseUsername = Str::slug($request->name);
         $username = $baseUsername;
-        $count = 1;
-        while (User::where('username', $username)->exists()) { 
+        $count = 1; 
+        while (User::where('username', $username)->exists()) {
             $username = $baseUsername . '-' . $count;
             $count++;
         } 
@@ -66,34 +69,55 @@ class RegisteredUserController extends Controller
             'username' => $username,
             'is_active' => true,
             'phone_verified' => true,
-            'sponsor_id'=> $referralLink->user->id
-        ]);
+            'sponsor_id' => $referralLink->user->id,
+        ]); 
         $user->assignRole('member'); 
         ReferralLink::create([
             'user_id' => $user->id,
-            'link' => $this->generateReferralCode()
+            'link' => $username,
         ]); 
-       
-        if ($referralLink) {
-            $parentUserId = $referralLink->user_id;
-            $parentEntry = ReferralLink::where('user_id', $parentUserId)->first();
-            $level = $parentEntry ? $parentEntry->level + 1 : 1;
-        }
-
-        ReferralTree::create([
-            'user_id' => $user->id,
-            'parent_id' => $parentUserId,
-            'level' => $level,
-        ]);
-        
-
-        if ($request->hasFile('amount_src')) { 
+        // Register user in referral tree
+        $this->registerUser($referralLink->user_id, $user->id); 
+        if ($request->hasFile('amount_src')) {
             $user->addMedia($request->file('amount_src'))
-            ->toMediaCollection('user_amount_source'); 
-        }     
-        //event(new Registered($user)); 
-        Auth::login($user); 
+                ->toMediaCollection('user_amount_source');
+        }
+    
+        Auth::login($user);
+    
         return redirect(route('dashboard', absolute: false));
+    }
+     
+
+    function registerUser($parentId, $newUserId) {
+        DB::beginTransaction();
+    
+        try {
+            // Step 1: Insert direct relationship (level = 1)
+            DB::table('referral_trees')->insertOrIgnore([
+                'ancestor_id' => $parentId,
+                'descendant_id' => $newUserId,
+                'level' => 1,
+            ]);
+    
+            // Step 2: Propagate ancestor relationships
+            $ancestors = DB::table('referral_trees')
+                ->where('descendant_id', $parentId)
+                ->get();
+    
+            foreach ($ancestors as $ancestor) {
+                DB::table('referral_trees')->insertOrIgnore([
+                    'ancestor_id' => $ancestor->ancestor_id,
+                    'descendant_id' => $newUserId,
+                    'level' => $ancestor->level + 1,
+                ]);
+            }
+    
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
 
@@ -113,4 +137,42 @@ class RegisteredUserController extends Controller
         
         return $code;
     }
+
+    public function createUserWallet($userId)
+    {
+        UserWallet::create([
+            'user_id' => $userId,
+            'wallet_type' => 'INVESTMENT', // Assuming the default wallet type is 'ONLINE'
+            'balance' => 0, // Initial balance
+        ]);
+    }
+
+    public function assignPvToUser($userId, $amountPaid)
+    {
+        // Find the user and their wallet
+        $user = User::findOrFail($userId);
+        $userWallet = UserWallet::where('user_id', $userId)->first();
+        $pvAssigned = 100;  // This can be dynamic based on amount paid, as per your business rules
+        // Update the user's wallet with the credited PV
+        $userWallet->balance += $pvAssigned;
+        $userWallet->total_credited += $pvAssigned;
+        $userWallet->last_transaction = now();
+        $userWallet->save();
+        // Create a transaction log for this PV credit
+        PVTransaction::create([
+            'user_id' => $userId,
+            'transaction_type' => 'INVESTMENT',
+            'pv_amount' => $pvAssigned,
+            'previous_balance' => $userWallet->balance - $pvAssigned, // Balance before transaction
+            'new_balance' => $userWallet->balance, // Balance after transaction
+            'created_at' => now(),
+            'remarks' => 'PV credited for registration payment',
+        ]);
+        // Optionally update the user’s overall PV balance in the `users` table
+        $user->current_pv_balance += $pvAssigned;
+        $user->save();
+    }
+
+
+
 }

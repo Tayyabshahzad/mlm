@@ -30,9 +30,8 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         'username',
         'phone_verified',
         'is_active',
-        'sponsor_id'
-    ];
-
+        'sponsor_id','ancestor_id','descendant_id','level'
+    ]; 
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -70,6 +69,48 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
     public function team()
     {
         return $this->hasMany(User::class,'sponsor_id');
+    }
+
+    public function directDescendants()
+    {
+        return $this->hasManyThrough(
+            User::class,
+            User::class,
+            'sponsor_id', // Adjust 'parent_id' based on your schema
+            'id',
+            'id',
+            'id'
+        );
+    }
+
+    public function ancestors()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'referral_trees',
+            'descendant_id',
+            'ancestor_id'
+        )->withPivot('level');
+    }
+
+    public function descendants()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'referral_trees',
+            'ancestor_id',
+            'descendant_id'
+        )->withPivot('level');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(User::class, 'sponsor_id'); // Adjust 'parent_id' based on your schema
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(User::class, 'sponsor_id'); // Adjust 'parent_id' based on your schema
     }
 
 }

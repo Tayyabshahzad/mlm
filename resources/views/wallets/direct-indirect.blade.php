@@ -39,10 +39,12 @@
                 <!--begin::Header-->
                 <div class="card-header border-0 py-5">
                     <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label font-weight-bolder text-dark">Total Balance : 800 PV</span> 
+                        <span class="card-label font-weight-bolder text-dark">Total Balance : {{ $wallets->sum('balance') }} PV</span> 
                     </h3>
                     <div class="card-toolbar">
-                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="btn btn-info font-weight-bolder font-size-sm">Transfer to Online Wallet</a>
+                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Transfer to Online Wallet</a>
+
+                        <a href="{{ route('show.transaction.history') }}"   class="rounded-0 btn btn-primary font-weight-bolder font-size-sm">Show Transaction History</a>
                     </div>
                 </div>
                 <!--end::Header-->
@@ -64,107 +66,31 @@
                                 </tr>
                             </thead>
                             <tbody>
-
+                                @foreach($wallets as $wallet)
                                 <tr class="pl-0">
                                     <td>
-                                        <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">1</span>
+                                        <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $loop->iteration }}</span>
                                     </td>  
                                     <td>
-                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm">Tayyab</a> 
+                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $wallet->form->username }}</a> 
                                     </td>  
                                     <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">5%</span> 
+                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 
+                                           @if($wallet->commission_type == 'direct') {{ $wallet->direct_balance }} @else  {{ $wallet->indirect_balance }}  @endif%
+                                        </span> 
                                     </td>
                                     <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">5PV</span> 
+                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 
+                                            @if($wallet->commission_type == 'direct') {{ $wallet->direct_balance }} @else  {{ $wallet->indirect_balance }}  @endif PV
+                                         </span> 
                                     </td>
-                                    <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">Direct</span>    </td>
-                                    <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">-</span>    </td>
-                                    <td>05/28/2020</td> 
-                                </tr> 
-
-                                <tr class="pl-0">
-                                    <td>  <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm"> 2 </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> Sarim  </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 5%   </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 5   </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> Direct   </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  - </span> </td> 
-                                </tr>
-
-
-                                <tr class="pl-0">
-                                    <td>  <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm"> 3 </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> Ali</td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  2   </span> %  </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  2    </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  Indirect  </span>   </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  2nd Level   </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 10 -07-20245  </span> </td> 
-                                  </span> </tr>
-
-
-                                <tr class="pl-0">
-                                    <td>  <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm"> 4 </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> Saleem</td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  1.5 %  </span>    </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  1.5    </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  Indirect  </span>   </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  3nd Level   </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 10 -07-20245  </span> </td> 
-                                  </span> </tr>
-
-
-                                <tr class="pl-0">
-                                    <td>  <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm"> 5 </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> Aslam</td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  1.25  </span>  %   </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  1.25    </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  Indirect  </span>   </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  4nd Level   </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 10 -07-20245  </span> </td> 
-                                  </span> </tr>
-
-
-                                <tr class="pl-0">
-                                    <td>  <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm"> 6 </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  Zia </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  1 %   </span>   </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  1    </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  Indirect  </span>   </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  5nd Level   </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 10 -07-20245  </span> </td> 
-                                  </span>
-                                </tr>
-
-
-                                <tr class="pl-0">
-                                    <td>  <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm"> 7 </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> Zade</td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  0.7  </span> 5 %   </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  0.75    </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  Indirect  </span>   </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  6nd Level   </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 10 -07-20245  </span> </td> 
-                                  </span> 
-                                </tr> 
-                                <tr class="pl-0">
-                                    <td>  <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm"> 8 </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> Saleem</td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  0.5 %  </span>    </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  0.5    </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  Indirect  </span>   </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  7nd Level   </span> </td>
-                                    <td> <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 10 -07-20245  </span> </td> 
-                                  </span> </tr>
-
-
-                                
-
-
-                                
-
-
+                                    <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> {{ ucfirst($wallet->commission_type) }} </span>    </td>
+                                    <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ ucfirst($wallet->level) }}</span>    </td>
+                                    <td> 
+                                        {{ $wallet->created_at }}
+                                    </td> 
+                                </tr>   
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -182,35 +108,38 @@
 <div class="modal fade" id="WithdrawModel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i aria-hidden="true" class="ki ki-close"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-              <p class="text-center text-danger">
-                Will Change 5% on Every Transaction 
-              </p>
-                <div class="form-group row"> 
-                    <div class="col-lg-12 col-xl-12">
-                        <label for="" class="font-weight-bold mr-2">
-                            Transfer  Amount
-                        </label>
-                        <input type="text" class="form-control form-control-sm form-control-solid mb-2" name="current_password" placeholder="Transfer  Amount" required="" value=""> 
-                        <small> Total Balance 800 PV</small>
+            <form action="{{ route('wallet.transfer.to.online') }}" method="POST">
+                @csrf
+                <input type="text" name="wallet_type" value="direct_indirect" required>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                <p class="text-center text-danger">
+                    5% Will charge on every transaction 
+                </p>
+                    <div class="form-group row"> 
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Transfer Amount
+                            </label>
+                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
+                             name="amount" min="0.01" step="0.01"
+                             required
+                             max="{{ $wallets->sum('balance') }}"
+                             placeholder="Enter Amount"
+                             >  
+                        </div>  
                     </div>  
                 </div>
-
-
-                 
-              
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary font-weight-bold">Transfer </button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="rounded-0 btn btn-primary btn-sm">Transfer </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

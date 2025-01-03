@@ -12,21 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('referral_trees', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('parent_id');
-            $table->string('level'); 
-            $table->timestamps(); 
-            $table->foreign('user_id')
-            ->references('id')
-            ->on('users')
-            ->onDelete('cascade')
-            ->onUpdate('cascade'); 
-            $table->foreign('parent_id')
-            ->references('id')
-            ->on('users')
-            ->onDelete('cascade')
-            ->onUpdate('cascade');
+            $table->unsignedBigInteger('ancestor_id');
+            $table->unsignedBigInteger('descendant_id');
+            $table->unsignedInteger('level'); // Relative level
+            $table->primary(['ancestor_id', 'descendant_id']);
+            $table->foreign('ancestor_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('descendant_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

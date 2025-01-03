@@ -2,31 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Container\Attributes\Auth;
+use App\Models\User; 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class GenealogyController extends Controller
 {
-     
-    public function team(){ 
-        return view('Genealogy.Team');
-        //return Inertia::render('Genealogy.Team');
-    }
+    public function team()
+{
+    $user = Auth::user();
+
+    $nodeDataArray = [];
+
+    $buildHierarchy = function ($parent, $descendants, $isRoot = false) use (&$nodeDataArray, &$buildHierarchy) {
+        $descendants = $descendants ?? collect(); // Ensure it's an iterable collection
+
+        foreach ($descendants as $descendant) {
+            $nodeDataArray[] = [
+                'key' => $descendant->id,
+                'parent' => $parent->id,
+                'name' => $descendant->name,
+                'image' => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/logo-50x50.jpeg'),
+            ];
+
+            // Recursively process this descendant's children
+            $buildHierarchy($descendant, $descendant->children ?? collect());
+        }
+    };
+
+    $nodeDataArray[] = [
+        'key' => $user->id,
+        'name' => $user->name,
+        'image' => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/logo-50x50.jpeg'),
+    ];
+
+    // Start building the hierarchy from the authenticated user
+    $buildHierarchy($user, $user->children ?? collect(), true);
+
+    return view('genealogy.team', compact('user', 'nodeDataArray'));
+}
+
+    
+    
+    
 
 
     public function teamMembers(){ 
         $teamMembers = auth()->user()->team; 
         return view('genealogy.team-members',compact('teamMembers')); 
     }
-
-    public function updateTeamMemberStatus(Request $request){ 
-        $user = User::find($request->member_id);
-        $user->can_login = true;
-        $user->save();
-        return redirect()->back()->with('success','Member Status has been Updated');
-    }
+ 
 
     
 }

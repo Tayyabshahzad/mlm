@@ -12,7 +12,7 @@
 		<!--begin::Form group-->
 		<div class="form-group">
 			<label class="font-size-h6 font-weight-bolder text-dark">Email</label>
-			<input class="form-control form-control-solid h-auto py-6 px-6 rounded-md" type="text" name="email" autocomplete="off"  required/>
+			<input class="form-control form-control-solid h-auto py-5 px-6 rounded-md" type="text" name="email" autocomplete="off"  required/>
 			@error('email')
             	<div class="text-danger">{{ $message }}</div>
             @enderror
@@ -23,7 +23,7 @@
 			<div class="d-flex justify-content-between mt-n5">
 				<label class="font-size-h6 font-weight-bolder text-dark pt-5">Password</label> 
 			</div>
-			<input class="form-control form-control-solid h-auto py-6 px-6 rounded-md" type="password" name="password" autocomplete="off"  required/>
+			<input class="form-control form-control-solid h-auto py-5 px-6 rounded-md" type="password" name="password" autocomplete="off"  required/>
 			@error('password')
             	<div class="text-danger">{{ $message }}</div>
             @enderror
@@ -31,8 +31,8 @@
 		<!--end::Form group-->
 		<!--begin::Action-->
 		<div class="pb-lg-0 pb-5">
-			<button type="submit" id="kt_login_signin_submit" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">Sign In</button> 
-			<a href="{{ route('register') }}" class=" t-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">   Register </a>
+			<button type="submit" id="kt_login_signin_submit" class="rounded-0 btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">Sign In</button> 
+			<a href="{{ route('register') }}" class="rounded-0 t-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">   Register </a>
 		</div>
 		<!--end::Action-->
 	</form>

@@ -39,10 +39,12 @@
                 <!--begin::Header-->
                 <div class="card-header border-0 py-5">
                     <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label font-weight-bolder text-dark">Total Balance : 800 PV</span> 
+                        <span class="card-label font-weight-bolder text-dark">Total Balance : {{ $rewards->sum('balance') }} PV</span> 
                     </h3>
                     <div class="card-toolbar">
-                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="btn btn-info font-weight-bolder font-size-sm">Transfer to Online Wallet</a>
+                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Transfer to Online Wallet</a>
+
+                        <a href="{{ route('show.transaction.history') }}"   class="rounded-0 btn btn-primary font-weight-bolder font-size-sm">Show Transaction History</a>
                     </div>
                 </div>
                 <!--end::Header-->
@@ -54,49 +56,29 @@
                             <thead>
                                 <tr class="text-left"> 
                                     <th class="pl-0" style="">S#</th>
-
-                                    <th style="min-width: 110px">User Name</th>
-                                    <th style="min-width: 110px">Commission</th> 
+                                    <th style="min-width: 110px">Level</th>
+                                    <th style="min-width: 110px">Earned (PV)</th>  
                                     <th style="min-width: 120px">Date</th> 
                                 </tr>
                             </thead>
                             <tbody>
-
+                                @foreach($rewards as $reward)
                                 <tr class="pl-0">
                                     <td>
-                                        <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">1</span>
+                                        <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $loop->iteration }}</span>
                                     </td>  
                                     <td>
-                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm">Tayyab</a> 
-                                    </td>   
-                                    <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">5PV</span> 
-                                    </td> 
-                                    <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">05/28/2020</span> 
-                                    </td> 
-                                </tr> 
-
-                                <tr class="pl-0">
-                                    <td>
-                                        <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">2</span>
+                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> {{ $reward->level }} </a> 
                                     </td>  
                                     <td>
-                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm">Umer</a> 
-                                    </td>   
+                                        <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm"> {{ $reward->balance }} </span>
+                                    </td>  
                                     <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">150PV</span> 
-                                    </td> 
-                                    <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">03/15/2022</span> 
-                                    </td> 
-                                </tr> 
-
-                                 
-
-                                
-
-
+                                        <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $reward->created_at }}</span>
+                                    </td>  
+                                     
+                                </tr>   
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -114,35 +96,38 @@
 <div class="modal fade" id="WithdrawModel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i aria-hidden="true" class="ki ki-close"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-              <p class="text-center text-danger">
-                Will Change 5% on Every Transaction 
-              </p>
-                <div class="form-group row"> 
-                    <div class="col-lg-12 col-xl-12">
-                        <label for="" class="font-weight-bold mr-2">
-                            Transfer  Amount
-                        </label>
-                        <input type="text" class="form-control form-control-sm form-control-solid mb-2" name="current_password" placeholder="Transfer  Amount" required="" value=""> 
-                        <small> Total Balance 800 PV</small>
+            <form action="{{ route('wallet.transfer.to.online') }}" method="POST">
+                @csrf
+                <input type="text" name="wallet_type" value="reward-wallet" required>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                <p class="text-center text-danger">
+                    5% Will charge on every transaction 
+                </p>
+                    <div class="form-group row"> 
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Transfer Amount
+                            </label>
+                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
+                             name="amount" min="0.01" step="0.01"
+                             required
+                             max="{{ $rewards->sum('balance') }}"
+                             placeholder="Enter Amount"
+                             >  
+                        </div>  
                     </div>  
                 </div>
-
-
-                 
-              
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary font-weight-bold">Transfer </button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="rounded-0 btn btn-primary btn-sm">Transfer </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
