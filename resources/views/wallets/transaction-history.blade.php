@@ -36,6 +36,14 @@
     <div class="  flex-column-fluid"> 
         <div class="container"> 
             <div class="card card-custom gutter-b">
+                <div class="card-header border-0 py-5">
+                    <h3 class="card-title align-items-start flex-column">
+                        <span class="card-label font-weight-bolder text-dark">Transaction History</span> 
+                    </h3>
+                    <div class="card-toolbar">
+                          
+                    </div>
+                </div>
                 
                 <div class="card-body py-0">
                     <!--begin::Table-->
@@ -80,12 +88,13 @@
                                         
                                     </tr>   
                                 @endforeach
-
-                                <tfoot>
-                                    <tr class="text-center text-danger">
-                                        <th colspan="7"  > No Transaction History Found </th>
-                                    </tr>
-                                </tfoot>
+                                @if(!$transactions->count() >0)
+                                    <tfoot>
+                                        <tr class="text-center text-danger">
+                                            <th colspan="7"  > No Transaction History Found </th>
+                                        </tr>
+                                    </tfoot>
+                                @endif
                             </tbody>
                         </table>
                     </div>

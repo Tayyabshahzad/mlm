@@ -11,9 +11,9 @@
 		<!--begin::Title-->
 		<!--begin::Form group-->
 		<div class="form-group">
-			<label class="font-size-h6 font-weight-bolder text-dark">Email</label>
-			<input class="form-control form-control-solid h-auto py-5 px-6 rounded-md" type="text" name="email" autocomplete="off"  required/>
-			@error('email')
+			<label class="font-size-h6 font-weight-bolder text-dark">Email / Username</label>
+			<input class="form-control form-control-solid h-auto py-5 px-6 rounded-md" type="text" name="login" autocomplete="off"  required/>
+			@error('login')
             	<div class="text-danger">{{ $message }}</div>
             @enderror
 		</div>

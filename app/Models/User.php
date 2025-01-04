@@ -113,4 +113,14 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         return $this->belongsTo(User::class, 'sponsor_id'); // Adjust 'parent_id' based on your schema
     }
 
+    public function referrer()
+    {
+        return $this->belongsTo(User::class, 'referrer_user_id');
+    }
+
+    public function referredUsers()
+    {
+        return $this->hasMany(User::class, 'referrer_user_id');
+    }
+
 }

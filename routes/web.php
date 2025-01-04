@@ -41,6 +41,8 @@ Route::controller(UserController::class)->middleware(['auth','verified','role:ad
     Route::get('index','index')->name('users.index'); 
     Route::put('status/update','updateStatus')->name('users.status.update');
     Route::get('details','userDetails')->name('users.details');
+    Route::get('roi/payments','roiPayments')->name('roi.payments');
+    Route::post('submit/roi/payments','submitRoiPayments')->name('submit.roi.payments');
 }); 
 Route::controller(WalletController::class)->middleware(['auth','verified'])->prefix('wallets')->group(function () {
     Route::get('online','online')->name('wallets.online');
@@ -51,7 +53,6 @@ Route::controller(WalletController::class)->middleware(['auth','verified'])->pre
     Route::get('rank','rank')->name('wallets.rank');
     Route::post('transfer-to-online', [WalletController::class, 'transferToOnline'])->name('wallet.transfer.to.online');
     Route::get('show-transaction-history', [WalletController::class, 'showTransactionHistory'])->name('show.transaction.history');
-
 }); 
 Auth::routes(['verify' => true]);
 

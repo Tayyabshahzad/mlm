@@ -14,7 +14,7 @@ class Wallet extends Model
         'indirect_balance',
         'wallet_from',
         'commission_type',
-        'level'
+        'level','percentage'
     ];
     public function user()
     {

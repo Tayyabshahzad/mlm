@@ -1,5 +1,5 @@
 @extends('demo.layout.app')
-@section('title','Return On Investment')
+@section('title','ROI')
 @section('content')
  <!--begin::Content-->
  <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
@@ -11,7 +11,7 @@
                 <!--begin::Page Heading-->
                 <div class="d-flex align-items-baseline flex-wrap mr-5">
                     <!--begin::Page Title-->
-                    <h5 class="text-dark font-weight-bold my-1 mr-5">ROI Wallet </h5>
+                    <h5 class="text-dark font-weight-bold my-1 mr-5">Return on Investment </h5>
                     <!--end::Page Title-->
                     <!--begin::Breadcrumb-->
                     <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2 font-size-sm">
@@ -39,12 +39,10 @@
                 <!--begin::Header-->
                 <div class="card-header border-0 py-5">
                     <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label font-weight-bolder text-dark">Total Balance : {{ $payments->sum('balance') }} PV</span> 
+                       
                     </h3>
                     <div class="card-toolbar">
-                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Transfer to Online Wallet</a>
-
-                        <a href="{{ route('show.transaction.history') }}"   class="rounded-0 btn btn-primary font-weight-bolder font-size-sm">Show Transaction History</a>
+                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Make A Payment</a> 
                     </div>
                 </div>
                 <!--end::Header-->
@@ -55,35 +53,33 @@
                         <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_4">
                             <thead>
                                 <tr class="text-left"> 
-                                    <th class="pl-0" style="">S#</th> 
-                                    <th style="min-width: 110px">Month</th>
-                                    <th style="min-width: 110px">Percentage</th>
-                                    <th style="min-width: 110px">Amount</th> 
-                                    <th style="min-width: 120px">Date</th> 
+                                    <th class="pl-0" style="">S#</th>
+                                    <th style="min-width: 110px">Username</th>
+                                    <th style="min-width: 110px">Amount</th>  
+                                    <th style="min-width: 120px">Percentage</th>
+                                    <th style="min-width: 120px">Amount Remaining</th>   
+                                    <th style="min-width: 120px">Start Date</th> 
+                                    <th style="min-width: 120px">End Date</th> 
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($payments as $payment)
-                                <tr class="pl-0">
-                                    <td>
-                                        <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $loop->iteration }}</span>
-                                    </td>  
-                                    <td>
-                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $payment->created_at->format('M') }}</a> 
-                                    </td>   
-                                    <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $payment->percentage }} % </span> 
-                                    </td> 
-                                    <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $payment->balance }}</span> 
-                                    </td> 
-                                    <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $payment->created_at->format('d-M-Y') }}</span> 
-                                    </td> 
-                                </tr>  
+                            <tbody> 
+                                @foreach ($payments as $payment )
+                                    <tr class="text-left"> 
+                                        <td class="pl-0" style="">{{ $loop->iteration }}</td>
+                                        <td style="min-width: 110px">{{ $payment->user->name }}</td>
+                                        <td style="min-width: 110px">{{ $payment->amount }} </td>  
+                                        <td style="min-width: 120px">{{ $payment->percentage }}</td>  
+                                        <td style="min-width: 120px">{{ $payment->user->current_pv_balance - $payment->user->roi_wallet_balance  }}</td>  
+                                        <td style="min-width: 120px">{{ $payment->user->roi_start_date ? $payment->user->roi_start_date : '--' }}</td> 
+                                        <td style="min-width: 120px">{{ $payment->user->roi_end_date ?  $payment->user->roi_end_date : '--' }}</td> 
+                                    </tr>
                                 @endforeach
-
                             </tbody>
+                            @if(!$payments>0)
+                                <tfoot class="text-center">
+                                    <th colspan="7" class="p-5 text-danger">No Roi Payments Found</th>
+                                </tfoot>
+                            @endif
                         </table>
                     </div>
                     <!--end::Table-->
@@ -97,33 +93,45 @@
     <!--end::Entry-->
 </div>
  
-
 <div class="modal fade" id="WithdrawModel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="{{ route('wallet.transfer.to.online') }}" method="POST">
+            <form action="{{ route('submit.roi.payments') }}" method="POST">
                 @csrf
-                <input type="hidden" name="wallet_type" value="roi_wallet" required>
+                
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Make an ROI</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i aria-hidden="true" class="ki ki-close"></i>
                     </button>
                 </div>
-                <div class="modal-body">
-                <p class="text-center text-danger">
-                    5% Will charge on every transaction 
-                </p>
+                <div class="modal-body"> 
                     <div class="form-group row"> 
+
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Select Member
+                            </label>
+                            <select class="form-control form-control-sm form-control-solid mb-2" 
+                             name="user_id">
+                                <option disabled selected value=""> Select Member </option>
+                                @foreach ($users as $user )
+                                <option  value="{{ $user->id }}"> {{ $user->name}} </option>
+                                @endforeach
+                             </select
+                             >  
+                        </div>  
+
+
                         <div class="col-lg-12 col-xl-12">
                             <label for="" class="font-weight-bold mr-2">
                                 Transfer Amount
                             </label>
                             <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="amount" min="0.01" step="0.01"
+                             name="commission_percentage" min="0.01" step="0.01"
                              required
-                             max="{{ $payments->sum('balance') }}"
-                             placeholder="Enter Amount"
+                             
+                             placeholder="Commission Percentage"
                              >  
                         </div>  
                     </div>  
@@ -136,7 +144,6 @@
         </div>
     </div>
 </div>
- 
  
 
  

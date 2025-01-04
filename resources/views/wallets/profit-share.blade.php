@@ -39,10 +39,12 @@
                 <!--begin::Header-->
                 <div class="card-header border-0 py-5">
                     <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label font-weight-bolder text-dark">Total Balance : 800 PV</span> 
+                        <span class="card-label font-weight-bolder text-dark">Total Balance : {{ $profits->sum('balance') }} PV</span> 
                     </h3>
                     <div class="card-toolbar">
-                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="btn btn-info font-weight-bolder font-size-sm">Transfer to Online Wallet</a>
+                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Transfer to Online Wallet</a>
+
+                        <a href="{{ route('show.transaction.history') }}"   class="rounded-0 btn btn-primary font-weight-bolder font-size-sm">Show Transaction History</a>
                     </div>
                 </div>
                 <!--end::Header-->
@@ -65,75 +67,34 @@
                             <tbody>
 
 
+                                
+
+                                @foreach($profits as $profit)
                                 <tr class="pl-0">
-                                     <td><span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">1</span></td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> Sarim Khan </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 1 </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 7% </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 0.35 </a> </td> 
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm">  05/28/2020 </a> </td> 
-                                   
-                                </tr>
+                                    <td>
+                                        <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $loop->iteration }}</span>
+                                    </td>  
+                                    <td>
+                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $profit->form->username }}</a> 
+                                    </td>   
+                                    <td>
+                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $profit->level }} </span> 
+                                    </td> 
+                                    <td>
+                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $profit->percentage }}</span> 
+                                    </td> 
+                                    <td>
+                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $profit->balance }}</span> 
+                                    </td> 
+                                    <td>
+                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $profit->created_at->format('d-m-Y') }}</span> 
+                                    </td> 
+                                </tr>  
+                                @endforeach
 
 
-                                <tr class="pl-0">
-                                     <td><span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">2</span></td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> Zernish Khan </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 2 </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 6% </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 0.3 </a> </td> 
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm">  05/28/2020 </a> </td> 
-                                </tr>
 
-
-                                <tr class="pl-0">
-                                     <td><span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">3</span></td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> Zia Khan </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 3 </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 5% </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 0.25 </a> </td> 
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm">  05/28/2020 </a> </td> 
-                                </tr>
-
-                                <tr class="pl-0">
-                                     <td><span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">4</span></td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> Zia Khan</a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 4</a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 4%</a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 0.2</a> </td> 
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm">  05/28/2020 </a> </td> 
-                                </tr>
-
-
-                                <tr class="pl-0">
-                                     <td><span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">5</span></td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> Zia Khan </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 5 </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 3% </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 0.162 </a> </td> 
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm">  05/28/2020 </a> </td> 
-                                </tr>
-
-
-                                <tr class="pl-0">
-                                     <td><span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">6</span></td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> Zia Khan</a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 6</a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 2%</a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 0.1</a> </td> 
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm">  05/28/2020 </a> </td> 
-                                </tr>
-
-
-                                <tr class="pl-0">
-                                     <td><span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">7</span></td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> Zia Khan </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 7 </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 1% </a> </td>
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm"> 0.05 </a> </td> 
-                                    <td>  <a class="text-dark-75 font-weight-bolder d-block font-size-sm">  05/28/2020 </a> </td> 
-                                </tr>   
-
+                               
                             </tbody>
                         </table>
                     </div>
@@ -148,41 +109,46 @@
     <!--end::Entry-->
 </div>
  
+
 <div class="modal fade" id="WithdrawModel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i aria-hidden="true" class="ki ki-close"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-              <p class="text-center text-danger">
-                Will Change 5% on Every Transaction 
-              </p>
-                <div class="form-group row"> 
-                    <div class="col-lg-12 col-xl-12">
-                        <label for="" class="font-weight-bold mr-2">
-                            Transfer  Amount
-                        </label>
-                        <input type="text" class="form-control form-control-sm form-control-solid mb-2" name="current_password" placeholder="Transfer  Amount" required="" value=""> 
-                        <small> Total Balance 800 PV</small>
+            <form action="{{ route('wallet.transfer.to.online') }}" method="POST">
+                @csrf
+                <input type="hidden" name="wallet_type" value="profit_share" required>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                <p class="text-center text-danger">
+                    5% Will charge on every transaction 
+                </p>
+                    <div class="form-group row"> 
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Transfer Amount
+                            </label>
+                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
+                             name="amount" min="0.01" step="0.01"
+                             required
+                             max="{{ $profits->sum('balance') }}"
+                             placeholder="Enter Amount"
+                             >  
+                        </div>  
                     </div>  
                 </div>
-
-
-                 
-              
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary font-weight-bold">Transfer </button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="rounded-0 btn btn-primary btn-sm">Transfer </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+ 
  
 
  

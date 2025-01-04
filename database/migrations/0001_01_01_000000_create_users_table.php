@@ -19,11 +19,14 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->unsignedBigInteger('sponsor_id')->nullable(); 
-            $table->decimal('current_pv_balance')->default(0);;  
+            $table->decimal('current_pv_balance')->default(0); 
             $table->boolean('phone_verified')->default(false);   
             $table->boolean('is_active')->default(false);   // Store Phone verification status
             $table->string('phone_number')->nullable();   
             $table->boolean('can_login')->default(false);
+            $table->decimal('roi_wallet_balance', 8, 2)->default(0); // Total ROI paid to the user
+            $table->date('roi_start_date')->nullable();    // Start date of ROI
+            $table->date('roi_end_date')->nullable();     
             $table->rememberToken();
             $table->timestamps();
             $table->foreign('sponsor_id')

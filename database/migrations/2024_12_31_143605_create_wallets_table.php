@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('direct_balance', 15, 2)->default(0.00); // Direct commission balance (only for direct/indirect)
             $table->decimal('indirect_balance', 15, 2)->default(0.00);
             $table->string('commission_type');
+            $table->decimal('percentage' ,15, 2)->default(0.00);
             $table->string('level');
             $table->foreign('wallet_from')->references('id')->on('users')->onDelete('cascade'); 
             $table->timestamps();

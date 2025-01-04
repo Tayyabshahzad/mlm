@@ -24,12 +24,13 @@ class WalletController extends Controller
     }
 
     public function ROI(){ 
-      
-        return view('wallets.roi'); 
+        $payments = Wallet::where('wallet_type','roi')->where('user_id',auth()->user()->id)->get();
+        return view('wallets.roi',compact('payments')); 
     }
 
     public function profitShare(){ 
-        return view('wallets.profit-share'); 
+        $profits = Wallet::where('wallet_type','profit_share')->where('user_id',auth()->user()->id)->get();
+        return view('wallets.profit-share',compact('profits')); 
     }
     public function rank(){ 
         return view('wallets.rank'); 
@@ -46,18 +47,19 @@ class WalletController extends Controller
             $wallet_type = 'reward';
         }elseif($request->wallet_type == 'direct_indirect'){
             $wallet_type = 'direct_indirect';
+        }elseif($request->wallet_type == 'roi_wallet'){
+            $wallet_type = 'roi';
         }
         $wallets = Wallet::where('user_id', $userId)
-                                       ->where('wallet_type', $wallet_type)
-                                       ->get();  
+                    ->where('wallet_type', $wallet_type)
+                    ->get();  
         $totalBalance = $wallets->sum('balance'); 
 
         if ($totalBalance < $amountToTransfer) {
             return redirect()->back()->with('error', 'Insufficient balance in your '.$wallet_type.' wallet.');
         }  
         $chargePercentage = 5;
-        $chargeAmount = ($chargePercentage / 100) * $amountToTransfer; 
-        // Deduct the charge from the transfer amount
+        $chargeAmount = ($chargePercentage / 100) * $amountToTransfer;  
         $finalTransferAmount = $amountToTransfer - $chargeAmount; 
         if ($finalTransferAmount <= 0) {
             return redirect()->back()->with('error', 'Transfer amount is too small after applying charges.');
