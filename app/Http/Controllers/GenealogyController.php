@@ -30,7 +30,7 @@ class GenealogyController extends Controller
             $buildHierarchy($descendant, $descendant->children ?? collect());
         }
     };
-    ////--
+    ////--git---
     $nodeDataArray[] = [
         'key' => $user->id,
         'name' => $user->name,
