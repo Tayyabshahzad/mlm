@@ -41,9 +41,9 @@ class UserController extends Controller
 
 
         // Sending mail to user
-        Mail::to($user->email)->send(new CompanyAgreement($user));
-        Mail::to($user->email)->send(new WelcomeEmail($user));
-        Mail::to($user->email)->send(new InvoiceEmail($user));
+        // Mail::to($user->email)->send(new CompanyAgreement($user));
+        // Mail::to($user->email)->send(new WelcomeEmail($user));
+        // Mail::to($user->email)->send(new InvoiceEmail($user));
         $this->pvService->assignInitialPV($user);
         $this->assignCommissions($user);
         $this->test($user->sponsor_id, 1);
