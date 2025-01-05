@@ -18,6 +18,7 @@ use App\Rules\OtpExists;
 use setasign\Fpdi\Fpdi;
 use Illuminate\Support\Facades\Mail;
 use App\Models\ReferralLink;
+use App\Models\Wallet;
 use Illuminate\Support\Facades\DB;
 
 class FrontEndController extends Controller
@@ -35,8 +36,25 @@ class FrontEndController extends Controller
         ]);
         return redirect()->back()->with('success', 'Thank you for subscribing!');
     }
-    public function dashboard(){
-        return view('demo.dashboard');
+    public function dashboard(){ 
+
+        $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
+        $teamSize = User::where('sponsor_id',Auth::user()->id)->limit(10)->get(); 
+        $data = [
+            'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
+            'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
+            'reward' => $wallets->where('wallet_type', 'reward')->sum('balance'),
+            'roi' => $wallets->where('wallet_type', 'roi')->sum('balance'),
+            'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
+            'rank' => 0,
+            'total_earning'=>$wallets->sum('balance'),
+            'team_size' => $teamSize, // Customize based on your business logic
+            'total_roi_earned_pv' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
+            'total_roi_earned_this_month' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
+            'total_roi_remaining' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
+            'roi_status' => true, // Customize based on your business logic
+        ];
+        return view('demo.dashboard',compact('data'));
         //return Inertia::render('Dashboard');
     }
 
@@ -318,17 +336,17 @@ class FrontEndController extends Controller
 
     public function bulkRegisterUsers()
     {
-        $parentUsername = '3rd-generation-1'; 
+        $parentUsername = 'aqil'; 
         $parent = User::where('username', $parentUsername)->firstOrFail();
         $parentId = $parent->id;  
         DB::beginTransaction();
         try {
             // Loop to create 50 users
-            for ($i = 1; $i <= 10; $i++) {
-                $name = "4th-generation-$i";
-                $email = "4th-generation-$i@example.com";
+            for ($i = 1; $i <= 3; $i++) {
+                $name = "aqil-child-$i";
+                $email = "aqil-child-$i@example.com";
                 $password = Hash::make('password'); // Default password
-                $username = "4th-generation-$i"; 
+                $username = "aqil-child-$i"; 
                 // Create user
                 $newUser = User::create([
                     'name' => $name,

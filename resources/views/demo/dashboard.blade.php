@@ -60,84 +60,27 @@
                             <div class="flex-grow-1 card-spacer-x">
                                 <h3 class="  font-weight-bolder my-7">Leaderboard</h3>
                                 <!--begin::Item-->
-                                <div class="d-flex align-items-center justify-content-between mb-5">
-                                    <div class="d-flex align-items-center mr-2">
-                                        <div class="symbol symbol-50 symbol-light mr-3 flex-shrink-0">
-                                            <div class="symbol-label">
-                                                <img src="http://mlm.test/storage/1/BIZTECH.jpg" alt="" class="h-50" />
+
+                                @foreach ($data['team_size']  as $team ) 
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div class="d-flex align-items-center mr-2">
+                                            <div class="symbol symbol-50 symbol-light mr-3 flex-shrink-0">
+                                                <div class="symbol-label">
+                                                    <img src="{{asset($team->getFirstMediaUrl('user_profile_images')) }}" alt="" class="h-50" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <a href="#" class="font-size-h6 text-dark-75 text-hover-primary font-weight-bolder"> {{ ucfirst($team->name) }}</a>
+                                                <div class="font-size-sm text-muted font-weight-bold mt-1">Direct</div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <a href="#" class="font-size-h6 text-dark-75 text-hover-primary font-weight-bolder">Ali Saleem</a>
-                                            <div class="font-size-sm text-muted font-weight-bold mt-1">Direct</div>
+                                        <div class="label label-light label-inline font-weight-bold text-dark-50 py-4 px-3 font-size-base">
+                                            {{ $team->team->count() }}
                                         </div>
-                                    </div>
-                                    <div class="label label-light label-inline font-weight-bold text-dark-50 py-4 px-3 font-size-base">5%</div>
-                                </div>
+                                    </div> 
+                                @endforeach
                                 <!--end::Item-->
-                                <!--begin::Item-->
-                                <div class="d-flex align-items-center justify-content-between mb-5">
-                                    <div class="d-flex align-items-center mr-2">
-                                        <div class="symbol symbol-50 symbol-light mr-3 flex-shrink-0">
-                                            <div class="symbol-label">
-                                                <img src="http://mlm.test/storage/1/BIZTECH.jpg" alt="" class="h-50" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <a href="#" class="font-size-h6 text-dark-75 text-hover-primary font-weight-bolder">Muhammad</a>
-                                            <div class="font-size-sm text-muted font-weight-bold mt-1">In Direct</div>
-                                        </div>
-                                    </div>
-                                    <div class="label label-light label-inline font-weight-bold text-dark-50 py-4 px-3 font-size-base">2%</div>
-                                </div>
-
-
-                                <div class="d-flex align-items-center justify-content-between mb-5">
-                                    <div class="d-flex align-items-center mr-2">
-                                        <div class="symbol symbol-50 symbol-light mr-3 flex-shrink-0">
-                                            <div class="symbol-label">
-                                                <img src="http://mlm.test/storage/1/BIZTECH.jpg" alt="" class="h-50" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <a href="#" class="font-size-h6 text-dark-75 text-hover-primary font-weight-bolder">Muhammad</a>
-                                            <div class="font-size-sm text-muted font-weight-bold mt-1">In Direct</div>
-                                        </div>
-                                    </div>
-                                    <div class="label label-light label-inline font-weight-bold text-dark-50 py-4 px-3 font-size-base">2%</div>
-                                </div>
-
-
-                                <div class="d-flex align-items-center justify-content-between mb-5">
-                                    <div class="d-flex align-items-center mr-2">
-                                        <div class="symbol symbol-50 symbol-light mr-3 flex-shrink-0">
-                                            <div class="symbol-label">
-                                                <img src="http://mlm.test/storage/1/BIZTECH.jpg" alt="" class="h-50" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <a href="#" class="font-size-h6 text-dark-75 text-hover-primary font-weight-bolder">Muhammad</a>
-                                            <div class="font-size-sm text-muted font-weight-bold mt-1">In Direct</div>
-                                        </div>
-                                    </div>
-                                    <div class="label label-light label-inline font-weight-bold text-dark-50 py-4 px-3 font-size-base">2%</div>
-                                </div>
-                                <!--end::Item-->
-                                <!--begin::Item-->
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="d-flex align-items-center mr-2">
-                                        <div class="symbol symbol-50 symbol-light mr-3 flex-shrink-0">
-                                            <div class="symbol-label">
-                                                <img src="http://mlm.test/storage/1/BIZTECH.jpg" alt="" class="h-50" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <a href="#" class="font-size-h6 text-dark-75 text-hover-primary font-weight-bolder">Naeem</a>
-                                            <div class="font-size-sm text-muted font-weight-bold mt-1">Direct</div>
-                                        </div>
-                                    </div>
-                                    <div class="label label-light label-inline font-weight-bold text-dark-50 py-4 px-3 font-size-base">5%</div>
-                                </div>
+ 
 
                                 
                                 <!--end::Item-->
@@ -157,7 +100,7 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Online Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">3,620</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3"> {{ $data['online_wallet'] }} </div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -177,7 +120,7 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Direct/Indirect Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">3,620</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3"> {{ $data['direct_indirect'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -196,7 +139,7 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Reward Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">3,620</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['reward'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -215,7 +158,7 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">ROI</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">3,620</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['roi'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -235,7 +178,7 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Profit Share</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">3,620</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['profit_share'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -255,7 +198,7 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Rank</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">3,620</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['rank'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -273,8 +216,8 @@
                                 <div class="card-body d-flex flex-column p-0">
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
-                                        <div class="text-inverse-danger font-weight-bold">Team Size</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">3,620</div>
+                                        <div class="text-inverse-danger font-weight-bold">Total Team Size</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">0</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -292,7 +235,7 @@
                         <!--begin::Body-->
                         <div class="card-body d-flex align-items-center">
                             <div class="py-2">
-                                <h3 class="text-white font-weight-bolder mb-3">Total Earning: 24,200 PV</h3>
+                                <h3 class="text-white font-weight-bolder mb-3">Total Earning: {{ number_format($data['total_earning'],2)  }} PV</h3>
                                 <p class="text-white font-size-lg">
                                     Overview of All Your Wallets
                                 </p>
@@ -305,6 +248,20 @@
                  
             </div>
             <div class="row">
+                <div class="col-lg-12">
+                    <div class="card card-custom card-stretch gutter-b">
+                        <div class="card-body"> 
+                            <div class="card card-custom  ">
+                                <div class="card-body rounded-0 p-0 d-flex" style="background-color:#DAF0FD;">
+                                    <div class="d-flex flex-column flex-lg-row-auto w-auto  p-10 p-md-20">
+                                        <h1 class="font-weight-bolder text-dark">10 PV Registration fee will apply starting February 10, 2025. </h1>  
+                                    </div>
+                                    <div class="d-none d-md-flex flex-row-fluid bgi-no-repeat bgi-position-y-center bgi-position-x-left bgi-size-cover" style="background-image: url(assets/media/svg/illustrations/progress.svg);"></div>
+                                </div>
+                            </div> 
+                        </div>
+                    </div>
+                </div> 
                 <div class="col-lg-12">
                     <!--begin::Card-->
                     <div class="card card-custom gutter-b">
@@ -374,7 +331,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Total Earned</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>249,500 PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{ Auth::user()->roi_wallet_balance }} PV</span>
                             </div>
                         </div>
                         <!--end::Item-->
@@ -405,6 +362,9 @@
                     <!--begin::Items-->
                 </div>
             </div>
+
+
+            
 
 
             <div class="card card-custom gutter-b wave  wave-animated wave-info" 

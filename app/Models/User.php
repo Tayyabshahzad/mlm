@@ -30,7 +30,7 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         'username',
         'phone_verified',
         'is_active',
-        'sponsor_id','ancestor_id','descendant_id','level'
+        'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date'
     ]; 
     /**
      * The attributes that should be hidden for serialization.
@@ -70,6 +70,13 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
     {
         return $this->hasMany(User::class,'sponsor_id');
     }
+
+    public function directTeam()
+    {
+        return $this->hasMany(User::class,'sponsor_id');
+    }
+
+
 
     public function directDescendants()
     {

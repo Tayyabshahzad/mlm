@@ -94,7 +94,7 @@
 				<!--begin::Aside-->
 				<div class="aside aside-left aside-fixed d-flex flex-column flex-row-auto" id="kt_aside"> 
 					<div class="brand flex-column-auto" id="kt_brand"> 
-						<a href="index.html" class="brand-logo">
+						<a href="{{ route('dashboard') }}" class="brand-logo">
 							<img alt="Logo" src="{{ asset('assets/custom-images/gvi-text.png') }}"  width="60%"/>
 						</a> 
 						<button class="brand-toggle btn btn-sm px-0" id="kt_aside_toggle">

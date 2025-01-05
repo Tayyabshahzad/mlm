@@ -26,7 +26,8 @@ return new class extends Migration
             $table->boolean('can_login')->default(false);
             $table->decimal('roi_wallet_balance', 8, 2)->default(0); // Total ROI paid to the user
             $table->date('roi_start_date')->nullable();    // Start date of ROI
-            $table->date('roi_end_date')->nullable();     
+            $table->date('roi_end_date')->nullable();    
+            $table->date('last_roi_payment_date')->nullable();    
             $table->rememberToken();
             $table->timestamps();
             $table->foreign('sponsor_id')

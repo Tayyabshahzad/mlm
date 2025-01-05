@@ -304,29 +304,56 @@ class UserController extends Controller
             // Assign only direct commission for immediate sponsor
             $this->walletService->assignCommission($parentUser->id, $directCommissionAmount, 'direct', $user, 1);
         }
-
+    
         // Exclude the immediate sponsor from ancestors list
-        // $ancestors = $this->getAncestors($user)
-        //     ->filter(function ($ancestor) use ($parentUser) {
-        //         return $ancestor->ancestor_id !== $parentUser->id; // Exclude the direct sponsor
-        //     });
-
         $ancestors = $this->getAncestors($user)
             ->filter(function ($ancestor) use ($user) {
                 return $ancestor->ancestor_id !== $user->sponsor_id && $ancestor->level <= 7;
             });
-
-
-
+    
         foreach ($ancestors as $ancestor) {
             $level = $ancestor->level; // Get level of ancestor
-            $indirectCommissionPercentage = $this->getCommissionForLevel($level); // Get commission for the ancestor's level
-            $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
-
-            // Assign Indirect Commission for Ancestors
-            $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
+    
+            // Check team size condition for each level
+            $ancestorUser = User::find($ancestor->ancestor_id);
+            $teamSize = $this->getTeamSize($ancestorUser->id); // Fetch team size
+    
+            // Define required team size for each level
+            $requiredTeamSizes = [
+                2 => 2, // Level 2 requires 2 team members
+                3 => 3, // Level 3 requires 3 team members
+                4 => 4, // Level 4 requires 4 team members
+                5 => 5, // Level 5 requires 5 team members
+                6 => 6, // Level 6 requires 6 team members
+                7 => 7, // Level 7 requires 7 team members
+            ];
+    
+            // Check team size condition for the current level (default to 0 if not defined)
+            $requiredTeamSize = $requiredTeamSizes[$level] ?? 0;
+    
+            if ($teamSize >= $requiredTeamSize) {
+                $indirectCommissionPercentage = $this->getCommissionForLevel($level); // Get commission for the ancestor's level
+                $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
+    
+                // Assign Indirect Commission for Ancestors
+                $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
+            }
         }
     }
+    
+    /**
+     * Get the team size of a user based on direct sponsorship.
+     *
+     * @param int $userId
+     * @return int
+     */
+    private function getTeamSize($userId)
+    {
+        // Count the number of users directly sponsored by this user
+        return User::where('sponsor_id', $userId)->count();
+    }
+    
+    
 
     public function roiPayments()
     {
@@ -356,6 +383,8 @@ class UserController extends Controller
         $maxMonthlyPayment = $remainingPV / $monthsRemaining;
         $roiPayment = min(($remainingPV * $paymentPercentage) / 100, $maxMonthlyPayment);
         $user->roi_wallet_balance += $roiPayment;
+        $user->last_roi_payment_date += Carbon::now();
+        
         $user->save();
         $wallet = Wallet::Create(
             [
@@ -381,13 +410,13 @@ class UserController extends Controller
     private function generateParentCommissions($user, $roiAmount)
     {
         $commissionLevels = [
-            1 => 7,
-            2 => 6,
-            3 => 5,
-            4 => 4,
-            5 => 3,
-            6 => 2,
-            7 => 1,
+            1 => 3.5,  // divide / 2 
+            2 => 3,
+            3 => 2.5,
+            4 => 2,
+            5 => 1.5,
+            6 => 1,
+            7 => 0.5,
         ];
 
         foreach ($commissionLevels as $level => $percentage) {
