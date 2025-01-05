@@ -250,13 +250,12 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="card card-custom card-stretch gutter-b">
-                        <div class="card-body"> 
-                            <div class="card card-custom  ">
-                                <div class="card-body rounded-0 p-0 d-flex" style="background-color:#DAF0FD;">
+                        <div class="card-body" style=""> 
+                            <div class="card card-custom  " style="background-color: rgb(149, 238, 233)">
+                                <div class="card-body rounded-0 p-0 d-flex" style="background-image: url({{ asset('assets/custom-images/announcement.svg') }});background-size:70px;background-repeat:no-repeat;background-position:bottom left">
                                     <div class="d-flex flex-column flex-lg-row-auto w-auto  p-10 p-md-20">
                                         <h1 class="font-weight-bolder text-dark">10 PV Registration fee will apply starting February 10, 2025. </h1>  
-                                    </div>
-                                    <div class="d-none d-md-flex flex-row-fluid bgi-no-repeat bgi-position-y-center bgi-position-x-left bgi-size-cover" style="background-image: url(assets/media/svg/illustrations/progress.svg);"></div>
+                                    </div> 
                                 </div>
                             </div> 
                         </div>
@@ -304,8 +303,7 @@
                                     <div class="d-flex flex-wrap mb-4">
                                          
                                     </div>
-                                    <span class="font-weight-bold text-dark-50">I distinguish three main text objectives could be merely to inform people.</span>
-                                    <span class="font-weight-bold text-dark-50">A second could be persuade people.You want people to bay objective</span>
+                                    
                                 </div>
                                 <div class="d-flex align-items-center w-25 flex-fill float-right mt-lg-12 mt-8">
                                     <span class="font-weight-bold text-dark-75">Progress</span>
@@ -343,7 +341,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Earned This Month</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>164,700 PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{ Auth::user()->roi_wallet_balance }} PV</span>
                             </div>
                         </div>
                         <!--end::Item-->
@@ -355,7 +353,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Remaining</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>782,300 PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{ Auth::user()->roi_wallet_balance }} PV</span>
                             </div>
                         </div> 
                     </div>
@@ -391,8 +389,7 @@
                                   <div class="d-flex flex-wrap mb-4">
                                        
                                   </div>
-                                  <span class="font-weight-bold text-dark-50">I distinguish three main text objectives could be merely to inform people.</span>
-                                  <span class="font-weight-bold text-dark-50">A second could be persuade people.You want people to bay objective</span>
+                                  
                               </div>
                               <div class="d-flex align-items-center w-25 flex-fill float-right mt-lg-12 mt-8">
                                   <span class="font-weight-bold text-dark-75">Progress</span>
@@ -418,7 +415,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Total Earned</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>249,500 PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span>{{ Auth::user()->roi_wallet_balance }} PV</span>
                           </div>
                       </div>
                       <!--end::Item-->
@@ -430,7 +427,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Earned This Month</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>164,700 PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span>{{ Auth::user()->roi_wallet_balance }} PV</span>
                           </div>
                       </div>
                       <!--end::Item-->
@@ -442,7 +439,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Remaining</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>782,300 PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span>{{ Auth::user()->roi_wallet_balance }} PV</span>
                           </div>
                       </div> 
                   </div>
@@ -467,8 +464,8 @@
                             <div id="kt_mixed_widget_18_chart" style="height: 300px"></div>
                         </div>
                         <div class="pt-5">
-                            <p class="text-center font-weight-normal font-size-lg pb-7">Notes: Current sprint requires stakeholders
-                            <br />to approve newly amended policies</p>
+                            <p class="text-center font-weight-normal font-size-lg pb-7">Notes: Click to get more details for your upcoming rewards
+                         </p>
                             <button type="" id="generateRewardTargetReport" class="btn btn-success btn-shadow-hover font-weight-bolder w-100 py-3">View Reward Target</button>
                         </div>
                     </div>  
@@ -487,8 +484,8 @@
                             <div id="kt_mixed_widget_14_chart" style="height: 300px"></div>
                         </div>
                         <div class="pt-5">
-                            <p class="text-center font-weight-normal font-size-lg pb-7">Notes: Current sprint requires stakeholders
-                            <br />to approve newly amended policies</p>
+                            <p class="text-center font-weight-normal font-size-lg pb-7">Notes: Click to get more details for your upcoming Targets
+                         </p>
                             <button type="" id="generateRankTargetReport" class="btn btn-success btn-shadow-hover font-weight-bolder w-100 py-3">View Rank Target</button>
                         </div>
                     </div>  

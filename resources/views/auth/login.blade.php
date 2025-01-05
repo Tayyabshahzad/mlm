@@ -3,6 +3,13 @@
 @section('content')
 <div class="login-form login-signin">
 	<!--begin::Form-->
+
+	<div class="pb-13 pt-lg-0 pt-5 text-center">
+		<img src="{{ asset('assets/custom-images/gvi-text.png') }}" class="max-h-70px" alt="" />
+	</div>
+
+
+	
 	<form class="form"  method="post" action="{{ route('login') }}" id=" "> 
 		@csrf
 		<div class="pb-13 pt-lg-0 pt-5">

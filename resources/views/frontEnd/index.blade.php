@@ -40,8 +40,7 @@
       <nav id="navmenu" class="navmenu">
         <ul>
           <li><a href="#hero" class="active">Home</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#services">Projects</a></li> 
+          <li><a href="#about">About</a></li> 
           <li><a href="#certification">Certifications</a></li> 
           <li><a href="#contact">Contact</a></li>
         </ul>
@@ -150,119 +149,7 @@
     </section><!-- /Stats Section -->
 
     <!-- Services Section -->
-    <section id="services" class="services section">
-
-      <!-- Section Title -->
-        <div class="container section-title" data-aos="fade-up">
-          <h2>Our Projects</h2>
-          <p>Explore Our Projects and See How We Drive Success!</p>
-        </div>
-      <!-- End Section Title -->
-
-      <div class="container">
-
-        <div class="row gy-4">
-
-          <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="100">
-            <div class="service-item d-flex">
-              <div class="icon flex-shrink-0"><i class="bi bi-briefcase"></i></div>
-              <div>
-                <h4 class="title"><a href="" class="stretched-link">Al Awan Group of Companies</a></h4>
-                <p class="description">Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident</p>
-              </div>
-            </div>
-          </div>
-          <!-- End Service Item -->
-
-          <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="200">
-            <div class="service-item d-flex">
-              <div class="icon flex-shrink-0"><i class="bi bi-card-checklist"></i></div>
-              <div>
-                <h4 class="title"><a href="services-details.html" class="stretched-link">Al Awan General Order Suppliers</a></h4>
-                <p class="description">Minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat tarad limino ata</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="300">
-            <div class="service-item d-flex">
-              <div class="icon flex-shrink-0"><i class="bi bi-bar-chart"></i></div>
-              <div>
-                <h4 class="title"><a href="#l" class="stretched-link">Al Awan Marketing and Advertising</a></h4>
-                <p class="description">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="400">
-            <div class="service-item d-flex">
-              <div class="icon flex-shrink-0"><i class="bi bi-cup-straw"></i></div>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">
-                  Al Awan Dairy and Farming</a></h4>
-                <p class="description">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="500">
-            <div class="service-item d-flex">
-              <div class="icon flex-shrink-0"><i class="bi bi-buildings"></i></div>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Al Awan  Builders</a></h4>
-                <p class="description">At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="600">
-            <div class="service-item d-flex">
-              <div class="icon flex-shrink-0"> <i class="bi bi-prescription2"></i></div>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Al Awan Pharmacies</a></h4>
-                <p class="description">Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-
-          <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="600">
-            <div class="service-item d-flex">
-              <div class="icon flex-shrink-0">  <i class="bi bi-cart-dash"></i> </div>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Al Awan Cash &Carries</a></h4>
-                <p class="description">Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-
-          <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="600">
-            <div class="service-item d-flex">
-              <div class="icon flex-shrink-0">  <i class="bi bi-shop-window"></i> </div>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Al Awan  Traders</a></h4>
-                <p class="description">Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-
-          <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="600">
-            <div class="service-item d-flex">
-              <div class="icon flex-shrink-0">  <i class="bi bi-building"></i> </div>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Al Awan Properties</a></h4>
-                <p class="description">Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-        </div>
-
-      </div>
-
-    </section><!-- /Services Section -->
+    
 
     <!-- Features Section -->
     <section id="features" class="features section">
@@ -276,23 +163,23 @@
       <div class="container">
 
         <div class="row gy-4 align-items-center features-item">
-          <div class="col-lg-5 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
+          <div class="col-lg-12 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
             
             <p>
-              At Global Visioners International, we are committed to driving innovation and success in e-commerce, affiliate marketing, and the real estate industry. Our platform empowers businesses and entrepreneurs worldwide by connecting them to new opportunities and markets. In the dynamic real estate sector, we are focused on helping businesses leverage digital solutions for growth and success. Thank you for trusting us as your partner in growth. Together, we’ll continue to create new opportunities and shape the future.
+              At Global Visioners International, we are committed to driving innovation and success in e-commerce, affiliate marketing, and the real estate industry. Our platform empowers businesses and entrepreneurs worldwide by connecting them to new opportunities and markets. <br/><br/>
+
+              In the dynamic real estate sector, we are focused on helping businesses leverage digital solutions for growth and success. We believe in harnessing the power of technology to simplify processes, enhance decision-making, and unlock new potential for our clients.<br/><br/>
+              
+              Our vision is to create a global network where businesses and individuals can collaborate, grow, and achieve their aspirations. By fostering innovation and embracing emerging trends, we ensure that our partners stay ahead in a rapidly evolving market landscape.<br/><br/>
+              
+              Thank you for trusting us as your partner in growth. Together, we’ll continue to create new opportunities, drive impactful change, and shape the future of industries across the globe
             </p> 
-          </div>
-          <div class="col-lg-7 order-1 order-lg-2 d-flex align-items-center" data-aos="zoom-out" data-aos-delay="100">
-            <div class="image-stack">
-               
-              <img src="{{ asset('append-template/images/ceo-2.png')}}" alt="" class="stack-back" style="width: 50%;" >
-            </div>
-          </div>
+          </div> 
         </div><!-- Features Item -->
 
         <div class="row gy-4 align-items-stretch justify-content-between features-item ">
           <div class="col-lg-6 d-flex align-items-center features-img-bg" data-aos="zoom-out">
-            <img src="assets/img/features-light-3.jpg')}}" class="img-fluid" alt="">
+            <img src="{{ asset('append-template/assets/img/features-light-3.jpg') }}" class="img-fluid" alt="">
           </div>
           <div class="col-lg-5 d-flex justify-content-center flex-column" data-aos="fade-up">
             <h3>Join The GVI Family</h3>
@@ -561,24 +448,15 @@
           <ul>
             <li><a href="#hero">Home</a></li>
             <li><a href="#about">About us</a></li>
-            <li><a href="#services">Projects</a></li>
+            
             <li><a href="#">Terms of service</a></li>
             <li><a href="#">Privacy policy</a></li>
           </ul>
         </div>
 
-        <div class="col-lg-2 col-6 footer-links">
-          <h4>Al Awan Projects</h4>
-          <ul>
-            <li><a href="#">Group of Companies</a></li>
-            <li><a href="#">General Order Suppliers</a></li>
-            <li><a href="#">Marketing and Advertising</a></li>
-            <li><a href="#">Dairy and Farming</a></li>
-            <li><a href="#">Builders</a></li>
-          </ul>
-        </div>
+        
 
-        <div class="col-lg-3 col-md-12 footer-contact text-center text-md-start">
+        <div class="col-lg-5 col-md-12 footer-contact text-center text-md-start">
           <h4>Contact Us</h4> 
           <p>New York, NY 535022</p>
           <p>United States</p>
