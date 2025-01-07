@@ -46,6 +46,7 @@ class RegisteredUserController extends Controller
             'username' => 'required|string|max:255|unique:' . User::class,
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'transaction_id' => 'required|string|lowercase|unique:' . User::class,
             'referral_link' => [
                 'required',
                 'string',
@@ -70,6 +71,7 @@ class RegisteredUserController extends Controller
             'is_active' => true,
             'phone_verified' => true,
             'sponsor_id' => $referralLink->user->id,
+            'transaction_id' =>  $request->transaction_id,
         ]); 
         $user->assignRole('member'); 
         ReferralLink::create([

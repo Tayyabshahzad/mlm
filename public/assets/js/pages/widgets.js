@@ -3004,7 +3004,7 @@ var KTWidgets = function () {
         }
 
         var options = {
-            series: [74],
+            series: [0],
             chart: {
                 height: height,
                 type: 'radialBar',
@@ -3403,7 +3403,7 @@ var KTWidgets = function () {
         }
 
         var options = {
-            series: [74],
+            series: [0],
             chart: {
                 height: height,
                 type: 'radialBar',

@@ -242,6 +242,7 @@ $('.user-details-btn').on('click', function () {
                         <tr> <th> Email </th> <td> ${response.data.email}</td> </tr>
                         <tr> <th> Joined </th> <td> ${response.data.created_at}</td> </tr>
                         <tr> <th> Status </th> <td> ${response.data.status}</td> </tr> 
+                         <tr> <th> Transaction Id </th> <td> ${response.data.transaction_id}</td> </tr> 
                     </table>
                 `;
                 if (response.data.amount_proof) {

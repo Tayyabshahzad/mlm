@@ -18,7 +18,7 @@
 
         <!-- Name Field -->
         <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Name</label>
+            <label class="font-size-h6 font-weight-bolder text-dark">Name <span class="text-danger">*</span> </label>
             <input class="form-control form-control-solid h-auto rounded-md" type="text" name="name" autocomplete="off" required value="{{ old('name') }}" />
             @error('name')
             <div class="text-danger">{{ $message }}</div>
@@ -27,7 +27,7 @@
 
         <!-- Username Field -->
         <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Username</label>
+            <label class="font-size-h6 font-weight-bolder text-dark">Username <span class="text-danger">*</span> </label>
             <input class="form-control form-control-solid h-auto rounded-md" type="text" name="username" autocomplete="off" required value="{{ old('username') }}" />
             @error('username')
             <div class="text-danger">{{ $message }}</div>
@@ -36,7 +36,7 @@
 
         <!-- Email Field -->
         <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Email</label>
+            <label class="font-size-h6 font-weight-bolder text-dark">Email <span class="text-danger">*</span></label>
             <input class="form-control form-control-solid h-auto rounded-md" type="email" name="email" autocomplete="off" required value="{{ old('email') }}" />
             @error('email')
             <div class="text-danger">{{ $message }}</div>
@@ -45,7 +45,7 @@
 
         <!-- Password Field -->
         <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Password</label>
+            <label class="font-size-h6 font-weight-bolder text-dark">Password <span class="text-danger">*</span></label>
             <input class="form-control form-control-solid h-auto rounded-md" type="password" name="password" autocomplete="off" required />
             @error('password')
             <div class="text-danger">{{ $message }}</div>
@@ -54,22 +54,32 @@
 
         <!-- Confirm Password Field -->
         <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Confirm Password</label>
+            <label class="font-size-h6 font-weight-bolder text-dark">Confirm Password <span class="text-danger">*</span></label>
             <input class="form-control form-control-solid h-auto rounded-md" type="password" name="password_confirmation" autocomplete="off" required />
         </div>
 
         <!-- Referral Link Field -->
         <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Referral Link</label>
+            <label class="font-size-h6 font-weight-bolder text-dark">Referral Link <span class="text-danger">*</span></label>
             <input class="form-control form-control-solid h-auto rounded-md" type="text" name="referral_link" value="{{ $ref ?? old('referral_link') }}" autocomplete="off" required />
             @error('referral_link')
             <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
 
+        <div class="form-group">
+            <label class="font-size-h6 font-weight-bolder text-dark">Transaction ID <span class="text-danger">*</span></label>
+            <input class="form-control form-control-solid h-auto rounded-md" type="text" name="transaction_id" value="{{ old('transaction_id') }}"    autocomplete="off" required />
+            @error('transaction_id')
+            <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
+        
+
         <!-- Amount Proof Field -->
         <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Amount Proof</label>
+            <label class="font-size-h6 font-weight-bolder text-dark">Transaction  Proof <span class="text-danger">*</span> </label>
             <input class="form-control form-control-solid h-auto rounded-md" type="file" name="amount_src" autocomplete="off" required />
             @error('amount_src')
             <div class="text-danger">{{ $message }}</div>

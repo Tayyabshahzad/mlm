@@ -308,9 +308,9 @@
                                 <div class="d-flex align-items-center w-25 flex-fill float-right mt-lg-12 mt-8">
                                     <span class="font-weight-bold text-dark-75">Progress</span>
                                     <div class="progress progress-xs mx-3 w-100">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 63%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 1%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
-                                    <span class="font-weight-bolder text-dark">78%</span>
+                                    <span class="font-weight-bolder text-dark">0%</span>
                                 </div>
                             </div>
                             <!--end::Content-->
@@ -394,9 +394,9 @@
                               <div class="d-flex align-items-center w-25 flex-fill float-right mt-lg-12 mt-8">
                                   <span class="font-weight-bold text-dark-75">Progress</span>
                                   <div class="progress progress-xs mx-3 w-100">
-                                      <div class="progress-bar bg-info" role="progressbar" style="width: 87%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                      <div class="progress-bar bg-info" role="progressbar" style="width: 1%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                   </div>
-                                  <span class="font-weight-bolder text-dark">87%</span>
+                                  <span class="font-weight-bolder text-dark">0%</span>
                               </div>
                           </div>
                           <!--end::Content-->
@@ -498,7 +498,7 @@
                     <div class="card-header border-0 py-5">
                         <h3 class="card-title align-items-start flex-column">
                             <span class="card-label font-weight-bolder text-dark">Reward Target Details</span>
-                            <span class="text-muted mt-3 font-weight-bold font-size-sm">More than 400+ new members</span>
+        
                         </h3> 
                     </div>
                     <!--end::Header-->
@@ -508,37 +508,44 @@
                              <ol class="display-5">
                                 <li>
                                     <div class="progress mt-20 mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 65%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">65%</div>
+                                        <div class="progress-bar bg-info" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 55%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">55%</div>
+                                        <div class="progress-bar bg-danger" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 70%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">70%</div>
+                                        <div class="progress-bar bg-warning" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 80%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">80%</div>
+                                        <div class="progress-bar bg-info" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 55%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">55%</div>
+                                        <div class="progress-bar bg-warning" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 45%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">45%</div>
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                              </ol>
@@ -555,8 +562,7 @@
                 <div class="card card-custom card-stretch gutter-b"> 
                     <div class="card-header border-0 py-5">
                         <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label font-weight-bolder text-dark">Rank Target Details</span>
-                            <span class="text-muted mt-3 font-weight-bold font-size-sm">More than 400+ new members</span>
+                            <span class="card-label font-weight-bolder text-dark">Rank Target Details</span> 
                         </h3> 
                     </div>
                     <!--end::Header-->
@@ -566,37 +572,44 @@
                              <ol class="display-5">
                                 <li>
                                     <div class="progress mt-20 mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 65%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">65%</div>
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 55%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">55%</div>
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 70%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">70%</div>
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 80%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">80%</div>
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 55%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">55%</div>
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 45%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">45%</div>
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
                                     </div>
                                 </li>
                              </ol>

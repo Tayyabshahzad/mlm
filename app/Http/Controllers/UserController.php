@@ -70,10 +70,10 @@ class UserController extends Controller
             1 => 5,  // Level 1 gets 5%
             2 => 2,  // Level 2 gets 2%
             3 => 1.5, // Level 3 gets 1.5%
-            4 => 1,   // Level 4 gets 1%
-            5 => 0.8, // Level 5 gets 0.8%
-            6 => 0.5, // Level 6 gets 0.5%
-            7 => 0.1, // Level 7 gets 0.1%
+            4 => 1.25,   // Level 4 gets 1%
+            5 => 1, // Level 5 gets 0.8%
+            6 => 0.75, // Level 6 gets 0.5%
+            7 => 0.10, // Level 7 gets 0.1%
         ];
 
         // Return commission percentage for the given level, or default to 0 if the level is not found
@@ -93,6 +93,7 @@ class UserController extends Controller
                     'created_at' => $user->created_at->format('Y-m-d H:i:s'),
                     'status' => $user->can_login ? 'Active' : 'Inactive',
                     'amount_proof' => $user->getFirstMediaUrl('user_amount_source'),
+                    'transaction_id' => $user->transaction_id,
                 ],
             ]);
         }

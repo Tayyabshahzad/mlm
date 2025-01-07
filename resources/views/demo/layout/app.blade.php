@@ -45,7 +45,9 @@
 			}
 
 		</style>
-
+		@php
+			$inactiveUsersAre = \DB::table('users')->where('can_login',0)->count();
+		@endphp
 
 		@section('custom_css')
 		@show
@@ -502,6 +504,9 @@
 														<span></span>
 													</i>
 													<span class="menu-text">Members</span> 
+													<span class="menu-label">
+														<span class="label label-rounded label-primary"> {{ $inactiveUsersAre }} </span>
+													</span>
 												</a> 
 											</li> 
 										</ul>
@@ -515,6 +520,20 @@
 														<span></span>
 													</i>
 													<span class="menu-text">Roi Payments</span> 
+												</a> 
+											</li> 
+										</ul>
+									</div>
+
+									<div class="menu-submenu">
+										<i class="menu-arrow"></i>
+										<ul class="menu-subnav"> 
+											<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
+												<a href="{{ route('withdrawals.requests') }}" class="menu-link menu-toggle">
+													<i class="menu-bullet menu-bullet-dot">
+														<span></span>
+													</i>
+													<span class="menu-text">Withdrawal Requests</span> 
 												</a> 
 											</li> 
 										</ul>
@@ -1262,28 +1281,7 @@
                     @section('content')
                     @show
 					
-					<!--end::Content-->
-					<!--begin::Footer-->
-					<div class="footer bg-white py-4 d-flex flex-lg-column" id="kt_footer">
-						<!--begin::Container-->
-						<div class="container-fluid d-flex flex-column flex-md-row align-items-center justify-content-between">
-							<!--begin::Copyright-->
-							<div class="text-dark order-2 order-md-1">
-								<span class="text-muted font-weight-bold mr-2">2020©</span>
-								<a href="http://keenthemes.com/metronic" target="_blank" class="text-dark-75 text-hover-primary">Keenthemes</a>
-							</div>
-							<!--end::Copyright-->
-							<!--begin::Nav-->
-							<div class="nav nav-dark">
-								<a href="http://keenthemes.com/metronic" target="_blank" class="nav-link pl-0 pr-5">About</a>
-								<a href="http://keenthemes.com/metronic" target="_blank" class="nav-link pl-0 pr-5">Team</a>
-								<a href="http://keenthemes.com/metronic" target="_blank" class="nav-link pl-0 pr-0">Contact</a>
-							</div>
-							<!--end::Nav-->
-						</div>
-						<!--end::Container-->
-					</div>
-					<!--end::Footer-->
+					 
 				</div>
 				<!--end::Wrapper-->
 			</div>

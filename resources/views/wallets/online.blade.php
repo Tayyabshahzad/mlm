@@ -71,7 +71,13 @@
                                     <span class="font-weight-bold">
                                         {{ $onlineWallets->sortByDesc('created_at')->first()->created_at ?? 'No records found' }}  
                                     </span>
+                                </div>  
+                                <div class="d-flex align-items-center">
+                                    <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
+                                    <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
                                 </div> 
+
+
                             </div> 
                         </div>  
                     </div> 
@@ -79,16 +85,64 @@
 
                 <div class="card card-custom card-stretch gutter-b"> 
                     <div class="card-header border-0">
-                        <h3 class="card-title font-weight-bolder text-dark">Funds Transfer</h3> 
+                        <h3 class="card-title font-weight-bolder text-dark">Withdrawal Requests</h3> 
                     </div>
                     <div class="card-body pt-0"> 
                         <div class="mb-10">
-                            <!--begin::Section-->
-                            <div class="d-flex align-items-center">
-                                <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Bank Transfer</a>
-
-                                <a href="{{ route('show.transaction.history') }}"   class="rounded-0 btn btn-primary font-weight-bolder font-size-sm">Show Transaction History</a> 
-                            </div> 
+                            <div class="table-responsive">
+                                <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_4">
+                                    <thead>
+                                        <tr class="text-left"> 
+                                            <th class="pl-0" style="">S#</th>  
+                                            <th style="min-width: 110px">Amount</th>
+                                            <th style="min-width: 110px">Status</th> 
+                                            <th style="min-width: 120px">Date</th> 
+                                            <th style="min-width: 120px">Action</th> 
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+        
+        
+                                        
+        
+                                        @foreach($withDrawsRequests as $withDrawsRequest)
+                                            <tr class="pl-0">
+                                                <td>
+                                                    <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $loop->iteration }}</span>
+                                                </td>  
+                                                <td>
+                                                    <a class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $withDrawsRequest->amount    }}</a> 
+                                                </td>   
+                                                <td>
+                                                    <span class="text-dark-75 font-weight-bolder d-block font-size-sm text-warning ">{{ ucfirst($withDrawsRequest->status) }} </span>  
+                                                </td> 
+                                                <td>
+                                                    <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $withDrawsRequest->created_at->format('d-m-Y') }}</span> 
+                                                </td> 
+                                                <td>
+                                                @if($withDrawsRequest->status == 'pending' )
+                                                    <button 
+                                                        type="button"
+                                                        class="rounded-0 btn btn-sm btn-light-danger WithdrawDelete"
+                                                        data-toggle="modal" 
+                                                        data-target="#WithdrawDelete"
+                                                        data-id="{{ $withDrawsRequest->id }}">
+                                                    Delete Request
+                                                    </button>  
+                                                    @else
+                                                        ----------
+                                                    @endif
+                                                </td> 
+                                            </tr>  
+                                        @endforeach
+        
+        
+        
+                                       
+                                    </tbody>
+                                </table>
+                            </div>
+                           
                         </div>  
                     </div> 
                 </div> 
@@ -98,12 +152,90 @@
     </div>
     <!--end::Entry-->
 </div>
+
+<div class="modal fade" id="WithdrawModel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="{{ route('withdrawals.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="wallet_type" value="online" required>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Withdrawal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body"> 
+                    <div class="form-group row"> 
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Amount <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
+                             name="amount" min="0.01" step="0.01"
+                             required 
+                             max="{{ $onlineWallets->sum('balance') }}"
+                             placeholder="Enter Amount"
+                             >  
+                        </div>  
+
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Description 
+                            </label>
+                            <textarea name="target_account_details" id="target_account_details" class="form-control form-control-sm form-control-solid mb-2" required></textarea>
+                            
+                        </div>  
+                    </div>  
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="rounded-0 btn btn-primary btn-sm">Withdrawal </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="WithdrawDelete" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="{{ route('withdrawals.delete') }}" method="POST">
+                @csrf
+                <input type=" " name="request_id" id="request-id" required>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete Withdrawal Request</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class=" "> 
+                    <div class="form-group row">  
+                        <p class="text-danger-75 font-weight-bolder  p-12  pb-1 text-danger">
+                           Are You Sure to Delete Withdrawal Request ? 
+                        </p> 
+                    </div>  
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="rounded-0 btn btn-danger btn-sm">Delete Request </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
   
 <!--end::Content-->
 @endsection
 @section('page_js')
     <script>
          var avatar = new KTImageInput('kt_profile_avatar');  
+         $(document).ready(function() {
+            $('.WithdrawDelete').on('click', function() {
+                var requestId = $(this).data('id');
+                $('#request-id').val(requestId);
+            });
+        });
 
     </script>
     

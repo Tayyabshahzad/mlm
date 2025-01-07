@@ -6,6 +6,7 @@ use App\Http\Controllers\GenealogyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\WithdrawalRequestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -54,6 +55,23 @@ Route::controller(WalletController::class)->middleware(['auth','verified'])->pre
     Route::post('transfer-to-online', [WalletController::class, 'transferToOnline'])->name('wallet.transfer.to.online');
     Route::get('show-transaction-history', [WalletController::class, 'showTransactionHistory'])->name('show.transaction.history');
 }); 
+
+
+Route::controller(WithdrawalRequestController::class)->middleware(['auth','verified'])->group(function () {
+    Route::get('/withdrawals','index')->name('withdrawals.index');
+    Route::get('/withdrawals/create','create')->name('withdrawals.create');
+    Route::post('/withdrawals','store')->name('withdrawals.store'); 
+    Route::post('/withdrawals/delete','delete')->name('withdrawals.delete'); 
+}); 
+
+Route::controller(WithdrawalRequestController::class)->middleware(['auth','verified','role:admin'])->group(function () {
+    Route::get('/withdrawals/requests/','requests')->name('withdrawals.requests'); 
+    Route::get('/withdraw-request/{id}','getWithdrawalRequest')->name('withdraw.request.details');
+    Route::post('/withdraw-request/update','updateWithdrawalRequest')->name('withdraw.request.update');
+
+}); 
+
+
 Auth::routes(['verify' => true]);
 
 require __DIR__.'/auth.php';

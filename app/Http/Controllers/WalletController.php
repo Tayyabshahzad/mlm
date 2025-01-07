@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\TransactionLog;
 use App\Models\Wallet;
+use App\Models\WithDrawalequest;
 use Illuminate\Http\Request;
 
 class WalletController extends Controller
 {
     public function online(){ 
         $onlineWallets = Wallet::where('wallet_type','online')->where('user_id',auth()->user()->id)->get();
-        return view('wallets.online',compact('onlineWallets')); 
+        $withDrawsRequests = WithDrawalequest::where('user_id',auth()->user()->id)->orderby('id','desc')->get();
+        return view('wallets.online',compact('onlineWallets','withDrawsRequests')); 
     }
 
     public function directIndirect(){ 

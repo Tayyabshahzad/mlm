@@ -33,15 +33,15 @@
 
       <a href="{{ route('index') }}" class="logo d-flex align-items-center me-auto me-xl-0">
         <!-- Uncomment the line below if you also wish to use an image logo -->
-        <img src="{{ asset('append-template/images/gvi-final.png')}}" alt="">
-        <!-- <h1 class="sitename">Append</h1><span>.</span> -->
+        {{-- <img src="{{ asset('append-template/images/gvi-final.png')}}" alt=""> --}}
+         {{-- <h1 class="sitename">Global Visioners International</h1><span>.</span>  --}}
       </a>
 
       <nav id="navmenu" class="navmenu">
         <ul>
           <li><a href="#hero" class="active">Home</a></li>
           <li><a href="#about">About</a></li> 
-          <li><a href="#certification">Certifications</a></li> 
+          {{-- <li><a href="#certification">Certifications</a></li>  --}}
           <li><a href="#contact">Contact</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -58,7 +58,12 @@
       <img src="{{ asset('append-template/images/building.jpg')}}" alt="" data-aos="fade-in"> 
       <div class="container">
         <div class="row">
+         
           <div class="col-lg-12 text-center">
+            <div class="col-lg-12 text-center">
+              <img src="{{ asset('append-template/images/gvi-final.png')}}" alt="" style="width:20%;position:inherit;display:inline"/>
+            </div>
+            <br>
             <h2 data-aos="fade-up" data-aos-delay="100">Welcome to Global Visioners International</h2>
             <p data-aos="fade-up" data-aos-delay="200">E-Commerce and Affiliate Marketing</p>
           </div> 
@@ -224,7 +229,7 @@
     </section><!-- /Call To Action Section -->
 
     <!-- Testimonials Section -->
-    <section id="certification" class="testimonials section light-background">
+    {{-- <section id="certification" class="testimonials section light-background">
 
       <div class="container">
 
@@ -327,7 +332,8 @@
 
       </div>
 
-    </section><!-- /Testimonials Section -->
+    </section> --}}
+    <!-- /Testimonials Section -->
 
      
     <!-- Contact Section -->
@@ -359,8 +365,8 @@
                 <div class="info-item" data-aos="fade" data-aos-delay="300">
                   <i class="bi bi-telephone"></i>
                   <h3>Call Us</h3>
-                  <p>+92 514 490 417</p>
-                  <p>+92 333 53338785</p>
+                  <p>-----------</p>
+                  <p>-----------</p>
                 </div>
               </div><!-- End Info Item -->
 
@@ -377,8 +383,8 @@
                 <div class="info-item" data-aos="fade" data-aos-delay="500">
                   <i class="bi bi-clock"></i>
                   <h3>Open Hours</h3>
-                  <p>Monday - Saturday</p>
-                  <p>9:00AM - 05:00PM</p>
+                  <p>Mon - Tue - Wed - Thu - Fri - Sat - Sun</p>
+                  <p>24/7</p>
                 </div>
               </div><!-- End Info Item -->
 
@@ -460,8 +466,8 @@
           <h4>Contact Us</h4> 
           <p>New York, NY 535022</p>
           <p>United States</p>
-          <p class="mt-4"><strong>Mobile:</strong> <span>+92 333 53338785</span></p>
-          <p class=""><strong>Phone:</strong> <span>+92 514 490 417</span></p>
+          <p class="mt-4"><strong>Mobile:</strong> <span>-------</span></p>
+          <p class=""><strong>Phone:</strong> <span>-------</span></p>
           <p><strong>Email:</strong> <span>info@globalvisioners.com</span></p>
         </div>
 

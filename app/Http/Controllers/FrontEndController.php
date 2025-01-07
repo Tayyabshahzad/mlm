@@ -6,6 +6,7 @@ use App\Mail\CompanyAgreement;
 use App\Models\Otp;
 use App\Models\Profile;
 use App\Models\Subscription;
+use App\Models\TransactionLog;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -39,7 +40,20 @@ class FrontEndController extends Controller
     public function dashboard(){ 
 
         $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
-        $teamSize = User::where('sponsor_id',Auth::user()->id)->limit(10)->get(); 
+        $authUsers =  User::where('sponsor_id',Auth::user()->id); 
+        $inactiveUsers = $authUsers->where('can_login',false)->count();
+        $teamSize = $authUsers->limit(10)->get(); 
+        $reward = $authUsers->with('descendants'); 
+        $totalEarning = TransactionLog::where('user_id', Auth::user()->id)->get()->sum('amount');
+        $reward = [
+            'level_1' => $reward->limit(10)->count(),
+            'level_2' => $reward->limit(10)->count(),
+            'level_3' =>0,
+            'level_4' =>0,
+            'level_5' =>0,
+            'level_6' =>0,
+            'level_7' =>0,
+        ];
         $data = [
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
@@ -47,14 +61,14 @@ class FrontEndController extends Controller
             'roi' => $wallets->where('wallet_type', 'roi')->sum('balance'),
             'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
             'rank' => 0,
-            'total_earning'=>$wallets->sum('balance'),
+            'total_earning'=>$totalEarning,
             'team_size' => $teamSize, // Customize based on your business logic
             'total_roi_earned_pv' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
             'total_roi_earned_this_month' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
             'total_roi_remaining' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
             'roi_status' => true, // Customize based on your business logic
         ];
-        return view('demo.dashboard',compact('data'));
+        return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
     }
 
