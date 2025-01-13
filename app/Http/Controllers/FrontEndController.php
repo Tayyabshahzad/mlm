@@ -55,12 +55,13 @@ class FrontEndController extends Controller
         $totalCount = $levelCounts->sum(); 
         $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
         $authUsers =  User::where('sponsor_id',Auth::user()->id); 
+        $teamSize = $authUsers->limit(10)->get();  
         $inactiveUsers = $authUsers->where('can_login',false)->count();
-        $teamSize = $authUsers->limit(10)->get(); 
+      
         $reward = $authUsers->with('descendants'); 
-        $totalEarning = TransactionLog::where('user_id', Auth::user()->id)->get()->sum('amount');
+        $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('balance');
 
-
+       
         
         
         $data = [

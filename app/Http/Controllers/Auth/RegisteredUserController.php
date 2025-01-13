@@ -46,7 +46,7 @@ class RegisteredUserController extends Controller
             'username' => 'required|string|max:255|unique:' . User::class,
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'transaction_id' => 'required|string|unique:' . User::class,
+            'transaction_id' => 'required|max:50|string|unique:' . User::class,
             'referral_link' => [
                 'required',
                 'string',
