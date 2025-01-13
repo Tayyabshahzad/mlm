@@ -41,7 +41,7 @@
                             <div class="card-title">
                                 <div class="card-label">
                                     <div class="font-weight-bolder">Weekly Sales Stats</div>
-                                    <div class="font-size-sm text-muted mt-2">344 PV</div>
+                                    <div class="font-size-sm text-muted mt-2">0 PV</div>
                                 </div>
                             </div> 
                         </div>
