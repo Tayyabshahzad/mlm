@@ -38,6 +38,108 @@ class FrontEndController extends Controller
         ]);
         return redirect()->back()->with('success', 'Thank you for subscribing!');
     }
+    public function dashboard11(){ 
+
+        // $referralCounts = DB::table('referral_trees')
+        // ->select('level', DB::raw('COUNT(descendant_id) as count'))
+        // ->where('ancestor_id', Auth::user()->id)
+        // ->where('level', '<=', 7) // Limit to 7 levels
+        // ->groupBy('level')
+        // ->orderBy('level')
+        // ->get();
+        // $levels = range(1, 7);
+        // $levelCounts = collect($levels)->mapWithKeys(function ($level) use ($referralCounts) {
+        //     $count = $referralCounts->firstWhere('level', $level)->count ?? 0;
+        //     return [$level => $count];
+        // }); 
+        // $totalCount = $levelCounts->sum(); 
+        // $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
+        // $authUsers =  User::where('sponsor_id',Auth::user()->id);  
+        // $inactiveUsers = $authUsers->where('can_login',false)->count(); 
+        // $reward = $authUsers->with('descendants'); 
+        // $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('balance');
+
+        // $teamSizing = User::where('sponsor_id', Auth::user()->id)
+        // ->withCount([
+        //     'children as team_count' => function ($query) {
+        //         $query->select(DB::raw('COUNT(*)')); // Count direct descendants
+        //     },
+        // ])
+        // ->orderBy('team_count', 'desc') // Order by team count
+        // ->limit(10)
+        // ->get();
+        
+         
+        // $data = [
+        //     'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
+        //     'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
+        //     'reward' => $wallets->where('wallet_type', 'reward')->sum('balance'),
+        //     'roi' => $wallets->where('wallet_type', 'roi')->sum('balance'),
+        //     'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
+        //     'rank' => 0,
+        //     'total_earning'=>$totalEarning,
+        //     'team_size' => $teamSizing, // Customize based on your business logic
+        //     'total_roi_earned_pv' => $totalEarning, // Assuming this is a user field
+        //     'initial_investment' => Auth::user()->current_pv_balance, // Assuming this is a user field
+        //     'total_roi_earned_this_month' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
+        //     'total_roi_remaining' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
+        //     'roi_status' => true, // Customize based on your business logic
+        //     'levelCount' => $levelCounts,
+        //     'totalTeam' => $levelCounts->sum(),
+        // ];
+
+        $referralCounts = DB::table('referral_trees')
+        ->select('level', DB::raw('COUNT(descendant_id) as count'))
+        ->where('ancestor_id', Auth::user()->id)
+        ->where('level', '<=', 7) // Limit to 7 levels
+        ->groupBy('level')
+        ->orderBy('level')
+        ->get();
+        $levels = range(1, 7);
+        $levelCounts = collect($levels)->mapWithKeys(function ($level) use ($referralCounts) {
+            $count = $referralCounts->firstWhere('level', $level)->count ?? 0;
+            return [$level => $count];
+        }); 
+        $totalCount = $levelCounts->sum(); 
+        $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
+        $authUsers =  User::where('sponsor_id',Auth::user()->id);  
+        $inactiveUsers = $authUsers->where('can_login',false)->count(); 
+        $reward = $authUsers->with('descendants'); 
+        $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('balance');
+
+        $teamSizing = User::where('sponsor_id', Auth::user()->id)
+        ->withCount([
+            'children as team_count' => function ($query) {
+                $query->select(DB::raw('COUNT(*)')); // Count direct descendants
+            },
+        ])
+        ->orderBy('team_count', 'desc') // Order by team count
+        ->limit(10)
+        ->get();
+        
+         
+        $data = [
+            'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
+            'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
+            'reward' => $wallets->where('wallet_type', 'reward')->sum('balance'),
+            'roi' => $wallets->where('wallet_type', 'roi')->sum('balance'),
+            'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
+            'rank' => 0,
+            'total_earning'=>$totalEarning,
+            'team_size' => $teamSizing, // Customize based on your business logic
+            'total_roi_earned_pv' => $totalEarning, // Assuming this is a user field
+            'initial_investment' => Auth::user()->current_pv_balance, // Assuming this is a user field
+            'total_roi_earned_this_month' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
+            'total_roi_remaining' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
+            'roi_status' => true, // Customize based on your business logic
+            'levelCount' => $levelCounts,
+            'totalTeam' => $levelCounts->sum(),
+        ];
+
+        
+        return view('demo.dashboard',compact('data','reward'));
+        //return Inertia::render('Dashboard');
+    }
     public function dashboard(){ 
 
         $referralCounts = DB::table('referral_trees')
@@ -59,32 +161,6 @@ class FrontEndController extends Controller
         $reward = $authUsers->with('descendants'); 
         $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('balance');
 
-        $targetAmount = 200;
-        
-        $totalEarnedPV = min($totalEarning, $targetAmount); // Capped at the target
-        $remainingPV = max($targetAmount - $totalEarning, 0); // Prevent negative remaining
-        $earnedThisMonthPV = $totalEarning > $targetAmount ? $targetAmount : $totalEarning;
-        $roiData = [
-            'totalEarnedPV' => $totalEarnedPV,
-            'earnedThisMonthPV' => $earnedThisMonthPV,
-            'remainingPV' => $remainingPV,
-            'progressPercentage' => ($totalEarning / $targetAmount) * 100 > 100 ? 100 : ($totalEarning / $targetAmount) * 100,
-        ];
-
-        $earningCap = 700; 
-       // Normalize values based on the cap
-        $totalEarnedPVCap = min($totalEarning, $earningCap); // Capped total earned PV
-        $remainingPVCap = max($earningCap - $totalEarning, 0); // Remaining PV, capped at zero
-        $earnedThisMonthPVCap = $totalEarning > $earningCap ? $earningCap : $totalEarning;
-        $progressPercentageCap = ($totalEarning / $earningCap) * 100 > 100 ? 100 : ($totalEarning / $earningCap) * 100;
-        $investmentCap = [
-            'totalEarnedPVCap' => $totalEarnedPVCap,
-            'earnedThisMonthPVCap' => $earnedThisMonthPVCap,
-            'remainingPVCap' => $remainingPVCap,
-            'progressPercentageCap' => $progressPercentageCap,
-            'capValue' => $earningCap, // Cap value explicitly included
-        ];
-
         $teamSizing = User::where('sponsor_id', Auth::user()->id)
         ->withCount([
             'children as team_count' => function ($query) {
@@ -100,7 +176,7 @@ class FrontEndController extends Controller
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
             'reward' => $wallets->where('wallet_type', 'reward')->sum('balance'),
-            'roiWallet' => $wallets->where('wallet_type', 'roi')->sum('balance'),
+            'roi' => $wallets->where('wallet_type', 'roi')->sum('balance'),
             'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
             'rank' => 0,
             'total_earning'=>$totalEarning,
@@ -112,10 +188,7 @@ class FrontEndController extends Controller
             'roi_status' => true, // Customize based on your business logic
             'levelCount' => $levelCounts,
             'totalTeam' => $levelCounts->sum(),
-            'roi' =>$roiData,
-            'investmentCap' =>$investmentCap
         ];
-        
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
     }
@@ -420,17 +493,17 @@ class FrontEndController extends Controller
 
     public function bulkRegisterUsers()
     {
-        $parentUsername = 'asim-4-sub-3nd-child-1-1'; 
+        $parentUsername = 'asim-4-sub-2nd-child-1-1'; 
         $parent = User::where('username', $parentUsername)->firstOrFail();
         $parentId = $parent->id;  
         DB::beginTransaction();
         try {
             // Loop to create 50 users
             for ($i = 1; $i <= 1; $i++) {
-                $name = "aqsa-00-$i";
-                $email = "aqsa-00-@example.com";
+                $name = "asim4-chaid-main-sub-sub-$i";
+                $email = "asim4-chaid-main-sub-sub-@example.com";
                 $password = Hash::make('password'); // Default password
-                $username = "aqsa-00-$i"; 
+                $username = "asim4-chaid-main-sub-sub-$i"; 
                 // Create user
                 $newUser = User::create([
                     'name' => $name,

@@ -134,7 +134,7 @@ class UserController extends Controller
             ['level' => 7, 'reward_amount' => 48000, 'users_required' => 8],
         ]);
         $specificRewardLevel = $rewardLevels->firstWhere('level', $level); 
-        for ($i = 1; $i <= $level; $i++) {
+        for ($i = 1; $i < $level; $i++) {
             $previousReward = Wallet::where([
                 ['user_id', '=', $parentID],
                 ['wallet_type', '=', 'reward'],

@@ -158,7 +158,7 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">ROI</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">  {{ $data['roiWallet'] }} </div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['roi'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -278,7 +278,7 @@
 
                 
             </div> 
-             
+
             <div class="card card-custom gutter-b wave  wave-animated-info wave-info" 
               style="background-position: right top; background-size: 30% auto; background-image: url(assets/media/svg/shapes/abstract-3.svg);background-size:cover">
                 <div class="card-body">
@@ -309,10 +309,10 @@
                                     <span class="font-weight-bold text-dark-75">Progress</span>
                                     <div class="progress progress-xs mx-3 w-100">
                                         <div class="progress-bar bg-danger" role="progressbar" 
-                                         style="width:{{ $data['roi']['progressPercentage'] }}%;" 
+                                         style="width:{{ $data['total_roi_earned_pv'] }}%;" 
                                          aria-valuenow="0" aria-valuemin="0" aria-valuemax="200"></div>
                                     </div>
-                                    <span class="font-weight-bolder text-dark">{{ $data['roi']['progressPercentage']  }}%</span>
+                                    <span class="font-weight-bolder text-dark">{{ $data['total_roi_earned_pv'] }}%</span>
                                 </div>
                             </div>
                             <!--end::Content-->
@@ -327,11 +327,11 @@
                         <div class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
                             <span class="mr-4">
                                 <i class="flaticon-piggy-bank display-4 text-muted font-weight-bold"></i>
-                            </span> 
+                            </span>
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Total Earned</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{ $data['roi']['totalEarnedPV'] }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
                             </div>
                         </div>
                         <!--end::Item-->
@@ -343,7 +343,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Earned This Month</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{ $data['roi']['earnedThisMonthPV'] }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
                             </div>
                         </div>
                         <!--end::Item-->
@@ -355,7 +355,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Remaining</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{    $data['roi']['remainingPV']      }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{  200 - $data['total_roi_earned_pv']      }} PV</span>
                             </div>
                         </div> 
                     </div>
@@ -389,19 +389,23 @@
                           <div class="d-flex flex-wrap justify-content-between mt-1">
                               <div class="d-flex flex-column flex-grow-1 pr-8">
                                   <div class="d-flex flex-wrap mb-4">
-                                    
-                                     
+                                       
                                   </div>
                                   
                               </div>
                               <div class="d-flex align-items-center w-25 flex-fill float-right mt-lg-12 mt-8">
                                 <span class="font-weight-bold text-dark-75">Progress</span>
                                 <div class="progress progress-xs mx-3 w-100">
-                                    <div class="progress-bar bg-danger" role="progressbar" 
-                                     style="width:{{ $data['investmentCap']['progressPercentageCap'] }}%;" 
-                                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="200"></div>
+                                    <div 
+                                        class="progress-bar bg-danger" 
+                                        role="progressbar" 
+                                        style="width: {{ ($data['total_roi_earned_pv'] / 700) * 100 }}%;" 
+                                        aria-valuenow="{{ $data['total_roi_earned_pv'] }}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="700">
+                                    </div>
                                 </div>
-                                <span class="font-weight-bolder text-dark">{{ $data['investmentCap']['progressPercentageCap']  }}%</span>
+                                <span class="font-weight-bolder text-dark">{{ round(($data['total_roi_earned_pv'] / 700) * 100, 2) }}%</span>
                             </div>
                           </div>
                           <!--end::Content-->
@@ -420,7 +424,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Total Earned</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>{{ $data['investmentCap']['totalEarnedPVCap']}} PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
                           </div>
                       </div>
                       <!--end::Item-->
@@ -432,7 +436,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Earned This Month</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>{{ $data['investmentCap']['totalEarnedPVCap'] }} PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
                           </div>
                       </div>
                       <!--end::Item-->
@@ -444,7 +448,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Remaining</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>{{ $data['investmentCap']['remainingPVCap'] }} PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
                           </div>
                       </div> 
                   </div>
