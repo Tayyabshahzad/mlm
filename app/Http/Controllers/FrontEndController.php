@@ -59,6 +59,32 @@ class FrontEndController extends Controller
         $reward = $authUsers->with('descendants'); 
         $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('balance');
 
+        $targetAmount = 200;
+        
+        $totalEarnedPV = min($totalEarning, $targetAmount); // Capped at the target
+        $remainingPV = max($targetAmount - $totalEarning, 0); // Prevent negative remaining
+        $earnedThisMonthPV = $totalEarning > $targetAmount ? $targetAmount : $totalEarning;
+        $roiData = [
+            'totalEarnedPV' => $totalEarnedPV,
+            'earnedThisMonthPV' => $earnedThisMonthPV,
+            'remainingPV' => $remainingPV,
+            'progressPercentage' => ($totalEarning / $targetAmount) * 100 > 100 ? 100 : ($totalEarning / $targetAmount) * 100,
+        ];
+
+        $earningCap = 700; 
+       // Normalize values based on the cap
+        $totalEarnedPVCap = min($totalEarning, $earningCap); // Capped total earned PV
+        $remainingPVCap = max($earningCap - $totalEarning, 0); // Remaining PV, capped at zero
+        $earnedThisMonthPVCap = $totalEarning > $earningCap ? $earningCap : $totalEarning;
+        $progressPercentageCap = ($totalEarning / $earningCap) * 100 > 100 ? 100 : ($totalEarning / $earningCap) * 100;
+        $investmentCap = [
+            'totalEarnedPVCap' => $totalEarnedPVCap,
+            'earnedThisMonthPVCap' => $earnedThisMonthPVCap,
+            'remainingPVCap' => $remainingPVCap,
+            'progressPercentageCap' => $progressPercentageCap,
+            'capValue' => $earningCap, // Cap value explicitly included
+        ];
+
         $teamSizing = User::where('sponsor_id', Auth::user()->id)
         ->withCount([
             'children as team_count' => function ($query) {
@@ -74,7 +100,7 @@ class FrontEndController extends Controller
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
             'reward' => $wallets->where('wallet_type', 'reward')->sum('balance'),
-            'roi' => $wallets->where('wallet_type', 'roi')->sum('balance'),
+            'roiWallet' => $wallets->where('wallet_type', 'roi')->sum('balance'),
             'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
             'rank' => 0,
             'total_earning'=>$totalEarning,
@@ -86,7 +112,10 @@ class FrontEndController extends Controller
             'roi_status' => true, // Customize based on your business logic
             'levelCount' => $levelCounts,
             'totalTeam' => $levelCounts->sum(),
+            'roi' =>$roiData,
+            'investmentCap' =>$investmentCap
         ];
+        
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
     }

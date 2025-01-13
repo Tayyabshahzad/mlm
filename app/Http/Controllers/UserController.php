@@ -125,16 +125,16 @@ class UserController extends Controller
         }
         $directChildCount = $this->getChildCountAtLevel($parentID, $level);
         $rewardLevels = collect([
-            ['level' => 1, 'reward_amount' => 150, 'users_required' => 3],
-            ['level' => 2, 'reward_amount' => 300, 'users_required' => 5],
-            ['level' => 3, 'reward_amount' => 1000, 'users_required' => 7],
-            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 9],
-            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 11],
-            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 13],
-            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 15],
+            ['level' => 1, 'reward_amount' => 150, 'users_required' => 2],
+            ['level' => 2, 'reward_amount' => 300, 'users_required' => 3],
+            ['level' => 3, 'reward_amount' => 1000, 'users_required' => 4],
+            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 5],
+            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 6],
+            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 7],
+            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 8],
         ]);
         $specificRewardLevel = $rewardLevels->firstWhere('level', $level); 
-        for ($i = 1; $i < $level; $i++) {
+        for ($i = 1; $i <= $level; $i++) {
             $previousReward = Wallet::where([
                 ['user_id', '=', $parentID],
                 ['wallet_type', '=', 'reward'],
