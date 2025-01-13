@@ -69,7 +69,7 @@
                                         <td style="min-width: 110px">{{ $payment->user->name }}</td>
                                         <td style="min-width: 110px">{{ $payment->amount }} </td>  
                                         <td style="min-width: 120px">{{ $payment->percentage }}</td>  
-                                        <td style="min-width: 120px">{{ $payment->user->current_pv_balance - $payment->user->roi_wallet_balance  }}</td>  
+                                        <td style="min-width: 120px">{{ 200 - $payment->user->roi_wallet_balance  }}</td>  
                                         <td style="min-width: 120px">{{ $payment->user->roi_start_date ? $payment->user->roi_start_date : '--' }}</td> 
                                         <td style="min-width: 120px">{{ $payment->user->roi_end_date ?  $payment->user->roi_end_date : '--' }}</td> 
                                     </tr>

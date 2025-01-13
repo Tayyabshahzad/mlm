@@ -55,7 +55,8 @@ class GenerateWeeklyROI extends Command
         }
 
         $monthsRemaining = Carbon::now()->diffInMonths($user->roi_end_date, false);
-        $remainingPV = 100 - $user->roi_wallet_balance;
+        $remainingPV = (200 - $user->roi_wallet_balance);
+       
         $dailyPercentage = Week::first();
         $paymentPercentage = $dailyPercentage->percentage; // Example: fixed percentage, adjust as needed
         $maxMonthlyPayment = $remainingPV / $monthsRemaining;

@@ -370,7 +370,7 @@ class UserController extends Controller
         if($walletTotal >= 200){
             return redirect()->back()->with('error', '2x is completed for this user'); 
         }
-        if ($user->roi_wallet_balance >= 100) {
+        if ($user->roi_wallet_balance >= 200) {
             return redirect()->back()->with('error', 'ROI already completed for this user'); 
         }
         if (!$user->roi_start_date) {
@@ -379,7 +379,7 @@ class UserController extends Controller
             $user->save();
         }
         $monthsRemaining = Carbon::now()->diffInMonths($user->roi_end_date, false);
-        $remainingPV = 100 - $user->roi_wallet_balance;
+        $remainingPV = 200 - $user->roi_wallet_balance;
         $paymentPercentage = $request->commission_percentage;
         $maxMonthlyPayment = $remainingPV / $monthsRemaining;
         $roiPayment = ($remainingPV * $paymentPercentage) / 100;
