@@ -54,16 +54,22 @@ class FrontEndController extends Controller
         }); 
         $totalCount = $levelCounts->sum(); 
         $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
-        $authUsers =  User::where('sponsor_id',Auth::user()->id); 
-        $teamSize = $authUsers->limit(10)->get();  
-        $inactiveUsers = $authUsers->where('can_login',false)->count();
-      
+        $authUsers =  User::where('sponsor_id',Auth::user()->id);  
+        $inactiveUsers = $authUsers->where('can_login',false)->count(); 
         $reward = $authUsers->with('descendants'); 
         $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('balance');
 
-       
+        $teamSizing = User::where('sponsor_id', Auth::user()->id)
+        ->withCount([
+            'children as team_count' => function ($query) {
+                $query->select(DB::raw('COUNT(*)')); // Count direct descendants
+            },
+        ])
+        ->orderBy('team_count', 'desc') // Order by team count
+        ->limit(10)
+        ->get();
         
-        
+         
         $data = [
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
@@ -72,7 +78,7 @@ class FrontEndController extends Controller
             'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
             'rank' => 0,
             'total_earning'=>$totalEarning,
-            'team_size' => $teamSize, // Customize based on your business logic
+            'team_size' => $teamSizing, // Customize based on your business logic
             'total_roi_earned_pv' => $totalEarning, // Assuming this is a user field
             'initial_investment' => Auth::user()->current_pv_balance, // Assuming this is a user field
             'total_roi_earned_this_month' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
