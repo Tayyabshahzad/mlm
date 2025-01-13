@@ -35,7 +35,6 @@ class GenerateWeeklyROI extends Command
     
     foreach ($users as $user) {
         $walletTotal = Wallet::where('user_id', $user->id)->sum('balance');
-        
         // Skip if the user has completed their 2x wallet or ROI
         if ($walletTotal >= 200 ) {
             continue;

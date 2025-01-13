@@ -5,7 +5,7 @@
     <!--begin::Form-->
 
     <div class="pb-13 pt-lg-0 pt-5 text-center">
-		<img src="{{ asset('assets/custom-images/gvi-text.png') }}" class="max-h-70px" alt="" />
+		<img src="{{ asset('assets/custom-images/gvi-text.png') }}" class="max-h-70px" style="width: 90%" alt="" />
 	</div>
 
     
