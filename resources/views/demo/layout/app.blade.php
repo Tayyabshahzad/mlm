@@ -611,9 +611,9 @@
 							<!--begin::Header Menu Wrapper-->
 							<div class="header-menu-wrapper header-menu-wrapper-left" id="kt_header_menu_wrapper">
 								<!--begin::Header Menu-->
-								<div id="kt_header_menu" class="header-menu header-menu-mobile header-menu-layout-default pt-10">
+								<div id="kt_header_menu" class="header-menu header-menu-mobile header-menu-layout-default pt-5">
 
-									<div class="d-flex flex-wrap mb-4 pa-4">
+									<div class="d-flex flex-wrap mb-4 ">
 										<!-- Hidden link for reference -->
 										<span id="refLink" style="display: none;">{{ env('APP_URL').'/register/ref/'. Auth::user()->reflink->link }}</span>
 									
