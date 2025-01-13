@@ -65,7 +65,10 @@
                     new go.Binding("source", "image") // Bind the source property to the "image" field
                 ),
                 $(go.TextBlock, { row: 1, margin: 4, font: "bold 12px sans-serif", stroke: "#333" },
-                    new go.Binding("text", "name"))
+                    new go.Binding("text", "name")),
+
+                $(go.TextBlock, { row: 2, margin: 5, font: "bold 10px sans-serif", stroke: "#333" },
+                    new go.Binding("text", "username"))
             )
         );
 

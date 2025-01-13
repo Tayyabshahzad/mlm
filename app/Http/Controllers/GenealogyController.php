@@ -38,6 +38,7 @@ class GenealogyController extends Controller
         $nodeDataArray[] = [
             'key' => $user->id,
             'name' => $user->name,
+            'username' => $user->username,
             'image' => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/logo-50x50.jpeg'),
         ];
     
