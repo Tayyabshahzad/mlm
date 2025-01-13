@@ -217,7 +217,7 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Total Team Size</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">0</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3"> {{ $data['totalTeam'] }} </div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->

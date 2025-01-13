@@ -52,13 +52,16 @@ class FrontEndController extends Controller
             $count = $referralCounts->firstWhere('level', $level)->count ?? 0;
             return [$level => $count];
         }); 
-
+        $totalCount = $levelCounts->sum(); 
         $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
         $authUsers =  User::where('sponsor_id',Auth::user()->id); 
         $inactiveUsers = $authUsers->where('can_login',false)->count();
         $teamSize = $authUsers->limit(10)->get(); 
         $reward = $authUsers->with('descendants'); 
         $totalEarning = TransactionLog::where('user_id', Auth::user()->id)->get()->sum('amount');
+
+
+        
         
         $data = [
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
@@ -74,7 +77,8 @@ class FrontEndController extends Controller
             'total_roi_earned_this_month' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
             'total_roi_remaining' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
             'roi_status' => true, // Customize based on your business logic
-            'levelCount' => $levelCounts
+            'levelCount' => $levelCounts,
+            'totalTeam' => $levelCounts->sum(),
         ];
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
