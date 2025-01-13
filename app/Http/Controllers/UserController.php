@@ -73,7 +73,7 @@ class UserController extends Controller
             4 => 1.25,   // Level 4 gets 1%
             5 => 1, // Level 5 gets 0.8%
             6 => 0.75, // Level 6 gets 0.5%
-            7 => 0.10, // Level 7 gets 0.1%
+            7 => 0.50, // Level 7 gets 0.1%
         ]; 
         return $commissionPercentages[$level] ?? 0;
     } 
