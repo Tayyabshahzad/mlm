@@ -73,7 +73,7 @@ class FrontEndController extends Controller
             'rank' => 0,
             'total_earning'=>$totalEarning,
             'team_size' => $teamSize, // Customize based on your business logic
-            'total_roi_earned_pv' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
+            'total_roi_earned_pv' => $totalEarning, // Assuming this is a user field
             'initial_investment' => Auth::user()->current_pv_balance, // Assuming this is a user field
             'total_roi_earned_this_month' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
             'total_roi_remaining' => Auth::user()->roi_wallet_balance, // Assuming this is a user field

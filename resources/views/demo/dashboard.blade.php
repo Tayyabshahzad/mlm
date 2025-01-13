@@ -310,7 +310,7 @@
                                     <div class="progress progress-xs mx-3 w-100">
                                         <div class="progress-bar bg-danger" role="progressbar" 
                                          style="width:{{ $data['total_roi_earned_pv'] }}%;" 
-                                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="200"></div>
                                     </div>
                                     <span class="font-weight-bolder text-dark">{{ $data['total_roi_earned_pv'] }}%</span>
                                 </div>
@@ -331,7 +331,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Total Earned</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{ Auth::user()->roi_wallet_balance }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
                             </div>
                         </div>
                         <!--end::Item-->
@@ -343,7 +343,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Earned This Month</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{ Auth::user()->roi_wallet_balance }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
                             </div>
                         </div>
                         <!--end::Item-->
@@ -355,7 +355,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Remaining</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{  $data['initial_investment'] - Auth::user()->roi_wallet_balance   }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{  200 - $data['total_roi_earned_pv']      }} PV</span>
                             </div>
                         </div> 
                     </div>
