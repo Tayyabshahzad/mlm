@@ -66,7 +66,7 @@
                 ),
                 $(go.TextBlock, { row: 1, margin: 4, font: "bold 12px sans-serif", stroke: "#333" },
                     new go.Binding("text", "name")),
-
+///// new Username Added
                 $(go.TextBlock, { row: 2, margin: 5, font: "bold 10px sans-serif", stroke: "#333" },
                     new go.Binding("text", "username"))
             )
