@@ -448,7 +448,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Remaining</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span>{{ 700 -  $data['total_roi_earned_pv'] }} PV</span>
                           </div>
                       </div> 
                   </div>
