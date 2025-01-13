@@ -197,6 +197,22 @@
                                     </div>
                                 </div> 
 
+                                <div class="form-group row">
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Full Resident Address</label>
+                                    <div class="col-lg-9 col-xl-6">
+                                        <div class="input-group input-group-lg input-group-solid">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="la la-map"></i>
+                                                </span>
+                                            </div>
+                                            <input type="text" class="form-control form-control-lg form-control-solid" 
+                                            name="address"
+                                            value="{{ old('address', Auth::user()->profile->address ?? '') }}"   placeholder="Address" />
+                                        </div>
+                                    </div>
+                                </div> 
+
                                
                                 <div class="form-group row">
                                     <label class="col-xl-3 col-lg-3 col-form-label">CNIC Number <span class="text-danger">*</span> </label>

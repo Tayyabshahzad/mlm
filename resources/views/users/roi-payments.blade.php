@@ -42,7 +42,7 @@
                        
                     </h3>
                     <div class="card-toolbar">
-                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Make A Payment</a> 
+                        <a  href="{{ route('run-schedule') }}"   class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Generate ROI</a> 
                     </div>
                 </div>
                 <!--end::Header-->

@@ -61,6 +61,7 @@
                                                         <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Details</th>
                                                         <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Status</th>
                                                         <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Joining Date</th>
+                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Account Info</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -105,7 +106,7 @@
 
                                                         <td class="text-left pt-7 align-middle">{{ $teamMember->created_at->diffForHumans()  }}</td>
 
-                                                        
+                                                        <td class="text-left pt-7 align-middle"> <a href="{{ route('profile.change.password',$teamMember->id) }}">More Info</a>  </td>
                                                     </tr>
                                                     @endforeach 
                                                     

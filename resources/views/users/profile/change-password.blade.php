@@ -62,13 +62,14 @@
                         <!--end::Header-->
                         <!--begin::Form-->
                         <!--begin::Form-->
-<form action="{{ route('update.password') }}" method="POST" class="form">
+<form action="{{ route('update.password',$id) }}" method="POST" class="form">
     @csrf
     @method('PUT')
 
     <div class="card-body">
 
         <!-- Current Password -->
+        @if(!$id) 
         <div class="form-group row">
             <label class="col-xl-3 col-lg-3 col-form-label text-alert">Current Password</label>
             <div class="col-lg-9 col-xl-6">
@@ -77,13 +78,14 @@
                        placeholder="Current password" 
                        required 
                        value="{{ old('current_password') }}" /> 
-                @error('current_password')
-                    <div class="text-danger mt-2">
-                        <small>{{ $message }}</small>
-                    </div>
-                @enderror
+                    @error('current_password')
+                        <div class="text-danger mt-2">
+                            <small>{{ $message }}</small>
+                        </div>
+                    @enderror
             </div>
-        </div>
+        </div> 
+        @endif   
 
         <!-- New Password -->
         <div class="form-group row">

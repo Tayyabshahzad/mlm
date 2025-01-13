@@ -4,29 +4,19 @@
 	<head>
 		<base href="">
 		<meta charset="utf-8" />
-		<title> Global Visioners International | @yield('title')</title>
-		<meta name="description" content="Metronic admin dashboard live demo. Check out all the features of the admin panel. A large number of settings, additional services and widgets." />
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-		<link rel="canonical" href="https://keenthemes.com/metronic" />
-		<!--begin::Fonts-->
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
-		<!--end::Fonts-->
-		<!--begin::Page Vendors Styles(used by this page)-->
-		<link href="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.css')}}" rel="stylesheet" type="text/css" />
-		<!--end::Page Vendors Styles-->
-		<!--begin::Global Theme Styles(used by all pages)-->
+		<title> Global Visioners International | @yield('title')</title> 
+		<link rel="canonical" href="https://keenthemes.com/metronic" /> 
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" /> 
+		<link href="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.css')}}" rel="stylesheet" type="text/css" /> 
 		<link href="{{ asset('assets/plugins/global/plugins.bundle.css')}}" rel="stylesheet" type="text/css" />
 		<link href="{{ asset('assets/plugins/custom/prismjs/prismjs.bundle.css')}}" rel="stylesheet" type="text/css" />
-		<link href="{{ asset('assets/css/style.bundle.css')}}" rel="stylesheet" type="text/css" />
-		<!--end::Global Theme Styles-->
-		<!--begin::Layout Themes(used by all pages)-->
+		<link href="{{ asset('assets/css/style.bundle.css')}}" rel="stylesheet" type="text/css" /> 
 		<link href="{{ asset('assets/css/themes/layout/header/base/light.css')}}" rel="stylesheet" type="text/css" />
 		<link href="{{ asset('assets/css/themes/layout/header/menu/light.css')}}" rel="stylesheet" type="text/css" />
 		<link href="{{ asset('assets/css/themes/layout/brand/dark.css')}}" rel="stylesheet" type="text/css" />
-		<link href="{{ asset('assets/css/themes/layout/aside/dark.css')}}" rel="stylesheet" type="text/css" />
-		<!--end::Layout Themes-->
-		<link rel="shortcut icon" href="{{ asset('assets/custom-images/logo-50x50.jpeg')}}" />
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js"></script> <!-- Include GoJS -->
+		<link href="{{ asset('assets/css/themes/layout/aside/dark.css')}}" rel="stylesheet" type="text/css" /> 
+		<link rel="shortcut icon" href="{{ asset('assets/custom-images/gvi-icon.png')}}" />
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js"></script> 
 		<style>
 			.second-div {
 				transform: translateX(-100%);
@@ -97,7 +87,7 @@
 				<div class="aside aside-left aside-fixed d-flex flex-column flex-row-auto" id="kt_aside"> 
 					<div class="brand flex-column-auto" id="kt_brand"> 
 						<a href="{{ route('dashboard') }}" class="brand-logo">
-							<img alt="Logo" src="{{ asset('assets/custom-images/gvi-text.png') }}"  width="60%"/>
+							<img alt="Logo" src="{{ asset('assets/custom-images/logo-white.png') }}"  width="100%"/>
 						</a> 
 						<button class="brand-toggle btn btn-sm px-0" id="kt_aside_toggle">
 							<span class="svg-icon svg-icon svg-icon-xl">
@@ -140,7 +130,8 @@
 									<h4 class="menu-text">Genealogy Details</h4>
 									<i class="menu-icon ki ki-bold-more-hor icon-md"></i>
 								</li>
-								<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
+								
+								<li class="menu-item menu-item-submenu  @if(request()->is('genealogy*'))  menu-item-open @endif"  aria-haspopup="true" data-menu-toggle="hover">
 									<a href="javascript:;" class="menu-link menu-toggle">
 										<span class="svg-icon menu-icon">
 											<!--begin::Svg Icon | path:assets/media/svg/icons/Layout/Layout-4-blocks.svg-->
@@ -266,7 +257,7 @@
 								</li>
 								 --}}
 							 
-								<li class="menu-item menu-item-submenu   @if(request()->is('wallets*'))  menu-item-open @endif " aria-haspopup="true" data-menu-toggle="hover">
+								<li class="menu-item menu-item-submenu   @if(request()->is('wallets*'))  menu-item-open @endif" aria-haspopup="true" data-menu-toggle="hover">
 									<a href="javascript:;" class="menu-link menu-toggle">
 										<span class="svg-icon menu-icon">
 											<!--begin::Svg Icon | path:assets/media/svg/icons/Code/Compiling.svg-->
@@ -352,7 +343,7 @@
 									<i class="menu-icon ki ki-bold-more-hor icon-md"></i>
 								</li>
 								
-								<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
+								<li class="menu-item menu-item-submenu @if(request()->is('profile*'))  menu-item-open @endif"  aria-haspopup="true" data-menu-toggle="hover">
 									<a href="javascript:;" class="menu-link menu-toggle">
 										<span class="svg-icon menu-icon">
 											<!--begin::Svg Icon | path:assets/media/svg/icons/General/Settings-1.svg-->
@@ -443,34 +434,24 @@
 									</a>
 									<div class="menu-submenu">
 										<i class="menu-arrow"></i>
-										<ul class="menu-subnav">
-											<li class="menu-item menu-item-parent" aria-haspopup="true">
-												<span class="menu-link">
-													<span class="menu-text">Forms</span>
-												</span>
-											</li>
+										<ul class="menu-subnav"> 
 											<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
-												<a href="javascript:;" class="menu-link menu-toggle">
+												<a href="{{ route('product.index') }}" class="menu-link menu-toggle">
 													<i class="menu-bullet menu-bullet-dot">
 														<span></span>
 													</i>
-													<span class="menu-text">Activation Code</span>
-													<i class="menu-arrow"></i>
-												</a>
-												<div class="menu-submenu">
-													<i class="menu-arrow"></i>
-													<ul class="menu-subnav">
-														<li class="menu-item" aria-haspopup="true">
-															<a href="crud/forms/controls/base.html" class="menu-link">
-																<i class="menu-bullet menu-bullet-dot">
-																	<span></span>
-																</i>
-																<span class="menu-text"> Code </span>
-															</a>
-														</li>
-														 
-													</ul>
-												</div>
+													<span class="menu-text">List</span>
+													 
+												</a> 
+											</li> 
+											<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
+												<a href="{{ route('product.create') }}" class="menu-link menu-toggle">
+													<i class="menu-bullet menu-bullet-dot">
+														<span></span>
+													</i>
+													<span class="menu-text">Create</span>
+													 
+												</a> 
 											</li> 
 										</ul>
 									</div>
@@ -510,7 +491,47 @@
 												</a> 
 											</li> 
 										</ul>
+									</div> 
+									<div class="menu-submenu">
+										<i class="menu-arrow"></i>
+										<ul class="menu-subnav"> 
+											<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
+												<a href="{{ route('withdrawals.requests') }}" class="menu-link menu-toggle">
+													<i class="menu-bullet menu-bullet-dot">
+														<span></span>
+													</i>
+													<span class="menu-text">Withdrawal Requests</span> 
+												</a> 
+											</li> 
+										</ul>
 									</div>
+ 
+
+
+								</li> 
+								@endrole
+
+								@role('admin')
+								<li class="menu-section">
+									<h4 class="menu-text">Rental Details</h4>
+									<i class="menu-icon ki ki-bold-more-hor icon-md"></i>
+								</li>
+								<li class="menu-item menu-item-submenu @if(request()->is('rental*'))  menu-item-open @endif "" aria-haspopup="true" data-menu-toggle="hover">
+									<a href="javascript:;" class="menu-link menu-toggle">
+										<span class="svg-icon menu-icon">
+											<!--begin::Svg Icon | path:assets/media/svg/icons/Design/PenAndRuller.svg-->
+											<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+												<g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+													<rect x="0" y="0" width="24" height="24"/>
+													<circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10"/>
+													<path d="M12,11 C10.8954305,11 10,10.1045695 10,9 C10,7.8954305 10.8954305,7 12,7 C13.1045695,7 14,7.8954305 14,9 C14,10.1045695 13.1045695,11 12,11 Z M7.00036205,16.4995035 C7.21569918,13.5165724 9.36772908,12 11.9907452,12 C14.6506758,12 16.8360465,13.4332455 16.9988413,16.5 C17.0053266,16.6221713 16.9988413,17 16.5815,17 L7.4041679,17 C7.26484009,17 6.98863236,16.6619875 7.00036205,16.4995035 Z" fill="#000000" opacity="0.3"/>
+												</g>
+											</svg> 
+										</span>
+										<span class="menu-text">Rental</span>
+										<i class="menu-arrow"></i>
+									</a>
+									
 									<div class="menu-submenu">
 										<i class="menu-arrow"></i>
 										<ul class="menu-subnav"> 
@@ -529,15 +550,18 @@
 										<i class="menu-arrow"></i>
 										<ul class="menu-subnav"> 
 											<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
-												<a href="{{ route('withdrawals.requests') }}" class="menu-link menu-toggle">
+												<a href="{{ route('rental.percentage') }}" class="menu-link menu-toggle">
 													<i class="menu-bullet menu-bullet-dot">
 														<span></span>
 													</i>
-													<span class="menu-text">Withdrawal Requests</span> 
+													<span class="menu-text">Set Rental Percentage</span> 
+													 
 												</a> 
 											</li> 
 										</ul>
-									</div>
+									</div> 
+
+
 								</li> 
 								@endrole
 							</ul>
@@ -562,6 +586,7 @@
 									<div class="d-flex flex-wrap mb-4">
 										<a href="#" class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2">
 											<i class="flaticon-share mr-2 font-size-lg"></i>
+												 
 											 {{env('APP_URL').'/register/ref/'. Auth::user()->reflink->link }}
 										</a> 
 									</div> 
@@ -2399,6 +2424,15 @@
 				toastr.warning("{{ session('warning') }}");
 			</script>
 		@endif
+
+		@if ($errors->any()) 
+			@foreach ($errors->all() as $error) 
+				<script>
+					toastr.error("{{ $error }}");
+				</script> 
+			@endforeach 
+		@endif
+
 
 		@section('page_js')
 		@show

@@ -46,15 +46,14 @@ class RegisteredUserController extends Controller
             'username' => 'required|string|max:255|unique:' . User::class,
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'transaction_id' => 'required|string|lowercase|unique:' . User::class,
+            'transaction_id' => 'required|string|unique:' . User::class,
             'referral_link' => [
                 'required',
                 'string',
                 'exists:referral_links,link',
             ],
             'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
-       
+        ]); 
         $referralLink = ReferralLink::where('link', $request->referral_link)->first(); 
         $baseUsername = Str::slug($request->name);
         $username = $baseUsername;

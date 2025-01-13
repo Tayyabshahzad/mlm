@@ -1,10 +1,10 @@
 <!DOCTYPE html>
- 
 <html lang="en">
 	<!--begin::Head-->
-	<head> 
+	<head>
+		 
 		<meta charset="utf-8" />
-		<title>Global Visioners International | @yield('title') </title>
+		<title>Global Visioners International | @yield('title')</title>
 		<meta name="description" content="Login page example" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 		<link rel="canonical" href="https://keenthemes.com/metronic" />
@@ -12,7 +12,7 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
 		<!--end::Fonts-->
 		<!--begin::Page Custom Styles(used by this page)-->
-		<link href="{{ asset('assets/css/pages/login/login-1.css')}}" rel="stylesheet" type="text/css" />
+		<link href="{{ asset('assets/css/pages/login/classic/login-5.css')}}" rel="stylesheet" type="text/css" />
 		<!--end::Page Custom Styles-->
 		<!--begin::Global Theme Styles(used by all pages)-->
 		<link href="{{ asset('assets/plugins/global/plugins.bundle.css')}}" rel="stylesheet" type="text/css" />
@@ -26,6 +26,13 @@
 		<link href="{{ asset('assets/css/themes/layout/aside/dark.css')}}" rel="stylesheet" type="text/css" />
 		<!--end::Layout Themes-->
 		<link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico')}}" />
+
+		<style>
+		.login.login-5 .login-form {
+			width: 100%!important;
+			max-width: 100%!important;
+		}
+		</style>
 	</head>
 	<!--end::Head-->
 	<!--begin::Body-->
@@ -33,37 +40,37 @@
 		<!--begin::Main-->
 		<div class="d-flex flex-column flex-root">
 			<!--begin::Login-->
-			<div class="login login-1 login-signin-on d-flex flex-column flex-lg-row flex-column-fluid bg-white" id="kt_login">
-				<!--begin::Aside-->
-				 
-				<!--begin::Aside-->
-				<!--begin::Content-->
-				<div class="login-content flex-row-fluid d-flex flex-column justify-content-center position-relative overflow-hidden p-7 mx-auto">
-					<!--begin::Content body-->
-					<div class="d-flex flex-column-fluid flex-center">
-						<!--begin::Signin-->
-						
-						<!--end::Signin-->
-						<!--begin::Signup-->
+			<div class="login login-5 login-signin-on d-flex flex-row-fluid" id="kt_login">
+				<div class="d-flex flex-center bgi-size-cover bgi-no-repeat flex-row-fluid" 
+				style="background-image: url({{ asset('assets/media/bg/bg-2.jpg') }});">
+					<div class="login-form text-center text-white p-7 position-relative overflow-hidden">
+						<!--begin::Login Header-->
+						<div class="d-flex flex-center mb-15">
+							<a href="#">
+								<img src="{{ asset('assets/custom-images/logo-white.png') }}" class="max-h-75px" alt="" />
+							</a>
+						</div>
 						@section('content')
 						@show
 						
-						<!--end::Forgot-->
+						
+						{{-- <div class="login-forgot">
+							<div class="mb-20">
+								<h3 class="opacity-40 font-weight-normal">Forgotten Password ?</h3>
+								<p class="opacity-40">Enter your email to reset your password</p>
+							</div>
+							<form class="form" id="kt_login_forgot_form">
+								<div class="form-group mb-10">
+									<input class="form-control h-auto text-white bg-white-o-5 rounded-pill border-0 py-4 px-8" type="text" placeholder="Email" name="email" autocomplete="off" />
+								</div>
+								<div class="form-group">
+									<button id="kt_login_forgot_submit" class="btn btn-pill btn-primary opacity-90 px-15 py-3 m-2">Request</button>
+									<button id="kt_login_forgot_cancel" class="btn btn-pill btn-outline-white opacity-70 px-15 py-3 m-2">Cancel</button>
+								</div>
+							</form>
+						</div>  --}}
 					</div>
-					<!--end::Content body-->
-					<!--begin::Content footer-->
-					<div class="d-flex justify-content-lg-start justify-content-center align-items-end py-7 py-lg-0">
-						<div class="text-dark-50 font-size-lg font-weight-bolder mr-10">
-							<span class="mr-1">2020©</span>
-							<a href="http://keenthemes.com/metronic" target="_blank" class="text-dark-75 text-hover-primary">Keenthemes</a>
-						</div>
-						<a href="#" class="text-primary font-weight-bolder font-size-lg">Terms</a>
-						<a href="#" class="text-primary ml-5 font-weight-bolder font-size-lg">Plans</a>
-						<a href="#" class="text-primary ml-5 font-weight-bolder font-size-lg">Contact Us</a>
-					</div>
-					<!--end::Content footer-->
 				</div>
-				<!--end::Content-->
 			</div>
 			<!--end::Login-->
 		</div>

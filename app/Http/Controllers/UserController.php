@@ -9,6 +9,7 @@ use App\Models\ROITransaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransactions;
+use App\Models\Week;
 use Illuminate\Http\Request;
 use App\Services\PVService;
 use App\Services\WalletService;
@@ -64,8 +65,7 @@ class UserController extends Controller
             ->get();
     }
     private function getCommissionForLevel($level)
-    {
-        // Define commission percentages for each level (this can be retrieved from a config or database table)
+    { 
         $commissionPercentages = [
             1 => 5,  // Level 1 gets 5%
             2 => 2,  // Level 2 gets 2%
@@ -74,12 +74,9 @@ class UserController extends Controller
             5 => 1, // Level 5 gets 0.8%
             6 => 0.75, // Level 6 gets 0.5%
             7 => 0.10, // Level 7 gets 0.1%
-        ];
-
-        // Return commission percentage for the given level, or default to 0 if the level is not found
+        ]; 
         return $commissionPercentages[$level] ?? 0;
-    }
-
+    } 
     public function userDetails(Request $request)
     {
         $userId = $request->get('id');
@@ -127,7 +124,7 @@ class UserController extends Controller
         $rewardLevels = collect([
             ['level' => 1, 'reward_amount' => 150, 'users_required' => 3],
             ['level' => 2, 'reward_amount' => 300, 'users_required' => 5],
-            ['level' => 3, 'reward_amount' => 1200, 'users_required' => 7],
+            ['level' => 3, 'reward_amount' => 1000, 'users_required' => 7],
             ['level' => 4, 'reward_amount' => 4000, 'users_required' => 9],
             ['level' => 5, 'reward_amount' => 10000, 'users_required' => 11],
             ['level' => 6, 'reward_amount' => 30000, 'users_required' => 13],
@@ -313,8 +310,7 @@ class UserController extends Controller
             });
     
         foreach ($ancestors as $ancestor) {
-            $level = $ancestor->level; // Get level of ancestor
-    
+            $level = $ancestor->level; // Get level of ancestor 
             // Check team size condition for each level
             $ancestorUser = User::find($ancestor->ancestor_id);
             $teamSize = $this->getTeamSize($ancestorUser->id); // Fetch team size
@@ -369,9 +365,13 @@ class UserController extends Controller
             'user_id' => 'required|exists:users,id', // User selection
             'commission_percentage' => 'required|numeric|min:0|max:100', // Commission percentage
         ]);
-        $user = User::find($request->user_id);
+        $user = User::find($request->user_id); 
+        $walletTotal = Wallet::where('user_id',$user->id)->sum('balance');
+        if($walletTotal >= 200){
+            return redirect()->back()->with('error', '2x is completed for this user'); 
+        }
         if ($user->roi_wallet_balance >= 100) {
-            return response()->json(['message' => 'ROI already completed for this user.'], 400);
+            return redirect()->back()->with('error', 'ROI already completed for this user'); 
         }
         if (!$user->roi_start_date) {
             $user->roi_start_date = Carbon::now();
@@ -382,9 +382,9 @@ class UserController extends Controller
         $remainingPV = 100 - $user->roi_wallet_balance;
         $paymentPercentage = $request->commission_percentage;
         $maxMonthlyPayment = $remainingPV / $monthsRemaining;
-        $roiPayment = min(($remainingPV * $paymentPercentage) / 100, $maxMonthlyPayment);
+        $roiPayment = ($remainingPV * $paymentPercentage) / 100;
         $user->roi_wallet_balance += $roiPayment;
-        $user->last_roi_payment_date += Carbon::now();
+        $user->last_roi_payment_date = Carbon::now();
         
         $user->save();
         $wallet = Wallet::Create(
@@ -407,6 +407,49 @@ class UserController extends Controller
         $this->generateParentCommissions($user, $roiPayment);
         return redirect()->back()->with('success', 'ROI Generated Successfully');
     }
+
+
+    public function rentalPercentage(){
+        $weeks = Week::all();
+        return view('users.rental.index', compact('weeks'));
+    }
+
+    public function addRentalPercentage(Request $request){
+        
+        $request->validate([
+            'week_name' => 'required|string',
+            'percentage' => 'required|numeric|min:3|max:7',
+        ]);  
+        $currentMonthWeeksCount = Week::whereMonth('created_at', now()->month)->count();
+        if ($currentMonthWeeksCount >= 4) {
+            return redirect()->back()->with('error', 'You cannot add more than 4 weeks in a month.');
+        }
+        Week::create($request->all());
+        return redirect()->back()->with('success', 'Week percentage added successfully.');
+    }
+
+    public function updateRentalPercentage(Request $request, $id){ 
+        $request->validate([
+            'percentage' => 'required|numeric|min:3|max:7',
+        ]); 
+        $week = Week::findOrFail($id);
+        $week->percentage = $request->percentage;
+        $week->updated_at = Carbon::now();
+        $week->save();
+        return redirect()->back()->with('success', 'Week percentage updated successfully.');
+    }
+
+    public function deleteRentalPercentage(Request $request, $id){
+        $week = Week::find($id);
+        if (!$week) {
+            return redirect()->back()->with('error', 'Week not found.');
+        }
+        $week->delete();
+        return redirect()->back()->with('success', 'Week deleted successfully.');
+    }
+
+
+    
 
     private function generateParentCommissions($user, $roiAmount)
     {

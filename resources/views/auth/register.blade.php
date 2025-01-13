@@ -1,103 +1,146 @@
 @extends('demo.layout.guest')
-@section('title','Register')
+@section('title','Login')
 @section('content')
-<div class="login-form login-signin">
-    <!--begin::Form-->
 
-    <div class="pb-13 pt-lg-0 pt-5 text-center">
-		<img src="{{ asset('assets/custom-images/gvi-text.png') }}" class="max-h-70px" alt="" />
+<div class="login-signups container">
+	<div class="mb-20">
+		<h3 class=" font-weight-normal">Sign Up</h3>
+		<p class="">Enter your details to create your account</p>
 	</div>
+	<form class="form text-center row pl-40 pr-40" id="kt_login_signup_form" method="post" action="{{ route('register.user') }}" enctype="multipart/form-data">
+		@csrf
+		<div class="col-lg-6">
+			<div class="form-group">
+				<input class="form-control h-auto text-white bg-white-o-5 rounded-0 border-0 py-4 px-8" 
+				required value="{{ old('name') }}"
+				type="text" placeholder="Full Name *" name="name" />
+				@error('name')
+            		<small class="text-danger text-left text-sm">{{ $message }}</small>
+            	@enderror
+			</div>
+		</div>
 
-    
-    <form class="form" method="post" action="{{ route('register.user') }}" id=" " enctype="multipart/form-data">
-        @csrf
-        <div class="pb-13 pt-lg-0 pt-5">
-            <h3 class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg">Welcome to GV International</h3>
-        </div>
-        <!--begin::Title-->
+		<div class="col-lg-6">
+			<div class="form-group">
+				<input class="form-control h-auto text-white bg-white-o-5 rounded-0 border-0 py-4 px-8" 
+				type="text" placeholder="Username *"
+				required value="{{ old('username') }}" 
+				name="username" />
+				@error('username')
+            		<small class="text-danger text-left text-sm">{{ $message }}</small>
+            	@enderror
+			</div>
+		</div>
 
-        <!-- Name Field -->
-        <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Name <span class="text-danger">*</span> </label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="text" name="name" autocomplete="off" required value="{{ old('name') }}" />
-            @error('name')
-            <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
 
-        <!-- Username Field -->
-        <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Username <span class="text-danger">*</span> </label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="text" name="username" autocomplete="off" required value="{{ old('username') }}" />
-            @error('username')
-            <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
+		<div class="col-lg-12">
+			<div class="form-group">
+				<input class="form-control h-auto text-white bg-white-o-5 rounded-0 border-0 py-4 px-8" 
+				type="email" placeholder="Email *"
+				required value="{{ old('email') }}" 
+				name="email" />
+				@error('email')
+            		<small class="text-danger text-left text-sm">{{ $message }}</small>
+            	@enderror
+			</div>
+		</div> 
 
-        <!-- Email Field -->
-        <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Email <span class="text-danger">*</span></label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="email" name="email" autocomplete="off" required value="{{ old('email') }}" />
-            @error('email')
-            <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
 
-        <!-- Password Field -->
-        <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Password <span class="text-danger">*</span></label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="password" name="password" autocomplete="off" required />
-            @error('password')
-            <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
+		<div class="col-lg-6">
+			<div class="form-group">
+				<input class="form-control h-auto text-white bg-white-o-5 rounded-0 border-0 py-4 px-8" 
+				type="text" placeholder="Referral Link *"
+				value="{{ $ref ?? old('referral_link') }}"
+				required 
+				name="referral_link" />
+				@error('referral_link')
+            		<small class="text-danger text-left text-sm">{{ $message }}</small>
+            	@enderror
+			</div>
+		</div> 
 
-        <!-- Confirm Password Field -->
-        <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Confirm Password <span class="text-danger">*</span></label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="password" name="password_confirmation" autocomplete="off" required />
-        </div>
 
-        <!-- Referral Link Field -->
-        <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Referral Link <span class="text-danger">*</span></label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="text" name="referral_link" value="{{ $ref ?? old('referral_link') }}" autocomplete="off" required />
-            @error('referral_link')
-            <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
+		<div class="col-lg-6">
+			<div class="form-group">
+				<input class="form-control h-auto text-white bg-white-o-5 rounded-0 border-0 py-4 px-8" 
+				type="text" placeholder="Transaction ID *"
+				value="{{ old('transaction_id') }}"
+				required 
+				name="transaction_id" />
+				@error('transaction_id')
+            		<small class="text-danger text-left text-sm">{{ $message }}</small>
+            	@enderror
+			</div>
+		</div> 
+		
 
-        <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Transaction ID <span class="text-danger">*</span></label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="text" name="transaction_id" value="{{ old('transaction_id') }}"    autocomplete="off" required />
-            @error('transaction_id')
-            <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
 
-        
+		<div class="col-lg-6">
+			<div class="form-group">
+				<input class="form-control h-auto text-white bg-white-o-5 rounded-0 border-0 py-4 px-8" 
+				type="password" placeholder="Password *"
+				required value="{{ old('password') }}" 
+				name="password" />
+				@error('password')
+            		<small class="text-danger text-left text-sm">{{ $message }}</small>
+            	@enderror
+			</div>
+		</div> 
 
-        <!-- Amount Proof Field -->
-        <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Transaction  Proof <span class="text-danger">*</span> </label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="file" name="amount_src" autocomplete="off" required />
-            @error('amount_src')
-            <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
+		<div class="col-lg-6">
+			<div class="form-group">
+				<input class="form-control h-auto text-white bg-white-o-5 rounded-0 border-0 py-4 px-8" 
+				type="password" placeholder="Password Confirmation *"
+				required value="{{ old('password_confirmation') }}" 
+				name="password_confirmation" />
+				@error('password_confirmation')
+            		<small class="text-danger text-left text-sm">{{ $message }}</small>
+            	@enderror
+			</div>
+		</div> 
 
-        <!-- Submit Button -->
-        <div class="pb-lg-0 pb-5 mt-10 mb-10">
-            <button type="submit" id="kt_login_signin_submit" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">Register</button>
-            <a href="{{ route('login') }}" class="font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">Already Registered</a>
-        </div>
-    </form>
-    <!--end::Form-->
+
+		<div class="col-lg-12">
+			<div class="form-group">
+				<input class="form-control h-auto text-white bg-white-o-5 rounded-0 border-0 py-4 px-8" 
+				type="file" placeholder="amount_src *"
+				required value="{{ old('amount_src') }}" 
+				name="amount_src" />
+				@error('amount_src')
+            		<small class="text-danger text-left text-sm">{{ $message }}</small>
+            	@enderror
+			</div>
+		</div> 
+
+
+		<div class="col-lg-12">
+			<div class="form-group text-left ">
+				<div class="checkbox-inline">
+					<label class="checkbox checkbox-outline checkbox-white opacity-60 text-white m-0">
+					<input type="checkbox" name="agree" />
+					<span></span>I Agree the
+					<a href="#" class="text-white font-weight-bold ml-1">terms and conditions</a>.</label>
+				</div>
+				<div class="form-text text-muted text-center"></div>
+			</div>
+		</div> 
+
+
+		<div class="col-lg-12">
+			<div class="form-group">
+				<button id="" type="submit" class="btn btn-pill btn-warning rounded-0 opacity-90 px-15 py-3 m-2">Sign Up</button>
+				<a href="{{ route('login') }}" class="">Already have an Account</a>
+			</div>
+		</div>  
+		
+		
+	</form>
 </div>
+ 
 @endsection
-
 @section('page_js')
-<script>
-    // Additional custom JS if needed
-</script>
+    <script> 
+
+    </script>
+    
 @endsection

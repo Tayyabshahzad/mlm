@@ -39,21 +39,26 @@ class FrontEndController extends Controller
     }
     public function dashboard(){ 
 
+        $referralCounts = DB::table('referral_trees')
+        ->select('level', DB::raw('COUNT(descendant_id) as count'))
+        ->where('ancestor_id', Auth::user()->id)
+        ->where('level', '<=', 7) // Limit to 7 levels
+        ->groupBy('level')
+        ->orderBy('level')
+        ->get();
+        $levels = range(1, 7);
+        $levelCounts = collect($levels)->mapWithKeys(function ($level) use ($referralCounts) {
+            $count = $referralCounts->firstWhere('level', $level)->count ?? 0;
+            return [$level => $count];
+        }); 
+
         $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
         $authUsers =  User::where('sponsor_id',Auth::user()->id); 
         $inactiveUsers = $authUsers->where('can_login',false)->count();
         $teamSize = $authUsers->limit(10)->get(); 
         $reward = $authUsers->with('descendants'); 
         $totalEarning = TransactionLog::where('user_id', Auth::user()->id)->get()->sum('amount');
-        $reward = [
-            'level_1' => $reward->limit(10)->count(),
-            'level_2' => $reward->limit(10)->count(),
-            'level_3' =>0,
-            'level_4' =>0,
-            'level_5' =>0,
-            'level_6' =>0,
-            'level_7' =>0,
-        ];
+        
         $data = [
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
@@ -64,9 +69,11 @@ class FrontEndController extends Controller
             'total_earning'=>$totalEarning,
             'team_size' => $teamSize, // Customize based on your business logic
             'total_roi_earned_pv' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
+            'initial_investment' => Auth::user()->current_pv_balance, // Assuming this is a user field
             'total_roi_earned_this_month' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
             'total_roi_remaining' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
             'roi_status' => true, // Customize based on your business logic
+            'levelCount' => $levelCounts
         ];
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
@@ -101,12 +108,14 @@ class FrontEndController extends Controller
                 'gender' => 'required|in:0,1',
                 'phone' => 'required|string|max:15|phone:PK',
                 'cnic' => 'required|string|max:255',
-                'cnic_front' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-                'cnic_back' => 'required|image|mimes:jpg,jpeg,png|max:2048', 
+                'cnic_front' => 'image|mimes:jpg,jpeg,png|max:2048',
+                'cnic_back' => 'image|mimes:jpg,jpeg,png|max:2048', 
+                'address' => 'required|string|max:255',
             ],
             [
                 'phone.phone' =>'Please provide a valid phone number in the correct format for Pakistan.'
             ]);
+           
         }
 
         elseif ($request->step == 2) {
@@ -170,9 +179,7 @@ class FrontEndController extends Controller
             }
             $user->addMedia($request->file('cnic_back'))
             ->toMediaCollection('user_document_cnic_back');
-        }   
-
-
+        }    
 
         $profile = $user->profile ?: new Profile();  
         if (!empty($validated['skills'])) { 
@@ -203,6 +210,7 @@ class FrontEndController extends Controller
             }else{
                   $this->updatePdf($user->profile); 
                  Mail::to($user->email)->send(new CompanyAgreement($user));
+            
                  return redirect()->back()->with('success', 'An Agreement has been sent to your email.');
             }
         }else{
@@ -211,9 +219,10 @@ class FrontEndController extends Controller
       
     }
 
-    public function changePassword(){
+    public function changePassword($id = null){
+         
         $user = Auth::user(); 
-        return view('users.profile.change-password',compact('user')); 
+        return view('users.profile.change-password',compact('user','id')); 
     }
 
     public function bankDetails(){
@@ -227,16 +236,17 @@ class FrontEndController extends Controller
     public function updatePassword(Request $request)
     {
         // Validate the incoming data
+       
         $validated = $request->validate([
-            'current_password' => 'required|string',
-            'new_password' => 'required|string|min:8|confirmed',
-            'confirm_new_password' => 'required|string|min:8',
+            //'current_password' => 'required|string',
+            //'new_password' => 'required|string|min:8|confirmed',
+            //'confirm_new_password' => 'required|string|min:8',
         ]);
 
         // Check if the current password matches the user's password
-        if (!Hash::check($request->current_password, Auth::user()->password)) {
-            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
-        } 
+        // if (!Hash::check($request->current_password, Auth::user()->password)) {
+        //     return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        // } 
         Auth::user()->update([
             'password' => Hash::make($request->new_password),
         ]); 
@@ -318,7 +328,7 @@ class FrontEndController extends Controller
     public function updatePdf($userDetails)
     { 
         $pdf = new Fpdi();  
-        $existingPdfPath = public_path('documents/agreement.pdf');  
+        $existingPdfPath = public_path('documents/business-agreement-final.pdf');  
         $updatedPdfPath = public_path("documents/agreement-{$userDetails->user['id']}.pdf");  
         $pdf->AddPage();
         $pdf->setSourceFile($existingPdfPath);
@@ -326,22 +336,41 @@ class FrontEndController extends Controller
         $pdf->useTemplate($template);  
         $pdf->SetFont('Helvetica', '', 8);
         $pdf->SetTextColor(0, 0, 0);  
-        $pdf->SetXY(55, 61); // X and Y coordinates
+        $pdf->SetXY(45, 73); // X and Y coordinates
         $pdf->Write(0, $userDetails['first_name']);  
-        $pdf->SetXY(105, 61); // X and Y coordinates
+
+        $pdf->SetXY(70, 73); // X and Y coordinates
+        $pdf->Write(0, '('.$userDetails->user->username.')');  
+
+
+
+        $pdf->SetXY(120, 73); // X and Y coordinates
         $pdf->Write(0, $userDetails['last_name']);  
-        $pdf->SetXY(80, 66); // X and Y coordinates
+        $pdf->SetXY(70, 80); // X and Y coordinates
         $pdf->Write(0, $userDetails['cnic']);  
-        $pdf->SetXY(65, 70); // X and Y coordinates
+        $pdf->SetXY(65, 85); // X and Y coordinates
         $pdf->Write(0, $userDetails['address']);  
-        $pdf->SetXY(83, 100); // X and Y coordinates
+        
+        $pdf->SetXY(58, 117); // X and Y coordinates
         $pdf->Write(0, $userDetails->user->username);   
-        $pdf->SetXY(50, 31); 
-        $pdf->Write(0, now()->format('Y-m-d'));  
-        $pdf->SetXY(57, 175); // X and Y coordinates
+         
+
+
+        $pdf->SetXY(120, 205); // X and Y coordinates
         $pdf->Write(0, $userDetails->user->name);   
-        $pdf->SetXY(57, 185); // X and Y coordinates
+
+        $pdf->SetXY(132, 205); // X and Y coordinates
+        $pdf->Write(0, $userDetails['first_name']);  
+        
+        $pdf->SetXY(145, 205); // X and Y coordinates
+        $pdf->Write(0, '('.$userDetails->user->username.')');  
+        
+        $pdf->SetXY(120, 215); // X and Y coordinates
         $pdf->Write(0, $userDetails['cnic']);   
+
+        $pdf->SetXY(120, 224); 
+        $pdf->Write(0,  Carbon::now()->format('d F Y')); 
+
         // Save the updated PDF
         $pdf->Output($updatedPdfPath, 'F'); 
         return $updatedPdfPath;

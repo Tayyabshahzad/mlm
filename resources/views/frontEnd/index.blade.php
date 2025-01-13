@@ -6,24 +6,19 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>Global Visioners International</title>
   <meta name="description" content="">
-  <meta name="keywords" content=""> 
-  <!-- Favicons -->
-  <link href="{{ asset('append-template/assets/img/favicon.png')}}" rel="icon">
-  <link href="{{ asset('append-template/assets/img/apple-touch-icon.png')}}" rel="apple-touch-icon"> 
-  <!-- Fonts -->
+  <meta name="keywords" content="">  
+  <link rel="shortcut icon" href="{{ asset('assets/custom-images/gvi-icon.png')}}" />
+  <link href="{{ asset('append-template/assets/img/apple-touch-icon.png')}}" rel="apple-touch-icon">  
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-
-  <!-- Vendor CSS Files -->
+ 
   <link href="{{ asset('append-template/assets/vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
   <link href="{{ asset('append-template/assets/vendor/bootstrap-icons/bootstrap-icons.css')}}" rel="stylesheet">
   <link href="{{ asset('append-template/assets/vendor/aos/aos.css')}}" rel="stylesheet">
   <link href="{{ asset('append-template/assets/vendor/glightbox/css/glightbox.min.css')}}" rel="stylesheet">
   <link href="{{ asset('append-template/assets/vendor/swiper/swiper-bundle.min.css')}}" rel="stylesheet"> 
-  <link href="{{ asset('append-template/assets/css/main.css')}}" rel="stylesheet">
-
-  
+  <link href="{{ asset('append-template/assets/css/main.css')}}" rel="stylesheet"> 
 </head>
 
 <body class="index-page">
@@ -31,10 +26,9 @@
   <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="container-fluid position-relative d-flex align-items-center justify-content-between">
 
-      <a href="{{ route('index') }}" class="logo d-flex align-items-center me-auto me-xl-0">
-        <!-- Uncomment the line below if you also wish to use an image logo -->
+      <a href="{{ route('index') }}" class="logo d-flex align-items-center me-auto me-xl-0"> 
         {{-- <img src="{{ asset('append-template/images/gvi-final.png')}}" alt=""> --}}
-         {{-- <h1 class="sitename">Global Visioners International</h1><span>.</span>  --}}
+         <h1 class="sitename">GVI</h1><span>.</span> 
       </a>
 
       <nav id="navmenu" class="navmenu">
@@ -47,25 +41,28 @@
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
 
-      <a class="btn-getstarted" href="{{ route('login') }}">Login</a>
+      <a class="btn-getstarted" style=""  href="{{ route('login') }}">Login</a>
 
     </div>
   </header>
 
   <main class="main">  
+    
     <!-- Hero Section -->
     <section id="hero" class="hero section dark-background"> 
-      <img src="{{ asset('append-template/images/building.jpg')}}" alt="" data-aos="fade-in"> 
+
+      
+      <img src="{{ asset('append-template/images/001-960x640.jpg')}}" alt="" data-aos="fade-in"> 
       <div class="container">
         <div class="row">
          
           <div class="col-lg-12 text-center">
             <div class="col-lg-12 text-center">
-              <img src="{{ asset('append-template/images/gvi-final.png')}}" alt="" style="width:20%;position:inherit;display:inline"/>
+              <img  data-aos="fade-up" data-aos-delay="100" src="{{ asset('append-template/images/logo-white.png')}}" alt="" style="width:60%;position:inherit;display:inline"/>
             </div>
             <br>
-            <h2 data-aos="fade-up" data-aos-delay="100">Welcome to Global Visioners International</h2>
-            <p data-aos="fade-up" data-aos-delay="200">E-Commerce and Affiliate Marketing</p>
+            {{-- <h2 data-aos="fade-up" data-aos-delay="100">Welcome to Global Visioners International</h2>
+            <p data-aos="fade-up" data-aos-delay="200">E-Commerce and Affiliate Marketing</p> --}}
           </div> 
         </div>
       </div> 
@@ -475,7 +472,7 @@
     </div>
 
     <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="sitename">GVI</strong> <span>All Rights Reserved</span></p>
+      <p>© <span>Copyright</span> <strong class="sitename">Global Visioners International</strong> <span>All Rights Reserved</span></p>
       <div class="credits"> 
         Designed by <a href="">Dev 97</a>
       </div>

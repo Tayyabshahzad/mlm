@@ -25,6 +25,8 @@ class UserSeeder extends Seeder
             'is_active' => true,
             'can_login' => true,
             'phone_verified' => true,
+            'transaction_id' => 'TXT',
+            'current_pv_balance'=> 100,
             'password' => FacadesHash::make('Google@123'), // Set a secure password
         ]);
 

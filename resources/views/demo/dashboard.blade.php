@@ -289,7 +289,7 @@
                             <div class="d-flex justify-content-between flex-wrap mt-1">
                                 <div class="d-flex mr-3">
                                     <a href="#" class="text-dark-75 text-hover-primary font-size-h4 font-weight-bold mr-3">
-                                       <strong> Personal Investment 100 PV <span>2X</span> </strong>  
+                                       <strong> Personal Investment {{ $data['initial_investment'] }} PV <span>2X</span> </strong>  
                                     </a>
                                     <a href="#">
                                         <i class="flaticon2-correct text-success font-size-h5"></i>
@@ -308,9 +308,11 @@
                                 <div class="d-flex align-items-center w-25 flex-fill float-right mt-lg-12 mt-8">
                                     <span class="font-weight-bold text-dark-75">Progress</span>
                                     <div class="progress progress-xs mx-3 w-100">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 1%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        <div class="progress-bar bg-danger" role="progressbar" 
+                                         style="width:{{ $data['total_roi_earned_pv'] }}%;" 
+                                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
-                                    <span class="font-weight-bolder text-dark">0%</span>
+                                    <span class="font-weight-bolder text-dark">{{ $data['total_roi_earned_pv'] }}%</span>
                                 </div>
                             </div>
                             <!--end::Content-->
@@ -353,7 +355,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Remaining</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{ Auth::user()->roi_wallet_balance }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span>{{  $data['initial_investment'] - Auth::user()->roi_wallet_balance   }} PV</span>
                             </div>
                         </div> 
                     </div>
@@ -503,49 +505,51 @@
                     </div>
                     <!--end::Header-->
                     <!--begin::Body-->
+                    
                     <div class="card-body pt-0 pb-3 ">
                         <div class="tab-content">
                              <ol class="display-5">
                                 <li>
+                                    
                                     <div class="progress mt-20 mb-10">
                                         <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: {{ $data['levelCount'][1] }}%;" aria-valuenow="{{ $data['levelCount'][1] }}" aria-valuemin="0" aria-valuemax="2"> {{ $data['levelCount'][1] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-info" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: {{ $data['levelCount'][2] }}%;" aria-valuenow="{{ $data['levelCount'][1] }}" aria-valuemin="0" aria-valuemax="5"> {{ $data['levelCount'][2] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-danger" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: {{ $data['levelCount'][3] }}%;" aria-valuenow="{{ $data['levelCount'][1] }}" aria-valuemin="0" aria-valuemax="7"> {{ $data['levelCount'][3] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-warning" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: {{ $data['levelCount'][4] }}%;" aria-valuenow="{{ $data['levelCount'][1] }}" aria-valuemin="0" aria-valuemax="9"> {{ $data['levelCount'][4] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-info" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: {{ $data['levelCount'][5] }}%;" aria-valuenow="{{ $data['levelCount'][1] }}" aria-valuemin="0" aria-valuemax="11"> {{ $data['levelCount'][5] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-warning" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: {{ $data['levelCount'][6] }}%;" aria-valuenow="{{ $data['levelCount'][1] }}" aria-valuemin="0" aria-valuemax="13"> {{ $data['levelCount'][6] }} </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: {{ $data['levelCount'][7] }}%;" aria-valuenow="{{ $data['levelCount'][1] }}" aria-valuemin="0" aria-valuemax="15"> {{ $data['levelCount'][7] }} </div>
                                     </div>
                                 </li>
                              </ol>
@@ -573,43 +577,43 @@
                                 <li>
                                     <div class="progress mt-20 mb-10">
                                         <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: {{ $reward['level_1'] }}%;" aria-valuenow="{{ $reward['level_1'] }}" aria-valuemin="0" aria-valuemax="10"> {{ $reward['level_1'] }} </div>
+                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
                                     </div>
                                 </li>
                              </ol>
