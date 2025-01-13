@@ -613,13 +613,22 @@
 								<!--begin::Header Menu-->
 								<div id="kt_header_menu" class="header-menu header-menu-mobile header-menu-layout-default pt-10">
 
-									<div class="d-flex flex-wrap mb-4">
-										<a href="#" class="text-dark-50 text-hover-primary font-weight-bold mr-lg-8 mr-5 mb-lg-0 mb-2">
-											<i class="flaticon-share mr-2 font-size-lg"></i>
-												 
-											 {{env('APP_URL').'/register/ref/'. Auth::user()->reflink->link }}
-										</a> 
-									</div> 
+									<div class="d-flex flex-wrap mb-4 pa-4">
+										<!-- Hidden link for reference -->
+										<span id="refLink" style="display: none;">{{ env('APP_URL').'/register/ref/'. Auth::user()->reflink->link }}</span>
+									
+										<!-- Button for copying link -->
+										<button onclick="copyToClipboard()" class="btn btn sm rounded-0 btn-info">
+											Copy Referral Link
+										</button>
+									
+										<!-- Optional Toastr for Copy Notification -->
+										<div id="toastMessage" style="display: none; position: fixed; bottom: 20px; right: 20px; background-color: #333; color: #fff; padding: 10px; border-radius: 5px;">
+											Link Copied!
+										</div>
+									</div>
+									
+									
 
 									
 								</div>
@@ -2463,7 +2472,31 @@
 			@endforeach 
 		@endif
 
+				<script>
+					 function copyToClipboard() {
+    // Get the hidden reference link element
+    const refLinkElement = document.getElementById("refLink");
 
+    // Create a temporary input to hold the link text
+    const tempInput = document.createElement("input");
+    tempInput.value = refLinkElement.textContent;
+
+    // Append the input to the body, copy its value, and then remove it
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+
+    // Show a toast message
+    const toast = document.getElementById("toastMessage");
+    toast.style.display = "block";
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 2000);
+}
+
+
+				</script>
 		@section('page_js')
 		@show
 		<!--end::Page Scripts-->
