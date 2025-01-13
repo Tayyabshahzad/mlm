@@ -55,11 +55,11 @@ class RegisteredUserController extends Controller
             'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ]); 
         $referralLink = ReferralLink::where('link', $request->referral_link)->first(); 
-        $baseUsername = Str::slug($request->name);
+        $baseUsername = Str::slug($request->username);
         $username = $baseUsername;
         $count = 1; 
         while (User::where('username', $username)->exists()) {
-            $username = $baseUsername . '-' . $count;
+            $username = $baseUsername.'-'.$count;
             $count++;
         } 
         $user = User::create([
