@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\CompanyAgreement;
 use App\Models\Otp;
+use App\Models\Product;
 use App\Models\Profile;
 use App\Models\Subscription;
 use App\Models\TransactionLog;
@@ -454,6 +455,11 @@ class FrontEndController extends Controller
         }
     }
 
+
+    public function buyProduct(){
+        $products = Product::get(); 
+        return view('genealogy.product',compact('products')); 
+    }
 
     
 

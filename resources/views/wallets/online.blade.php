@@ -57,8 +57,7 @@
                                 <div class="d-flex flex-column flex-grow-1">
                                     <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">Total Balance</a>
                                     <span class=" font-weight-bold">{{ $onlineWallets->sum('balance') }} PV</span>
-                                </div> 
-                                <!--begin::Text-->
+                                </div>  
                                 <div class="symbol symbol-45 symbol-light mr-5">
                                     <span class="symbol-label">
                                         <span class="navi-icon">
@@ -72,11 +71,44 @@
                                         {{ $onlineWallets->sortByDesc('created_at')->first()->created_at ?? 'No records found' }}  
                                     </span>
                                 </div>  
+                                
+                                @if($walletSum >= 700)
+                                    <div class="d-flex align-items-center">
+                                        <a href="#" disabled  class="disabled mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
+                                        <a href="#" disabled   class="disabled mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                                    </div>
+                                @else 
                                 <div class="d-flex align-items-center">
-                                    <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
-                                    <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                                    <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
+                                    <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
                                 </div> 
+                                @endif
 
+                                    
+
+                              
+                            </div> 
+
+                            <div class="d-flex align-items-center mt-10">
+                                <!--begin::Symbol-->
+                                <div class="symbol symbol-45 symbol-light mr-5">
+                                    <span class="symbol-label">
+                                        <span class="navi-icon">
+                                            <i class="flaticon2-graph-1 text-warning"></i>
+                                        </span>
+                                    </span>
+                                </div> 
+                                <div class="d-flex flex-column flex-grow-1">
+                                    <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">Total Earned PV</a>
+                                    <span class=" font-weight-bold">{{ $walletSum }} PV</span>
+                                </div> 
+                                @if($walletSum >= 700)
+                                    <div class="d-flex align-items-center">
+                                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-warning font-weight-bolder font-size-sm">Buy Product </a> 
+                                    </div>  
+                                @endif
+
+                               
 
                             </div> 
                         </div>  
@@ -100,11 +132,7 @@
                                             <th style="min-width: 120px">Action</th> 
                                         </tr>
                                     </thead>
-                                    <tbody>
-        
-        
-                                        
-        
+                                    <tbody>  
                                         @foreach($withDrawsRequests as $withDrawsRequest)
                                             <tr class="pl-0">
                                                 <td>
@@ -167,6 +195,62 @@
                 </div>
                 <div class="modal-body"> 
                     <div class="form-group row"> 
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Amount <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
+                             name="amount" min="0.01" step="0.01"
+                             required 
+                             max="{{ $onlineWallets->sum('balance') }}"
+                             placeholder="Enter Amount"
+                             >  
+                        </div>  
+
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Description 
+                            </label>
+                            <textarea name="target_account_details" id="target_account_details" class="form-control form-control-sm form-control-solid mb-2" required></textarea>
+                            
+                        </div>  
+                    </div>  
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="rounded-0 btn btn-primary btn-sm">Withdrawal </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="WithdrawModelTransfer" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="{{ route('withdrawals.member.transfer') }}" method="POST">
+                @csrf
+                <input type="hidden" name="wallet_type" value="online" required>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Member Transfer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body"> 
+                    <div class="form-group row"> 
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Username / Email Address <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-sm form-control-solid mb-2" 
+                             name="source"   
+                             required 
+                             max="{{ $onlineWallets->sum('balance') }}"
+                             placeholder="Enter Amount"
+                             >  
+                        </div>  
+
                         <div class="col-lg-12 col-xl-12">
                             <label for="" class="font-weight-bold mr-2">
                                 Amount <span class="text-danger">*</span>

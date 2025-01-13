@@ -28,6 +28,7 @@ Route::get('/',[FrontEndController::class , 'index'])->name('index');
 Route::get('/bulkRegisterUsers',[FrontEndController::class , 'bulkRegisterUsers'])->name('bulkRegisterUsers'); 
 Route::middleware(['auth','verified',CheckUserStatus::class])->group(function () {
     Route::get('/dashboard',[FrontEndController::class , 'dashboard'])->name('dashboard');   
+    Route::get('/products',[FrontEndController::class , 'buyProduct'])->name('buy.products');   
 });
 Route::middleware(['auth','verified',CheckUserStatus::class])->prefix('profile')->group(function () { 
     Route::get('/info', [FrontEndController::class, 'profile'])->name('profile.edit');
@@ -86,6 +87,8 @@ Route::controller(WithdrawalRequestController::class)->middleware(['auth','verif
     Route::get('/withdrawals','index')->name('withdrawals.index');
     Route::get('/withdrawals/create','create')->name('withdrawals.create');
     Route::post('/withdrawals','store')->name('withdrawals.store'); 
+    Route::post('/withdrawals/member','memberTransfer')->name('withdrawals.member.transfer'); 
+    
     Route::post('/withdrawals/delete','delete')->name('withdrawals.delete'); 
 }); 
 

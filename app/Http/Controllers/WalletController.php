@@ -12,7 +12,8 @@ class WalletController extends Controller
     public function online(){ 
         $onlineWallets = Wallet::where('wallet_type','online')->where('user_id',auth()->user()->id)->get();
         $withDrawsRequests = WithDrawalequest::where('user_id',auth()->user()->id)->orderby('id','desc')->get();
-        return view('wallets.online',compact('onlineWallets','withDrawsRequests')); 
+        $walletSum = Wallet::where('user_id',auth()->user()->id)->sum('balance');
+        return view('wallets.online',compact('onlineWallets','withDrawsRequests','walletSum')); 
     }
 
     public function directIndirect(){ 

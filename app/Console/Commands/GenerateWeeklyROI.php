@@ -37,7 +37,7 @@ class GenerateWeeklyROI extends Command
         $walletTotal = Wallet::where('user_id', $user->id)->sum('balance');
         
         // Skip if the user has completed their 2x wallet or ROI
-        if ($walletTotal >= 100 || $user->roi_wallet_balance >= 100) {
+        if ($walletTotal >= 200 ) {
             continue;
         }
 

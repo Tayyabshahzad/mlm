@@ -28,6 +28,7 @@ return new class extends Migration
             $table->date('roi_start_date')->nullable();    // Start date of ROI
             $table->date('roi_end_date')->nullable();   
             $table->string('transaction_id'); 
+            $table->integer('withdraw_cap')->default(200);
             $table->date('last_roi_payment_date')->nullable();    
             $table->rememberToken();
             $table->timestamps();

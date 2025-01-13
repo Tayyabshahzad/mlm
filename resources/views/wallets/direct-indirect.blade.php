@@ -110,7 +110,7 @@
         <div class="modal-content">
             <form action="{{ route('wallet.transfer.to.online') }}" method="POST">
                 @csrf
-                <input type="text" name="wallet_type" value="direct_indirect" required>
+                <input type="hidden" name="wallet_type" value="direct_indirect" required>
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">

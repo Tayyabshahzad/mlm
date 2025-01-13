@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WithDrawalequest;
 use Illuminate\Http\Request;
@@ -57,6 +58,18 @@ class WithdrawalRequestController extends Controller
             'review_notes' => $request->review_notes
         ]); 
         return redirect()->route('wallets.online')->with('success', 'Withdrawal request submitted successfully.');
+    }
+
+    public function memberTransfer(Request $request){
+        $request->validate([ 
+            'amount' => 'required|numeric|min:1',
+            'review_notes' => 'string',
+            'source'=> 'required'
+        ]); 
+        $user = User::where('username',$request->source)->first();
+        if(!$user){
+            return redirect()->back()->with('error', 'Invalid Username');
+        }
     }
 
     public function requests(Request $request)
