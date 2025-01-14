@@ -56,6 +56,7 @@
                                                     <tr> 
                                                         <th class="text-left font-weight-bold text-muted text-uppercase">S#</th>
                                                         <th class="text-left font-weight-bold text-muted text-uppercase">Username</th>
+                                                        <th class="text-left font-weight-bold text-muted text-uppercase">Name</th>
                                                         <th class="text-left font-weight-bold text-muted text-uppercase">Email Address</th>
                                                         <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">PV Balance</th>
                                                         <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Details</th>
@@ -79,6 +80,7 @@
                                                         </div>
                                                          {{ $teamMember->username }}
                                                         </td>
+                                                        <td class="text-left pt-7 align-middle">{{ $teamMember->name }}</td>
                                                         <td class="text-left pt-7 align-middle">{{ $teamMember->email }}</td>
                                                         <td class="text-left pt-7 align-middle">{{ $teamMember->current_pv_balance }}</td>
                                                       

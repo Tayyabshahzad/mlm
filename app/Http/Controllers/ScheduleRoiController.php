@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ROITransaction;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Models\Week;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -63,6 +65,46 @@ class ScheduleRoiController extends Controller
             $this->generateParentCommissions($user, $roiPayment);
 
             $this->info("ROI generated for user {$user->id} | {$user->name}");
+        }
+    }
+
+    private function generateParentCommissions($user, $roiAmount)
+    {
+        $commissionLevels = [
+            1 => 3.5,
+            2 => 3,
+            3 => 2.5,
+            4 => 2,
+            5 => 1.5,
+            6 => 1,
+            7 => 0.5,
+        ];
+
+        foreach ($commissionLevels as $level => $percentage) {
+            $parent = $this->getAncestorByLevel($user, $level);  
+            if ($parent) {
+                $directChildrenCount = User::where('sponsor_id', $parent->id)->where('can_login', true)->count();
+                $requiredUsers = $this->getRequiredUsersForLevel($level);  
+                if ($directChildrenCount >= $requiredUsers) {
+                    $commissionAmount = ($roiAmount * $percentage) / 100;
+                    ROITransaction::create([
+                        'user_id' => $parent->id,
+                        'amount' => $commissionAmount,
+                        'percentage' => $percentage,
+                        'description' => "Level {$level} commission from user {$user->id} | {$user->name}",
+                    ]);
+                    Wallet::create([
+                        'user_id' => $parent->id,
+                        'wallet_type' => 'profit_share',
+                        'balance' => $commissionAmount,
+                        'level' => $level,
+                        'commission_type' => 'profit_share',
+                        'wallet_from' => $user->id,
+                        'percentage' => $percentage,
+                    ]);
+                }
+                  
+            }
         }
     }
 }
