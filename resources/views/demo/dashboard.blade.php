@@ -671,7 +671,13 @@
     <script src="{{ asset('assets/js/pages/features/charts/apexcharts.js') }}"></script>
     <script>
         $(document).ready(function () {
-
+            if ($('#kt_mixed_widget_18_chart').length) {
+            KTWidgets.initMixedWidget18(25);
+        } else {
+            console.error("Element with ID 'kt_mixed_widget_18_chart' not found.");
+        }
+            
+           
             $('#generateRewardTargetReport').on('click', function () { 
                 $('#reward-target-details').removeClass('d-none'); 
                 $('#rank-target-details').addClass('d-none').removeClass('d-block'); 

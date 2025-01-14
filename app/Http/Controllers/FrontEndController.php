@@ -493,17 +493,17 @@ class FrontEndController extends Controller
 
     public function bulkRegisterUsers()
     {
-        $parentUsername = 'asim-4-sub-2nd-child-1-1'; 
+        $parentUsername = 'admin_11'; 
         $parent = User::where('username', $parentUsername)->firstOrFail();
         $parentId = $parent->id;  
         DB::beginTransaction();
         try {
             // Loop to create 50 users
-            for ($i = 1; $i <= 1; $i++) {
-                $name = "asim4-chaid-main-sub-sub-$i";
-                $email = "asim4-chaid-main-sub-sub-@example.com";
+            for ($i = 1; $i <= 2; $i++) {
+                $name = "arslan-1st-child-$i+3";
+                $email = "arslan-1st-child-$i+3@example.com";
                 $password = Hash::make('password'); // Default password
-                $username = "asim4-chaid-main-sub-sub-$i"; 
+                $username = "arslan-1st-child-$i+3"; 
                 // Create user
                 $newUser = User::create([
                     'name' => $name,

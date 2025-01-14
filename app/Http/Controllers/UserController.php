@@ -98,22 +98,16 @@ class UserController extends Controller
     }
     public function getChildCountAtLevel($userId, $level)
     {
-        if ($level == 1) {
-            // Base case: Count direct children
+        if ($level == 1) { 
             return User::where('sponsor_id', $userId)->where('can_login', true)->count();
-        }
-
-        // Recursive step: Traverse the children and decrement the level
-        $directChildren = User::where('sponsor_id', $userId)->where('can_login', true)->pluck('id');
-
-        $count = 0;
+        } 
+        $directChildren = User::where('sponsor_id', $userId)->where('can_login', true)->pluck('id'); 
+        $totalCount = 0;
         foreach ($directChildren as $childId) {
-            $count += $this->getChildCountAtLevel($childId, $level - 1);
-        }
-
-        return $count;
-    }
-
+            $totalCount += $this->getChildCountAtLevel($childId, $level - 1);
+        } 
+        return $totalCount + $directChildren->count();
+    } 
     public function assignRewardToUser($parentID,  $level)
     {
         if ($level > 7) {
@@ -131,7 +125,7 @@ class UserController extends Controller
             ['level' => 4, 'reward_amount' => 4000, 'users_required' => 5],
             ['level' => 5, 'reward_amount' => 10000, 'users_required' => 6],
             ['level' => 6, 'reward_amount' => 30000, 'users_required' => 7],
-            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 8],
+            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 8],    
         ]);
         $specificRewardLevel = $rewardLevels->firstWhere('level', $level); 
         for ($i = 1; $i < $level; $i++) {
@@ -161,9 +155,7 @@ class UserController extends Controller
         }
     }
     public function checkAndAssignRewards($userId, $user)
-    {
-
-        //tayyab create ho raha , ab sary wo user ly aiw jis ke id shahzad ha 
+    {  
         $directChildren = User::where('sponsor_id', $userId)
             ->where('can_login', 1) // Only active users
             ->get();
@@ -236,9 +228,7 @@ class UserController extends Controller
             \Log::info("End ------------------  ");
         }
         \Log::info("-------------Loop End  ------------------  ");
-    }
-
-
+    } 
     public function calculateDirectReferrals($userId)
     {
         return \DB::table('users')->where('sponsor_id', $userId)->where('can_login', 1)->count();
@@ -268,9 +258,7 @@ class UserController extends Controller
         \Log::info("Team size for user {$childUser->name}: Direct Referrals = {$directReferralsCount}, Downline = {$downlineTeamSize}, Total = {$totalTeamSize}");
 
         return $totalTeamSize;
-    }
-
-
+    } 
 
     private function assignReward($userId, $amount, $level)
     {
@@ -365,10 +353,7 @@ class UserController extends Controller
     {
         // Count the number of users directly sponsored by this user
         return User::where('sponsor_id', $userId)->count();
-    }
-    
-    
-
+    } 
     public function roiPayments()
     {
         $users = User::where('can_login', true)->get();

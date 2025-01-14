@@ -42,7 +42,7 @@
                        
                     </h3>
                     <div class="card-toolbar">
-                        <a  href="{{ route('run-schedule') }}"   class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Generate ROI</a> 
+                        <a  href="{{ route('run-schedule') }}"   class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Generate ROI s</a> 
                     </div>
                 </div>
                 <!--end::Header-->

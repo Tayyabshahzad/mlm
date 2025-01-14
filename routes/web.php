@@ -7,6 +7,7 @@ use App\Http\Controllers\FrontEndController;
 use App\Http\Controllers\GenealogyController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ScheduleRoiController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WithdrawalRequestController;
@@ -116,6 +117,14 @@ Route::get('/run-schedule', function () {
     Artisan::call('schedule:run');
     return redirect()->back()->with('success','Schedule command executed');
 })->name('run-schedule');
+
+
+Route::controller(ScheduleRoiController::class)->middleware(['auth','verified','role:admin'])->group(function () {
+    Route::get('run-schedule-manually','schedule')->name('run.schedule.manually');  
+}); 
+
+
+ 
 
 Auth::routes(['verify' => true]);
 

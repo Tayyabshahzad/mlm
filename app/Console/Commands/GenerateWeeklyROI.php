@@ -30,67 +30,64 @@ class GenerateWeeklyROI extends Command
      */
     
      public function handle()
-{
-    $users = User::all(); // Fetch all users
-    
-    foreach ($users as $user) {
-        $walletTotal = Wallet::where('user_id', $user->id)->sum('balance');
-        // Skip if the user has completed their 2x wallet or ROI
-        if ($walletTotal >= 200 ) {
-            continue;
-        }
+    {
+        $users = User::where('can_login', true)->get(); // Fetch all users 
+        foreach ($users as $user) {
+            $walletTotal = Wallet::where('user_id', $user->id)->sum('balance');
+            if ($walletTotal >= 200 ) {
+                continue;
+            } 
+            // Skip if an ROI transaction has already been created today
+            if ($user->last_roi_payment_date && $user->last_roi_payment_date->isToday()) {
+                $this->info("Skipping user {$user->id} | {$user->name} - ROI already generated today.");
+                continue;
+            }
 
-        // Skip if an ROI transaction has already been created today
-        if ($user->last_roi_payment_date && $user->last_roi_payment_date->isToday()) {
-            $this->info("Skipping user {$user->id} | {$user->name} - ROI already generated today.");
-            continue;
-        }
+            // Initialize ROI start and end dates if not set
+            if (!$user->roi_start_date) {
+                $user->roi_start_date = Carbon::now();
+                $user->roi_end_date = Carbon::now()->addYears(2);
+                $user->save();
+            }
 
-        // Initialize ROI start and end dates if not set
-        if (!$user->roi_start_date) {
-            $user->roi_start_date = Carbon::now();
-            $user->roi_end_date = Carbon::now()->addYears(2);
+            $monthsRemaining = Carbon::now()->diffInMonths($user->roi_end_date, false);
+            $remainingPV = (200 - $user->roi_wallet_balance);
+        
+            $dailyPercentage = Week::first();
+            $paymentPercentage = $dailyPercentage->percentage; // Example: fixed percentage, adjust as needed
+            $maxMonthlyPayment = $remainingPV / $monthsRemaining;
+            $roiPayment = ($remainingPV * $paymentPercentage) / 100;
+
+            $user->roi_wallet_balance += $roiPayment;
+            $user->last_roi_payment_date = Carbon::now();
             $user->save();
+
+            // Create wallet entry for ROI
+            Wallet::create([
+                'user_id' => $user->id,
+                'wallet_type' => 'roi',
+                'balance' => $roiPayment,
+                'level' => '-',
+                'commission_type' => 'Roi',
+                'percentage' => $paymentPercentage,
+            ]);
+
+            // Record the ROI transaction
+            ROITransaction::create([
+                'user_id' => $user->id,
+                'amount' => $roiPayment,
+                'percentage' => $paymentPercentage,
+                'description' => 'Weekly ROI Generated',
+            ]);
+
+            // Generate parent commissions
+            $this->generateParentCommissions($user, $roiPayment);
+
+            $this->info("ROI generated for user {$user->id} | {$user->name}");
         }
 
-        $monthsRemaining = Carbon::now()->diffInMonths($user->roi_end_date, false);
-        $remainingPV = (200 - $user->roi_wallet_balance);
-       
-        $dailyPercentage = Week::first();
-        $paymentPercentage = $dailyPercentage->percentage; // Example: fixed percentage, adjust as needed
-        $maxMonthlyPayment = $remainingPV / $monthsRemaining;
-        $roiPayment = ($remainingPV * $paymentPercentage) / 100;
-
-        $user->roi_wallet_balance += $roiPayment;
-        $user->last_roi_payment_date = Carbon::now();
-        $user->save();
-
-        // Create wallet entry for ROI
-        Wallet::create([
-            'user_id' => $user->id,
-            'wallet_type' => 'roi',
-            'balance' => $roiPayment,
-            'level' => '-',
-            'commission_type' => 'Roi',
-            'percentage' => $paymentPercentage,
-        ]);
-
-        // Record the ROI transaction
-        ROITransaction::create([
-            'user_id' => $user->id,
-            'amount' => $roiPayment,
-            'percentage' => $paymentPercentage,
-            'description' => 'Weekly ROI Generated',
-        ]);
-
-        // Generate parent commissions
-        $this->generateParentCommissions($user, $roiPayment);
-
-        $this->info("ROI generated for user {$user->id} | {$user->name}");
+        $this->info('Weekly ROI generation completed.');
     }
-
-    $this->info('Weekly ROI generation completed.');
-}
 
     
     private function generateParentCommissions($user, $roiAmount)
@@ -106,27 +103,46 @@ class GenerateWeeklyROI extends Command
         ];
 
         foreach ($commissionLevels as $level => $percentage) {
-            $parent = $this->getAncestorByLevel($user, $level); // Method to find parent by level
+            $parent = $this->getAncestorByLevel($user, $level);  
             if ($parent) {
-                $commissionAmount = ($roiAmount * $percentage) / 100;
-                ROITransaction::create([
-                    'user_id' => $parent->id,
-                    'amount' => $commissionAmount,
-                    'percentage' => $percentage,
-                    'description' => "Level {$level} commission from user {$user->id} | {$user->name}",
-                ]);
-
-                Wallet::create([
-                    'user_id' => $parent->id,
-                    'wallet_type' => 'profit_share',
-                    'balance' => $commissionAmount,
-                    'level' => $level,
-                    'commission_type' => 'profit_share',
-                    'wallet_from' => $user->id,
-                    'percentage' => $percentage,
-                ]);
+                $directChildrenCount = User::where('sponsor_id', $parent->id)->where('can_login', true)->count();
+                $requiredUsers = $this->getRequiredUsersForLevel($level);  
+                if ($directChildrenCount >= $requiredUsers) {
+                    $commissionAmount = ($roiAmount * $percentage) / 100;
+                    ROITransaction::create([
+                        'user_id' => $parent->id,
+                        'amount' => $commissionAmount,
+                        'percentage' => $percentage,
+                        'description' => "Level {$level} commission from user {$user->id} | {$user->name}",
+                    ]);
+                    Wallet::create([
+                        'user_id' => $parent->id,
+                        'wallet_type' => 'profit_share',
+                        'balance' => $commissionAmount,
+                        'level' => $level,
+                        'commission_type' => 'profit_share',
+                        'wallet_from' => $user->id,
+                        'percentage' => $percentage,
+                    ]);
+                }
+                  
             }
         }
+    }
+
+    private function getRequiredUsersForLevel($level)
+    {
+        $requiredUsers = [
+            1 => 2,  // Level 1 needs 2 users
+            2 => 3,  // Level 2 needs 3 users
+            3 => 4,  // Level 3 needs 4 users
+            4 => 5,  // Level 4 needs 5 users
+            5 => 6,  // Level 5 needs 6 users
+            6 => 7,  // Level 6 needs 7 users
+            7 => 8,  // Level 7 needs 8 users
+        ];
+
+        return $requiredUsers[$level] ?? 0;  // Default to 0 if level is not defined
     }
     
     private function getAncestorByLevel($user, $level)
