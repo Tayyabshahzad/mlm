@@ -55,7 +55,7 @@
                         <div class="card-header py-3">
                             <div class="card-title align-items-start flex-column">
                                 <h3 class="card-label font-weight-bolder text-dark">Change Password</h3>
-                                <span class="text-muted font-weight-bold font-size-sm mt-1"> Change your account password </span>
+                                <span class="text-muted font-weight-bold font-size-sm mt-1"> Change Password for : {{ $user->name }} </span>
                             </div>
                            
                         </div>
@@ -70,6 +70,7 @@
 
         <!-- Current Password -->
         @if(!$id) 
+        
         <div class="form-group row">
             <label class="col-xl-3 col-lg-3 col-form-label text-alert">Current Password</label>
             <div class="col-lg-9 col-xl-6">

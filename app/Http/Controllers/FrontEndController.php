@@ -334,8 +334,14 @@ class FrontEndController extends Controller
     }
 
     public function changePassword($id = null){
+        
          
-        $user = Auth::user(); 
+        if($id){
+            $user = User::where('id',$id)->first();
+        }else{
+            $user = Auth::user();
+        }
+       
         return view('users.profile.change-password',compact('user','id')); 
     }
 
@@ -347,7 +353,7 @@ class FrontEndController extends Controller
 
     
 
-    public function updatePassword(Request $request)
+    public function updatePassword(Request $request, $id=null)
     {
         // Validate the incoming data
        
@@ -361,7 +367,13 @@ class FrontEndController extends Controller
         // if (!Hash::check($request->current_password, Auth::user()->password)) {
         //     return back()->withErrors(['current_password' => 'Current password is incorrect.']);
         // } 
-        Auth::user()->update([
+        if($id){
+            $user = User::find($id);
+        }else{
+            $user = Auth::user();
+        }
+       
+        $user->update([
             'password' => Hash::make($request->new_password),
         ]); 
         return redirect()->back()->with('success', 'Password updated successfully.');
@@ -493,17 +505,17 @@ class FrontEndController extends Controller
 
     public function bulkRegisterUsers()
     {
-        $parentUsername = 'admin_11'; 
+        $parentUsername = 'aima-sub-6-child-4'; 
         $parent = User::where('username', $parentUsername)->firstOrFail();
         $parentId = $parent->id;  
         DB::beginTransaction();
         try {
             // Loop to create 50 users
-            for ($i = 1; $i <= 2; $i++) {
-                $name = "arslan-1st-child-$i+3";
-                $email = "arslan-1st-child-$i+3@example.com";
+            for ($i = 1; $i <= 8; $i++) {
+                $name = "arslan-$i";
+                $email = "arlsan-$i@example.com";
                 $password = Hash::make('password'); // Default password
-                $username = "arslan-1st-child-$i+3"; 
+                $username = "arslan-$i"; 
                 // Create user
                 $newUser = User::create([
                     'name' => $name,

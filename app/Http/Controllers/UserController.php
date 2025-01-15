@@ -96,7 +96,7 @@ class UserController extends Controller
         }
         return response()->json(['success' => false, 'message' => 'User not found.']);
     }
-    public function getChildCountAtLevel($userId, $level)
+    public function old_getChildCountAtLevel($userId, $level)
     {
         if ($level == 1) { 
             return User::where('sponsor_id', $userId)->where('can_login', true)->count();
@@ -112,8 +112,35 @@ class UserController extends Controller
 
         return $countAtSpecificLevel;
     } 
+
+    public function getChildCountAtLevel($userId, $level, $currentLevel = 1)
+{
+    if ($currentLevel > $level) {
+        return 0; // Stop recursion if the current level exceeds the desired level
+    }
+
+    // Get direct children at the current level
+    $directChildren = User::where('sponsor_id', $userId)->where('can_login', true)->pluck('id');
+
+    if ($currentLevel == $level) {
+        // If at the desired level, return the count of children
+        return $directChildren->count();
+    }
+
+    $countAtSpecificLevel = 0;
+    foreach ($directChildren as $childId) {
+        // Recursively count children at the next level
+        $countAtSpecificLevel += $this->getChildCountAtLevel($childId, $level, $currentLevel + 1);
+    }
+
+    return $countAtSpecificLevel;
+}
+
+
+
     public function assignRewardToUser($parentID,  $level)
     {
+        $ll = $level;
         if ($level > 7) {
             return;
         }
@@ -129,7 +156,7 @@ class UserController extends Controller
             ['level' => 4, 'reward_amount' => 4000, 'users_required' => 5],
             ['level' => 5, 'reward_amount' => 10000, 'users_required' => 6],
             ['level' => 6, 'reward_amount' => 30000, 'users_required' => 7],
-            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 8],    
+            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 8],    //////////
         ]);
         $specificRewardLevel = $rewardLevels->firstWhere('level', $level); 
         for ($i = 1; $i < $level; $i++) {

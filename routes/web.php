@@ -37,7 +37,7 @@ Route::middleware(['auth','verified',CheckUserStatus::class])->prefix('profile')
     Route::get('social', [FrontEndController::class, 'socialAccountInformation'])->name('social.account.information');
     Route::get('/change-password', [FrontEndController::class, 'changePassword'])->name('profile.change.password'); 
     Route::get('/bank-details', [FrontEndController::class, 'bankDetails'])->name('profile.bank.details'); 
-    Route::put('/update-password', [FrontEndController::class, 'updatePassword'])->name('update.password'); 
+    Route::put('/update-password/{id?}', [FrontEndController::class, 'updatePassword'])->name('update.password'); 
     Route::put('/profile/update', [FrontEndController::class, 'updateProfile'])->name('user.profile.update');
     Route::get('/agreement/request', [FrontEndController::class, 'agreementRequest'])->name('user.profile.agreement.request');
     Route::get('verify/phone', [FrontEndController::class, 'verifyPhone'])->name('phone.verify');
