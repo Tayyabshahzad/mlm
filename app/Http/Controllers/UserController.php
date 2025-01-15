@@ -102,11 +102,15 @@ class UserController extends Controller
             return User::where('sponsor_id', $userId)->where('can_login', true)->count();
         } 
         $directChildren = User::where('sponsor_id', $userId)->where('can_login', true)->pluck('id'); 
-        $totalCount = 0;
+        $countAtSpecificLevel = 0;
+        
         foreach ($directChildren as $childId) {
-            $totalCount += $this->getChildCountAtLevel($childId, $level - 1);
-        } 
-        return $totalCount + $directChildren->count();
+            $countAtSpecificLevel += User::where('sponsor_id', $childId)
+                                         ->where('can_login', true)
+                                         ->count();
+        }
+
+        return $countAtSpecificLevel;
     } 
     public function assignRewardToUser($parentID,  $level)
     {
