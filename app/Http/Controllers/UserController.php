@@ -30,7 +30,7 @@ class UserController extends Controller
     public function index()
     {
 
-        $teamMembers = User::with('team')->where('id', '!=', auth()->user()->id)->orderBy('can_login', 'asc')->paginate(20);;
+        $teamMembers = User::with('team')->where('id', '!=', auth()->user()->id)->orderBy('can_login', 'asc')->get();
         return view('users.index', compact('teamMembers'));
     }
 
