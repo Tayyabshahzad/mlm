@@ -132,14 +132,17 @@ class GenerateWeeklyROI extends Command
 
     private function getRequiredUsersForLevel($level)
     {
+
+    
+
         $requiredUsers = [
-            1 => 2,  // Level 1 needs 2 users
-            2 => 3,  // Level 2 needs 3 users
-            3 => 4,  // Level 3 needs 4 users
-            4 => 5,  // Level 4 needs 5 users
-            5 => 6,  // Level 5 needs 6 users
-            6 => 7,  // Level 6 needs 7 users
-            7 => 8,  // Level 7 needs 8 users
+            1 => 10,  // Level 1 needs 2 users
+            2 => 50,  // Level 2 needs 3 users
+            3 => 150,  // Level 3 needs 4 users
+            4 => 400,  // Level 4 needs 5 users
+            5 => 1000,  // Level 5 needs 6 users
+            6 => 2000,  // Level 6 needs 7 users
+            7 => 4000,  // Level 7 needs 8 users
         ];
 
         return $requiredUsers[$level] ?? 0;  // Default to 0 if level is not defined

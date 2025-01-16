@@ -510,83 +510,87 @@
         
                         </h3> 
                     </div>
+
+                   
+
+
                     <div class="card-body pt-0 pb-3">
                         <div class="tab-content">
                             <ol class="display-5">
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-success" role="progressbar" 
-                                             style="width: {{ ($data['levelCount'][1] / 3) * 100 }}%;" 
+                                             style="width: {{ ($data['levelCount'][1] / 10) * 100 }}%;" 
                                              aria-valuenow="{{ $data['levelCount'][1] }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="3"> 
-                                            {{ $data['levelCount'][1] }} /  3
+                                            {{ $data['levelCount'][1] }} /  10
                                         </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-warning" role="progressbar" 
-                                             style="width: {{ ($data['levelCount'][2] / 5) * 100 }}%;" 
+                                             style="width: {{ ($data['levelCount'][2] / 50) * 100 }}%;" 
                                              aria-valuenow="{{ $data['levelCount'][2] }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="5"> 
-                                            {{ $data['levelCount'][2] }}  / 5
+                                            {{ $data['levelCount'][2] }}  / 50
                                         </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-success" role="progressbar" 
-                                             style="width: {{ ($data['levelCount'][3] / 7) * 100 }}%;" 
+                                             style="width: {{ ($data['levelCount'][3] / 150) * 100 }}%;" 
                                              aria-valuenow="{{ $data['levelCount'][3] }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="7"> 
-                                            {{ $data['levelCount'][3] }}  / 7
+                                            {{ $data['levelCount'][3] }}  / 150
                                         </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-warning" role="progressbar" 
-                                             style="width: {{ ($data['levelCount'][4] / 9) * 100 }}%;" 
+                                             style="width: {{ ($data['levelCount'][4] / 400) * 100 }}%;" 
                                              aria-valuenow="{{ $data['levelCount'][4] }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="9"> 
-                                            {{ $data['levelCount'][4] }}  / 9
+                                            {{ $data['levelCount'][4] }}  / 400
                                         </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-danger" role="progressbar" 
-                                             style="width: {{ ($data['levelCount'][5] / 11) * 100 }}%;" 
+                                             style="width: {{ ($data['levelCount'][5] / 1000) * 100 }}%;" 
                                              aria-valuenow="{{ $data['levelCount'][5] }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="11"> 
-                                            {{ $data['levelCount'][5] }}  / 11
+                                            {{ $data['levelCount'][5] }}  / 1000
                                         </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-info" role="progressbar" 
-                                             style="width: {{ ($data['levelCount'][6] / 13) * 100 }}%;" 
+                                             style="width: {{ ($data['levelCount'][6] / 2000) * 100 }}%;" 
                                              aria-valuenow="{{ $data['levelCount'][6] }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="13"> 
-                                            {{ $data['levelCount'][6] }}  / 13
+                                            {{ $data['levelCount'][6] }}  / 2000
                                         </div>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="progress mb-10">
                                         <div class="progress-bar bg-success" role="progressbar" 
-                                             style="width: {{ ($data['levelCount'][7] / 15) * 100 }}%;" 
+                                             style="width: {{ ($data['levelCount'][7] / 4000) * 100 }}%;" 
                                              aria-valuenow="{{ $data['levelCount'][7] }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="15"> 
-                                            {{ $data['levelCount'][7] }}  / 15
+                                            {{ $data['levelCount'][7] }}  / 4000
                                         </div>
                                     </div>
                                 </li>
