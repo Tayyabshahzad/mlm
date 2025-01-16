@@ -52,7 +52,7 @@ class RegisteredUserController extends Controller
                 'string',
                 'exists:referral_links,link',
             ],
-            'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+           // 'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ]); 
         $referralLink = ReferralLink::where('link', $request->referral_link)->first(); 
         $baseUsername = Str::slug($request->username);

@@ -47,7 +47,7 @@ class UserController extends Controller
         // Mail::to($user->email)->send(new InvoiceEmail($user));
         $this->pvService->assignInitialPV($user);
         $this->assignCommissions($user);
-        $this->assignRewardToUser($user->sponsor_id, 1);
+        $this->test($user->sponsor_id, 1);
         return redirect()->back()->with('success', 'Member Status has been Updated');
     }
 
@@ -136,11 +136,55 @@ class UserController extends Controller
     return $countAtSpecificLevel;
 }
 
+    public function test($parentID,  $level)
+    {
+        if ($level > 7) {
+            return;
+        }
+        $parent = User::find($parentID);
+        if (!$parent) {
+            return;
+        }
+        $directChildCount = $this->getChildCountAtLevel($parentID, $level);
+        $rewardLevels = collect([
+            ['level' => 1, 'reward_amount' => 150, 'users_required' => 2],
+            ['level' => 2, 'reward_amount' => 300, 'users_required' => 3],
+            ['level' => 3, 'reward_amount' => 1200, 'users_required' => 4],
+            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 5],
+            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 6],
+            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 7],
+            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 8],
+        ]);
+        $specificRewardLevel = $rewardLevels->firstWhere('level', $level);
+        for ($i = 1; $i < $level; $i++) {
+            $previousReward = Wallet::where([
+                ['user_id', '=', $parentID],
+                ['wallet_type', '=', 'reward'],
+                ['commission_type', '=', 'reward'],
+                ['level', '=', $i],
+            ])->first();
 
+            if (!$previousReward || $previousReward->balance <= 0) {
+                \Log::info("Skipping reward for level {$level} because reward for level {$i} is not achieved.");
+                return;
+            }
+        }
+        
+        \Log::info("Level: " . $level . " directChildCount: " . $directChildCount . " specificRewardLevel: " . $specificRewardLevel['users_required']);
+        // $usersRequired = $rewardLevels; 
+        if ($directChildCount >= $specificRewardLevel['users_required']) {
+            \Log::info('condition meet');
+            $this->assignReward($parentID, $specificRewardLevel['reward_amount'], $specificRewardLevel['level']);
+        }
+        $parentExists  = User::find($parent->sponsor_id);
+        if ($parentExists) {
+            \Log::info('parentExists: ' . $parentExists->id);
+            $this->test($parentExists->id, $level+1);
+        }
+    }
 
     public function assignRewardToUser($parentID,  $level)
-    {
-        $ll = $level;
+    { 
         if ($level > 7) {
             return;
         }
