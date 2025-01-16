@@ -159,7 +159,7 @@ class FrontEndController extends Controller
         $authUsers =  User::where('sponsor_id',Auth::user()->id);  
         $inactiveUsers = $authUsers->where('can_login',false)->count(); 
         $reward = $authUsers->with('descendants'); 
-        $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('balance');
+        $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('total_amount');
 
         $teamSizing = User::where('sponsor_id', Auth::user()->id)
         ->withCount([

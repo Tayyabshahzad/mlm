@@ -142,7 +142,7 @@
                     <i aria-hidden="true" class="ki ki-close"></i>
                 </button>
             </div>
-            <form action="{{ route('users.status.update') }}" method="POST">
+            <form action="{{ route('users.status.update') }}"  id="updateUserForm" method="POST">
                 @method('put')
                 @csrf
                 <div class="modal-body">
@@ -154,8 +154,8 @@
                     <input type="hidden" name="member_id" id="member_id"> 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary font-weight-bold">Update</button>
+                    <button type="button" class="btn btn-light-primary font-weight-bold rounded-0" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary font-weight-bold rounded-0"  id="updateUser">Update</button>
                 </div>
             </form>
         </div>
@@ -250,5 +250,18 @@ $('.user-details-btn').on('click', function () {
 }); 
 
 </script>
+
+
+<script>
+    $(document).ready(function () {
+        $('#updateUser').on('click', function () { 
+            $(this).prop('disabled', true); 
+            $(this).text('Updating...');
+            $('#updateUserForm').submit();
+        });
+    });
+</script>
+
+
     
 @endsection

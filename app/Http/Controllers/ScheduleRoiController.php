@@ -51,6 +51,7 @@ class ScheduleRoiController extends Controller
                 'level' => '-',
                 'commission_type' => 'Roi',
                 'percentage' => $paymentPercentage,
+                'total_amount'=> $roiPayment,
             ]);
 
             // Record the ROI transaction
@@ -101,6 +102,7 @@ class ScheduleRoiController extends Controller
                         'commission_type' => 'profit_share',
                         'wallet_from' => $user->id,
                         'percentage' => $percentage,
+                        'total_amount'=> $commissionAmount,
                     ]);
                 }
                   

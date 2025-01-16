@@ -30,13 +30,28 @@ class UserController extends Controller
     public function index()
     {
 
-        $teamMembers = User::with('team')->where('id', '!=', auth()->user()->id)->orderBy('can_login', 'asc')->get();
+        $teamMembers = User::with('team')
+        ->where('id', '!=', auth()->user()->id)
+        ->orderBy('can_login', 'asc') // First order by 'can_login'
+        ->orderBy('created_at', 'desc') // Then order by 'created_at' (or any date column) 
+        ->get();
         return view('users.index', compact('teamMembers'));
     }
 
     public function updateStatus(Request $request)
     {
+
+        $request->validate([
+            'member_id' => [
+                'required',
+                'integer',  
+                'exists:users,id', // Check if member_id exists in the 'id' column of 'users' table
+            ],
+        ]);
         $user = User::find($request->member_id);
+        if ($user->can_login) {
+            return redirect()->back()->with('error', 'This User is Already Activated');
+        } 
         $user->can_login = true;
         $user->save();
 
@@ -145,6 +160,28 @@ class UserController extends Controller
         if (!$parent) {
             return;
         }
+
+        // $requiredTeamSizes = [
+        //     2 => 2, // Level 2 requires 2 team members
+        //     3 => 3, // Level 3 requires 3 team members
+        //     4 => 4, // Level 4 requires 4 team members
+        //     5 => 5, // Level 5 requires 5 team members
+        //     6 => 6, // Level 6 requires 6 team members
+        //     7 => 7, // Level 7 requires 7 team members
+        // ];
+
+
+        // ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
+        // ['level' => 2, 'reward_amount' => 300, 'users_required' => 50],
+        // ['level' => 3, 'reward_amount' => 1200, 'users_required' => 150],
+        // ['level' => 4, 'reward_amount' => 4000, 'users_required' => 400],
+        // ['level' => 5, 'reward_amount' => 10000, 'users_required' => 1000],
+        // ['level' => 6, 'reward_amount' => 30000, 'users_required' => 2000],
+        // ['level' => 7, 'reward_amount' => 48000, 'users_required' => 4000],
+
+
+
+
         $directChildCount = $this->getChildCountAtLevel($parentID, $level);
         $rewardLevels = collect([
             ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
@@ -194,13 +231,13 @@ class UserController extends Controller
         }
         $directChildCount = $this->getChildCountAtLevel($parentID, $level);
         $rewardLevels = collect([
-            ['level' => 1, 'reward_amount' => 150, 'users_required' => 2],
-            ['level' => 2, 'reward_amount' => 300, 'users_required' => 3],
-            ['level' => 3, 'reward_amount' => 1000, 'users_required' => 4],
-            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 5],
-            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 6],
-            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 7],
-            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 8],    //////////
+            ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
+            ['level' => 2, 'reward_amount' => 300, 'users_required' => 50],
+            ['level' => 3, 'reward_amount' => 1200, 'users_required' => 150],
+            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 400],
+            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 1000],
+            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 2000],
+            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 4000],
         ]);
         $specificRewardLevel = $rewardLevels->firstWhere('level', $level); 
         for ($i = 1; $i < $level; $i++) {
@@ -235,15 +272,15 @@ class UserController extends Controller
             ->where('can_login', 1) // Only active users
             ->get();
         \Log::info("LOG 1 - { $user->name }  update ho raha ha  jis ka parent {$user->parent->name} ha , ham ny idr {$user->parent->name} k sary user ko get kr liya ha ");
-        $rewardLevels = [
-            ['level' => 1, 'reward_amount' => 150, 'users_required' => 7],
-            ['level' => 2, 'reward_amount' => 300, 'users_required' => 9],
-            ['level' => 3, 'reward_amount' => 1200, 'users_required' => 11],
-            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 13],
-            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 15],
-            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 17],
-            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 19],
-        ];
+        $rewardLevels = collect([
+            ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
+            ['level' => 2, 'reward_amount' => 300, 'users_required' => 50],
+            ['level' => 3, 'reward_amount' => 1200, 'users_required' => 150],
+            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 400],
+            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 1000],
+            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 2000],
+            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 4000],
+        ]);
         \Log::info("Loop Start  ------------------  ");
         $sn = 0;
         foreach ($rewardLevels as $level) {
@@ -362,6 +399,7 @@ class UserController extends Controller
         \Log::info("Wallet created for user {$userId} at level {$level}");
         // Add reward to wallet
         $wallet->balance += $amount;
+        $wallet->total_amount += $amount;
         $wallet->save();
 
         // Log reward assignment
@@ -396,13 +434,25 @@ class UserController extends Controller
             $teamSize = $this->getTeamSize($ancestorUser->id); // Fetch team size
     
             // Define required team size for each level
+
+            // $rewardLevels = collect([
+            //     ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
+            //     ['level' => 2, 'reward_amount' => 300, 'users_required' => 50],
+            //     ['level' => 3, 'reward_amount' => 1200, 'users_required' => 150],
+            //     ['level' => 4, 'reward_amount' => 4000, 'users_required' => 400],
+            //     ['level' => 5, 'reward_amount' => 10000, 'users_required' => 1000],
+            //     ['level' => 6, 'reward_amount' => 30000, 'users_required' => 2000],
+            //     ['level' => 7, 'reward_amount' => 48000, 'users_required' => 4000],
+            // ]);
+
+
             $requiredTeamSizes = [
-                2 => 2, // Level 2 requires 2 team members
-                3 => 3, // Level 3 requires 3 team members
-                4 => 4, // Level 4 requires 4 team members
-                5 => 5, // Level 5 requires 5 team members
-                6 => 6, // Level 6 requires 6 team members
-                7 => 7, // Level 7 requires 7 team members
+                2 => 50, // Level 2 requires 2 team members
+                3 => 150, // Level 3 requires 3 team members
+                4 => 400, // Level 4 requires 4 team members
+                5 => 1000, // Level 5 requires 5 team members
+                6 => 2000, // Level 6 requires 6 team members
+                7 => 4000, // Level 7 requires 7 team members
             ];
     
             // Check team size condition for the current level (default to 0 if not defined)
@@ -469,6 +519,7 @@ class UserController extends Controller
                 'user_id' => $user->id,
                 'wallet_type' => 'roi',
                 'balance' => $roiPayment,
+                'total_amount' => $roiPayment,
                 'level' => '-',
                 'commission_type' => 'Roi',
                 'percentage' => $paymentPercentage,
@@ -556,6 +607,7 @@ class UserController extends Controller
                         'user_id' => $parent->id,
                         'wallet_type' => 'profit_share',
                         'balance' => $commissionAmount,
+                        'total_amount' => $commissionAmount,
                         'level' => $level,
                         'commission_type' => 'profit_share',
                         'wallet_from' => $user->id,

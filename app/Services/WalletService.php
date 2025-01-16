@@ -21,7 +21,7 @@ class WalletService
         } elseif ($walletType === 'withdrawal') {
             $wallet->balance += $amount; // Update the withdrawal balance
         }
-        
+        $wallet->total_amount += $amount;
         // Save the wallet
         $wallet->save();
     }
@@ -45,6 +45,7 @@ class WalletService
                 'balance' => 0.00,
                 'direct_balance' => 0.00,
                 'indirect_balance' => 0.00,
+                
             ]
         );
 
@@ -54,7 +55,7 @@ class WalletService
         } elseif ($type === 'indirect') {
             $wallet->indirect_balance += $amount;
         }
-
+        $wallet->total_amount += $amount;
         // Save the wallet
         $wallet->save(); 
     }
@@ -86,7 +87,7 @@ class WalletService
         $wallet->indirect_balance += $amount;
        
     }
-
+    $wallet->total_amount += $amount;
     // Save the wallet
     $wallet->save();
 

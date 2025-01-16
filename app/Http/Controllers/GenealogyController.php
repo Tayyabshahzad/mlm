@@ -25,7 +25,7 @@ class GenealogyController extends Controller
                     $status = 'N';
                 }
                 // Check if the user's status is active
-               // if ($descendant->can_login == true) {
+                if ($descendant->can_login == true) {
                     $nodeDataArray[] = [
                         'key' => $descendant->id,
                         'parent' => $parent->id,
@@ -35,7 +35,7 @@ class GenealogyController extends Controller
     
                     // Recursively process this descendant's children
                     $buildHierarchy($descendant, $descendant->children ?? collect());
-               // }
+               }
             }
         };
     

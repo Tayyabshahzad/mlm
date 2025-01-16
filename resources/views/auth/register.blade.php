@@ -80,7 +80,7 @@
         <!-- Amount Proof Field -->
         <div class="form-group">
             <label class="font-size-h6 font-weight-bolder text-dark">Transaction  Proof <span class="text-danger">*</span> </label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="file" name="amount_src" autocomplete="off"   />
+            <input class="form-control form-control-solid h-auto rounded-md" type="file" name="amount_src" autocomplete="off" required   />
             @error('amount_src')
             <div class="text-danger">{{ $message }}</div>
             @enderror

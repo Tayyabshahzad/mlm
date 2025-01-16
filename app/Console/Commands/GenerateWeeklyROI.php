@@ -69,6 +69,7 @@ class GenerateWeeklyROI extends Command
                 'balance' => $roiPayment,
                 'level' => '-',
                 'commission_type' => 'Roi',
+                'total_amount'=> $roiPayment,
                 'percentage' => $paymentPercentage,
             ]);
 
@@ -123,6 +124,7 @@ class GenerateWeeklyROI extends Command
                         'commission_type' => 'profit_share',
                         'wallet_from' => $user->id,
                         'percentage' => $percentage,
+                        'total_amount'=> $commissionAmount,
                     ]);
                 }
                   
