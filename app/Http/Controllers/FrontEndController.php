@@ -175,8 +175,8 @@ class FrontEndController extends Controller
         ->limit(10)
         ->get();
         $totalRewardUsers = $levelCounts->sum(); 
-        $maxRewardTarget = 4000;
-        $totalRewardPercentage = ($totalRewardUsers / $maxRewardTarget) * 100;
+        $maxRewardTarget = 7610;
+        $totalRewardPercentage = round(($totalRewardUsers / $maxRewardTarget) * 100,2);
 
 
          
