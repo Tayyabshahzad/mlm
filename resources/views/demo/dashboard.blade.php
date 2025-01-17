@@ -573,18 +573,25 @@
                                     @endphp
                                     <li>
                                         <div class="progress-warpper text-center mb-5">
-                                            <div class="progress "  style="height:16px;padding-left:4px;">
-                                                <div style="" class="progress-bar 
-                                                            {{ $level % 2 == 0 ? 'bg-warning' : ($level % 3 == 0 ? 'bg-danger' : 'bg-success') }}" 
-                                                     role="progressbar" 
-                                                     style="width: {{ $visibleWidth }}%;" 
-                                                     aria-valuenow="{{ $count }}" 
-                                                     aria-valuemin="0" 
-                                                     aria-valuemax="{{ $maxValue }}"> 
+                                            <div class="progress" style="height:16px;padding-left:4px;">
+                                                <div 
+                                                    class="progress-bar 
+                                                        {{ 
+                                                            $level % 7 == 0 ? 'bg-primary' : 
+                                                            ($level % 6 == 0 ? 'bg-secondary' : 
+                                                            ($level % 5 == 0 ? 'bg-success' : 
+                                                            ($level % 4 == 0 ? 'bg-danger' : 
+                                                            ($level % 3 == 0 ? 'bg-warning' : 
+                                                            ($level % 2 == 0 ? 'bg-info' : 'bg-light'))))) }}" 
+                                                    role="progressbar" 
+                                                    style="width: {{ $visibleWidth }}%;" 
+                                                    aria-valuenow="{{ $count }}" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="{{ $maxValue }}">
                                                     {{ $count }} / {{ $maxValue }}
                                                 </div>
-                                               
                                             </div>
+                                            
                                             <b>
                                                <small>{{ $count }} / {{ $maxValue }} </small> 
                                             </b>

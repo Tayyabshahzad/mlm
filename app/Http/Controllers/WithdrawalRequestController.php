@@ -60,17 +60,82 @@ class WithdrawalRequestController extends Controller
         return redirect()->route('wallets.online')->with('success', 'Withdrawal request submitted successfully.');
     }
 
-    public function memberTransfer(Request $request){
+    public function memberTransfer(Request $request)
+    {
         $request->validate([ 
             'amount' => 'required|numeric|min:1',
-            'review_notes' => 'string',
-            'source'=> 'required'
-        ]); 
-        $user = User::where('username',$request->source)->first();
-        if(!$user){
-            return redirect()->back()->with('error', 'Invalid Username');
+            'description' => 'string',
+            'member_account'=> 'required',
+            'wallet_type' =>'required|in:member_transfer'
+        ]);        
+        $recipient = User::where('username', $request->member_account)
+                    ->orWhere('email', $request->member_account)
+                    ->first();
+        if (!$recipient) {
+            return redirect()->back()->with('error', 'Recipient not exists');
         }
+        $onlineWallet = Wallet::where('wallet_type', 'online')
+        ->where('user_id', Auth::id());
+        $onlineWalletSum = $onlineWallet->sum('balance'); 
+        if ($request->amount > $onlineWalletSum) {
+            return redirect()->back()->with('error','Insufficient balance in the online wallet.');
+        }  
+        $remainingAmount = $request->amount; // let say 10
+        $onlineWallets = $onlineWallet->orderBy('id', 'asc')->get();   
+        foreach ($onlineWallets as $wallet) {
+            if ($remainingAmount == 0) break; 
+            if ($wallet->balance <= $remainingAmount) {
+                $remainingAmount -= $wallet->balance;
+                $wallet->update(['balance' => 0]);
+            } else {
+                $wallet->update(['balance' => $wallet->balance - $remainingAmount]);
+                $remainingAmount = 0;
+            }
+        }   
+     
+        WithDrawalequest::create([
+            'user_id' => Auth::id(),
+            'profile_id'=> auth::user()->profile->id,
+            'wallet_type' => 'online',
+            'amount' => $request->amount,
+            'status' => 'pending',
+            'review_notes' => $request->review_notes
+        ]); 
+
+
+
+        $wallet = Wallet::Create(
+        
+            [
+                'user_id' => $userId,
+                'wallet_type' => 'direct_indirect',
+                'balance' => 0.00,
+                'direct_balance' => 0.00,
+                'indirect_balance' => 0.00,
+                'level' => $level,
+                'wallet_from' => $user->id,
+                'commission_type'=>$type
+            ]
+        );
+
+
+        $recipientWallet = $user->wallet()->where('wallet_type', 'online')->first(); 
+        if (!$recipientWallet) {
+            return redirect()->back()->with('error', 'Recipient does not have an online wallet');
+        } 
+        $senderWallet->balance -= $request->amount;
+        $senderWallet->save();
+    
+        // Add the transfer amount to the recipient's wallet
+        $recipientWallet->balance += $request->amount;
+        $recipientWallet->save();
+    
+        // Optionally, you can log the transaction in a table (e.g., a transfer history table)
+        // You can also create a notification for the recipient
+    
+        return redirect()->back()->with('success', 'Transfer successful');
     }
+    
 
     public function requests(Request $request)
     {
@@ -110,10 +175,7 @@ class WithdrawalRequestController extends Controller
         $WithDrawalequest->save();
         return redirect()->back()->with('success', 'Withdrawal request has been updated successfully.');
     }   
-
-
-     
-
+ 
 
     public function delete(Request $request)
     {

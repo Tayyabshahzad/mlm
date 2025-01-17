@@ -19,17 +19,13 @@ class GenealogyController extends Controller
             $descendants = $descendants ?? collect(); // Ensure it's an iterable collection
     
             foreach ($descendants as $descendant) {
-                if ($descendant->can_login == true) {
-                    $status = 'Y';
-                }else{
-                    $status = 'N';
-                }
+                
                 // Check if the user's status is active
                 if ($descendant->can_login == true) {
                     $nodeDataArray[] = [
                         'key' => $descendant->id,
                         'parent' => $parent->id,
-                        'name' => $descendant->name . ' ('. $status . ')',
+                        'name' => $descendant->username,
                         'image' => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/logo-50x50.jpeg'),
                     ];
     
@@ -42,7 +38,7 @@ class GenealogyController extends Controller
         // Add the authenticated user to the hierarchy
         $nodeDataArray[] = [
             'key' => $user->id,
-            'name' => $user->name . '-'. $user->can_login ,
+            'name' => $user->username ,
             'username' => $user->username,
             'image' => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/logo-50x50.jpeg'),
         ];

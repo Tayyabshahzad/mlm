@@ -240,9 +240,9 @@
 <div class="modal fade" id="WithdrawModelTransfer" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="{{ route('withdrawals.member.transfer') }}" method="POST">
+            <form action=" " method="">
                 @csrf
-                <input type="hidden" name="wallet_type" value="online" required>
+                <input type="hidden" name="wallet_type" value="member_transfer" required>
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Member Transfer</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -256,10 +256,9 @@
                                 Username / Email Address <span class="text-danger">*</span>
                             </label>
                             <input type="text" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="source"   
-                             required 
-                             max="{{ $onlineWallets->sum('balance') }}"
-                             placeholder="Enter Amount"
+                             name="member_account"   
+                             required  
+                             placeholder="Enter Member Account email or password"
                              >  
                         </div>  
 
@@ -279,7 +278,7 @@
                             <label for="" class="font-weight-bold mr-2">
                                 Description 
                             </label>
-                            <textarea name="target_account_details" id="target_account_details" class="form-control form-control-sm form-control-solid mb-2" required></textarea>
+                            <textarea name="description" id="description" class="form-control form-control-sm form-control-solid mb-2"></textarea>
                             
                         </div>  
                     </div>  

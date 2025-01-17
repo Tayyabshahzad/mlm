@@ -69,7 +69,12 @@
         text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 30px #0ff, 0 0 50px #0ff, 0 0 100px #0ff, 0 0 150px #0ff;
     }
 }
-
+.bg-secondary{
+	background-color: rgb(194, 200, 18)!important
+}
+.bg-light{
+	background-color: #5AB8B0!important
+}
 			</style>
 
   
@@ -95,7 +100,7 @@
 			
 
 			<h5 style="position: absolute;left:27%;font-size:11px" class="text-white username">
-				Welcome: Mudasshrir786
+				Welcome: {{ Auth::user()->username }}
 			</h5>
 
 			
