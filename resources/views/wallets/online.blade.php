@@ -43,9 +43,9 @@
                     
                     <div class="card-header border-0"> 
                         @if($walletSum >= 700)
-                        <div class="  align-items-center">
-                            <a href="#" disabled  class="disabled mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
-                            <a href="#" disabled   class="disabled mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                        <div class="  align-items-center align-items-center justify-content-center pt-5" >
+                            <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
+                            <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
                         </div>
                     @else 
                     <div class="  align-items-center justify-content-center pt-5">
