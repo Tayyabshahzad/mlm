@@ -37,11 +37,33 @@
         <div class="container"> 
 
 
-            <div class="col-lg-12 col-xxl-12 order-1 order-xxl-2">  
+            <div class="col-lg-12 col-xxl-12 order-1 order-xxl-2"> 
+                
+                <div class="card card-custom card-stretch gutter-b "> 
+                    
+                    <div class="card-header border-0"> 
+                        @if($walletSum >= 700)
+                        <div class="  align-items-center">
+                            <a href="#" disabled  class="disabled mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
+                            <a href="#" disabled   class="disabled mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                        </div>
+                    @else 
+                    <div class="  align-items-center justify-content-center pt-5">
+                        <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
+                        <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                    </div> 
+                    @endif
+                    </div> 
+                </div>
+               
+               
+               
                 <div class="card card-custom card-stretch gutter-b"> 
                     <div class="card-header border-0"> 
                         <h3 class="card-title font-weight-bolder text-dark">Account Balance Details</h3> 
                     </div> 
+
+
                     <div class="card-body pt-0"> 
                         <div class="mb-10">
                             <!--begin::Section-->
@@ -72,17 +94,7 @@
                                     </span>
                                 </div>  
                                 
-                                @if($walletSum >= 700)
-                                    <div class="d-flex align-items-center">
-                                        <a href="#" disabled  class="disabled mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
-                                        <a href="#" disabled   class="disabled mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
-                                    </div>
-                                @else 
-                                <div class="d-flex align-items-center">
-                                    <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
-                                    <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
-                                </div> 
-                                @endif
+                              
 
                                     
 

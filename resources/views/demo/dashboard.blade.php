@@ -254,7 +254,9 @@
                             <div class="card card-custom  " style="background-color: rgb(149, 238, 233)">
                                 <div class="card-body rounded-0 p-0 d-flex" style="background-image: url({{ asset('assets/custom-images/announcement.svg') }});background-size:70px;background-repeat:no-repeat;background-position:bottom left">
                                     <div class="d-flex flex-column flex-lg-row-auto w-auto  p-10 p-md-20">
-                                        <h1 class="font-weight-bolder text-dark">10 PV Registration fee will apply starting February 10, 2025. </h1>  
+                                        <h2 class="font-weight-bolder text-dark text-center">
+                                            There is a 10Pv (2500PKR) activation fee for getting an account in GVI System <br/>which will not be taken till 10th February.
+                                        </h2>  
                                     </div> 
                                 </div>
                             </div> 
@@ -567,20 +569,28 @@
                                         $percentage = ($count / $maxValue) * 100;
                             
                                         // Set a minimum visible width of 1.5%
-                                        $visibleWidth = $percentage > 1.5 ? $percentage : 4; // Minimum 1.5% width
+                                        $visibleWidth = $percentage > 1.5 ? $percentage : 7; // Minimum 1.5% width
                                     @endphp
                                     <li>
-                                        <div class="progress mb-10">
-                                            <div class="progress-bar 
-                                                        {{ $level % 2 == 0 ? 'bg-warning' : ($level % 3 == 0 ? 'bg-danger' : 'bg-success') }}" 
-                                                 role="progressbar" 
-                                                 style="width: {{ $visibleWidth }}%;" 
-                                                 aria-valuenow="{{ $count }}" 
-                                                 aria-valuemin="0" 
-                                                 aria-valuemax="{{ $maxValue }}"> 
-                                                {{ $count }} / {{ $maxValue }}
+                                        <div class="progress-warpper text-center mb-5">
+                                            <div class="progress "  style="height:16px;padding-left:4px;">
+                                                <div style="" class="progress-bar 
+                                                            {{ $level % 2 == 0 ? 'bg-warning' : ($level % 3 == 0 ? 'bg-danger' : 'bg-success') }}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ $visibleWidth }}%;" 
+                                                     aria-valuenow="{{ $count }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="{{ $maxValue }}"> 
+                                                    {{ $count }} / {{ $maxValue }}
+                                                </div>
+                                               
                                             </div>
+                                            <b>
+                                               <small>{{ $count }} / {{ $maxValue }} </small> 
+                                            </b>
                                         </div>
+                                       
+                                        
                                     </li>
                                 @endforeach
                             </ol>

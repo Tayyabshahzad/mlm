@@ -51,7 +51,28 @@
 				left: 60%!important; 
 			}
 
-		</style>
+
+ 
+				.username {
+    font-size: 2.5rem; /* Adjust size as needed */
+    color: #fff; /* Text color */
+    text-align: center;
+    text-shadow: 0 0 3px #00f, 0 0 7px #00f, 0 0 17px #00f, 0 0 37px #0ff, 0 0 77px #0ff, 0 0 113px #0ff;
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    0% {
+        text-shadow: 0 0 5px #00f, 0 0 10px #00f, 0 0 20px #00f, 0 0 40px #0ff, 0 0 80px #0ff, 0 0 120px #0ff;
+    }
+    100% {
+        text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 30px #0ff, 0 0 50px #0ff, 0 0 100px #0ff, 0 0 150px #0ff;
+    }
+}
+
+			</style>
+
+  
 		@php
 			$inactiveUsersAre = \DB::table('users')->where('can_login',0)->count();
 		@endphp
@@ -68,10 +89,22 @@
 			<!--begin::Logo-->
 			<a href="{{ route('dashboard') }}">
 				<img alt="Logo" src="{{ asset('assets/custom-images/gvi-icon.png') }}"  width="30%"/>
+				
 			</a>
+
+			
+
+			<h5 style="position: absolute;left:27%;font-size:11px" class="text-white username">
+				Welcome: Mudasshrir786
+			</h5>
+
+			
+
+
 			<!--end::Logo-->
 			<!--begin::Toolbar-->
 			<div class="d-flex align-items-center">
+				
 				<!--begin::Aside Mobile Toggle-->
 				<button class="btn p-0 burger-icon burger-icon-left" id="kt_aside_mobile_toggle">
 					<span></span>
