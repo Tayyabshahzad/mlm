@@ -460,7 +460,40 @@
           <div class="row">
            
             
+          <style> .progress-circle {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border-radius: 100%;
+            background: conic-gradient(#00d1d1 0%, #00d1d1 30%, #e3f9f9 30%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
           
+          /* Inner Circle to Keep Center Empty */
+          .inner-circle {
+            position: absolute;
+            width: 190px; /* Slightly smaller than the outer circle */
+            height: 190px;
+            border-radius: 50%;
+            background: #fff; /* Matches the background to appear hollow */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          
+          /* Percentage Text */
+          .percentage {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+          }
+
+  
+
+
+          </style>
             <div class="col-lg-6 " id="reward-target-wrapper"> 
                 <div class="card card-custom card-stretch gutter-b"> 
                     <div class="card-header border-0 pt-5">
@@ -468,11 +501,15 @@
                         <div class="card-toolbar"> 
                         </div>
                     </div> 
-                    <div class="card-body d-flex flex-column">
-                        <div class="flex-grow-1">
-                            <div id="kt_mixed_widget_18_chart" style="height: 300px"></div>
-                        </div>
-                        <div class="pt-5">
+                    <div class="card-body d-flex justify-content-center  flex-column text-center justify-center">
+                        <div class="graph-wrapper" style="  display: flex;  width: 100%;  justify-content: center;">
+                            <div class="progress-circle" data-progress="{{ $data['reward']  }}">
+                                <div class="inner-circle">
+                                  <span class="percentage"> {{ $data['reward']  }}%</span>
+                                </div>
+                            </div>
+                        </div> 
+                        <div class="pt-5" >
                             <p class="text-center font-weight-normal font-size-lg pb-7">Notes: Click to get more details for your upcoming rewards
                          </p>
                             <button type="" id="generateRewardTargetReport" class="btn btn-success btn-shadow-hover font-weight-bolder w-100 py-3">View Reward Target</button>
@@ -489,9 +526,13 @@
                         </div>
                     </div> 
                     <div class="card-body d-flex flex-column">
-                        <div class="flex-grow-1">
-                            <div id="kt_mixed_widget_14_chart" style="height: 300px"></div>
-                        </div>
+                        <div class="graph-wrapper" style="  display: flex;  width: 100%;  justify-content: center;">
+                            <div class="progress-circle" data-progress="0">
+                                <div class="inner-circle">
+                                  <span class="percentage">0%</span>
+                                </div>
+                            </div>
+                        </div> 
                         <div class="pt-5">
                             <p class="text-center font-weight-normal font-size-lg pb-7">Notes: Click to get more details for your upcoming Targets
                          </p>
@@ -674,12 +715,7 @@
 @section('page_js')
     <script src="{{ asset('assets/js/pages/features/charts/apexcharts.js') }}"></script>
     <script>
-        $(document).ready(function () {
-            if ($('#kt_mixed_widget_18_chart').length) {
-            KTWidgets.initMixedWidget18(25);
-        } else {
-            console.error("Element with ID 'kt_mixed_widget_18_chart' not found.");
-        }
+        $(document).ready(function () { 
             
            
             $('#generateRewardTargetReport').on('click', function () { 

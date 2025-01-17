@@ -117,7 +117,10 @@ class FrontEndController extends Controller
         ->limit(10)
         ->get();
         
-         
+        $totalRewardUsers = $levelCounts->sum();
+        dd($totalRewardUsers);
+        $maxRewardTarget = 4000;
+        $totalRewardPercentage = ($totalRewardUsers / $maxRewardTarget) * 100;
         $data = [
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
@@ -134,6 +137,7 @@ class FrontEndController extends Controller
             'roi_status' => true, // Customize based on your business logic
             'levelCount' => $levelCounts,
             'totalTeam' => $levelCounts->sum(),
+            'totalRwardPercentage' => $totalRewardPercentage,
         ];
 
         
@@ -170,7 +174,11 @@ class FrontEndController extends Controller
         ->orderBy('team_count', 'desc') // Order by team count
         ->limit(10)
         ->get();
-        
+        $totalRewardUsers = $levelCounts->sum(); 
+        $maxRewardTarget = 4000;
+        $totalRewardPercentage = ($totalRewardUsers / $maxRewardTarget) * 100;
+
+
          
         $data = [
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
@@ -188,6 +196,7 @@ class FrontEndController extends Controller
             'roi_status' => true, // Customize based on your business logic
             'levelCount' => $levelCounts,
             'totalTeam' => $levelCounts->sum(),
+            'reward' =>$totalRewardPercentage
         ];
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
