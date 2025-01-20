@@ -38,23 +38,24 @@
 
 
             <div class="col-lg-12 col-xxl-12 order-1 order-xxl-2"> 
-                
-                <div class="card card-custom card-stretch gutter-b "> 
-                    
+                @if(!Auth::user()->freez_wallet)
+                <div class="card card-custom card-stretch gutter-b ">  
                     <div class="card-header border-0"> 
                         @if($walletSum >= 700)
-                        <div class="  align-items-center align-items-center justify-content-center pt-5" >
-                            <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
-                            <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
-                        </div>
-                    @else 
-                    <div class="  align-items-center justify-content-center pt-5">
-                        <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
-                        <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
-                    </div> 
-                    @endif
+                            <div class="  align-items-center align-items-center justify-content-center pt-5" >
+                                <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
+                                <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                            </div>
+                        @else 
+                            <div class="  align-items-center justify-content-center pt-5">
+                                <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
+                                <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a>    
+                                
+                            </div> 
+                        @endif
                     </div> 
                 </div>
+                @endif
                
                
                
@@ -89,16 +90,11 @@
                                 </div> 
                                 <div class="d-flex flex-column flex-grow-1">
                                     <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">Last Transaction Date</a>
+                                    <a href="{{ route('show.transaction.history') }}">View Transaction History</a>
                                     <span class="font-weight-bold">
                                         {{ $onlineWallets->sortByDesc('created_at')->first()->created_at ?? 'No records found' }}  
                                     </span>
-                                </div>  
-                                
-                              
-
-                                    
-
-                              
+                                </div>   
                             </div> 
 
                             <div class="d-flex align-items-center mt-10">
@@ -118,10 +114,7 @@
                                     <div class="d-flex align-items-center">
                                         <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-warning font-weight-bolder font-size-sm">Buy Product </a> 
                                     </div>  
-                                @endif
-
-                               
-
+                                @endif 
                             </div> 
                         </div>  
                     </div> 
@@ -240,7 +233,7 @@
 <div class="modal fade" id="WithdrawModelTransfer" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action=" " method="">
+            <form action="{{ route('withdrawals.member.transfer') }}" method="POST">
                 @csrf
                 <input type="hidden" name="wallet_type" value="member_transfer" required>
                 <div class="modal-header">
@@ -285,7 +278,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="rounded-0 btn btn-primary btn-sm">Withdrawal </button>
+                    <button type="submit" class="rounded-0 btn btn-primary btn-sm">Transfer </button>
                 </div>
             </form>
         </div>

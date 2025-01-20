@@ -57,12 +57,13 @@
                                 <h3 class="card-label font-weight-bolder text-dark">Personal Information</h3>
                                 <span class="text-muted font-weight-bold font-size-sm mt-1">Update your personal informaiton</span>
                             </div>
-
+                            @if(!Auth::user()->freez_wallet)
                             <div class="card-title align-items-start flex-column">
-                                <a class="btn btn-sm btn-info rounded-0" href="{{ route('user.profile.agreement.request') }}">
+                                <a id="request_agreement" class="btn btn-sm btn-info rounded-0" href="{{ route('user.profile.agreement.request') }}">
                                      Request Agreement 
                                 </a>  
                             </div>
+                            @endif
                            
                         </div>
                         <!--end::Header-->
@@ -356,8 +357,8 @@
 @section('page_js')
     <script>
          var avatar = new KTImageInput('kt_profile_avatar'); 
-     new KTImageInput('kt_cnic_front'); 
-     new KTImageInput('kt_cnic_back'); 
+        new KTImageInput('kt_cnic_front'); 
+        new KTImageInput('kt_cnic_back'); 
          document.getElementById('sendOTPLink').addEventListener('click', function (e) {
     
     e.preventDefault();  
@@ -390,7 +391,15 @@
         link.style.pointerEvents = "auto";
     });
 });
+    
+    $(document).ready(function () {
+        $('#request_agreement').on('click', function () {  
+            $(this).prop('disabled', true); 
+            $(this).text('Sending Email ...');
+        });
 
+        
+    });
 
 
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TransactionLog;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WithDrawalequest;
@@ -91,48 +92,27 @@ class WithdrawalRequestController extends Controller
                 $wallet->update(['balance' => $wallet->balance - $remainingAmount]);
                 $remainingAmount = 0;
             }
-        }   
-     
-        WithDrawalequest::create([
-            'user_id' => Auth::id(),
-            'profile_id'=> auth::user()->profile->id,
-            'wallet_type' => 'online',
-            'amount' => $request->amount,
-            'status' => 'pending',
-            'review_notes' => $request->review_notes
-        ]); 
-
-
-
+        }  
         $wallet = Wallet::Create(
-        
             [
-                'user_id' => $userId,
-                'wallet_type' => 'direct_indirect',
-                'balance' => 0.00,
+                'user_id' => $recipient->id,
+                'wallet_type' => 'online',
+                'balance' => $request->amount,
                 'direct_balance' => 0.00,
                 'indirect_balance' => 0.00,
-                'level' => $level,
-                'wallet_from' => $user->id,
-                'commission_type'=>$type
+                'level' => '-',
+                'wallet_from' => Auth::id(),
+                'commission_type'=>'Member Transfer'
             ]
         );
-
-
-        $recipientWallet = $user->wallet()->where('wallet_type', 'online')->first(); 
-        if (!$recipientWallet) {
-            return redirect()->back()->with('error', 'Recipient does not have an online wallet');
-        } 
-        $senderWallet->balance -= $request->amount;
-        $senderWallet->save();
-    
-        // Add the transfer amount to the recipient's wallet
-        $recipientWallet->balance += $request->amount;
-        $recipientWallet->save();
-    
-        // Optionally, you can log the transaction in a table (e.g., a transfer history table)
-        // You can also create a notification for the recipient
-    
+        TransactionLog::create([
+            'user_id' => Auth::id(),
+            'from_wallet_type' => 'online',
+            'to_wallet_type' => 'online',
+            'amount' => $request->amount, 
+            'final_amount' => $request->amount,
+            'description' => 'An amount of ' . $request->amount . ' PV has been transferred to ' . $recipient->username . ' via member transfer.'
+        ]);
         return redirect()->back()->with('success', 'Transfer successful');
     }
     

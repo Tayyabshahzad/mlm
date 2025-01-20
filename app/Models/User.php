@@ -12,12 +12,13 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\HasMedia; 
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 class User extends Authenticatable implements ShouldQueue,HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, InteractsWithMedia;
-
+    use SoftDeletes;
     /**
      * The attributes that are mass assignable.
      *
@@ -30,7 +31,7 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         'username',
         'phone_verified',
         'is_active',
-        'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id'
+        'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id','freez_wallet','blocked'
     ]; 
     /**
      * The attributes that should be hidden for serialization.

@@ -48,8 +48,23 @@
                     <div class="flex-row-fluid ml-lg-8"> 
                         <div class="card card-custom gutter-b">
                             <div class="card-body p-0"> 
-                                <div class="row justify-content-center py-8 px-8 py-md-10 px-md-0">
+                                
+                                <div class="row justify-content-center py-8 px-8 py-md-10 px-md-0"> 
                                     <div class="col-md-10">
+                                        <form method="GET" action="{{ route('users.index') }}" class="mb-4">
+                                            <div class="input-group">
+                                                <input 
+                                                    type="text" 
+                                                    name="search" 
+                                                    class="form-control rounded-0" 
+                                                    placeholder="Search by username, name, or email" 
+                                                    value="{{ old('search', $search ?? '') }}">
+                                                <div class="input-group-append">
+                                                    <button type="submit" class="mr-3 btn-sm rounded-0 btn btn-info">Search</button>
+                                                    <a href="{{ route('users.index') }}" class="  rounded-0 btn btn-success">Clear</a>
+                                                </div>
+                                            </div>
+                                        </form>
                                         <div class="table-responsive">
                                             <table class="table">
                                                 <thead>
@@ -57,12 +72,10 @@
                                                         <th class="text-left font-weight-bold text-muted text-uppercase">S#</th>
                                                         <th class="text-left font-weight-bold text-muted text-uppercase">Username</th>
                                                         <th class="text-left font-weight-bold text-muted text-uppercase">Name</th>
-                                                        <th class="text-left font-weight-bold text-muted text-uppercase">Email Address</th>
-                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">PV Balance</th>
+                                                        <th class="text-left font-weight-bold text-muted text-uppercase">Email Address</th> 
                                                         <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Details</th>
-                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Status</th>
-                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Joining Date</th>
-                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Account Info</th>
+                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Status</th>  
+                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -72,24 +85,19 @@
                                                             {{ $loop->iteration }}
                                                         </td>
 
-                                                        <td class="border-0 pl-0 pt-7 d-flex align-items-center">
-                                                        <!--begin::Symbol-->
-                                                        <div class="symbol symbol-40 flex-shrink-0 mr-4 bg-light">
-                                                            <div class="symbol-label" 
-                                                            style="background-image: url('{{asset($teamMember->getFirstMediaUrl('user_profile_images')) }}')"></div>
-                                                        </div>
+                                                        <td class="border-0  ">
+                                                         
                                                          {{ $teamMember->username }}
                                                         </td>
-                                                        <td class="text-left pt-7 align-middle">{{ $teamMember->name }}</td>
-                                                        <td class="text-left pt-7 align-middle">{{ $teamMember->email }}</td>
-                                                        <td class="text-left pt-7 align-middle">{{ $teamMember->current_pv_balance }}</td>
+                                                        <td class=" ">{{ $teamMember->name }}</td>
+                                                        <td class=" ">{{ $teamMember->email }}</td> 
                                                       
                                                         <td class="text-primary pr-0 pt-7 text-left align-middle">
                                                             <button type="button" 
                                                                 data-toggle="modal"
                                                                 data-target="#userDetails"
                                                                 data-id="{{ $teamMember->id }}"
-                                                                class="btn btn-sm btn-outline-primary btn-outline-info user-details-btn"> 
+                                                                class="rounded-0 btn btn-sm btn-outline-primary btn-outline-info user-details-btn"> 
                                                                 <i     class="flaticon-medical "></i>
                                                             </button>    
                                                         </td>
@@ -101,14 +109,24 @@
                                                                 data-target="#changeStatus"
                                                             @endif
                                                             data-id="{{ $teamMember->id }}"
-                                                            class="radius btn btn-sm {{  $teamMember->can_login == 1 ? 'btn-outline-primary disabled' : 'btn-outline-danger' }}"> 
+                                                            class="rounded-0 radius btn btn-sm {{  $teamMember->can_login == 1 ? 'btn-outline-primary disabled' : 'btn-outline-danger' }}"> 
                                                             {{ $teamMember->can_login == 1 ? 'Activated ' : 'Active' }} 
                                                         </button>
-                                                        </td>
+                                                        </td> 
 
-                                                        <td class="text-left pt-7 align-middle">{{ $teamMember->created_at->diffForHumans()  }}</td>
-
-                                                        <td class="text-left pt-7 align-middle"> <a href="{{ route('profile.change.password',$teamMember->id) }}">More Info</a>  </td>
+                                                        <td class="text-left pt-7 align-middle">  
+                                                            <a class="btn btn-sm btn-outline-warning rounded-0" href="">{{ $teamMember->blocked  }}</a>
+                                                            <a class="btn btn-sm btn-outline-primary rounded-0" href="{{ route('user.info',$teamMember->id) }}">Details</a>
+                                                            {{-- <a href="{{ route('profile.change.password',$teamMember->id) }}">More Info</a>  --}}
+                                                          
+                                                            <button class="btn btn-sm btn-outline-danger rounded-0"
+                                                             data-toggle="modal"
+                                                             data-target="#deleteUser"
+                                                             data-id="{{ $teamMember->id }}"
+                                                            >Delete</button>
+                                                            {{-- <a href="{{ route('profile.change.password',$teamMember->id) }}">More Info</a>  --}}
+                                                         </td>
+                                                         
                                                     </tr>
                                                     @endforeach 
                                                     
@@ -187,18 +205,55 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="deleteUser" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelDelete" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabelDelete">  Delete User </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+            </div>
+            <form action="{{ route('user.delete') }}"  id="deleteUserForm" method="POST">
+                
+                @csrf
+                <div class="modal-body">
+                     
+                    <input type="hidden" name="delete_id" id="delete_id"> 
+                    <div class="form-group">
+                        <p class="text-center text-danger">Are you sure you want to delete this member? <br>This action cannot be undone. </p> 
+                         <label>Reason  <span class="text-danger">*</span></label>
+                         <textarea name="reason" placeholder=""  class="form-control" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary btn-sm font-weight-bold rounded-0" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger btn-sm font-weight-bold rounded-0"  id="deleteUser">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
  
 @endsection
 @section('page_js')
    
 <script>
     $(document).ready(function() {
-$('[data-target="#changeStatus"]').click(function() {
-    var id = $(this).data('id');
-    $('#member_id').val(id);
-    $('#statusForm').attr('action', '/team/members/status/' + id + '/update');
-});
-});
+        $('[data-target="#changeStatus"]').click(function() {
+            var id = $(this).data('id');
+            $('#member_id').val(id);
+            $('#statusForm').attr('action', '/team/members/status/' + id + '/update');
+        });
+   });
+
+
+   $(document).ready(function() {
+        $('[data-target="#deleteUser"]').click(function() { 
+            var id = $(this).data('id');
+            $('#delete_id').val(id);  
+        });
+   });
     
 
 $(document).ready(function () {
@@ -259,6 +314,8 @@ $('.user-details-btn').on('click', function () {
             $(this).text('Updating...');
             $('#updateUserForm').submit();
         });
+
+        
     });
 </script>
 

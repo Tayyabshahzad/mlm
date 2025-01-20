@@ -1,6 +1,7 @@
 @extends('demo.layout.app')
 @section('title','Genealogy Team')
 @section('custom_css')
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js"></script>
     <style>
         #diagramDiv {
@@ -39,6 +40,10 @@
         <div class="container-fluid"> 
             <div class="card card-custom gutter-b"> 
                 <div class="card-body py-2 "> 
+                    <div class="search-container">
+                        <input type="text" id="searchInput" class="form-control rounded-0" placeholder="Search by name or username...">
+                    </div>
+
                     <div id="diagramDiv"></div>
                 </div> 
             </div> 
@@ -81,6 +86,27 @@
         const nodeDataArray = @json($nodeDataArray);
 
         myDiagram.model = new go.TreeModel(nodeDataArray);
+        const searchInput = document.getElementById("searchInput");
+        searchInput.addEventListener("input", function () {
+            const query = searchInput.value.toLowerCase();
+            myDiagram.startTransaction("highlight search"); 
+            myDiagram.nodes.each(node => {
+                node.isHighlighted = false;
+            }); 
+            if (query) { 
+                myDiagram.nodes.each(node => {
+                    const data = node.data;
+                    const name = data.name ? data.name.toLowerCase() : "";
+                    const username = data.username ? data.username.toLowerCase() : "";
+                    if (name.includes(query) || username.includes(query)) {
+                        node.isHighlighted = true;
+                        myDiagram.centerRect(node.actualBounds);
+                    }
+                });
+            }
+
+            myDiagram.commitTransaction("highlight search");
+        });
     }
 
     init();

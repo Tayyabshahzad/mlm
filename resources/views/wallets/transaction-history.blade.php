@@ -85,6 +85,7 @@
                                         </td>
                                         <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> {{ ucfirst($transaction->charge ) }} </span>    </td>
                                         <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ ucfirst($transaction->final_amount ) }}</span>    </td>
+                                        <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  <i class=""></i> </span>    </td>
                                         
                                     </tr>   
                                 @endforeach

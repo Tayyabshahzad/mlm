@@ -61,6 +61,10 @@ Route::controller(UserController::class)->middleware(['auth','verified','role:ad
     Route::get('roi/payments','roiPayments')->name('roi.payments');
     Route::post('submit/roi/payments','submitRoiPayments')->name('submit.roi.payments');
     Route::get('rental-percentage','rentalPercentage')->name('rental.percentage');
+    Route::get('info/{id}','userInfo')->name('user.info');
+    Route::put('info/{user}/update','userInfoUpdate')->name('user.info.update');
+    Route::post('user/delete','userDelete')->name('user.delete');
+     
     
 }); 
 

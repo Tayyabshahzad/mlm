@@ -21,7 +21,7 @@ class GenealogyController extends Controller
             foreach ($descendants as $descendant) {
                 
                 // Check if the user's status is active
-                if ($descendant->can_login == true) {
+                if ($descendant->can_login == true    ) {
                     $nodeDataArray[] = [
                         'key' => $descendant->id,
                         'parent' => $parent->id,

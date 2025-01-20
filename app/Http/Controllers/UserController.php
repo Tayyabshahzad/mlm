@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\CompanyAgreement;
 use App\Mail\InvoiceEmail;
 use App\Mail\WelcomeEmail;
+use App\Models\Profile;
 use App\Models\ROITransaction;
 use App\Models\User;
 use App\Models\Wallet;
@@ -27,17 +28,24 @@ class UserController extends Controller
         $this->walletService = $walletService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-
+        $search = $request->input('search'); 
         $teamMembers = User::with('team')
-        ->where('id', '!=', auth()->user()->id)
-        ->orderBy('can_login', 'asc') // First order by 'can_login'
-        ->orderBy('created_at', 'desc') // Then order by 'created_at' (or any date column) 
-        ->get();
-        return view('users.index', compact('teamMembers'));
-    }
-
+            ->where('id', '!=', auth()->user()->id)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('username', 'like', "%{$search}%")
+                          ->orWhere('name', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('can_login', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        return view('users.index', compact('teamMembers', 'search'));
+    } 
     public function updateStatus(Request $request)
     {
 
@@ -64,13 +72,7 @@ class UserController extends Controller
         $this->assignCommissions($user);
         $this->test($user->sponsor_id, 1);
         return redirect()->back()->with('success', 'Member Status has been Updated');
-    }
-
-
-
-
-
-
+    } 
     private function getAncestors($user)
     {
         return \DB::table('referral_trees')
@@ -114,49 +116,48 @@ class UserController extends Controller
     public function old_getChildCountAtLevel($userId, $level)
     {
         if ($level == 1) { 
-            return User::where('sponsor_id', $userId)->where('can_login', true)->count();
+            return User::where('blocked',false)->where('sponsor_id', $userId)->where('can_login', true)->count();
         } 
-        $directChildren = User::where('sponsor_id', $userId)->where('can_login', true)->pluck('id'); 
+        $directChildren = User::where('blocked',false)->where('sponsor_id', $userId)->where('can_login', true)->pluck('id'); 
         $countAtSpecificLevel = 0;
         
         foreach ($directChildren as $childId) {
-            $countAtSpecificLevel += User::where('sponsor_id', $childId)
+            $countAtSpecificLevel += User::where('blocked',false)->where('sponsor_id', $childId)
                                          ->where('can_login', true)
                                          ->count();
         }
 
         return $countAtSpecificLevel;
-    } 
-
+    }  
     public function getChildCountAtLevel($userId, $level, $currentLevel = 1)
-{
-    if ($currentLevel > $level) {
-        return 0; // Stop recursion if the current level exceeds the desired level
+    {
+        if ($currentLevel > $level) {
+            return 0; // Stop recursion if the current level exceeds the desired level
+        }
+
+        // Get direct children at the current level
+        $directChildren = User::where('blocked',false)->where('sponsor_id', $userId)->where('can_login', true)->pluck('id');
+
+        if ($currentLevel == $level) {
+            // If at the desired level, return the count of children
+            return $directChildren->count();
+        }
+
+        $countAtSpecificLevel = 0;
+        foreach ($directChildren as $childId) {
+            // Recursively count children at the next level
+            $countAtSpecificLevel += $this->getChildCountAtLevel($childId, $level, $currentLevel + 1);
+        }
+
+        return $countAtSpecificLevel;
     }
-
-    // Get direct children at the current level
-    $directChildren = User::where('sponsor_id', $userId)->where('can_login', true)->pluck('id');
-
-    if ($currentLevel == $level) {
-        // If at the desired level, return the count of children
-        return $directChildren->count();
-    }
-
-    $countAtSpecificLevel = 0;
-    foreach ($directChildren as $childId) {
-        // Recursively count children at the next level
-        $countAtSpecificLevel += $this->getChildCountAtLevel($childId, $level, $currentLevel + 1);
-    }
-
-    return $countAtSpecificLevel;
-}
 
     public function test($parentID,  $level)
     {
         if ($level > 7) {
             return;
         }
-        $parent = User::find($parentID);
+        $parent = User::where('blocked',false)->find($parentID);
         if (!$parent) {
             return;
         }
@@ -213,7 +214,7 @@ class UserController extends Controller
             \Log::info('condition meet');
             $this->assignReward($parentID, $specificRewardLevel['reward_amount'], $specificRewardLevel['level']);
         }
-        $parentExists  = User::find($parent->sponsor_id);
+        $parentExists  = User::where('blocked',false)->find($parent->sponsor_id);
         if ($parentExists) {
             \Log::info('parentExists: ' . $parentExists->id);
             $this->test($parentExists->id, $level+1);
@@ -225,7 +226,7 @@ class UserController extends Controller
         if ($level > 7) {
             return;
         }
-        $parent = User::find($parentID);
+        $parent = User::where('blocked',false)->find($parentID);
         if (!$parent) {
             return;
         }
@@ -260,7 +261,7 @@ class UserController extends Controller
           \Log::info('Condition met for level ' . $level);
             $this->assignReward($parentID, $specificRewardLevel['reward_amount'], $specificRewardLevel['level']);
         }
-        $parentExists  = User::find($parent->sponsor_id);
+        $parentExists  = User::where('blocked',false)->find($parent->sponsor_id);
         if ($parentExists) {
             \Log::info('parentExists: ' . $parentExists->id);
             $this->assignRewardToUser($parentExists->id, $level+1);
@@ -268,7 +269,7 @@ class UserController extends Controller
     }
     public function checkAndAssignRewards($userId, $user)
     {  
-        $directChildren = User::where('sponsor_id', $userId)
+        $directChildren = User::where('blocked',false)->where('sponsor_id', $userId)
             ->where('can_login', 1) // Only active users
             ->get();
         \Log::info("LOG 1 - { $user->name }  update ho raha ha  jis ka parent {$user->parent->name} ha , ham ny idr {$user->parent->name} k sary user ko get kr liya ha ");
@@ -348,7 +349,7 @@ class UserController extends Controller
     public function calculateTeamSize($userId, $childUser)
     {
 
-        $directReferrals = User::where('sponsor_id', $userId)
+        $directReferrals = User::where('blocked',false)->where('sponsor_id', $userId)
             ->where('can_login', 1)
             ->get();
         // asim user ko count kro
@@ -413,7 +414,7 @@ class UserController extends Controller
     private function assignCommissions($user)
     {
         // Fetch the immediate sponsor
-        $parentUser = User::find($user->sponsor_id);
+        $parentUser = User::where('blocked',false)->find($user->sponsor_id);
         if ($parentUser) {
             $directCommissionPercentage = $this->getCommissionForLevel(1); // Level 1 for direct commission
             $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance;
@@ -430,7 +431,7 @@ class UserController extends Controller
         foreach ($ancestors as $ancestor) {
             $level = $ancestor->level; // Get level of ancestor 
             // Check team size condition for each level
-            $ancestorUser = User::find($ancestor->ancestor_id);
+            $ancestorUser = User::where('blocked',false)->find($ancestor->ancestor_id);
             $teamSize = $this->getTeamSize($ancestorUser->id); // Fetch team size
     
             // Define required team size for each level
@@ -477,11 +478,11 @@ class UserController extends Controller
     private function getTeamSize($userId)
     {
         // Count the number of users directly sponsored by this user
-        return User::where('sponsor_id', $userId)->count();
+        return User::where('blocked',false)->where('sponsor_id', $userId)->count();
     } 
     public function roiPayments()
     {
-        $users = User::where('can_login', true)->get();
+        $users = User::where('blocked',false)->where('can_login', true)->get();
         $payments = ROITransaction::get();
         return view('users.roi-payments', compact('users', 'payments'));
     }
@@ -492,7 +493,7 @@ class UserController extends Controller
             'user_id' => 'required|exists:users,id', // User selection
             'commission_percentage' => 'required|numeric|min:0|max:100', // Commission percentage
         ]);
-        $user = User::find($request->user_id); 
+        $user = User::where('blocked',false)->find($request->user_id); 
         $walletTotal = Wallet::where('user_id',$user->id)->sum('balance');
         if($walletTotal >= 200){
             return redirect()->back()->with('error', '2x is completed for this user'); 
@@ -574,10 +575,7 @@ class UserController extends Controller
         }
         $week->delete();
         return redirect()->back()->with('success', 'Week deleted successfully.');
-    }
-
-
-    
+    } 
 
     private function generateParentCommissions($user, $roiAmount)
     {
@@ -626,5 +624,100 @@ class UserController extends Controller
             ->where('referral_trees.level', $level)
             ->select('users.*')
             ->first();
+    }
+
+    public function userInfo(Request $request , $id){
+        $user = User::with('profile')->find($id); 
+        return view('users.information',compact('user'));
+    }
+
+    public function userInfoUpdate(Request $request ,User $user){
+       
+        $request->validate([
+            'password' => 'nullable|confirmed|min:8', // Password is optional but must match confirmation
+            'phone' => 'nullable',
+            'freez_wallet' => 'required|boolean', 
+            'blocked'=>'boolean',
+            'reason' => 'required_if:blocked,1|max:255',
+        ],[
+            'reason.required_if' => 'The reason is required when the account is blocked.',
+        ]);
+ 
+       
+        if ($request->hasFile('profile_avatar')) { 
+            if ($user->hasMedia('user_profile_images')) {
+                $user->getMedia('user_profile_images')->each(function ($media) {
+                    $media->delete();  
+                });
+            }
+            $user->addMedia($request->file('profile_avatar'))
+            ->toMediaCollection('user_profile_images');
+        }   
+        if ($request->hasFile('cnic_front')) { 
+            if ($user->hasMedia('user_document_cnic_front')) {
+                $user->getMedia('user_document_cnic_front')->each(function ($media) {
+                    $media->delete();   
+                });
+            }
+            $user->addMedia($request->file('cnic_front'))
+            ->toMediaCollection('user_document_cnic_front');
+        }    
+        if ($request->hasFile('cnic_back')) { 
+            if ($user->hasMedia('user_document_cnic_back')) {
+                $user->getMedia('user_document_cnic_back')->each(function ($media) {
+                    $media->delete(); 
+                });
+            }
+            $user->addMedia($request->file('cnic_back'))
+            ->toMediaCollection('user_document_cnic_back');
+        }
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->input('password')); // Hash the password
+        }
+        $requestData = $request->except(['password', 'password_confirmation', 'profile_avatar', 'cnic_front', 'cnic_back']);
+        $profile = $user->profile ?: new Profile();  
+        $profile->skills = null;  // Or handle as needed
+        
+        $profile->fill($requestData);
+        $profile->user_id = $user->id;  
+        if($request['phone']){
+            $user->phone_number = $request['phone'];
+        }
+        //Settings 
+        $user->freez_wallet = $request->freez_wallet; 
+        $user->blocked = $request->blocked;
+        $user->reason = $request->reason;
+        $user->save();
+        $profile->save();  
+        return redirect()->back()->with('success', 'Profile updated successfully');
+    }
+
+    public function userDelete(Request $request){
+        
+        $request->validate([
+            'delete_id' => 'required',
+            'reason' => 'required',
+
+        ]);
+        $user = User::find($request->delete_id);
+        $user->getMedia('user_profile_images')->each(function ($media) {
+            $media->delete();  
+        });
+        $user->getMedia('user_document_cnic_front')->each(function ($media) {
+            $media->delete();   
+        });
+        $user->getMedia('user_document_cnic_back')->each(function ($media) {
+            $media->delete(); 
+        }); 
+        $user->reason = $request->reason;  
+        $user->save();
+        if ($user->reflink) {
+            $user->reflink->is_active = false;
+            $user->reflink->save(); // Save the change
+        } 
+        $user->reason = $request->reason;  
+        $user->delete();  
+        
+        return redirect()->back()->with('success', 'User deleted successfully');
     }
 }

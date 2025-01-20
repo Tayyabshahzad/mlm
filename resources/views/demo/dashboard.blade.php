@@ -569,7 +569,7 @@
                                         $percentage = ($count / $maxValue) * 100;
                             
                                         // Set a minimum visible width of 1.5%
-                                        $visibleWidth = $percentage > 1.5 ? $percentage : 7; // Minimum 1.5% width
+                                        $visibleWidth = $percentage > 13 ? $percentage : 13; // Minimum 1.5% width
                                     @endphp
                                     <li>
                                         <div class="progress-warpper text-center mb-5">

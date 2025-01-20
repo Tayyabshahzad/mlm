@@ -31,7 +31,7 @@ class GenerateWeeklyROI extends Command
     
      public function handle()
     {
-        $users = User::where('can_login', true)->get(); // Fetch all users 
+        $users = User::where('blocked',false)->where('can_login', true)->get(); // Fetch all users 
         foreach ($users as $user) {
             $walletTotal = Wallet::where('user_id', $user->id)->sum('balance');
             if ($walletTotal >= 200 ) {
@@ -106,7 +106,7 @@ class GenerateWeeklyROI extends Command
         foreach ($commissionLevels as $level => $percentage) {
             $parent = $this->getAncestorByLevel($user, $level);  
             if ($parent) {
-                $directChildrenCount = User::where('sponsor_id', $parent->id)->where('can_login', true)->count();
+                $directChildrenCount = User::where('blocked',false)->where('sponsor_id', $parent->id)->where('can_login', true)->count();
                 $requiredUsers = $this->getRequiredUsersForLevel($level);  
                 if ($directChildrenCount >= $requiredUsers) {
                     $commissionAmount = ($roiAmount * $percentage) / 100;

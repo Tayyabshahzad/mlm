@@ -58,7 +58,7 @@
             <div class="col-lg-6">
                 <div class="  p-3 my-5  bg-purple   shadow-sm text-white rounded-0"  style="background-color: #252F3D;"> 
                     <div class=" r">
-                      <h1 class="h4 mb-0  lh-1 text-center" style="text-align: center!important;">Global Visioners International</h1> 
+                      <h1 class="h4 mb-0  lh-1 text-center" style="text-align: center!important;color:#ffffff">Global Visioners International</h1> 
                     </div>
                   </div> 
                   <div class="p-3 bg-body rounded shadow-sm">

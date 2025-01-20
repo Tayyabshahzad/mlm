@@ -491,8 +491,8 @@ class FrontEndController extends Controller
          
 
 
-        $pdf->SetXY(120, 205); // X and Y coordinates
-        $pdf->Write(0, $userDetails->user->name);   
+        // $pdf->SetXY(120, 205); // X and Y coordinates
+        // $pdf->Write(0, $userDetails['first_name']);   
 
         $pdf->SetXY(132, 205); // X and Y coordinates
         $pdf->Write(0, $userDetails['first_name']);  
