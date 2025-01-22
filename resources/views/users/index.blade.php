@@ -1,5 +1,13 @@
 @extends('demo.layout.app')
 @section('title','Members')
+@section('custom_css')
+    <style>
+        .table td, .table th{
+            padding:2px!important;
+            vertical-align: center
+        }
+    </style>
+@endsection
 @section('content')
  <!--begin::Content-->
  <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
@@ -50,7 +58,8 @@
                             <div class="card-body p-0"> 
                                 
                                 <div class="row justify-content-center py-8 px-8 py-md-10 px-md-0"> 
-                                    <div class="col-md-10">
+                                    <div class="col-md-10"> 
+
                                         <form method="GET" action="{{ route('users.index') }}" class="mb-4">
                                             <div class="input-group">
                                                 <input 
@@ -65,74 +74,85 @@
                                                 </div>
                                             </div>
                                         </form>
-                                        <div class="table-responsive">
-                                            <table class="table">
+                                        <div class="table-responsive-sm">
+                                            <table class="table" style="padding:0!important">
                                                 <thead>
                                                     <tr> 
-                                                        <th class="text-left font-weight-bold text-muted text-uppercase">S#</th>
-                                                        <th class="text-left font-weight-bold text-muted text-uppercase">Username</th>
-                                                        <th class="text-left font-weight-bold text-muted text-uppercase">Name</th>
-                                                        <th class="text-left font-weight-bold text-muted text-uppercase">Email Address</th> 
-                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Details</th>
-                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Status</th>  
-                                                        <th class="text-left pr-0 font-weight-bold text-muted text-uppercase">Action</th>
+                                                        <th class=" text-uppercase">S#</th>
+                                                        <th class=" text-uppercase">Username</th>
+                                                        <th class=" text-uppercase">Name</th>
+                                                        <th class=" text-uppercase">Email Address</th> 
+                                                        <th class=" text-uppercase">Actions</th> 
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @foreach($teamMembers as $teamMember)
-                                                    <tr class="font-weight-boldest"> 
-                                                        <td class="border-0    pt-7  "> 
-                                                            {{ $loop->iteration }}
-                                                        </td>
+                                                    <tr class="pa-0 @if($teamMember->blocked) text-danger @endif  @if($teamMember->can_login) text-success @endif @if(!$teamMember->can_login) text-warning @endif"> 
+                                                        <td class=" align-middle">{{ $loop->iteration }}</td>
+                                                        <td class=" align-middle">{{ $teamMember->username }}</td>
+                                                        <td class=" align-middle">{{ $teamMember->name }}</td>
+                                                        <td class=" align-middle">{{ $teamMember->email }}</td> 
+                                                        <td class="text-primary  align-middle">
+                                                            
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-outline-info rounded-0 dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                               More Actions
+                                                            </button>
+                                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                                <a class="dropdown-item text-info user-details-btn"   data-id="{{ $teamMember->id }}" data-target="#userDetails" data-toggle="modal" href="#">
+                                                                    Info
+                                                                </a>
+                                                                <a class="dropdown-item text-warning" 
+                                                                    @if(! $teamMember->can_login == 1)
+                                                                        data-toggle="modal"
+                                                                        data-target="#changeStatus"
+                                                                    @endif
+                                                                        data-id="{{ $teamMember->id }}"
 
-                                                        <td class="border-0  ">
-                                                         
-                                                         {{ $teamMember->username }}
-                                                        </td>
-                                                        <td class=" ">{{ $teamMember->name }}</td>
-                                                        <td class=" ">{{ $teamMember->email }}</td> 
-                                                      
-                                                        <td class="text-primary pr-0 pt-7 text-left align-middle">
-                                                            <button type="button" 
-                                                                data-toggle="modal"
-                                                                data-target="#userDetails"
-                                                                data-id="{{ $teamMember->id }}"
-                                                                class="rounded-0 btn btn-sm btn-outline-primary btn-outline-info user-details-btn"> 
-                                                                <i     class="flaticon-medical "></i>
-                                                            </button>    
-                                                        </td>
+                                                                href="#"> {{ $teamMember->can_login == 1 ? 'Activated ' : 'Active' }} </a>
+                                                                <a class="dropdown-item text-primary" href="{{ route('user.info', $teamMember->id) }}">Details</a>
+                                                                <a class="dropdown-item text-danger"
+                                                                    data-toggle="modal"
+                                                                    data-target="#deleteUser"
+                                                                    data-id="{{ $teamMember->id }}"
+                                                                href="#">Delete</a>
+                                                            </div>
+                                                        </div>
 
-                                                        <td class="text-primary pr-0 pt-7 text-left align-middle">
-                                                            <button type="button" 
-                                                            @if(! $teamMember->can_login == 1)
-                                                                data-toggle="modal"
-                                                                data-target="#changeStatus"
-                                                            @endif
-                                                            data-id="{{ $teamMember->id }}"
-                                                            class="rounded-0 radius btn btn-sm {{  $teamMember->can_login == 1 ? 'btn-outline-primary disabled' : 'btn-outline-danger' }}"> 
-                                                            {{ $teamMember->can_login == 1 ? 'Activated ' : 'Active' }} 
-                                                        </button>
+                                                            
+                                                             
                                                         </td> 
-
-                                                        <td class="text-left pt-7 align-middle">  
-                                                            <a class="btn btn-sm btn-outline-warning rounded-0" href="">{{ $teamMember->blocked  }}</a>
-                                                            <a class="btn btn-sm btn-outline-primary rounded-0" href="{{ route('user.info',$teamMember->id) }}">Details</a>
-                                                            {{-- <a href="{{ route('profile.change.password',$teamMember->id) }}">More Info</a>  --}}
-                                                          
-                                                            <button class="btn btn-sm btn-outline-danger rounded-0"
-                                                             data-toggle="modal"
-                                                             data-target="#deleteUser"
-                                                             data-id="{{ $teamMember->id }}"
-                                                            >Delete</button>
-                                                            {{-- <a href="{{ route('profile.change.password',$teamMember->id) }}">More Info</a>  --}}
-                                                         </td>
-                                                         
                                                     </tr>
                                                     @endforeach 
-                                                    
                                                 </tbody>
                                             </table>
-                                             
+                                            
+                                            <!-- Pagination Controls (no changes needed here) -->
+                                            <div class="d-flex justify-content-center align-items-center flex-wrap mt-5">
+                                                <div class="d-flex flex-wrap py-2 mr-3">
+                                                    @if ($teamMembers->onFirstPage())
+                                                        <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-double-arrow-back icon-xs"></i></a>
+                                                        <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-arrow-back icon-xs"></i></a>
+                                                    @else
+                                                        <a href="{{ $teamMembers->url(1) }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-double-arrow-back icon-xs"></i></a>
+                                                        <a href="{{ $teamMembers->previousPageUrl() }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-arrow-back icon-xs"></i></a>
+                                                    @endif
+                                                    
+                                                    @foreach ($teamMembers->getUrlRange(max(1, $teamMembers->currentPage() - 2), min($teamMembers->lastPage(), $teamMembers->currentPage() + 2)) as $page => $url)
+                                                        <a href="{{ $url }}" class="btn btn-icon btn-sm border-0 btn-hover-primary mr-2 my-1 {{ $page == $teamMembers->currentPage() ? 'active' : '' }}">
+                                                            {{ $page }}
+                                                        </a>
+                                                    @endforeach 
+                                                    @if ($teamMembers->hasMorePages())
+                                                        <a href="{{ $teamMembers->nextPageUrl() }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-arrow-next icon-xs"></i></a>
+                                                        <a href="{{ $teamMembers->url($teamMembers->lastPage()) }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-double-arrow-next icon-xs"></i></a>
+                                                    @else
+                                                        <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-arrow-next icon-xs"></i></a>
+                                                        <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-double-arrow-next icon-xs"></i></a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            
                                             
                                         </div>
                                     </div>

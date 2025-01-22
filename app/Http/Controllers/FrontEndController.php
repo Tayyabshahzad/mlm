@@ -158,6 +158,7 @@ class FrontEndController extends Controller
             $count = $referralCounts->firstWhere('level', $level)->count ?? 0;
             return [$level => $count];
         }); 
+       
         $totalCount = $levelCounts->sum(); 
         $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
         $authUsers =  User::where('sponsor_id',Auth::user()->id);  

@@ -17,7 +17,7 @@ class WalletController extends Controller
     }
 
     public function directIndirect(){ 
-        $wallets = Wallet::where('wallet_type','direct_indirect')->where('user_id',auth()->user()->id)->get();
+        $wallets = Wallet::where('wallet_type','direct_indirect')->where('user_id',auth()->user()->id)->orderBy('level','asc')->get();
         return view('wallets.direct-indirect',compact('wallets')); 
     }
 

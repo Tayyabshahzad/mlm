@@ -3,10 +3,12 @@
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\FrontEndController;
 use App\Http\Controllers\GenealogyController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleRoiController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
@@ -127,8 +129,17 @@ Route::controller(ScheduleRoiController::class)->middleware(['auth','verified','
     Route::get('run-schedule-manually','schedule')->name('run.schedule.manually');  
 }); 
 
+Route::middleware(['auth','verified',CheckUserStatus::class])->group(function () {
+    Route::get('recalculateCommissions',[UserController::class , 'recalculateCommissions'])->name('recalculateCommissions');   
+}); 
 
  
+Route::controller(ReportController::class)->middleware(['auth','verified','role:admin'])->prefix('report')->group(function () {
+    Route::get('genealogy','genealogyTree')->name('report.genealogy.tree');  
+    Route::get('genealogy/download/{id}','downloadTeamHierarchy')->name('report.genealogy.tree.download');  
+    Route::get('genealogy/tree','treeView')->name('report.genealogy.tree.view');  
+}); 
+
 
 Auth::routes(['verify' => true]);
 

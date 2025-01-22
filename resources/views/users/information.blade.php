@@ -380,11 +380,10 @@
                                         <div class="row">
                                             <div class="col-xl-2"></div>
                                             <div class="col-xl-7">
-                                                <div class="row">
-                                                    <div class="col-3"></div>
-                                                    <div class="col-9">
-                                                        <a href="#" class="btn btn-light-primary font-weight-bold">Save changes</a>
-                                                        <a href="#" class="btn btn-clean font-weight-bold">Cancel</a>
+                                                <div class="row text-left">
+                                                   
+                                                    <div class="col-12">
+                                                        <button type="submit" class="btn btn-light-primary font-weight-bold">Save changes</button> 
                                                     </div>
                                                 </div>
                                             </div>

@@ -42,7 +42,7 @@ class UserController extends Controller
             })
             ->orderBy('can_login', 'asc')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(20);
     
         return view('users.index', compact('teamMembers', 'search'));
     } 
@@ -56,21 +56,33 @@ class UserController extends Controller
                 'exists:users,id', // Check if member_id exists in the 'id' column of 'users' table
             ],
         ]);
-        $user = User::find($request->member_id);
+       $user = User::find($request->member_id);
         if ($user->can_login) {
             return redirect()->back()->with('error', 'This User is Already Activated');
         } 
-        $user->can_login = true;
-        $user->save();
-
-
+        if($user->current_pv_balance <= 100){
+            $this->pvService->assignInitialPV($user);   
+        }
+        // $user->can_login = true;
+      
         // Sending mail to user
         // Mail::to($user->email)->send(new CompanyAgreement($user));
         // Mail::to($user->email)->send(new WelcomeEmail($user));
-        // Mail::to($user->email)->send(new InvoiceEmail($user));
-        $this->pvService->assignInitialPV($user);
-        $this->assignCommissions($user);
+        // Mail::to($user->email)->send(new InvoiceEmail($user)); 
+
+          //$users = User::where('blocked', false)->get(); // Fetch all unblocked users 
+          //foreach ($users as $user) {
+            $this->assignCommissionsUpdated($user);   
+            $user->can_login = true;
+            $user->save();  
+        // }
+       
+
+
+        // $this->assignCommissionsUpdated($user);  
+        
         $this->test($user->sponsor_id, 1);
+      
         return redirect()->back()->with('success', 'Member Status has been Updated');
     } 
     private function getAncestors($user)
@@ -411,13 +423,25 @@ class UserController extends Controller
         ]);
     }
 
+    private function getActiveDirectUsersCount($userId)
+    {
+        return User::where('blocked', false)
+            ->where('sponsor_id', $userId)
+            // ->where('can_login', true) // Ensure user is active
+            ->count();
+    }
+
+
+
+
     private function assignCommissions($user)
     {
         // Fetch the immediate sponsor
         $parentUser = User::where('blocked',false)->find($user->sponsor_id);
+       
         if ($parentUser) {
-            $directCommissionPercentage = $this->getCommissionForLevel(1); // Level 1 for direct commission
-            $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance;
+            $directCommissionPercentage = $this->getCommissionForLevel(1); // Level 1 for direct commission 
+            $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance; 
             // Assign only direct commission for immediate sponsor
             $this->walletService->assignCommission($parentUser->id, $directCommissionAmount, 'direct', $user, 1);
         }
@@ -433,32 +457,17 @@ class UserController extends Controller
             // Check team size condition for each level
             $ancestorUser = User::where('blocked',false)->find($ancestor->ancestor_id);
             $teamSize = $this->getTeamSize($ancestorUser->id); // Fetch team size
-    
-            // Define required team size for each level
-
-            // $rewardLevels = collect([
-            //     ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
-            //     ['level' => 2, 'reward_amount' => 300, 'users_required' => 50],
-            //     ['level' => 3, 'reward_amount' => 1200, 'users_required' => 150],
-            //     ['level' => 4, 'reward_amount' => 4000, 'users_required' => 400],
-            //     ['level' => 5, 'reward_amount' => 10000, 'users_required' => 1000],
-            //     ['level' => 6, 'reward_amount' => 30000, 'users_required' => 2000],
-            //     ['level' => 7, 'reward_amount' => 48000, 'users_required' => 4000],
-            // ]);
-
-
             $requiredTeamSizes = [
-                2 => 50, // Level 2 requires 2 team members
-                3 => 150, // Level 3 requires 3 team members
-                4 => 400, // Level 4 requires 4 team members
-                5 => 1000, // Level 5 requires 5 team members
-                6 => 2000, // Level 6 requires 6 team members
-                7 => 4000, // Level 7 requires 7 team members
+                2 => 2, // Level 2 requires 2 team members
+                3 => 3, // Level 3 requires 3 team members
+                4 => 4, // Level 4 requires 4 team members
+                5 => 5, // Level 5 requires 5 team members
+                6 => 6, // Level 6 requires 6 team members
+                7 => 7, // Level 7 requires 7 team members
             ];
     
             // Check team size condition for the current level (default to 0 if not defined)
             $requiredTeamSize = $requiredTeamSizes[$level] ?? 0;
-    
             if ($teamSize >= $requiredTeamSize) {
                 $indirectCommissionPercentage = $this->getCommissionForLevel($level); // Get commission for the ancestor's level
                 $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
@@ -720,4 +729,240 @@ class UserController extends Controller
         
         return redirect()->back()->with('success', 'User deleted successfully');
     }
+
+    private function assignCommissionsUpdated($user)
+    { 
+        $parentUser = User::where('blocked', false)->find($user->sponsor_id); 
+        if ($parentUser) {
+            // Check if the parent user has enough active direct users
+            $activeDirectUsers = $this->getActiveDirectUsersCount($parentUser->id);  
+            if ($activeDirectUsers >= 1) { 
+                $directCommissionPercentage = $this->getCommissionForLevel(1); // Level 1 for direct commission
+                $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance; 
+                $this->walletService->assignCommission($parentUser->id, $directCommissionAmount, 'direct', $user, 1); 
+            }
+
+        }  
+        // Exclude the immediate sponsor from ancestors list
+        $ancestors = $this->getAncestors($user)
+            ->filter(function ($ancestor) use ($user) {
+                return $ancestor->ancestor_id !== $user->sponsor_id && $ancestor->level <= 7;
+            });
+
+        foreach ($ancestors as $ancestor) {
+            $level = $ancestor->level; // Get level of ancestor
+
+            // Check the ancestor's team size condition
+            $ancestorUser = User::where('blocked', false)->find($ancestor->ancestor_id);
+            $activeDirectUsers = $this->getActiveDirectUsersCount($ancestorUser->id);
+
+            $teamSizeRequirement = $this->getTeamSizeRequirementForLevel($level); // Fetch team size requirement for the level
+
+            if ($activeDirectUsers >= $teamSizeRequirement) {
+                $indirectCommissionPercentage = $this->getCommissionForLevel($level); // Get commission for the ancestor's level
+                $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
+
+                // Assign Indirect Commission for Ancestors
+                $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
+            }
+        }
+    }
+
+    private function getTeamSizeRequirementForLevel($level)
+    {
+        $requiredTeamSizes = [
+            1 => 1, // Level 1 requires 2 active team members
+            2 => 2, // Level 2 requires 2 active team members
+            3 => 3, // Level 3 requires 3 active team members
+            4 => 4, // Level 4 requires 4 active team members
+            5 => 5, // Level 5 requires 5 active team members
+            6 => 6, // Level 6 requires 6 active team members
+            7 => 7, // Level 7 requires 7 active team members
+        ];
+
+        return $requiredTeamSizes[$level] ?? 0;
+    }
+
+    private function commissionExists($ancestorId, $fromUserId, $type, $level)
+    {
+        return Wallet::where('user_id', $ancestorId)
+            ->where('wallet_from', $fromUserId)
+            ->where('commission_type', $type)
+            ->where('level', $level)
+            ->exists();
+    }
+    private function manulAssignCommissionsUpdated($user)
+    {
+        
+
+        $parentUser = User::where('blocked', false)->find($user->sponsor_id);
+    
+        if ($parentUser) {
+            // Check if the parent user has enough active direct users
+            $activeDirectUsers = $this->getActiveDirectUsersCount($parentUser->id);
+
+            // Level 1 requires at least 1 active direct user for indirect commission
+            if ($activeDirectUsers >= 1) {
+                $directCommissionPercentage = $this->getCommissionForLevel(1); // Level 1 for direct commission
+                $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance;
+
+                // Check if direct commission already exists
+                if (!$this->commissionExists($parentUser->id, $user->id, 'direct', 1)) {
+                    // Assign direct commission for the immediate sponsor
+                    $this->walletService->assignCommission($parentUser->id, $directCommissionAmount, 'direct', $user, 1);
+                }
+            }
+        }
+
+        // Exclude the immediate sponsor from ancestors list
+        $ancestors = $this->getAncestors($user)
+            ->filter(function ($ancestor) use ($user) {
+                return $ancestor->ancestor_id !== $user->sponsor_id && $ancestor->level <= 7;
+            });
+
+        foreach ($ancestors as $ancestor) {
+            $level = $ancestor->level; // Get level of ancestor
+
+            // Check the ancestor's team size condition
+            $ancestorUser = User::where('blocked', false)->find($ancestor->ancestor_id);
+            $activeDirectUsers = $this->getActiveDirectUsersCount($ancestorUser->id);
+
+            $teamSizeRequirement = $this->getTeamSizeRequirementForLevel($level); // Fetch team size requirement for the level
+
+            if ($activeDirectUsers >= $teamSizeRequirement) {
+                $indirectCommissionPercentage = $this->getCommissionForLevel($level); // Get commission for the ancestor's level
+                $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
+
+                // Check if indirect commission already exists
+                if (!$this->commissionExists($ancestor->ancestor_id, $user->id, 'indirect', $level)) {
+                    // Assign Indirect Commission for Ancestors
+                    $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
+                }
+            }
+        }
+    }
+
+    public function recalculateCommissions()
+    {
+        $users = User::where('blocked', false)->get(); // Fetch all unblocked users 
+        foreach ($users as $user) {
+            $activeDirects = $this->manulAssignCommissionsUpdated($user); // Get active direct users 
+        }
+    }
+
+    private function assignCommissionsUpdated1($user)
+    {
+        $parentUser = User::where('blocked', false)->find($user->sponsor_id); 
+        if ($parentUser) {
+            // Check the immediate sponsor's direct team size for Level 1
+            $directTeamSize = $this->getActiveDirectUsersCount($parentUser->id);
+            $requiredTeamSizeForLevel1 = $this->getTeamSizeRequirementForLevel(1);
+
+            if ($directTeamSize >= $requiredTeamSizeForLevel1) {
+                $directCommissionPercentage = $this->getCommissionForLevel(1); // Level 1 commission
+                $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance;
+
+                // Assign direct commission for the immediate sponsor
+                $this->walletService->assignCommission($parentUser->id, $directCommissionAmount, 'direct', $user, 1);
+            }
+        }
+
+        // Fetch ancestors, excluding the immediate sponsor
+        $ancestors = $this->getAncestors($user)
+            ->filter(function ($ancestor) use ($user) {
+                return $ancestor->ancestor_id !== $user->sponsor_id && $ancestor->level <= 7;
+            });
+
+        foreach ($ancestors as $ancestor) {
+            $level = $ancestor->level; // Get ancestor level
+
+            // Get the ancestor's direct sponsor (one level down from this ancestor)
+            $directSponsor = User::where('id', $ancestor->ancestor_id)->first();
+
+            if (!$directSponsor) {
+                continue; // Skip if the ancestor doesn't exist
+            }
+
+            // Get the direct team size of the direct sponsor
+            $directTeamSize = $this->getActiveDirectUsersCount($directSponsor->id);
+
+            // Get required team size for this level
+            $requiredTeamSize = $this->getTeamSizeRequirementForLevel($level);
+
+            // Assign commission only if the direct team size meets the required criteria
+            if ($directTeamSize >= $requiredTeamSize) {
+                $indirectCommissionPercentage = $this->getCommissionForLevel($level); // Get level commission
+                $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
+
+                // Assign indirect commission for this ancestor
+                $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
+            }
+        }
+    }
+
+
+    private function assignCommissionsUpdated3($user)
+    {
+        $parentUser = User::where('blocked', false)->find($user->sponsor_id);    
+        if ($parentUser) {
+            $activeDirectUsers = $this->getActiveDirectUsersCount($parentUser->id);    
+            if ($activeDirectUsers >= 1) {  
+                $directCommissionPercentage = $this->getCommissionForLevel(1); // Level 1 commission 
+                $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance;
+                $this->walletService->assignCommission($parentUser->id, $directCommissionAmount, 'direct', $user, 1);
+            }
+            
+           
+        }
+
+        // Step 2: Indirect Commission for Ancestors
+        $ancestors = $this->getAncestors($user)
+            ->filter(function ($ancestor) use ($user) {
+                return $ancestor->ancestor_id !== $user->sponsor_id && $ancestor->level <= 7;
+            });
+
+        foreach ($ancestors as $ancestor) {
+            $level = $ancestor->level;
+            $ancestorUser = User::where('blocked', false)->find($ancestor->ancestor_id);
+            $activeDirectUsers = $this->getActiveDirectUsersCount($ancestorUser->id);
+
+            $teamSizeRequirement = $this->getTeamSizeRequirementForLevel($level);
+
+            // Only assign commissions for new descendants if ancestor meets team size requirement
+            if ($activeDirectUsers >= $teamSizeRequirement) {
+                $isNewUser = $this->isNewDescendant($ancestorUser->id, $user->id); // Check if user is a new descendant
+                if ($isNewUser) {
+                    $indirectCommissionPercentage = $this->getCommissionForLevel($level);
+                    $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
+
+                    // Assign Indirect Commission
+                    $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
+                }
+            }
+        }
+    }
+
+private function isNewDescendant($ancestorId, $descendantId)
+{
+    $qualificationDate = $this->getAncestorQualificationDate($ancestorId);
+    $descendant = \DB::table('users')
+    ->where('id', $descendantId)
+    ->first();
+
+    return $descendant && $descendant->created_at > $qualificationDate;
+}
+
+private function getAncestorQualificationDate($ancestorId)
+{
+    // Fetch the date when ancestor qualified for their current level
+    $ancestor = User::find($ancestorId);
+    return $ancestor ? $ancestor->qualification_date : now(); // Example column `qualification_date`
+}
+
+
+
+
+
+
+
 }
