@@ -60,6 +60,15 @@
                                 <div class="row justify-content-center py-8 px-8 py-md-10 px-md-0"> 
                                     <div class="col-md-10"> 
 
+                                        <div class="btn-group" role="group" aria-label="Basic example">
+                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-primary">Total Members : {{ $totalMembers }}</button>
+                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-success">Active Members : {{ $totalActiveMembers }}</button>
+                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-warning">Inactive Members : {{ $totalInActiveMembers }}</button>
+                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-danger">Blocked Members : {{ $totalBlockedMembers }}</button>
+                                        </div>
+
+
+                                       
                                         <form method="GET" action="{{ route('users.index') }}" class="mb-4">
                                             <div class="input-group">
                                                 <input 

@@ -38,7 +38,7 @@
 		<!--end::Form group-->
 		<!--begin::Action-->
 		<div class="pb-lg-0 pb-5">
-			<button type="submit" id="kt_login_signin_submit" class="rounded-0 btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3 btn-sm">Sign In</button> 
+			<button type="submit" id="kt_login_signin_submit" class="rounded-0 btn btn-primary  py-4 px-8   btn-sm">Sign In</button> 
 			<a href="{{ route('register') }}" class="rounded-0 t-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3 btn-sm">   Register </a>
 		</div>
 		<!--end::Action-->

@@ -146,27 +146,37 @@ class FrontEndController extends Controller
     }
     public function dashboard(){ 
 
+
+        
         $referralCounts = DB::table('referral_trees')
-        ->select('level', DB::raw('COUNT(descendant_id) as count'))
-        ->where('ancestor_id', Auth::user()->id)
-        ->where('level', '<=', 7) // Limit to 7 levels
-        ->groupBy('level')
-        ->orderBy('level')
+        ->select('referral_trees.level', DB::raw('COUNT(referral_trees.descendant_id) as count'))
+        ->join('users', 'referral_trees.descendant_id', '=', 'users.id') // Join with users table
+        ->where('referral_trees.ancestor_id', Auth::user()->id) // Filter for the current user's referrals
+        ->where('users.can_login', true) // Only include active users
+        ->where('referral_trees.level', '<=', 7) // Limit to 7 levels
+        ->groupBy('referral_trees.level')
+        ->orderBy('referral_trees.level')
         ->get();
+    
+        // Ensure all levels from 1 to 7 are represented
         $levels = range(1, 7);
         $levelCounts = collect($levels)->mapWithKeys(function ($level) use ($referralCounts) {
             $count = $referralCounts->firstWhere('level', $level)->count ?? 0;
             return [$level => $count];
-        }); 
+        });
+        
+        // Now $levelCounts will include counts of active users for each level.
+    
        
         $totalCount = $levelCounts->sum(); 
         $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
-        $authUsers =  User::where('sponsor_id',Auth::user()->id);  
+        $authUsers =  User::where('sponsor_id',Auth::user()->id)->where('can_login',true);  
         $inactiveUsers = $authUsers->where('can_login',false)->count(); 
         $reward = $authUsers->with('descendants'); 
         $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('total_amount');
 
         $teamSizing = User::where('sponsor_id', Auth::user()->id)
+        ->where('can_login',true)
         ->withCount([
             'children as team_count' => function ($query) {
                 $query->select(DB::raw('COUNT(*)')); // Count direct descendants

@@ -43,8 +43,12 @@ class UserController extends Controller
             ->orderBy('can_login', 'asc')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-    
-        return view('users.index', compact('teamMembers', 'search'));
+        $totalMembers = User::count();
+        $totalActiveMembers = User::where('can_login',true)->count();
+        $totalInActiveMembers = User::where('can_login',false)->count();
+        $totalBlockedMembers = User::where('blocked',true)->count();
+        
+        return view('users.index', compact('teamMembers', 'search' ,'totalMembers','totalActiveMembers','totalInActiveMembers','totalBlockedMembers'));
     } 
     public function updateStatus(Request $request)
     {

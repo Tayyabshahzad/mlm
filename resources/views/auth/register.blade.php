@@ -88,8 +88,8 @@
 
         <!-- Submit Button -->
         <div class="pb-lg-0 pb-5 mt-10 mb-10">
-            <button type="submit" id="kt_login_signin_submit" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">Register</button>
-            <a href="{{ route('login') }}" class="font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">Already Registered</a>
+            <button type="submit" id="kt_login_signin_submit" class="btn-sm btn btn-primary rounded-0  my-3 mr-3">Register</button>
+            <a href="{{ route('login') }}" class=" font-size-h6 ">Already Registered</a>
         </div>
     </form>
     <!--end::Form-->
