@@ -12,7 +12,7 @@ class WithDrawalequest extends Model
         'status',
         'target_account_details',
         'review_notes',
-        'profile_id'
+        'profile_id','request_type'
     ];
 
     protected $casts = [

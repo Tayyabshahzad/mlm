@@ -6,6 +6,7 @@
     <form action="{{ route('user.info.update',$user->id) }}" method="post" enctype="multipart/form-data">
         @method('PUT')
         @csrf
+        <input type="hidden" name="user_id" value="{{ $user->id }}">
         <div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
             <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
                 <!--begin::Details-->
@@ -46,7 +47,10 @@
                 <!--begin::Card-->
                 <div class="card card-custom">
                     <!--begin::Card header-->
-                    <div class="card-header card-header-tabs-line nav-tabs-line-3x">
+                    <div class="card-header card-header-tabs-line nav-tabs-line-3x " 
+                    @if($user->deleted_at)
+                        style="background:rgb(231, 218, 27)"
+                    @endif>
                         <!--begin::Toolbar-->
                         <div class="card-toolbar">
                             <ul class="nav nav-tabs nav-bold nav-tabs-line nav-tabs-line-3x">
@@ -202,6 +206,46 @@
                                                     <h5 class="font-weight-bold mt-10 mb-6">Contact Info</h5>
                                                 </div>
                                             </div>
+                                            @if($user->deleted_at)
+                                            <div class="form-group row">
+                                                <label class="col-form-label col-3 text-lg-left text-left">Username</label>
+                                                <div class="col-lg-9">
+                                                    <div class="input-group input-group-lg input-group-solid">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text">
+                                                                <i class="la la-user"></i>
+                                                            </span>
+                                                        </div>
+                                                        <input type="text" class="form-control form-control-lg form-control-solid" name="username"
+                                                        value="{{ old('username',$user->username ?? '') }}"   placeholder="username" />
+                                                    </div> 
+                                                    @error('username')
+                                                        <div class="text-danger mt-2">
+                                                            <small>{{ $message }}</small>
+                                                        </div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            @endif
+                                            <div class="form-group row">
+                                                <label class="col-form-label col-3 text-lg-left text-left">Email Address</label>
+                                                <div class="col-lg-9  ">
+                                                    <div class="input-group input-group-lg input-group-solid">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text">
+                                                                <i class="la la-at"></i>
+                                                            </span>
+                                                        </div>
+                                                        <input type="text" 
+                                                        @if(!$user->deleted_at)
+                                                        disabled 
+                                                        @endif 
+                                                        name="email"
+                                                        class="form-control form-control-lg form-control-solid" value="{{$user->email }}" placeholder="Email" />
+                                                    </div>
+                                                </div>
+                                            </div> 
+
                                             <div class="form-group row">
                                                 <label class="col-form-label col-3 text-lg-left text-left">Contact Phone</label>
                                                 <div class="col-lg-9">
@@ -221,19 +265,7 @@
                                                     @enderror
                                                 </div>
                                             </div>
-                                            <div class="form-group row">
-                                                <label class="col-form-label col-3 text-lg-left text-left">Email Address</label>
-                                                <div class="col-lg-9  ">
-                                                    <div class="input-group input-group-lg input-group-solid">
-                                                        <div class="input-group-prepend">
-                                                            <span class="input-group-text">
-                                                                <i class="la la-at"></i>
-                                                            </span>
-                                                        </div>
-                                                        <input type="text" disabled class="form-control form-control-lg form-control-solid" value="{{$user->email }}" placeholder="Email" />
-                                                    </div>
-                                                </div>
-                                            </div> 
+                                           
             
                                             <div class="form-group row">
                                                 <label class="col-form-label col-3 text-lg-left text-left">Address</label>

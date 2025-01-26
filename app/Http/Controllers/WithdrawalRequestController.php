@@ -17,18 +17,26 @@ class WithdrawalRequestController extends Controller
         $request->validate([ 
             'amount' => 'required|numeric|min:1',
             'review_notes' => 'string',
+            'withdrawal_option' => 'required|in:usdt,bank,cash',
         ]); 
         
         if(!auth::user()->profile){
             return redirect()->back()->with('error','Please complete your profile first'); 
         }
-        if(!auth::user()->profile->account_title && !auth::user()->profile->account_number && !auth::user()->profile->branch_name){
-            return redirect()->back()->with('error','Please complete your bank Details');
+        if($request->withdrawal_option == 'bank'){
+            if(!auth::user()->profile->ibn_number){
+                return redirect()->back()->with('error','Please complete your bank Details');
+            }
         }
+        if($request->withdrawal_option == 'usdt'){
+            if(!auth::user()->profile->account_number){
+                return redirect()->back()->with('error','Please add your USDT Address Details');
+            }
+        }
+       
         $onlineWalletSum = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id())
         ->sum('balance'); 
-
         if ($request->amount > $onlineWalletSum) {
             return redirect()->back()->with('error','Insufficient balance in the online wallet.');
         }  
@@ -56,6 +64,7 @@ class WithdrawalRequestController extends Controller
             'wallet_type' => 'online',
             'amount' => $request->amount,
             'status' => 'pending',
+            'request_type' => $request->withdrawal_option,
             'review_notes' => $request->review_notes
         ]); 
         return redirect()->route('wallets.online')->with('success', 'Withdrawal request submitted successfully.');
@@ -138,9 +147,8 @@ class WithdrawalRequestController extends Controller
             'account_title' => $request->user->profile->account_title ?? '--',
             'account_number' => $request->user->profile->account_number ?? '--',
             'ibn_number' =>$request->user->profile->ibn_number ?? '--',
-            'branch_name' => $request->user->profile->branch_name ?? '--',
-            'branch_code' => $request->user->profile->branch_code ?? '--',
             'bank_name' => $request->user->profile->bank_name ?? '--',
+            'request_type' => $request->request_type ?? '--',
             
         ]);
     }

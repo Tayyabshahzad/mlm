@@ -58,7 +58,21 @@
             <input class="form-control form-control-solid h-auto rounded-md" type="password" name="password_confirmation" autocomplete="off" required />
         </div>
 
-        <!-- Referral Link Field -->
+        <div class="form-group">
+            <label class="font-size-h6 font-weight-bolder text-dark">Selected Course <span class="text-danger">*</span></label>
+            <select class="form-control form-control-solid h-auto rounded-md"  required>
+                    <option value=""> Personal Development | Build Self Confidence </option>
+            </select> 
+        </div>
+
+        <div class="form-group">
+            <label class="font-size-h6 font-weight-bolder text-dark">Mobile <span class="text-danger">*</span></label>
+            <input class="form-control form-control-solid h-auto rounded-md" type="text" name="phone_number" value="{{  old('phone_number') }}" autocomplete="off" required />
+            @error('phone_number')
+            <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
         <div class="form-group">
             <label class="font-size-h6 font-weight-bolder text-dark">Referral Link <span class="text-danger">*</span></label>
             <input class="form-control form-control-solid h-auto rounded-md" type="text" name="referral_link" value="{{ $ref ?? old('referral_link') }}" autocomplete="off" required />
@@ -66,6 +80,44 @@
             <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
+
+        <div class="form-group">
+            <label class="font-size-h6 font-weight-bolder text-dark">Choose Payment Method <span class="text-danger">*</span></label>
+        
+            <hr>
+            <p class="text-center">
+                <strong class="mr-5">
+                    <input class="h-auto rounded-md" type="radio" name="payment_method" value="bank" required onclick="toggleReferralLink('bank')" /> Bank
+                </strong>
+                <strong>
+                    <input class="h-auto rounded-md" type="radio" name="payment_method" value="usdt" required onclick="toggleReferralLink('usdt')" /> USDT
+                </strong>
+            </p>
+        </div>
+
+        <div class="form-group d-none" id="referral-link-container">
+            <label class="font-size-h6 font-weight-bolder text-dark">Scan QR <span class="text-danger">*</span></label>
+            <img src="{{ asset('assets/custom-images/amount-qr.jpeg') }}" alt="" class="img img-rounded img-thumbnail"> 
+        </div>
+
+        
+
+
+
+        <!-- Referral Link Field -->
+
+        <div class="form-group d-none">
+            <label class="font-size-h6 font-weight-bolder text-dark">Scan QR <span class="text-danger">*</span></label>
+            <img src="{{ asset('assets/custom-images/amount-qr.jpeg') }}" alt=""
+            
+            class="img img-rounded img-thumbnail">
+            @error('referral_link')
+            <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
+
+        
 
         <div class="form-group">
             <label class="font-size-h6 font-weight-bolder text-dark">Transaction ID <span class="text-danger">*</span></label>
@@ -98,6 +150,13 @@
 
 @section('page_js')
 <script>
-    // Additional custom JS if needed
+    function toggleReferralLink(paymentMethod) {
+        const referralLinkContainer = document.getElementById('referral-link-container');
+        if (paymentMethod === 'usdt') {
+            referralLinkContainer.classList.remove('d-none');
+        } else {
+            referralLinkContainer.classList.add('d-none');
+        }
+    }
 </script>
 @endsection

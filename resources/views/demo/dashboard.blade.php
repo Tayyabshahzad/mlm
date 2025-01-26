@@ -562,44 +562,54 @@
                             
                             <ol class="display-5">
                                 @foreach ($data['levelCount'] as $level => $count)
-                                    @php
-                                        // Define the maximum value for each level
-                                        $maxValues = [1 => 10, 2 => 50, 3 => 150, 4 => 400, 5 => 1000, 6 => 2000, 7 => 4000];
-                                        $maxValue = $maxValues[$level] ?? 1; // Default max value to 1 if undefined
-                                        $percentage = ($count / $maxValue) * 100;
+                                @php
+                                    // Define the maximum value for each level
+                                    $maxValues = [1 => 10, 2 => 50, 3 => 150, 4 => 400, 5 => 1000, 6 => 2000, 7 => 4000];
+                                    $maxValue = $maxValues[$level] ?? 1; // Default max value to 1 if undefined
+                                    $percentage = ($count / $maxValue) * 100;
                             
-                                        // Set a minimum visible width of 1.5%
-                                        $visibleWidth = $percentage > 13 ? $percentage : 13; // Minimum 1.5% width
-                                    @endphp
-                                    <li>
-                                        <div class="progress-warpper text-center mb-5">
-                                            <div class="progress" style="height:16px;padding-left:4px;">
-                                                <div 
-                                                    class="progress-bar 
-                                                        {{ 
-                                                            $level % 7 == 0 ? 'bg-primary' : 
-                                                            ($level % 6 == 0 ? 'bg-secondary' : 
-                                                            ($level % 5 == 0 ? 'bg-success' : 
-                                                            ($level % 4 == 0 ? 'bg-danger' : 
-                                                            ($level % 3 == 0 ? 'bg-warning' : 
-                                                            ($level % 2 == 0 ? 'bg-info' : 'bg-light'))))) }}" 
-                                                    role="progressbar" 
-                                                    style="width: {{ $visibleWidth }}%;" 
-                                                    aria-valuenow="{{ $count }}" 
-                                                    aria-valuemin="0" 
-                                                    aria-valuemax="{{ $maxValue }}">
-                                                    {{ $count }} / {{ $maxValue }}
-                                                </div>
+                                    // Set a minimum visible width of 13%
+                                    $visibleWidth = $percentage > 13 ? $percentage : 13; // Minimum 13% width
+                                @endphp
+                                <li>
+                                    <div class="progress-warpper text-center mb-5" style="position: relative;">
+                                        <div class="progress" style="height:16px; padding-left:4px;">
+                                            <div 
+                                                class="progress-bar 
+                                                    {{ 
+                                                        $level % 7 == 0 ? 'bg-primary' : 
+                                                        ($level % 6 == 0 ? 'bg-secondary' : 
+                                                        ($level % 5 == 0 ? 'bg-success' : 
+                                                        ($level % 4 == 0 ? 'bg-danger' : 
+                                                        ($level % 3 == 0 ? 'bg-warning' : 
+                                                        ($level % 2 == 0 ? 'bg-info' : 'bg-light'))))) }}" 
+                                                role="progressbar" 
+                                                style="width: {{ $visibleWidth }}%;" 
+                                                aria-valuenow="{{ $count }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="{{ $maxValue }}">
+                                                {{ $count }} / {{ $maxValue }}
                                             </div>
-                                            
-                                            <b>
-                                               <small>{{ $count }} / {{ $maxValue }} </small> 
-                                            </b>
                                         </div>
-                                       
-                                        
-                                    </li>
-                                @endforeach
+                                        <b>
+                                            <small>{{ $count }} / {{ $maxValue }}</small> 
+                                        </b>
+                                        <!-- Image at the end of the bar -->
+
+                                        <i 
+                                        style="
+                                                position: absolute;
+                                                top: -4px; /* Adjust to align vertically */
+                                                left: calc({{ $visibleWidth }}% - 12px); /* Adjust horizontally */
+                                                width: 24px;     
+                                                height: 24px;"
+                                        class="flaticon2-correct kt-font-success"></i>
+
+                                         
+                                    </div>
+                                </li>
+                            @endforeach
+                            
                             </ol>
                             
                             

@@ -60,7 +60,8 @@
                                     <th class="pl-0" style="">S#</th>
                                     <th style="min-width: 110px">Username</th>
                                     <th style="min-width: 110px">Amount</th>  
-                                    <th style="min-width: 120px">Status</th> 
+                                    <th style="min-width: 120px">Status</th>
+                                    <th style="min-width: 120px">Request Type</th>  
                                     <th style="min-width: 120px">Date</th> 
                                     <th style="min-width: 120px">Details</th> 
                                 </tr>
@@ -72,6 +73,7 @@
                                     <td style="min-width: 110px">{{ $requests->user->username }}</td>
                                     <td style="min-width: 110px">{{ $requests->amount }} </td>  
                                     <td style="min-width: 120px"> <span class="btn @if($requests->status == 'pending')btn-outline-warning @else btn-outline-success @endif btn-sm">{{ ucfirst($requests->status) }}</span></td>  
+                                    <td style="min-width: 120px">{{  ucwords($requests->request_type)  }}</td>   
                                     <td style="min-width: 120px">{{ $requests->created_at  }}</td>   
                                     <td style="min-width: 120px"> <button  data-id="{{ $requests->id }}" data-toggle="modal" data-target="#WithdrawModel" 
                                         class="view-details-btn btn btn-sm btn-outline-info"> <i class="far fa-eye"></i> </button> </td>   
@@ -138,6 +140,7 @@
                 success: function(response) {
                     // Populate the modal with the response data
                     $('#request_status').val(response.status)
+                     
                     var content = `
                         <input type="hidden" name="request_id" value="${response.id}"/>
                         <table  class="table table-head-custom table-vertical-center"> 
@@ -145,12 +148,14 @@
                                     <th> Username </th>
                                     <th> Amount </th>
                                     <th> Status </th>
+                                    <th> Request Type </th>
                                     <th> Created At </th>
                                 </tr>
                                 <tr>    
                                     <td>  ${response.username} </td>
                                     <td>  ${response.amount} </td>
                                     <td>  ${response.status} </td>
+                                     <td>  ${response.request_type} </td>
                                     <td>  ${response.created_at} </td>
                                 </tr>
                                 <tr>
@@ -165,16 +170,14 @@
                                 </tr>
 
                                 <tr>
-                                    <th  colspan="2"> Account Number </th>  <td  colspan="2">  ${response.account_number} </td> 
+                                    <th  colspan="2"> IBN </th>  <td  colspan="2">  ${response.ibn_number} </td> 
                                 </tr>
 
                                 <tr>
-                                    <th  colspan="2"> Branch Name </th>  <td  colspan="2">  ${response.branch_name} </td> 
+                                    <th  colspan="2"> USDT Address </th>  <td  colspan="2">  ${response.account_number} </td> 
                                 </tr>
-                                
-                                <tr>
-                                    <th  colspan="2"> Branch Code </th>  <td  colspan="2">  ${response.branch_code} </td> 
-                                </tr> 
+
+                                 
 
                                   <tr>
                                     <th  colspan="2"> Update Status </th>  <td  colspan="2">

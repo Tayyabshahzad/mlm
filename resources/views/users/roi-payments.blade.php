@@ -39,7 +39,9 @@
                 <!--begin::Header-->
                 <div class="card-header border-0 py-5">
                     <h3 class="card-title align-items-start flex-column">
-                       
+                        <a  href="#" 
+                         data-toggle="modal" data-target="#WithdrawModel"
+                        class="mr-3 rounded-0 btn btn-danger font-weight-bolder font-size-sm">Manual ROI</a>
                     </h3>
                     <div class="card-toolbar">
                         <a  href="{{ route('run-schedule') }}"   class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Generate ROI s</a> 
@@ -113,7 +115,7 @@
                                 Select Member
                             </label>
                             <select class="form-control form-control-sm form-control-solid mb-2" 
-                             name="user_id">
+                             name="user_id" required>
                                 <option disabled selected value=""> Select Member </option>
                                 @foreach ($users as $user )
                                 <option  value="{{ $user->id }}"> {{ $user->name}} </option>
@@ -125,15 +127,21 @@
 
                         <div class="col-lg-12 col-xl-12">
                             <label for="" class="font-weight-bold mr-2">
-                                Transfer Amount
+                                Transfer Amount Percentage
                             </label>
                             <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
                              name="commission_percentage" min="0.01" step="0.01"
                              required
                              
-                             placeholder="Commission Percentage"
+                             placeholder=" Percentage"
                              >  
+                             <div class="form-group">
+                                <label for="">Description</label>
+                                <textarea name="description"  required class="form-control"></textarea>
+                            </div>
                         </div>  
+
+                        
                     </div>  
                 </div>
                 <div class="modal-footer">

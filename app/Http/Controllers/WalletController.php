@@ -41,7 +41,7 @@ class WalletController extends Controller
     public function transferToOnline(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:0.01',
+            'amount' => 'required|numeric|min:6',
             'wallet_type' => 'required',
         ]); 
         $userId = auth()->id();  

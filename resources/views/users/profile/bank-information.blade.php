@@ -91,7 +91,7 @@
                                     </div>
                                    
                                 </div>  
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <label class="col-xl-3 col-lg-3 col-form-label">Account Number <span class="text-danger">*</span>  </label>
                                     <div class="col-lg-9 col-xl-6">
                                         <div class="input-group input-group-lg input-group-solid"> 
@@ -106,7 +106,7 @@
                                             </div>
                                         @enderror
                                     </div>
-                                </div>   
+                                </div>    --}}
                                 <div class="form-group row">
                                     <label class="col-xl-3 col-lg-3 col-form-label">IBN Number <span class="text-danger">*</span> </label>
                                     <div class="col-lg-9 col-xl-6">
@@ -125,7 +125,7 @@
                                 </div> 
   
 
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <label class="col-xl-3 col-lg-3 col-form-label">Branch Name <span class="text-danger">*</span> </label>
                                     <div class="col-lg-9 col-xl-6">
                                         <div class="input-group input-group-lg input-group-solid"> 
@@ -140,9 +140,9 @@
                                             </div>
                                         @enderror
                                     </div>
-                                </div> 
+                                </div>  --}}
 
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <label class="col-xl-3 col-lg-3 col-form-label">Branch Code <span class="text-danger">*</span> </label>
                                     <div class="col-lg-9 col-xl-6">
                                         <div class="input-group input-group-lg input-group-solid"> 
@@ -157,7 +157,7 @@
                                             </div>
                                         @enderror
                                     </div>
-                                </div>  
+                                </div>   --}}
 
 
                                 <div class="form-group row">
@@ -176,6 +176,23 @@
                                         @enderror
                                     </div>
                                 </div>  
+
+                                <div class="form-group row">
+                                    <label class="col-xl-3 col-lg-3 col-form-label">USDT Address <span class="text-danger">*</span> </label>
+                                    <div class="col-lg-9 col-xl-6">
+                                        <div class="input-group input-group-lg input-group-solid"> 
+                                            <input type="text" class="form-control form-control-lg form-control-solid"
+                                            required
+                                             name="usdt_address"
+                                            value="{{ old('usdt_address', $profile->account_number ?? '') }}"/>
+                                        </div>
+                                        @error('usdt_address')
+                                            <div class="text-danger mt-2">
+                                                <small>{{ $message }}</small>
+                                            </div>
+                                        @enderror
+                                    </div>
+                                </div> 
 
                                 <div class="card-toolbar">
                                     <button type="submit" class="btn btn-success mr-2 rounded-0">Update Changes</button> 

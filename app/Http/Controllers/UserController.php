@@ -47,8 +47,31 @@ class UserController extends Controller
         $totalActiveMembers = User::where('can_login',true)->count();
         $totalInActiveMembers = User::where('can_login',false)->count();
         $totalBlockedMembers = User::where('blocked',true)->count();
+        $totalfreezeMembers = User::where('freez_wallet',true)->count();
         
-        return view('users.index', compact('teamMembers', 'search' ,'totalMembers','totalActiveMembers','totalInActiveMembers','totalBlockedMembers'));
+        return view('users.index', compact('teamMembers', 'search' ,'totalMembers','totalActiveMembers','totalInActiveMembers','totalBlockedMembers','totalfreezeMembers'));
+    } 
+    public function deletedUser(Request $request)
+    {
+        $search = $request->input('search'); 
+        $teamMembers = User::onlyTrashed()->with('team')
+            ->where('id', '!=', auth()->user()->id)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('username', 'like', "%{$search}%")
+                          ->orWhere('name', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('can_login', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        $totalMembers = User::count();
+        $totalActiveMembers = User::where('can_login',true)->count();
+        $totalInActiveMembers = User::where('can_login',false)->count();
+        $totalBlockedMembers = User::where('blocked',true)->count();
+        
+        return view('users.deleted-users', compact('teamMembers', 'search' ,'totalMembers','totalActiveMembers','totalInActiveMembers','totalBlockedMembers'));
     } 
     public function updateStatus(Request $request)
     {
@@ -124,6 +147,7 @@ class UserController extends Controller
                     'status' => $user->can_login ? 'Active' : 'Inactive',
                     'amount_proof' => $user->getFirstMediaUrl('user_amount_source'),
                     'transaction_id' => $user->transaction_id,
+                    'payment_method'=>$user->payment_method,
                 ],
             ]);
         }
@@ -505,9 +529,12 @@ class UserController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id', // User selection
             'commission_percentage' => 'required|numeric|min:0|max:100', // Commission percentage
+            'description' => 'required'
         ]);
-        $user = User::where('blocked',false)->find($request->user_id); 
-        $walletTotal = Wallet::where('user_id',$user->id)->sum('balance');
+        $user = User::
+        where('can_login', true)->
+        where('blocked',false)->find($request->user_id); 
+        $walletTotal = Wallet::where('user_id',$user->id)->sum('total_amount');
         if($walletTotal >= 200){
             return redirect()->back()->with('error', '2x is completed for this user'); 
         }
@@ -526,7 +553,6 @@ class UserController extends Controller
         $roiPayment = ($remainingPV * $paymentPercentage) / 100;
         $user->roi_wallet_balance += $roiPayment;
         $user->last_roi_payment_date = Carbon::now();
-        
         $user->save();
         $wallet = Wallet::Create(
             [
@@ -544,7 +570,7 @@ class UserController extends Controller
             'user_id' => $user->id,
             'amount' => $roiPayment,
             'percentage' => $request->commission_percentage,
-            'description' => 'Monthly ROI Generated',
+            'description' => $request->description,
         ]);
         $this->generateParentCommissions($user, $roiPayment);
         return redirect()->back()->with('success', 'ROI Generated Successfully');
@@ -593,7 +619,7 @@ class UserController extends Controller
     private function generateParentCommissions($user, $roiAmount)
     {
         $commissionLevels = [
-            1 => 3.5,  // divide / 2 
+            1 => 3.5,
             2 => 3,
             3 => 2.5,
             4 => 2,
@@ -640,11 +666,14 @@ class UserController extends Controller
     }
 
     public function userInfo(Request $request , $id){
-        $user = User::with('profile')->find($id); 
+        
+        $user = User::withTrashed()->with('profile')->find($id);
         return view('users.information',compact('user'));
     }
 
-    public function userInfoUpdate(Request $request ,User $user){
+    public function userInfoUpdate(Request $request){
+       
+        $user = User::withTrashed()->find($request->id);
        
         $request->validate([
             'password' => 'nullable|confirmed|min:8', // Password is optional but must match confirmation
@@ -652,10 +681,14 @@ class UserController extends Controller
             'freez_wallet' => 'required|boolean', 
             'blocked'=>'boolean',
             'reason' => 'required_if:blocked,1|max:255',
+            'user_id' =>'required'
         ],[
             'reason.required_if' => 'The reason is required when the account is blocked.',
         ]);
- 
+        $user = User::withTrashed()->find($request->user_id);
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found.');
+        }
        
         if ($request->hasFile('profile_avatar')) { 
             if ($user->hasMedia('user_profile_images')) {
@@ -687,6 +720,14 @@ class UserController extends Controller
         if ($request->filled('password')) {
             $user->password = bcrypt($request->input('password')); // Hash the password
         }
+
+        if ($request->filled('username')) { 
+            $user->username = $request->input('username'); // Hash the password
+        }
+        if ($request->filled('email')) {
+            $user->email = $request->input('email'); // Hash the password
+        }
+
         $requestData = $request->except(['password', 'password_confirmation', 'profile_avatar', 'cnic_front', 'cnic_back']);
         $profile = $user->profile ?: new Profile();  
         $profile->skills = null;  // Or handle as needed
@@ -713,16 +754,12 @@ class UserController extends Controller
 
         ]);
         $user = User::find($request->delete_id);
-        $user->getMedia('user_profile_images')->each(function ($media) {
-            $media->delete();  
-        });
-        $user->getMedia('user_document_cnic_front')->each(function ($media) {
-            $media->delete();   
-        });
-        $user->getMedia('user_document_cnic_back')->each(function ($media) {
-            $media->delete(); 
-        }); 
-        $user->reason = $request->reason;  
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found.');
+        } 
+        $user->reason = $request->reason; 
+        $user->username = $user->username . '_deleted_' . $user->id; 
+        $user->email = $user->email . '_deleted_' . $user->id; 
         $user->save();
         if ($user->reflink) {
             $user->reflink->is_active = false;

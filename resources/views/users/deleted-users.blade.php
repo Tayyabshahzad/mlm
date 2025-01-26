@@ -31,7 +31,7 @@
                             <a href="{{  route('dashboard') }}" class="text-muted">Dashboard</a>
                         </li> 
                         <li class="breadcrumb-item">
-                            <a href="" class="text-muted">Members</a>
+                            <a href="" class="text-muted">Deleted user</a>
                         </li>
                     </ul>
                     <!--end::Breadcrumb-->
@@ -58,30 +58,7 @@
                             <div class="card-body p-0"> 
                                 
                                 <div class="row justify-content-center py-8 px-8 py-md-10 px-md-0"> 
-                                    <div class="col-md-10"> 
-
-                                        <div class="btn-group" role="group" aria-label="Basic example">
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-primary">Total Members : {{ $totalMembers }}</button>
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-success">Active Members : {{ $totalActiveMembers }}</button>
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-warning">Inactive Members : {{ $totalInActiveMembers }}</button>
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-danger">Blocked Members : {{ $totalBlockedMembers }}</button>
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-info">Freeze Accounts : {{ $totalfreezeMembers }}</button>
-                                        </div>
- 
-                                        <form method="GET" action="{{ route('users.index') }}" class="mb-4">
-                                            <div class="input-group">
-                                                <input 
-                                                    type="text" 
-                                                    name="search" 
-                                                    class="form-control rounded-0" 
-                                                    placeholder="Search by username, name, or email" 
-                                                    value="{{ old('search', $search ?? '') }}">
-                                                <div class="input-group-append">
-                                                    <button type="submit" class="mr-3 btn-sm rounded-0 btn btn-info">Search</button>
-                                                    <a href="{{ route('users.index') }}" class="  rounded-0 btn btn-success">Clear</a>
-                                                </div>
-                                            </div>
-                                        </form>
+                                    <div class="col-md-10">  
                                         <div class="table-responsive-sm">
                                             <table class="table" style="padding:0!important">
                                                 <thead>
@@ -95,11 +72,7 @@
                                                 </thead>
                                                 <tbody>
                                                     @foreach($teamMembers as $teamMember)
-                                                    <tr class="pa-0 
-                                                    @if($teamMember->blocked) text-danger @endif
-                                                    @if($teamMember->can_login) text-success @endif
-                                                    @if(!$teamMember->can_login) text-warning @endif
-                                                    @if($teamMember->freez_wallet) text-info @endif"> 
+                                                    <tr class="pa-0  text-danger"> 
                                                         <td class=" align-middle">{{ $loop->iteration }}</td>
                                                         <td class=" align-middle">{{ $teamMember->username }}</td>
                                                         <td class=" align-middle">{{ $teamMember->name }}</td>
@@ -110,24 +83,10 @@
                                                             <button class="btn btn-sm btn-outline-info rounded-0 dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                More Actions
                                                             </button>
-                                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                                <a class="dropdown-item text-info user-details-btn"   data-id="{{ $teamMember->id }}" data-target="#userDetails" data-toggle="modal" href="#">
-                                                                    Info
-                                                                </a>
-                                                                <a class="dropdown-item text-warning" 
-                                                                    @if(! $teamMember->can_login == 1)
-                                                                        data-toggle="modal"
-                                                                        data-target="#changeStatus"
-                                                                    @endif
-                                                                        data-id="{{ $teamMember->id }}"
-
-                                                                href="#"> {{ $teamMember->can_login == 1 ? 'Activated ' : 'Active' }} </a>
+                                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"> 
+                                                                 
                                                                 <a class="dropdown-item text-primary" href="{{ route('user.info', $teamMember->id) }}">Details</a>
-                                                                <a class="dropdown-item text-danger"
-                                                                    data-toggle="modal"
-                                                                    data-target="#deleteUser"
-                                                                    data-id="{{ $teamMember->id }}"
-                                                                href="#">Delete</a>
+                                                                 
                                                             </div>
                                                         </div>
 
@@ -181,89 +140,6 @@
         </div>
         <!--end::Entry-->
     </div>
-</div>
-
-<div class="modal fade" id="changeStatus" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">  Change Member Status </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i aria-hidden="true" class="ki ki-close"></i>
-                </button>
-            </div>
-            <form action="{{ route('users.status.update') }}"  id="updateUserForm" method="POST">
-                @method('put')
-                @csrf
-                <div class="modal-body">
-                    <div class="form-group row"> 
-                        <div class="col-lg-12 col-xl-12">
-                        <p>Are you sure to update your member status ? </p> 
-                        </div>  
-                    </div> 
-                    <input type="hidden" name="member_id" id="member_id"> 
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light-primary font-weight-bold rounded-0" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary font-weight-bold rounded-0"  id="updateUser">Update</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div> 
-<div class="modal fade" id="userDetails" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">  Member Details </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i aria-hidden="true" class="ki ki-close"></i>
-                </button>
-            </div> 
-                <div class="modal-body">
-                    <div id="loading-spinner" style="display: none; text-align: center;">
-                        <p>Loading...</p>
-                    </div>
-                    <div id="user-details-content">
-                        
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
-                  
-                </div>
-            
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="deleteUser" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelDelete" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabelDelete">  Delete User </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i aria-hidden="true" class="ki ki-close"></i>
-                </button>
-            </div>
-            <form action="{{ route('user.delete') }}"  id="deleteUserForm" method="POST">
-                
-                @csrf
-                <div class="modal-body">
-                     
-                    <input type="hidden" name="delete_id" id="delete_id"> 
-                    <div class="form-group">
-                        <p class="text-left text-danger">Are you sure you want to delete this member? <br>This action cannot be undone. </p> 
-                         <textarea name="reason" id="" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light-primary btn-sm font-weight-bold rounded-0" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger btn-sm font-weight-bold rounded-0"  id="deleteUser">Delete</button>
-                </div>
-            </form>
-        </div>
-    </div>
 </div> 
  
 @endsection
@@ -308,7 +184,6 @@ $('.user-details-btn').on('click', function () {
                         <tr> <th> Joined </th> <td> ${response.data.created_at}</td> </tr>
                         <tr> <th> Status </th> <td> ${response.data.status}</td> </tr> 
                          <tr> <th> Transaction Id </th> <td> ${response.data.transaction_id}</td> </tr> 
-                         <tr> <th> Payment Method </th> <td> ${response.data.payment_method}</td> </tr> 
                     </table>
                 `;
                 if (response.data.amount_proof) {
@@ -316,7 +191,7 @@ $('.user-details-btn').on('click', function () {
 
                     <table class='table table-bordered'>
                         <tr> <th> Amount Proof </th>   </tr>
-                        <tr> <th> <img src="${response.data.amount_proof}" alt="Amount Proof Image"  class="img img-thumbnail"style="max-width: 100%; height: auto;" /> </th>  </tr> 
+                        <tr> <th> <img src="${response.data.amount_proof}" alt="Amount Proof Image" style="max-width: 100%; height: auto;" /> </th>  </tr> 
                     </table>
  
                     `;

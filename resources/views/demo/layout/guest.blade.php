@@ -24,6 +24,8 @@
 		<link href="{{ asset('assets/css/themes/layout/header/menu/light.css')}}" rel="stylesheet" type="text/css" />
 		<link href="{{ asset('assets/css/themes/layout/brand/dark.css')}}" rel="stylesheet" type="text/css" />
 		<link href="{{ asset('assets/css/themes/layout/aside/dark.css')}}" rel="stylesheet" type="text/css" />
+		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js"></script> 
 		<!--end::Layout Themes-->
 		<link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico')}}" />
 	</head>
@@ -72,6 +74,16 @@
 		<!--begin::Page Scripts(used by this page)-->
 		<script src="{{ asset('assets/js/pages/custom/login/login-general.js')}}"></script>
 		<!--end::Page Scripts-->
+		@if ($errors->any()) 
+			@foreach ($errors->all() as $error) 
+				<script>
+					toastr.error("{{ $error }}");
+				</script> 
+			@endforeach 
+		@endif
 	</body>
+
+	@section('page_js')
+	@show
 	<!--end::Body-->
 </html>

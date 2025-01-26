@@ -127,11 +127,11 @@
                                 Transfer Amount
                             </label>
                             <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="amount" min="0.01" step="0.01"
+                             name="amount" min="6" step="0.01"
                              required
                              max="{{ $wallets->sum('balance') }}"
-                             placeholder="Enter Amount"
-                             >  
+                             placeholder="Enter Amount">  
+                             <strong class="text-danger">Available Balance : {{ $wallets->sum('balance') }}</strong>
                         </div>  
                     </div>  
                 </div>

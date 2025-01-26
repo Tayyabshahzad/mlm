@@ -558,6 +558,16 @@
 													</span>
 												</a> 
 											</li> 
+
+											<li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
+												<a href="{{ route('deleted.users') }}" class="menu-link menu-toggle">
+													<i class="menu-bullet menu-bullet-dot">
+														<span></span>
+													</i>
+													<span class="menu-text">Deleted Members</span> 
+													 
+												</a> 
+											</li> 
 										</ul>
 									</div> 
 									<div class="menu-submenu">
@@ -1461,6 +1471,18 @@
 					</div>
 					<!--end::Header-->
 					<!--begin::Content-->
+					<div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader2">
+						<div class="container-fluid   align-items-center justify-content-between ">
+							<!--begin::Info-->
+							<div class="  align-items-center  mr-2">
+								<!--begin::Page Title-->
+								<p class="text-dark text-center font-weight-bold mt-2 mb-2 mr-5" onclick="copyToClipboard()">
+									{{ env('APP_URL').'/register/ref/'. Auth::user()->reflink->link }}  
+								</p>
+							</div> 
+						</div>
+					</div>
+
                     @section('content')
                     @show
 					

@@ -194,29 +194,41 @@
                 <input type="hidden" name="wallet_type" value="online" required>
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Withdrawal</h5>
+                    
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i aria-hidden="true" class="ki ki-close"></i>
                     </button>
                 </div>
                 <div class="modal-body"> 
+                    <p><strong>Available Balance: {{ $onlineWallets->sum('balance') }} </strong></p>
                     <div class="form-group row"> 
                         <div class="col-lg-12 col-xl-12">
                             <label for="" class="font-weight-bold mr-2">
                                 Amount <span class="text-danger">*</span>
                             </label>
                             <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="amount" min="0.01" step="0.01"
+                             name="amount" min="10" step="0.01"
                              required 
-                             max="{{ $onlineWallets->sum('balance') }}"
                              placeholder="Enter Amount"
                              >  
+                             <small class="text-danger">Minimum Transfer Amount: 10PV</small> 
                         </div>  
-
+                        
                         <div class="col-lg-12 col-xl-12">
                             <label for="" class="font-weight-bold mr-2">
                                 Description 
                             </label>
                             <textarea name="target_account_details" id="target_account_details" class="form-control form-control-sm form-control-solid mb-2" required></textarea>
+                        </div>  
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2 mb-10    ">
+                                Choose Withdraw Option <span class="text-danger"> *</span>
+                            </label>
+                            <div>
+                                <input type="radio" value="bank" class="" name="withdrawal_option"> Bank
+                                <input type="radio" value="usdt" name="withdrawal_option"> USDT
+                                <input type="radio" value="cash" name="withdrawal_option"> Cash
+                            </div>
                             
                         </div>  
                     </div>  
@@ -260,11 +272,12 @@
                                 Amount <span class="text-danger">*</span>
                             </label>
                             <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="amount" min="0.01" step="0.01"
+                             name="amount" min="5" step="0.01"
                              required 
                              max="{{ $onlineWallets->sum('balance') }}"
                              placeholder="Enter Amount"
-                             >  
+                             > 
+                             <small class="text-danger">Minimum Transfer Amount: 5PV</small> 
                         </div>  
 
                         <div class="col-lg-12 col-xl-12">
