@@ -1,0 +1,16 @@
+ 
+    #countryCode {
+        background: url('https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/flags/4x3/us.svg') no-repeat 10px center;
+        padding-left: 40px;
+        background-size: 20px;
+    }
+
+    #countryCode option[data-flag="us"] {
+        background-image: url('https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/flags/4x3/us.svg');
+    }
+
+    #countryCode option[data-flag="gb"] {
+        background-image: url('https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/flags/4x3/gb.svg');
+    }
+
+     

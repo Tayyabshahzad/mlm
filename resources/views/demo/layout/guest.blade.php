@@ -27,7 +27,9 @@
 		
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js"></script> 
 		<!--end::Layout Themes-->
-		<link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico')}}" />
+		<link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico')}}" /> 
+		{{-- <link rel="stylesheet" href="{{ asset('assets/custom-css/flag.css') }}" rel="stylesheet" type="text/css" >  --}}
+
 	</head>
 	<!--end::Head-->
 	<!--begin::Body-->
@@ -81,9 +83,24 @@
 				</script> 
 			@endforeach 
 		@endif
+
+		<script>
+			const countryCodeDropdown = document.getElementById("countryCode");
+			const phoneInput = document.getElementById("phone");
+			 
+			countryCodeDropdown.addEventListener("change", function () {
+				const selectedCode = countryCodeDropdown.value;
+				console.log("Selected Country Code:", selectedCode);
+			});
+		</script>
+
+		@section('page_js')
+		 
+		
+		
+		@show
 	</body>
 
-	@section('page_js')
-	@show
+	
 	<!--end::Body-->
 </html>

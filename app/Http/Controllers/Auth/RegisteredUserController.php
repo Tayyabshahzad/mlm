@@ -48,6 +48,7 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'transaction_id' => 'required|max:50|string|unique:' . User::class,
             'phone_number'=>'required|unique:'.User::class,
+            'cc' => 'required',
             'payment_method'=>'required|in:usdt,bank',
             'referral_link' => [
                 'required',
@@ -55,8 +56,8 @@ class RegisteredUserController extends Controller
                 'exists:referral_links,link',
             ],
            'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-        ]); 
-        
+
+        ]);  
         $referralLink = ReferralLink::where('link', $request->referral_link)->where('is_active',true)->first(); 
         if(!$referralLink){
             return redirect()->back()->with('error','The Referral link is expired or invalid ');
@@ -77,7 +78,7 @@ class RegisteredUserController extends Controller
             'phone_verified' => true,
             'sponsor_id' => $referralLink->user->id,
             'transaction_id' =>  $request->transaction_id,
-            'phone_number' =>$request->mobile,
+            'phone_number' =>$request->cc .$request->phone_number,
             'payment_method' =>$request->payment_method,
             
         ]); 

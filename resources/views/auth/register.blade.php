@@ -61,17 +61,24 @@
         <div class="form-group">
             <label class="font-size-h6 font-weight-bolder text-dark">Selected Course <span class="text-danger">*</span></label>
             <select class="form-control form-control-solid h-auto rounded-md"  required>
-                    <option value=""> Global Visioners Educational Program </option>
+                    <option value="Global Visioners Educational Program"> Global Visioners Educational Program </option>
             </select> 
         </div>
 
         <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Mobile <span class="text-danger">*</span></label>
-            <input class="form-control form-control-solid h-auto rounded-md" type="text" name="phone_number" value="{{  old('phone_number') }}" autocomplete="off" required />
-            @error('phone_number')
-            <div class="text-danger">{{ $message }}</div>
-            @enderror
+            <label for="phone" class="font-size-h6 font-weight-bolder text-dark">Mobile Number <span class="text-danger">*</span></label>
+            <div class="d-flex">
+                @include('auth.country-code')
+                <input id="phone" 
+                name="phone_number" value="{{  old('phone_number') }}" 
+                type="tel" class="form-control" placeholder="Enter Phone Number" required>
+                @error('phone_number')
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
+            </div>
         </div>
+        
+    
 
         <div class="form-group">
             <label class="font-size-h6 font-weight-bolder text-dark">Referral Link <span class="text-danger">*</span></label>
@@ -149,7 +156,21 @@
 @endsection
 
 @section('page_js')
+
 <script>
+    const countryCodeDropdown = document.getElementById("countryCode");
+    const phoneInput = document.getElementById("phone");
+
+    // Event Listener for Change
+    countryCodeDropdown.addEventListener("change", function () {
+        const selectedCode = countryCodeDropdown.value;
+        console.log("Selected Country Code:", selectedCode);
+    });
+</script>
+
+
+<script>
+    
     function toggleReferralLink(paymentMethod) {
         const referralLinkContainer = document.getElementById('referral-link-container');
         if (paymentMethod === 'usdt') {
