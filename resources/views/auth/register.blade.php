@@ -104,7 +104,29 @@
 
         <div class="form-group d-none" id="referral-link-container">
             <label class="font-size-h6 font-weight-bolder text-dark">Scan QR <span class="text-danger">*</span></label>
-            <img src="{{ asset('assets/custom-images/amount-qr.jpeg') }}" alt="" class="img img-rounded img-thumbnail"> 
+            <img src="{{ asset('assets/custom-images/amount-qr.jpeg') }}" alt="" class=" img-thumbnail"> 
+
+            <div class="form-group mt-4">
+                <label class="font-size-h6 font-weight-bolder text-dark">Copy Binance Wallet Address</label>
+
+                <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
+                    <div class="btn-group " role="group" aria-label="First group" onclick="copyAddressToClipboard()"> 
+                        <div class=" form-control rounded-0" id="walletAddress"> 
+                            TJaz7ykL6nnpDaVnPYJRNauKXLNtgLUYJP
+                       </div>
+                       <button type="button" class="ml-2 btn btn-outline-secondary btn-icon rounded-0"><i class="la la-copy"></i></button>
+                    </div>
+                    
+                </div>
+
+
+                <input class="form-control form-control-solid h-auto rounded-md" type="text" name="referral_link" value="{{ $ref ?? old('referral_link') }}" autocomplete="off" required />
+                @error('referral_link')
+                <div class="text-danger">{{ $message }}</div>
+                @enderror
+            </div>
+
+
         </div>
 
         
@@ -179,5 +201,27 @@
             referralLinkContainer.classList.add('d-none');
         }
     }
+
+    
 </script>
+
+<script>
+    function copyAddressToClipboard() {
+        // Get the hidden reference link element
+        const refLinkElement = document.getElementById("walletAddress");
+        // Create a temporary input to hold the link text
+        const tempInput = document.createElement("input");
+        tempInput.value = refLinkElement.textContent;
+        // Append the input to the body, copy its value, and then remove it
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        toastr.info("Wallet Address Copied");
+        // Show a toast message
+       
+         
+    }
+</script>
+
 @endsection
