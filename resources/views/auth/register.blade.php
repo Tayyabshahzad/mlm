@@ -61,7 +61,7 @@
         <div class="form-group">
             <label class="font-size-h6 font-weight-bolder text-dark">Selected Course <span class="text-danger">*</span></label>
             <select class="form-control form-control-solid h-auto rounded-md"  required>
-                    <option value=""> Personal Development | Build Self Confidence </option>
+                    <option value=""> Global Visioners Educational Program </option>
             </select> 
         </div>
 

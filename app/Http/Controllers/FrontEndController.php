@@ -279,9 +279,9 @@ class FrontEndController extends Controller
                 'account_title' => 'string|max:255',
                 'account_number' => 'required|string|max:255',
                 'ibn_number' => 'required|string|max:255',
-                'branch_name' => 'required|string|max:255',
-                'branch_code' => 'required|string|max:255', 
-                'bank_name' => 'required|string|max:255', 
+                'account_number' => 'required|string|max:255',
+               // 'branch_code' => 'required|string|max:255', 
+                //'bank_name' => 'required|string|max:255', 
             ]); 
         } 
         $user = Auth::user();  

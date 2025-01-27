@@ -183,10 +183,10 @@
                                         <div class="input-group input-group-lg input-group-solid"> 
                                             <input type="text" class="form-control form-control-lg form-control-solid"
                                             required
-                                             name="usdt_address"
-                                            value="{{ old('usdt_address', $profile->account_number ?? '') }}"/>
+                                             name="account_number"
+                                            value="{{ old('account_number', $profile->account_number ?? '') }}"/>
                                         </div>
-                                        @error('usdt_address')
+                                        @error('account_number')
                                             <div class="text-danger mt-2">
                                                 <small>{{ $message }}</small>
                                             </div>
