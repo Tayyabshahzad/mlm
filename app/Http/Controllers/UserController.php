@@ -520,7 +520,7 @@ class UserController extends Controller
     public function roiPayments()
     {
         $users = User::where('blocked',false)->where('can_login', true)->get();
-        $payments = ROITransaction::get();
+        $payments = ROITransaction::orderby('id','desc')->get();
         return view('users.roi-payments', compact('users', 'payments'));
     }
 
@@ -546,6 +546,11 @@ class UserController extends Controller
             $user->roi_end_date = Carbon::now()->addYears(2); // 2 years from start
             $user->save();
         }
+        // $rois = Wallet::where('wallet_type','roi')->orderBy('id','asc')->get(); 
+        // foreach($rois as $roi){
+        //     $user = User::  where('can_login', true)-> where('blocked',false)->find($roi->user_id);  
+        //     $this->generateParentCommissions($user, $roi->balance);
+        // } 
         $monthsRemaining = Carbon::now()->diffInMonths($user->roi_end_date, false);
         $remainingPV = 200 - $user->roi_wallet_balance;
         $paymentPercentage = $request->commission_percentage;
@@ -570,7 +575,7 @@ class UserController extends Controller
             'user_id' => $user->id,
             'amount' => $roiPayment,
             'percentage' => $request->commission_percentage,
-            'description' => $request->description,
+            'description' => 'ROI '. $request->description,
         ]);
         $this->generateParentCommissions($user, $roiPayment);
         return redirect()->back()->with('success', 'ROI Generated Successfully');
@@ -627,36 +632,59 @@ class UserController extends Controller
             6 => 1,
             7 => 0.5,
         ];
-
-        foreach ($commissionLevels as $level => $percentage) {
-            $parent = $this->getAncestorByLevel($user, $level); // Method to find parent by level
+        
+        foreach ($commissionLevels as $level => $percentage) { 
+             
+            $parent = $this->getAncestorByLevel($user, $level);  
+           
             if ($parent) {
-                $commissionAmount = ($roiAmount * $percentage) / 100;
-                ROITransaction::create([
-                    'user_id' => $parent->id,
-                    'amount' => $commissionAmount,
-                    'percentage' => $percentage,
-                    'description' => "Level {$level} commission from user {$user->id} | {$user->name}",
-                ]);
-
-                $wallet = Wallet::Create(
-                    [
+                $directChildrenCount = User::where('blocked',false)->where('sponsor_id', $parent->id)->where('can_login', true)->count();
+              
+                $requiredUsers = $this->getRequiredUsersForLevel($level);  
+                if ($directChildrenCount >= $requiredUsers) { 
+                    $commissionAmount = ($roiAmount * $percentage) / 100;
+                    ROITransaction::create([
+                        'user_id' => $parent->id,
+                        'amount' => $commissionAmount,
+                        'percentage' => $percentage,
+                        'description' => "Profit Share for Level {$level} commission from user {$user->id} | {$user->username}",
+                    ]);
+                    Wallet::create([
                         'user_id' => $parent->id,
                         'wallet_type' => 'profit_share',
                         'balance' => $commissionAmount,
-                        'total_amount' => $commissionAmount,
                         'level' => $level,
                         'commission_type' => 'profit_share',
                         'wallet_from' => $user->id,
                         'percentage' => $percentage,
-                    ]
-                );
+                        'total_amount'=> $commissionAmount,
+                    ]);
+                }
+                  
             }
         }
+    }
+    private function getRequiredUsersForLevel($level)
+    {
+
+    
+
+        $requiredUsers = [
+            1 => 10,  // Level 1 needs 2 users
+            2 => 50,  // Level 2 needs 3 users
+            3 => 150,  // Level 3 needs 4 users
+            4 => 400,  // Level 4 needs 5 users
+            5 => 1000,  // Level 5 needs 6 users
+            6 => 2000,  // Level 6 needs 7 users
+            7 => 4000,  // Level 7 needs 8 users
+        ];
+
+        return $requiredUsers[$level] ?? 0;  // Default to 0 if level is not defined
     }
 
     private function getAncestorByLevel($user, $level)
     {
+        
         return \DB::table('referral_trees')
             ->join('users', 'referral_trees.ancestor_id', '=', 'users.id')
             ->where('referral_trees.descendant_id', $user->id)

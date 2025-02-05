@@ -59,9 +59,9 @@
         </div>
 
         <div class="form-group">
-            <label class="font-size-h6 font-weight-bolder text-dark">Selected Course <span class="text-danger">*</span></label>
+            <label class="font-size-h6 font-weight-bolder text-dark">Admission Fee For <span class="text-danger">*</span></label>
             <select class="form-control form-control-solid h-auto rounded-md"  required>
-                    <option value="Global Visioners Educational Program"> Global Visioners Educational Program </option>
+                    <option value="Global Visioners Educational System"> Global Visioners Educational System </option>
             </select> 
         </div>
 

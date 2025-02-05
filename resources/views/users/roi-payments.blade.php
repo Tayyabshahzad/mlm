@@ -56,6 +56,7 @@
                             <thead>
                                 <tr class="text-left"> 
                                     <th class="pl-0" style="">S#</th>
+                                    <th class="pl-0" style="">Name</th>
                                     <th style="min-width: 110px">Username</th>
                                     <th style="min-width: 110px">Amount</th>  
                                     <th style="min-width: 120px">Percentage</th>
@@ -69,6 +70,7 @@
                                     <tr class="text-left"> 
                                         <td class="pl-0" style="">{{ $loop->iteration }}</td>
                                         <td style="min-width: 110px">{{ $payment->user->name }}</td>
+                                        <td style="min-width: 110px">{{ $payment->user->username }}</td>
                                         <td style="min-width: 110px">{{ $payment->amount }} </td>  
                                         <td style="min-width: 120px">{{ $payment->percentage }}</td>  
                                         <td style="min-width: 120px">{{ 200 - $payment->user->roi_wallet_balance  }}</td>  
@@ -118,13 +120,11 @@
                              name="user_id" required>
                                 <option disabled selected value=""> Select Member </option>
                                 @foreach ($users as $user )
-                                <option  value="{{ $user->id }}"> {{ $user->name}} </option>
+                                    <option  value="{{ $user->id }}"> {{ $user->username  .' ['. $user->name. ']'}} </option>
                                 @endforeach
                              </select
                              >  
                         </div>  
-
-
                         <div class="col-lg-12 col-xl-12">
                             <label for="" class="font-weight-bold mr-2">
                                 Transfer Amount Percentage
