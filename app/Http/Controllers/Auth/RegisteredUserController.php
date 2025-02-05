@@ -49,7 +49,7 @@ class RegisteredUserController extends Controller
             'transaction_id' => 'required|max:50|string|unique:' . User::class,
             'phone_number'=>'required|unique:'.User::class,
             'cc' => 'required',
-            'payment_method'=>'required|in:usdt,bank',
+            'payment_method'=>'required|in:usdt,bank,cash_slip',
             'referral_link' => [
                 'required',
                 'string',

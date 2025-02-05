@@ -96,8 +96,11 @@
                 <strong class="mr-5">
                     <input class="h-auto rounded-md" type="radio" name="payment_method" value="bank" required onclick="toggleReferralLink('bank')" /> Bank
                 </strong>
-                <strong>
+                <strong class="mr-5"> 
                     <input class="h-auto rounded-md" type="radio" name="payment_method" value="usdt" required onclick="toggleReferralLink('usdt')" /> USDT
+                </strong>
+                <strong>
+                    <input class="h-auto rounded-md" type="radio" name="payment_method" value="cash_slip" required onclick="toggleReferralLink('cash')" /> Cash Slip
                 </strong>
             </p>
         </div>
