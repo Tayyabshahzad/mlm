@@ -81,7 +81,7 @@ class ReportController extends Controller
                         'key' => $descendant->id,
                         'parent' => $parent->id,
                         'name' => $descendant->username . '  ('. $label .')',
-                        'image' => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/logo-50x50.jpeg'),
+                        'image' => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
                     ];
                     $buildHierarchy($descendant, $descendant->children ?? collect()); 
             }
@@ -90,7 +90,7 @@ class ReportController extends Controller
             'key' => $user->id,
             'name' => $user->username ,
             'username' => $user->username . '--'. $user->can_login,
-            'image' => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/logo-50x50.jpeg'),
+            'image' => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
         ];
         $buildHierarchy($user, $user->children ?? collect(), true);
         return view('reports.treeview', compact('nodeDataArray'));

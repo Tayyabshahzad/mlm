@@ -165,9 +165,7 @@ class FrontEndController extends Controller
             return [$level => $count];
         });
         
-        // Now $levelCounts will include counts of active users for each level.
-    
-       
+        // Now $levelCounts will include counts of active users for each level. 
         $totalCount = $levelCounts->sum(); 
         $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
         $authUsers =  User::where('sponsor_id',Auth::user()->id)->where('can_login',true);  
@@ -194,7 +192,7 @@ class FrontEndController extends Controller
         $data = [
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
-            'reward' => $wallets->where('wallet_type', 'reward')->sum('balance'),
+            'rewardWallet' => $wallets->where('wallet_type', 'reward')->sum('balance'),
             'roi' => $wallets->where('wallet_type', 'roi')->sum('balance'),
             'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
             'rank' => 0,
@@ -208,7 +206,7 @@ class FrontEndController extends Controller
             'levelCount' => $levelCounts,
             'totalTeam' => $levelCounts->sum(),
             'reward' =>$totalRewardPercentage
-        ];
+        ]; 
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
     }

@@ -52,13 +52,13 @@
     <section id="hero" class="hero section dark-background"> 
 
       
-      <img src="{{ asset('append-template/images/001-960x640.jpg')}}" alt="" data-aos="fade-in"> 
+      <img src="{{ asset('append-template/images/student-background.png') }}" alt="" data-aos="fade-in"> 
       <div class="container">
         <div class="row">
          
           <div class="col-lg-12 text-center">
             <div class="col-lg-12 text-center">
-              <img  data-aos="fade-up" data-aos-delay="100" src="{{ asset('append-template/images/logo-white.png')}}" alt="" style="width:60%;position:inherit;display:inline"/>
+              <img  data-aos="fade-up" data-aos-delay="100" src="{{ asset('append-template/images/education-logo.png')}}" alt="" style="width:60%;position:inherit;display:inline"/>
             </div>
             <br>
             {{-- <h2 data-aos="fade-up" data-aos-delay="100">Welcome to Global Visioners International</h2>

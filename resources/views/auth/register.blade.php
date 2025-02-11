@@ -114,10 +114,12 @@
 
                 <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
                     <div class="btn-group " role="group" aria-label="First group" onclick="copyAddressToClipboard()"> 
-                        <div class=" form-control rounded-0" id="walletAddress"> 
+                        <div class=" form-control rounded-0" id="walletAddress" style=""> 
+                          
                             TJaz7ykL6nnpDaVnPYJRNauKXLNtgLUYJP
+                           
                        </div>
-                       <button type="button" class="ml-2 btn btn-outline-secondary btn-icon rounded-0"><i class="la la-copy"></i></button>
+                       <button type="button" class="ml-2 btn btn-md btn-outline-secondary btn-icon rounded-0"><i class="la la-copy"></i></button>
                     </div>
                     
                 </div>

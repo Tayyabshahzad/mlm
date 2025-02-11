@@ -139,7 +139,7 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Reward Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['reward'] }}</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['rewardWallet'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -553,10 +553,6 @@
         
                         </h3> 
                     </div>
-
-                   
-
-
                     <div class="card-body pt-0 pb-3">
                         <div class="tab-content">
                             
@@ -566,14 +562,22 @@
                                     // Define the maximum value for each level
                                     $maxValues = [1 => 10, 2 => 50, 3 => 150, 4 => 400, 5 => 1000, 6 => 2000, 7 => 4000];
                                     $maxValue = $maxValues[$level] ?? 1; // Default max value to 1 if undefined
-                                    $percentage = ($count / $maxValue) * 100;
-                            
-                                    // Set a minimum visible width of 13%
-                                    $visibleWidth = $percentage > 13 ? $percentage : 13; // Minimum 13% width
+                                    $percentage = ($count / $maxValue) * 100; 
+                                    $visibleWidth = $percentage > 13 ? $percentage : 18;
+                                    $rewardImages = [
+                                        1 => '150PV.jpg',
+                                        2 => '300PV.jpg',
+                                        3 => '1000PV.jpg',
+                                        4 => '4000PV.jpg',
+                                        5 => '10000PV.jpg',
+                                        6 => '30000PV.jpg',
+                                        7 => '48000PV.jpg',
+                                    ];
+                                    $rewardImage = $rewardImages[$level] ?? 'default.jpg';
                                 @endphp
                                 <li>
-                                    <div class="progress-warpper text-center mb-5" style="position: relative;">
-                                        <div class="progress" style="height:16px; padding-left:4px;">
+                                    <div class="progress-warpper text-center mb-20" style="position: relative;">
+                                        <div class="progress" style="height:16px;width:78%">
                                             <div 
                                                 class="progress-bar 
                                                     {{ 
@@ -588,25 +592,25 @@
                                                 aria-valuenow="{{ $count }}" 
                                                 aria-valuemin="0" 
                                                 aria-valuemax="{{ $maxValue }}">
-                                                {{ $count }} / {{ $maxValue }}
+
+                                                &nbsp;{{ $count }} / {{ $maxValue }}
                                             </div>
                                         </div>
                                         <b>
                                             <small>{{ $count }} / {{ $maxValue }}</small> 
-                                        </b>
-                                        <!-- Image at the end of the bar -->
-
-                                        <i 
-                                        style="
-                                                position: absolute;
-                                                top: -4px; /* Adjust to align vertically */
-                                                left: calc({{ $visibleWidth }}% - 12px); /* Adjust horizontally */
-                                                width: 24px;     
-                                                height: 24px;"
-                                        class="flaticon2-correct kt-font-success"></i>
-
-                                         
+                                        </b> 
                                     </div>
+                                    <img 
+                                        class="img img-thumbnail"
+                                        src="{{ asset('assets/custom-images/rewards/' . $rewardImage) }}" 
+                                        alt="Reward Image"
+                                        style="
+                                            position: absolute; 
+                                            right: 2em;
+                                            margin-top: -9em;
+                                            width: 50px;
+                                            height: 50px;"
+                                    />
                                 </li>
                             @endforeach
                             

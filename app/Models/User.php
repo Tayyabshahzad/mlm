@@ -11,14 +11,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\HasMedia; 
-
-use Illuminate\Database\Eloquent\SoftDeletes;
+ 
 use Illuminate\Database\Eloquent\Model;
 class User extends Authenticatable implements ShouldQueue,HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, InteractsWithMedia;
-    use SoftDeletes;
+     
     /**
      * The attributes that are mass assignable.
      *

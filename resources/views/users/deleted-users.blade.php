@@ -83,14 +83,15 @@
                                                             <button class="btn btn-sm btn-outline-info rounded-0 dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                More Actions
                                                             </button>
-                                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"> 
-                                                                 
-                                                                <a class="dropdown-item text-primary" href="{{ route('user.info', $teamMember->id) }}">Details</a>
-                                                                 
+                                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">  
+                                                                <a class="dropdown-item text-primary" href="{{ route('user.info', $teamMember->id) }}">Details</a> 
+                                                                <a class="dropdown-item text-danger"
+                                                                data-toggle="modal"
+                                                                data-target="#deleteUser"
+                                                                data-id="{{ $teamMember->id }}"
+                                                            href="#">Delete</a>
                                                             </div>
-                                                        </div>
-
-                                                            
+                                                        </div> 
                                                              
                                                         </td> 
                                                     </tr>
@@ -141,91 +142,39 @@
         <!--end::Entry-->
     </div>
 </div> 
- 
+<div class="modal fade" id="deleteUser" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelDelete" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabelDelete">  Delete User </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+            </div>
+            <form action="{{ route('user.delete') }}"  id="deleteUserForm" method="POST">
+                
+                @csrf
+                <div class="modal-body"> 
+                    <input type="hidden" name="delete_id" id="delete_id"> 
+                    <p class="text-center text-danger">Are you sure you want to delete this member? <br>This action cannot be undone. </p>  
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary btn-sm font-weight-bold rounded-0" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger btn-sm font-weight-bold rounded-0"  id="deleteUser">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
+
 @endsection
-@section('page_js')
-   
-<script>
+@section('page_js') 
+    <script> 
     $(document).ready(function() {
-        $('[data-target="#changeStatus"]').click(function() {
-            var id = $(this).data('id');
-            $('#member_id').val(id);
-            $('#statusForm').attr('action', '/team/members/status/' + id + '/update');
-        });
-   });
-
-
-   $(document).ready(function() {
-        $('[data-target="#deleteUser"]').click(function() { 
-            var id = $(this).data('id');
-            $('#delete_id').val(id);  
-        });
-   });
-    
-
-$(document).ready(function () {
-// When modal is triggered
-$('.user-details-btn').on('click', function () {
-    var memberId = $(this).data('id');
-    $('#member_id').val(memberId); // Set hidden input value
-    $('#user-details-content').html(''); // Clear previous content
-    $('#loading-spinner').show(); // Show loader 
-    $.ajax({
-        url: '/users/details',  
-        method: 'GET',
-        data: { id: memberId },
-        success: function (response) {
-            $('#loading-spinner').hide(); // Hide loader
-            if (response.success) {
-                var userDetails = `
-                    <table class='table table-bordered'>
-                        <tr> <th> Name </th> <td> ${response.data.name}</td> </tr>
-                        <tr> <th> Email </th> <td> ${response.data.email}</td> </tr>
-                        <tr> <th> Joined </th> <td> ${response.data.created_at}</td> </tr>
-                        <tr> <th> Status </th> <td> ${response.data.status}</td> </tr> 
-                         <tr> <th> Transaction Id </th> <td> ${response.data.transaction_id}</td> </tr> 
-                    </table>
-                `;
-                if (response.data.amount_proof) {
-                    userDetails += `
-
-                    <table class='table table-bordered'>
-                        <tr> <th> Amount Proof </th>   </tr>
-                        <tr> <th> <img src="${response.data.amount_proof}" alt="Amount Proof Image" style="max-width: 100%; height: auto;" /> </th>  </tr> 
-                    </table>
- 
-                    `;
-                } else {
-                    userDetails += `<p><strong>Amount Proof:</strong> Not Available</p>`;
-                }
-                $('#user-details-content').html(userDetails);
-            } else {
-                $('#user-details-content').html('<p>Error fetching user details.</p>');
-            }
-        },
-        error: function () {
-            $('#loading-spinner').hide(); // Hide loader
-            $('#user-details-content').html('<p>Unable to fetch user details.</p>');
-        }
+            $('[data-target="#deleteUser"]').click(function() { 
+                var id = $(this).data('id');
+                $('#delete_id').val(id);  
+            });
     });
-});
-}); 
-
-</script>
-
-
-<script>
-    $(document).ready(function () {
-        $('#updateUser').on('click', function () { 
-            $(this).prop('disabled', true); 
-            $(this).text('Updating...');
-            $('#updateUserForm').submit();
-        });
-
-        
-    });
-</script>
-
-
-    
+    </script> 
 @endsection

@@ -58,11 +58,15 @@ class RegisteredUserController extends Controller
            'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
 
         ]);  
+       
         $referralLink = ReferralLink::where('link', $request->referral_link)->where('is_active',true)->first(); 
         if(!$referralLink){
             return redirect()->back()->with('error','The Referral link is expired or invalid ');
         }
         $baseUsername = Str::slug($request->username);
+        if(!$baseUsername){
+            return redirect()->back()->with('error','Invalid Username format ');
+        } 
         $username = $baseUsername;
         $count = 1; 
         while (User::where('username', $username)->exists()) {

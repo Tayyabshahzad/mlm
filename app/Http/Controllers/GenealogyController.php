@@ -26,7 +26,7 @@ class GenealogyController extends Controller
                         'key' => $descendant->id,
                         'parent' => $parent->id,
                         'name' => $descendant->username,
-                        'image' => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/logo-50x50.jpeg'),
+                        'image' => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
                     ];
     
                     // Recursively process this descendant's children
@@ -40,7 +40,7 @@ class GenealogyController extends Controller
             'key' => $user->id,
             'name' => $user->username ,
             'username' => $user->username,
-            'image' => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/logo-50x50.jpeg'),
+            'image' => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
         ];
     
         // Start building the hierarchy from the authenticated user
@@ -48,12 +48,7 @@ class GenealogyController extends Controller
     
         return view('genealogy.team', compact('user', 'nodeDataArray'));
     }
-    
-
-    
-    
-    
-
+     
 
     public function teamMembers(){ 
         $teamMembers = auth()->user()->team; 

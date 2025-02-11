@@ -249,13 +249,9 @@
             <form action="{{ route('user.delete') }}"  id="deleteUserForm" method="POST">
                 
                 @csrf
-                <div class="modal-body">
-                     
+                <div class="modal-body"> 
                     <input type="hidden" name="delete_id" id="delete_id"> 
-                    <div class="form-group">
-                        <p class="text-left text-danger">Are you sure you want to delete this member? <br>This action cannot be undone. </p> 
-                         <textarea name="reason" id="" class="form-control"></textarea>
-                    </div>
+                    <p class="text-center text-danger">Are you sure you want to delete this member? <br>This action cannot be undone. </p>  
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light-primary btn-sm font-weight-bold rounded-0" data-dismiss="modal">Close</button>

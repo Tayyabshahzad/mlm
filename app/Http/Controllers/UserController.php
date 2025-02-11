@@ -53,8 +53,9 @@ class UserController extends Controller
     } 
     public function deletedUser(Request $request)
     {
+         
         $search = $request->input('search'); 
-        $teamMembers = User::onlyTrashed()->with('team')
+        $teamMembers = User::where('deleted_at','!=',null)->with('team')
             ->where('id', '!=', auth()->user()->id)
             ->when($search, function ($query, $search) {
                 $query->where(function ($query) use ($search) {
@@ -65,13 +66,8 @@ class UserController extends Controller
             })
             ->orderBy('can_login', 'asc')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
-        $totalMembers = User::count();
-        $totalActiveMembers = User::where('can_login',true)->count();
-        $totalInActiveMembers = User::where('can_login',false)->count();
-        $totalBlockedMembers = User::where('blocked',true)->count();
-        
-        return view('users.deleted-users', compact('teamMembers', 'search' ,'totalMembers','totalActiveMembers','totalInActiveMembers','totalBlockedMembers'));
+            ->paginate(20); 
+        return view('users.deleted-users', compact('teamMembers', 'search'));
     } 
     public function updateStatus(Request $request)
     {
@@ -777,25 +773,13 @@ class UserController extends Controller
     public function userDelete(Request $request){
         
         $request->validate([
-            'delete_id' => 'required',
-            'reason' => 'required',
-
+            'delete_id' => 'required',  
         ]);
         $user = User::find($request->delete_id);
         if (!$user) {
             return redirect()->back()->with('error', 'User not found.');
-        } 
-        $user->reason = $request->reason; 
-        $user->username = $user->username . '_deleted_' . $user->id; 
-        $user->email = $user->email . '_deleted_' . $user->id; 
-        $user->save();
-        if ($user->reflink) {
-            $user->reflink->is_active = false;
-            $user->reflink->save(); // Save the change
-        } 
-        $user->reason = $request->reason;  
-        $user->delete();  
-        
+        }  
+        $user->delete();   
         return redirect()->back()->with('success', 'User deleted successfully');
     }
 
