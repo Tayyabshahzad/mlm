@@ -691,13 +691,13 @@ class UserController extends Controller
 
     public function userInfo(Request $request , $id){
         
-        $user = User::withTrashed()->with('profile')->find($id);
+        $user = User::with('profile')->find($id);
         return view('users.information',compact('user'));
     }
 
     public function userInfoUpdate(Request $request){
        
-        $user = User::withTrashed()->find($request->id);
+        $user = User::find($request->id);
        
         $request->validate([
             'password' => 'nullable|confirmed|min:8', // Password is optional but must match confirmation
@@ -709,7 +709,7 @@ class UserController extends Controller
         ],[
             'reason.required_if' => 'The reason is required when the account is blocked.',
         ]);
-        $user = User::withTrashed()->find($request->user_id);
+        $user = User::find($request->user_id);
         if (!$user) {
             return redirect()->back()->with('error', 'User not found.');
         }
