@@ -12,6 +12,7 @@ use App\Http\Controllers\{
     ProfileController,
     ReportController,
     ScheduleRoiController,
+    SettingController,
     UserController,
     WalletController,
     WithdrawalRequestController
@@ -118,6 +119,13 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('/withdraw-request/{id}', 'getWithdrawalRequest')->name('withdraw.request.details');
         Route::post('/withdraw-request/update', 'updateWithdrawalRequest')->name('withdraw.request.update');
     });
+
+    Route::prefix('setting')->controller(SettingController::class)->group(function () {
+        Route::get('/basic', 'index')->name('setting.basic'); 
+        Route::post('/update', 'update')->name('setting.update'); 
+    });
+
+
 });
 
 // Blocked Users

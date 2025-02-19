@@ -32,6 +32,7 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         'is_active',
         'phone_number',
         'payment_method',
+        'agreement_sent',
         'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id','freez_wallet','blocked'
     ]; 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Models\TransactionLog;
 use App\Models\User;
 use App\Models\Wallet;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class WithdrawalRequestController extends Controller
 {
-    public function store(Request $request)
+    public function stor1e(Request $request)
     {
         $request->validate([ 
             'amount' => 'required|numeric|min:1',
@@ -34,9 +35,13 @@ class WithdrawalRequestController extends Controller
             }
         }
        
+        $fee = $request->amount * 0.02;
+        $finalAmount = $request->amount - $fee;
+
         $onlineWalletSum = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id())
         ->sum('balance'); 
+        
         if ($request->amount > $onlineWalletSum) {
             return redirect()->back()->with('error','Insufficient balance in the online wallet.');
         }  
@@ -65,10 +70,79 @@ class WithdrawalRequestController extends Controller
             'amount' => $request->amount,
             'status' => 'pending',
             'request_type' => $request->withdrawal_option,
-            'review_notes' => $request->review_notes
+            'review_notes' => $request->review_notes,
+            'transfer_fee' => '1'
         ]); 
         return redirect()->route('wallets.online')->with('success', 'Withdrawal request submitted successfully.');
     }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'review_notes' => 'string',
+            'withdrawal_option' => 'required|in:usdt,bank,cash',
+        ]);
+
+        if (!auth::user()->profile) {
+            return redirect()->back()->with('error', 'Please complete your profile first');
+        }
+        if ($request->withdrawal_option == 'bank' && !auth::user()->profile->ibn_number) {
+            return redirect()->back()->with('error', 'Please complete your bank details');
+        }
+        if ($request->withdrawal_option == 'usdt' && !auth::user()->profile->account_number) {
+            return redirect()->back()->with('error', 'Please add your USDT Address Details');
+        }
+
+        // Calculate 2% fee and final withdrawal amount
+        
+        if($request->withdrawal_option == 'bank'){
+            $fee = $request->amount * 0.02;
+        }else{
+            $fee = 0;
+        }
+        $totalDeduction = $request->amount + $fee;  
+        $onlineWalletSum = Wallet::where('wallet_type', 'online')
+            ->where('user_id', Auth::id())
+            ->sum('balance');
+
+        // Check if the user has enough balance **after** deducting the fee
+        if ($totalDeduction > $onlineWalletSum) {
+            return redirect()->back()->with('error', 'Insufficient balance in the online wallet after fee deduction.');
+        }
+
+        $remainingAmount = $totalDeduction; 
+        $onlineWallets = Wallet::where('wallet_type', 'online')
+        ->where('user_id', Auth::id())
+        ->orderBy('id', 'asc')
+        ->get();
+
+        foreach ($onlineWallets as $wallet) {
+            if ($remainingAmount == 0) break;
+            if ($wallet->balance <= $remainingAmount) {
+                $remainingAmount -= $wallet->balance;
+                $wallet->update(['balance' => 0]);
+            } else {
+                $wallet->update(['balance' => $wallet->balance - $remainingAmount]);
+                $remainingAmount = 0;
+            }
+        }
+       
+        // Store withdrawal request with fee details
+        WithDrawalequest::create([
+            'user_id' => Auth::id(),
+            'profile_id' => auth::user()->profile->id,
+            'wallet_type' => 'online',
+            'amount' => $request->amount,
+            'status' => 'pending',
+            'request_type' => $request->withdrawal_option,
+            'review_notes' => $request->review_notes,
+            'transfer_fee' => $fee, // Store the deducted fee separately
+        ]);
+
+        return redirect()->route('wallets.online')->with('success', 'Withdrawal request submitted successfully.');
+    }
+
 
     public function memberTransfer(Request $request)
     {
@@ -84,6 +158,10 @@ class WithdrawalRequestController extends Controller
         if (!$recipient) {
             return redirect()->back()->with('error', 'Recipient not exists');
         }
+        
+        $fee = $request->amount * 0.02;
+        $finalAmount = $request->amount - $fee;
+
         $onlineWallet = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id());
         $onlineWalletSum = $onlineWallet->sum('balance'); 
@@ -134,6 +212,7 @@ class WithdrawalRequestController extends Controller
 
     public function getWithdrawalRequest($id)
     {
+        $setting = Setting::first();
         $request = WithDrawalequest::with('user','user.profile')->find($id); 
         if (!$request) {
             return response()->json(['error' => 'Request not found'], 404);
@@ -149,6 +228,9 @@ class WithdrawalRequestController extends Controller
             'ibn_number' =>$request->user->profile->ibn_number ?? '--',
             'bank_name' => $request->user->profile->bank_name ?? '--',
             'request_type' => $request->request_type ?? '--',
+            'transfer_fee' => $request->transfer_fee,
+            'payable_amount' => ($request->amount * $setting->pv_amount),
+            'withdraw_screenshot' => asset($request->getFirstMediaUrl('withdraw_screenshot')),
             
         ]);
     }
@@ -156,11 +238,30 @@ class WithdrawalRequestController extends Controller
     public function updateWithdrawalRequest(Request $request){
         $request->validate([ 
             'request_id' => 'required|exists:with_drawalequests,id',
-            'status' => 'string',
-        ]); 
-        $WithDrawalequest = WithDrawalequest::with('user','user.profile')->find($request->request_id); 
-        $WithDrawalequest->status = $request->status;
-        $WithDrawalequest->save();
+            'status' => 'string|in:approved,rejected', 
+            'screenshot' => 'image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+        $withDrawalequest = WithDrawalequest::with('user','user.profile')->find($request->request_id); 
+        if($withDrawalequest->status != 'pending'){
+            return redirect()->back()->with('error', 'Action Already Performed on this request.');
+        }
+        $withDrawalequest->status = $request->status;
+        $withDrawalequest->save();
+        if ($request->hasFile('screenshot')) { 
+            $withDrawalequest->addMedia($request->file('screenshot'))
+                ->toMediaCollection('withdraw_screenshot');
+        }
+        if($withDrawalequest->status = 'rejected'){
+            $wallet = Wallet::where('user_id', $withDrawalequest->user->id)
+            ->where('wallet_type', 'online') // Adjust the type if necessary
+            ->first();
+            if ($wallet) {
+                $wallet->balance += $withDrawalequest->amount;
+                $wallet->save();  
+            } else {
+                return redirect()->back()->with('error', 'Wallet not found.');
+            }
+        }
         return redirect()->back()->with('success', 'Withdrawal request has been updated successfully.');
     }   
  
@@ -177,8 +278,7 @@ class WithdrawalRequestController extends Controller
             $withdrawRequest = WithDrawalequest::find($request->request_id);
             if ($withdrawRequest->status != 'pending') {
                 return redirect()->back()->with('error', 'Only pending requests can be deleted.');
-            }
-            // Update the wallet balance
+            } 
             $wallet = Wallet::where('user_id', $withdrawRequest->user_id)
                             ->where('wallet_type', 'online') // Adjust the type if necessary
                             ->first();

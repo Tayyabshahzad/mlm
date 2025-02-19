@@ -1,18 +1,19 @@
 <?php
 
 namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class WithDrawalequest extends Model
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\HasMedia; 
+use Illuminate\Database\Eloquent\Model; 
+class WithDrawalequest extends Model implements HasMedia
 {
+    use  InteractsWithMedia;
     protected $fillable = [
         'user_id', 
         'amount',
         'status',
         'target_account_details',
         'review_notes',
-        'profile_id','request_type'
+        'profile_id','request_type','transfer_fee'
     ];
 
     protected $casts = [

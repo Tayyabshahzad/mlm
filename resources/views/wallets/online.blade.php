@@ -133,6 +133,8 @@
                                             <th class="pl-0" style="">S#</th>  
                                             <th style="min-width: 110px">Amount</th>
                                             <th style="min-width: 110px">Status</th> 
+                                            <th style="min-width: 120px">Request Type</th>
+                                            <th style="min-width: 120px">Fee <small class="text-danger">(In case Bank)</small></th> 
                                             <th style="min-width: 120px">Date</th> 
                                             <th style="min-width: 120px">Action</th> 
                                         </tr>
@@ -149,9 +151,21 @@
                                                 <td>
                                                     <span class="text-dark-75 font-weight-bolder d-block font-size-sm text-warning ">{{ ucfirst($withDrawsRequest->status) }} </span>  
                                                 </td> 
+
+                                                <td>
+                                                    <span class="text-dark-75 font-weight-bolder d-block font-size-sm text-warning ">{{ ucfirst($withDrawsRequest->request_type) }} </span>  
+                                                </td> 
+
+
+                                                <td>
+                                                    <span class="text-dark-75 font-weight-bolder d-block font-size-sm text-warning ">{{ ucfirst($withDrawsRequest->transfer_fee) }} </span>  
+                                                </td> 
+
+                                                
                                                 <td>
                                                     <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $withDrawsRequest->created_at->format('d-m-Y') }}</span> 
                                                 </td> 
+                                                 
                                                 <td>
                                                 @if($withDrawsRequest->status == 'pending' )
                                                     <button 
@@ -303,7 +317,7 @@
         <div class="modal-content">
             <form action="{{ route('withdrawals.delete') }}" method="POST">
                 @csrf
-                <input type=" " name="request_id" id="request-id" required>
+                <input type="hidden" name="request_id" id="request-id" required>
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Delete Withdrawal Request</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">

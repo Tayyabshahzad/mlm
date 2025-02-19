@@ -248,8 +248,7 @@ class FrontEndController extends Controller
                 'phone.phone' =>'Please provide a valid phone number in the correct format for Pakistan.'
             ]);
            
-        }
-
+        } 
         elseif ($request->step == 2) {
             
             $validated = $request->validate([
@@ -261,9 +260,7 @@ class FrontEndController extends Controller
                 'postal_code' => 'nullable|string|max:255',
                 
             ]);
-        } 
-
-
+        }  
         elseif ($request->step == 3) {
             $validated = $request->validate([
                 'facebook' => 'string|max:255',
@@ -311,8 +308,7 @@ class FrontEndController extends Controller
             }
             $user->addMedia($request->file('cnic_back'))
             ->toMediaCollection('user_document_cnic_back');
-        }    
-
+        }     
         $profile = $user->profile ?: new Profile();  
         if (!empty($validated['skills'])) { 
             $skillsArray = explode(',', $validated['skills']); 
@@ -325,24 +321,21 @@ class FrontEndController extends Controller
         if($request['phone']){
             $user->phone_number = $validated['phone'];
             $user->save();
-        }
-        
-        $profile->save(); 
-        // Return response (you can redirect or send back a success message)
+        } 
+        $profile->save();  
         return redirect()->back()->with('success', 'Profile updated successfully');
     }
 
     public function agreementRequest(){
-        $user = auth::user();
-       
-      
+        $user = auth::user(); 
         if($user->profile){
             if($user->profile->cnic == null){
                 return redirect()->back()->with('error', 'Please Add CNIC Details First.');
             }else{
-                  $this->updatePdf($user->profile); 
+                 $this->updatePdf($user->profile); 
                  Mail::to($user->email)->send(new CompanyAgreement($user));
-            
+                 $user->agreement_sent = true;
+                 $user->save();
                  return redirect()->back()->with('success', 'An Agreement has been sent to your email.');
             }
         }else{
@@ -480,39 +473,34 @@ class FrontEndController extends Controller
         $pdf->useTemplate($template);  
         $pdf->SetFont('Helvetica', '', 8);
         $pdf->SetTextColor(0, 0, 0);  
-        $pdf->SetXY(45, 73); // X and Y coordinates
+        $pdf->SetXY(35, 74); // X and Y coordinates
         $pdf->Write(0, $userDetails['first_name']);  
 
-        $pdf->SetXY(70, 73); // X and Y coordinates
-        $pdf->Write(0, '('.$userDetails->user->username.')');  
+        $pdf->SetXY(78, 74); // X and Y coordinates
+        $pdf->Write(0,$userDetails['last_name']);  
 
 
 
-        $pdf->SetXY(120, 73); // X and Y coordinates
-        $pdf->Write(0, $userDetails['last_name']);  
-        $pdf->SetXY(70, 80); // X and Y coordinates
+        $pdf->SetXY(155, 74); // X and Y coordinates
         $pdf->Write(0, $userDetails['cnic']);  
-        $pdf->SetXY(65, 85); // X and Y coordinates
+        $pdf->SetXY(70, 80); // X and Y coordinates
         $pdf->Write(0, $userDetails['address']);  
         
-        $pdf->SetXY(58, 117); // X and Y coordinates
-        $pdf->Write(0, $userDetails->user->username);   
          
-
 
         // $pdf->SetXY(120, 205); // X and Y coordinates
         // $pdf->Write(0, $userDetails['first_name']);   
 
-        $pdf->SetXY(132, 205); // X and Y coordinates
+        $pdf->SetXY(132, 180); // X and Y coordinates
         $pdf->Write(0, $userDetails['first_name']);  
         
-        $pdf->SetXY(145, 205); // X and Y coordinates
+        $pdf->SetXY(145, 180); // X and Y coordinates
         $pdf->Write(0, '('.$userDetails->user->username.')');  
         
-        $pdf->SetXY(120, 215); // X and Y coordinates
+        $pdf->SetXY(132, 189); // X and Y coordinates
         $pdf->Write(0, $userDetails['cnic']);   
 
-        $pdf->SetXY(120, 224); 
+        $pdf->SetXY(132, 198); 
         $pdf->Write(0,  Carbon::now()->format('d F Y')); 
 
         // Save the updated PDF

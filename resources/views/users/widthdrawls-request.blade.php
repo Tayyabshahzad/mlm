@@ -72,7 +72,7 @@
                                     <td class="pl-0" style="">{{ $loop->iteration }}</td>
                                     <td style="min-width: 110px">{{ $requests->user->username }}</td>
                                     <td style="min-width: 110px">{{ $requests->amount }} </td>  
-                                    <td style="min-width: 120px"> <span class="btn @if($requests->status == 'pending')btn-outline-warning @else btn-outline-success @endif btn-sm">{{ ucfirst($requests->status) }}</span></td>  
+                                    <td style="min-width: 120px"> <span class="btn @if($requests->status == 'pending')btn-outline-warning @elseif($requests->status == 'rejected') btn-outline-danger @else btn-outline-success @endif btn-sm">{{ ucfirst($requests->status) }}</span></td>  
                                     <td style="min-width: 120px">{{  ucwords($requests->request_type)  }}</td>   
                                     <td style="min-width: 120px">{{ $requests->created_at  }}</td>   
                                     <td style="min-width: 120px"> <button  data-id="{{ $requests->id }}" data-toggle="modal" data-target="#WithdrawModel" 
@@ -96,7 +96,7 @@
 <div class="modal fade" id="WithdrawModel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content md ">
-            <form action="{{ route('withdraw.request.update') }}" method="POST">
+            <form action="{{ route('withdraw.request.update') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                  
                 <div class="modal-header">
@@ -144,55 +144,88 @@
                     var content = `
                         <input type="hidden" name="request_id" value="${response.id}"/>
                         <table  class="table table-head-custom table-vertical-center"> 
-                                 <tr>
-                                    <th> Username </th>
-                                    <th> Amount </th>
-                                    <th> Status </th>
-                                    <th> Request Type </th>
-                                    <th> Created At </th>
-                                </tr>
-                                <tr>    
-                                    <td>  ${response.username} </td>
-                                    <td>  ${response.amount} </td>
-                                    <td>  ${response.status} </td>
-                                     <td>  ${response.request_type} </td>
-                                    <td>  ${response.created_at} </td>
-                                </tr>
-                                <tr>
-                                    <th colspan="4" class="text-center"> Bank Details </th>  
-                                </tr> 
-                                <tr>
-                                    <th colspan="2"> Bank Name </th>  <td  colspan="2">  ${response.bank_name} </td> 
-                                </tr>
-
-                                <tr>
-                                    <th  colspan="2"> Account Title </th>  <td  colspan="2">  ${response.account_title} </td> 
-                                </tr>
-
-                                <tr>
-                                    <th  colspan="2"> IBN </th>  <td  colspan="2">  ${response.ibn_number} </td> 
-                                </tr>
-
-                                <tr>
-                                    <th  colspan="2"> USDT Address </th>  <td  colspan="2">  ${response.account_number} </td> 
-                                </tr>
-
-                                 
-
-                                  <tr>
-                                    <th  colspan="2"> Update Status </th>  <td  colspan="2">
-                                        <select class='form-control' name='status' required id='request_status'>
-                                                <option value="" selected disabled>
-                                                        Update Request Status
-                                                </option> 
-                                                 <option value="approved">
-                                                        Approved
-                                                </option> 
-                                        </select> 
-                                    </td> 
-                                </tr> 
-
+                            <tr>
+                                <th> Username </th>
+                                <th> Amount </th>
+                                <th> Status </th>
+                                <th> Request Type </th>
+                                <th> Transfer Fee </th>
+                                <th> Created At </th>
+                            </tr>
+                            <tr>    
+                                <td>  ${response.username} </td>
+                                <td>  ${response.amount} </td>
+                                <td>  ${response.status} </td>
+                                <td>  ${response.request_type} </td>
+                                <td>  ${response.transfer_fee} </td>
+                                <td>  ${response.created_at} </td>
+                            </tr>
                         </table>
+
+                        <div class="row">
+                            <!-- Left Column (6 Columns) -->
+                            <div class="col-lg-6">
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th colspan="4" class="text-center"> Bank Details </th>  
+                                    </tr> 
+                                    <tr>
+                                        <th colspan="2"> Bank Name </th>  
+                                        <td colspan="2">  ${response.bank_name} </td>    
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2"> Account Title </th>  
+                                        <td colspan="2">  ${response.account_title} </td> 
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2"> USDT Address </th>  
+                                        <td colspan="2">  ${response.account_number} </td> 
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2"> Update Status </th>  
+                                        <td colspan="2">
+                                            <select class='form-control' name='status' required id='request_status'>
+                                                <option value="" selected disabled>Update Request Status</option> 
+                                                <option value="approved">Approved</option>
+                                                 <option value="rejected">Reject</option> 
+                                            </select> 
+                                        </td> 
+                                    </tr> 
+
+                                    <tr>
+                                        <th colspan="2"> Screenshot </th>  
+                                        <td colspan="2">
+                                            <input type="file" name="screenshot"/> 
+                                        </td> 
+                                    </tr> 
+                                </table>
+                            </div>
+
+                            <!-- Right Column (6 Columns) -->
+                            <div class="col-lg-6">
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th colspan="2" class="text-center"> Payable Amount </th>  
+                                    </tr> 
+                                    <tr>
+                                        <td class="text-center text-danger" colspan="2">  ${response.payable_amount} PKR </td>  
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2" class="text-center"> Transaction Screenshot </th>  
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-center">  
+                                            <img src="${response.withdraw_screenshot}" class="img img-thumbnail" width="400"/>  
+                                        </td>  
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+
+
+
+                                
                         
                     `;
                     $('#modal-content').html(content);
