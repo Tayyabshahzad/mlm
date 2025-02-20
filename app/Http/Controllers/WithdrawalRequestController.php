@@ -87,7 +87,7 @@ class WithdrawalRequestController extends Controller
         if (!auth::user()->profile) {
             return redirect()->back()->with('error', 'Please complete your profile first');
         }
-        if ($request->withdrawal_option == 'bank' && !auth::user()->profile->ibn_number) {
+        if ($request->withdrawal_option == 'bank' && !auth::user()->profile->ibn_number && !auth::user()->profile->bank_name &&!auth::user()->profile->account_title ) {
             return redirect()->back()->with('error', 'Please complete your bank details');
         }
         if ($request->withdrawal_option == 'usdt' && !auth::user()->profile->account_number) {
@@ -229,7 +229,7 @@ class WithdrawalRequestController extends Controller
             'bank_name' => $request->user->profile->bank_name ?? '--',
             'request_type' => $request->request_type ?? '--',
             'transfer_fee' => $request->transfer_fee,
-            'payable_amount' => ($request->amount * $setting->pv_amount),
+            'payable_amount' => round(($request->amount - $request->transfer_fee) * $setting->pv_amount,2),
             'withdraw_screenshot' => asset($request->getFirstMediaUrl('withdraw_screenshot')),
             
         ]);

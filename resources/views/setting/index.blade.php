@@ -55,9 +55,7 @@
                         <div class="card-header py-3">
                             <div class="card-title align-items-start flex-column">
                                 <h3 class="card-label font-weight-bolder text-dark">System Setting</h3> 
-                            </div>
-                             
-                           
+                            </div> 
                         </div>
                         <!--end::Header-->
                         <!--begin::Form-->
@@ -103,6 +101,16 @@
                                         
                                     </div> 
                                 </div> 
+
+                                <div class="form-group row">
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Latest USD </label>
+                                    <div class="col-lg-9 col-xl-6  "> 
+                                        <input class="form-control form-control-lg form-control-solid" 
+                                        type="number" name="usd" value="{{ old('usd', $setting->usd ?? '') }}"  />  
+                                    </div> 
+                                </div> 
+
+
                                 <div class="card-toolbar">
                                     <button type="submit" class="btn btn-success mr-2 rounded-0">Update Setting</button> 
                                 </div>

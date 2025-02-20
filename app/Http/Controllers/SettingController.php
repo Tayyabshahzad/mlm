@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Http;
 class SettingController extends Controller
 {
     public function index(){
@@ -23,13 +23,21 @@ class SettingController extends Controller
         $setting = Setting::find($request->id);
         if (!$setting) {
             return redirect()->back()->with('error', 'Setting not found.');
-        }
+        } 
+        $response = Http::get('https://api.currencyfreaks.com/v2.0/rates/latest', [
+            'apikey' => '911275d23aa24a51a37d66ed3eae27d2',
+        ]); 
+        if ($response->successful()) {
+            $data = $response->json();
+            $usdToPkrRate = $data['rates']['PKR'] ?? null; // Get PKR rate 
+        }  
 
         $setting->update([
             'site_name' => $request->site_name,
             'pv_amount' => $request->pv_amount,
             'description' => $request->description,
-        ]);
+            'usd' => $usdToPkrRate,  
+        ]);  
 
         return redirect()->back()->with('success', 'Settings updated successfully.');
     }

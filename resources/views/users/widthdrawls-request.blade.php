@@ -68,17 +68,17 @@
                             </thead>
                             <tbody>
                                 @foreach ($withDrawsRequests as $requests )
-                                <tr class="text-left"> 
-                                    <td class="pl-0" style="">{{ $loop->iteration }}</td>
-                                    <td style="min-width: 110px">{{ $requests->user->username }}</td>
-                                    <td style="min-width: 110px">{{ $requests->amount }} </td>  
-                                    <td style="min-width: 120px"> <span class="btn @if($requests->status == 'pending')btn-outline-warning @elseif($requests->status == 'rejected') btn-outline-danger @else btn-outline-success @endif btn-sm">{{ ucfirst($requests->status) }}</span></td>  
-                                    <td style="min-width: 120px">{{  ucwords($requests->request_type)  }}</td>   
-                                    <td style="min-width: 120px">{{ $requests->created_at  }}</td>   
-                                    <td style="min-width: 120px"> <button  data-id="{{ $requests->id }}" data-toggle="modal" data-target="#WithdrawModel" 
-                                        class="view-details-btn btn btn-sm btn-outline-info"> <i class="far fa-eye"></i> </button> </td>   
-                                </tr>
-                            @endforeach
+                                    <tr class="text-left"> 
+                                        <td class="pl-0" style="">{{ $loop->iteration }}</td>
+                                        <td style="min-width: 110px">{{ $requests->user->username }}</td>
+                                        <td style="min-width: 110px">{{ $requests->amount }} </td>  
+                                        <td style="min-width: 120px"> <span class="btn @if($requests->status == 'pending')btn-outline-warning @elseif($requests->status == 'rejected') btn-outline-danger @else btn-outline-success @endif btn-sm">{{ ucfirst($requests->status) }}</span></td>  
+                                        <td style="min-width: 120px">{{  ucwords($requests->request_type)  }}</td>   
+                                        <td style="min-width: 120px">{{ $requests->created_at  }}</td>   
+                                        <td style="min-width: 120px"> <button  data-id="{{ $requests->id }}" data-toggle="modal" data-target="#WithdrawModel" 
+                                            class="view-details-btn btn btn-sm btn-outline-info"> <i class="far fa-eye"></i> </button> </td>   
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -164,7 +164,7 @@
 
                         <div class="row">
                             <!-- Left Column (6 Columns) -->
-                            <div class="col-lg-6">
+                            <div class="col-lg-7">
                                 <table class="table table-bordered">
                                     <tr>
                                         <th colspan="4" class="text-center"> Bank Details </th>  
@@ -202,7 +202,7 @@
                             </div>
 
                             <!-- Right Column (6 Columns) -->
-                            <div class="col-lg-6">
+                            <div class="col-lg-5">
                                 <table class="table table-bordered">
                                     <tr>
                                         <th colspan="2" class="text-center"> Payable Amount </th>  
