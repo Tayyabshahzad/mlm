@@ -229,6 +229,7 @@ class WithdrawalRequestController extends Controller
             'bank_name' => $request->user->profile->bank_name ?? '--',
             'request_type' => $request->request_type ?? '--',
             'transfer_fee' => $request->transfer_fee,
+            'current_usd' => $setting->usd,
             'payable_amount' => round(($request->amount - $request->transfer_fee) * $setting->pv_amount,2),
             'withdraw_screenshot' => asset($request->getFirstMediaUrl('withdraw_screenshot')),
             

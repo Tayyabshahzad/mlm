@@ -23,13 +23,16 @@ class SettingController extends Controller
         $setting = Setting::find($request->id);
         if (!$setting) {
             return redirect()->back()->with('error', 'Setting not found.');
-        } 
-        $response = Http::get('https://api.currencyfreaks.com/v2.0/rates/latest', [
+        }  
+        $response = Http::withOptions([
+            'verify' => false, // Disables SSL verification
+        ])->get('https://api.currencyfreaks.com/v2.0/rates/latest', [
             'apikey' => '911275d23aa24a51a37d66ed3eae27d2',
         ]); 
-        if ($response->successful()) {
-            $data = $response->json();
-            $usdToPkrRate = $data['rates']['PKR'] ?? null; // Get PKR rate 
+        
+        if ($response->successful()) { 
+            $data = $response->json(); 
+            $usdToPkrRate = $data['rates']['PKR'];    
         }  
 
         $setting->update([

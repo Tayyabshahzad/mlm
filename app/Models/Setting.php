@@ -12,5 +12,6 @@ class Setting extends Model
         'site_name',
         'pv_amount', 
         'description', 
+        'usd'
     ]; 
 }

@@ -199,6 +199,14 @@
                                         </td> 
                                     </tr> 
                                 </table>
+                                 <table class="table table-bordered">
+                                    <tr>
+                                        <th  class="text-center"> Current USD Rate </th>  
+                                    </tr>  
+                                     <tr>
+                                        <td  class="text-center"> ${response.current_usd} </td>  
+                                    </tr>  
+                                </table>
                             </div>
 
                             <!-- Right Column (6 Columns) -->
@@ -219,7 +227,8 @@
                                         </td>  
                                     </tr>
                                 </table>
-                            </div>
+                            </div> 
+
                         </div>
 
 
