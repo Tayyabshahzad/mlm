@@ -38,7 +38,7 @@ class GenerateWeeklyROI extends Command
                 continue;
             } 
             // Skip if an ROI transaction has already been created today
-            if ($user->last_roi_payment_date && $user->last_roi_payment_date->isToday()) {
+            if ($user->last_roi_payment_date && Carbon::parse($user->last_roi_payment_date)->isToday()) {
                 $this->info("Skipping user {$user->id} | {$user->name} - ROI already generated today.");
                 continue;
             }
@@ -91,7 +91,7 @@ class GenerateWeeklyROI extends Command
     }
 
     
-    private function generateParentCommissions($user, $roiAmount)
+    private function generateParentCommissions_old($user, $roiAmount)
     {
         $commissionLevels = [
             1 => 3.5,
@@ -132,11 +132,58 @@ class GenerateWeeklyROI extends Command
         }
     }
 
+    private function generateParentCommissions($user, $roiAmount)
+    {
+        $commissionLevels = [
+            1 => 3.5,
+            2 => 3,
+            3 => 2.5,
+            4 => 2,
+            5 => 1.5,
+            6 => 1,
+            7 => 0.5,
+        ];
+
+        foreach ($commissionLevels as $level => $percentage) {
+            $parent = $this->getAncestorByLevel($user, $level);
+
+            if ($parent) {
+                // Count total users (direct + indirect) up to this level
+                $totalDownlineCount = $this->countDownlineUsers($parent->id, $level);
+                $requiredUsers = $this->getRequiredUsersForLevel($level);
+
+                if ($totalDownlineCount >= $requiredUsers) {
+                    $commissionAmount = ($roiAmount * $percentage) / 100;
+
+                    // Save commission transaction
+                    ROITransaction::create([
+                        'user_id' => $parent->id,
+                        'amount' => $commissionAmount,
+                        'percentage' => $percentage,
+                        'description' => "Level {$level} commission from user {$user->id} | {$user->name}",
+                    ]);
+
+                    // Save to wallet
+                    Wallet::create([
+                        'user_id' => $parent->id,
+                        'wallet_type' => 'profit_share',
+                        'balance' => $commissionAmount,
+                        'level' => $level,
+                        'commission_type' => 'profit_share',
+                        'wallet_from' => $user->id,
+                        'percentage' => $percentage,
+                        'total_amount' => $commissionAmount,
+                    ]);
+
+                    $this->info("Commission of $commissionAmount assigned to User {$parent->id} for Level {$level}");
+                }
+            }
+        }
+    }
+
+
     private function getRequiredUsersForLevel($level)
     {
-
-    
-
         $requiredUsers = [
             1 => 10,  // Level 1 needs 2 users
             2 => 50,  // Level 2 needs 3 users
@@ -150,7 +197,7 @@ class GenerateWeeklyROI extends Command
         return $requiredUsers[$level] ?? 0;  // Default to 0 if level is not defined
     }
     
-    private function getAncestorByLevel($user, $level)
+    private function getAncestorByLevel_old($user, $level)
     {
         return \DB::table('referral_trees')
             ->join('users', 'referral_trees.ancestor_id', '=', 'users.id')
@@ -159,5 +206,26 @@ class GenerateWeeklyROI extends Command
             ->select('users.*')
             ->first();
     }
+
+    private function countDownlineUsers($parentId, $level)
+    {
+        return \DB::table('referral_trees')
+            ->where('ancestor_id', $parentId)
+            ->where('level', '<=', $level)  // Include all users up to this level
+            ->count();
+    }
+
+
+
+    private function getAncestorByLevel($user, $level)
+    {
+        return User::whereIn('id', function ($query) use ($user, $level) {
+            $query->select('ancestor_id')
+                ->from('referral_trees')
+                ->where('descendant_id', $user->id)
+                ->where('level', $level);
+        })->first(); // Get only one parent per level
+    }
+
     
 }

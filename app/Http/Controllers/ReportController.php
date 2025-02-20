@@ -23,16 +23,36 @@ class ReportController extends Controller
 
 
 
-    public function genealogyTree(Request $request){
-         if($request->user){
-            $user = User::find($request->user);
-            $data = $this->getTeamHierarchy($user->id); 
-         }else{
-            $data = [];
-         }
-         
+    public function genealogyTree(Request $request){ 
+        if($request->id){
+            $user = User::find($request->id);
+        }else{
+            $user = Auth::user();
+        }
         $users = User::get();
-        return view('reports.genealogy',compact('users','data'));
+        $nodeDataArray = [];
+        $buildHierarchy = function ($parent, $descendants, $isRoot = false) use (&$nodeDataArray, &$buildHierarchy) {
+            $descendants = $descendants ?? collect(); // Ensure it's an iterable collection
+            foreach ($descendants as $descendant) {
+               if ($descendant->can_login == true    ) {
+                    $nodeDataArray[] = [
+                        'key' => $descendant->id,
+                        'parent' => $parent->id,
+                        'name' => $descendant->username,
+                        'image' => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+                    ];
+                    $buildHierarchy($descendant, $descendant->children ?? collect());
+                }
+            }
+        };
+        $nodeDataArray[] = [
+            'key' => $user->id,
+            'name' => $user->username ,
+            'username' => $user->username,
+            'image' => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+        ];
+        $buildHierarchy($user, $user->children ?? collect(), true);
+        return view('reports.genealogy', compact('user', 'nodeDataArray','users')); 
     }
 
     public function downloadTeamHierarchy($userId)

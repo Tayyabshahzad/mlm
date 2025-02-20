@@ -107,7 +107,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::delete('delete', 'delete')->name('product.delete');
     });
     Route::prefix('report')->controller(ReportController::class)->group(function () {
-        Route::get('genealogy', 'genealogyTree')->name('report.genealogy.tree');
+        Route::get('genealogy/{id?}', 'genealogyTree')->name('report.genealogy.tree');
         Route::get('genealogy/download/{id}', 'downloadTeamHierarchy')->name('report.genealogy.tree.download');
         Route::get('genealogy/tree', 'treeView')->name('report.genealogy.tree.view');
     }); 

@@ -617,7 +617,7 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'Week deleted successfully.');
     } 
 
-    private function generateParentCommissions($user, $roiAmount)
+    private function old_generateParentCommissions($user, $roiAmount)
     {
         $commissionLevels = [
             1 => 3.5,
@@ -660,10 +660,70 @@ class UserController extends Controller
             }
         }
     }
+
+
+
+
+    private function generateParentCommissions($user, $roiAmount)
+    {
+        $commissionLevels = [
+            1 => 3.5,
+            2 => 3,
+            3 => 2.5,
+            4 => 2,
+            5 => 1.5,
+            6 => 1,
+            7 => 0.5,
+        ];
+
+        foreach ($commissionLevels as $level => $percentage) {
+            $parent = $this->getAncestorByLevel($user, $level);
+
+            if ($parent) {
+                // Count total users (direct + indirect) up to this level
+                $totalDownlineCount = $this->countDownlineUsers($parent->id, $level);
+                $requiredUsers = $this->getRequiredUsersForLevel($level);
+
+                if ($totalDownlineCount >= $requiredUsers) {
+                    $commissionAmount = ($roiAmount * $percentage) / 100;
+
+                    // Save commission transaction
+                    ROITransaction::create([
+                        'user_id' => $parent->id,
+                        'amount' => $commissionAmount,
+                        'percentage' => $percentage,
+                        'description' => "Level {$level} commission from user {$user->id} | {$user->name}",
+                    ]);
+
+                    // Save to wallet
+                    Wallet::create([
+                        'user_id' => $parent->id,
+                        'wallet_type' => 'profit_share',
+                        'balance' => $commissionAmount,
+                        'level' => $level,
+                        'commission_type' => 'profit_share',
+                        'wallet_from' => $user->id,
+                        'percentage' => $percentage,
+                        'total_amount' => $commissionAmount,
+                    ]);
+
+                    $this->info("Commission of $commissionAmount assigned to User {$parent->id} for Level {$level}");
+                }
+            }
+        }
+    }
+    private function countDownlineUsers($parentId, $level)
+    {
+        return \DB::table('referral_trees')
+            ->where('ancestor_id', $parentId)
+            ->where('level', '<=', $level)  // Include all users up to this level
+            ->count();
+    }
+
+
     private function getRequiredUsersForLevel($level)
     {
 
-    
 
         $requiredUsers = [
             1 => 10,  // Level 1 needs 2 users
@@ -678,7 +738,7 @@ class UserController extends Controller
         return $requiredUsers[$level] ?? 0;  // Default to 0 if level is not defined
     }
 
-    private function getAncestorByLevel($user, $level)
+    private function getAncestorByLevelOld($user, $level)
     {
         
         return \DB::table('referral_trees')
@@ -687,6 +747,16 @@ class UserController extends Controller
             ->where('referral_trees.level', $level)
             ->select('users.*')
             ->first();
+    }
+
+    private function getAncestorByLevel($user, $level)
+    {
+        return User::whereIn('id', function ($query) use ($user, $level) {
+            $query->select('ancestor_id')
+                ->from('referral_trees')
+                ->where('descendant_id', $user->id)
+                ->where('level', $level);
+        })->first(); // Get only one parent per level
     }
 
     public function userInfo(Request $request , $id){
