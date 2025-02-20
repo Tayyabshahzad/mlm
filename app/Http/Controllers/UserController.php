@@ -599,7 +599,7 @@ class UserController extends Controller
 
     public function updateRentalPercentage(Request $request, $id){ 
         $request->validate([
-            'percentage' => 'required|numeric|min:1|max:7',
+            'percentage' => 'required|numeric|max:7',
         ]); 
         $week = Week::findOrFail($id);
         $week->percentage = $request->percentage;
