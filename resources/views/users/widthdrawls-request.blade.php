@@ -164,7 +164,7 @@
 
                         <div class="row">
                             <!-- Left Column (6 Columns) -->
-                            <div class="col-lg-7">
+                            <div class="col-lg-8">
                                 <table class="table table-bordered">
                                     <tr>
                                         <th colspan="4" class="text-center"> Bank Details </th>  
@@ -173,10 +173,16 @@
                                         <th colspan="2"> Bank Name </th>  
                                         <td colspan="2">  ${response.bank_name} </td>    
                                     </tr>
+                                
                                     <tr>
                                         <th colspan="2"> Account Title </th>  
                                         <td colspan="2">  ${response.account_title} </td> 
                                     </tr>
+                                    <tr>
+                                        <th colspan="2"> Account Number </th>  
+                                        <td colspan="2">  ${response.ibn_number} </td>    
+                                    </tr>
+
                                     <tr>
                                         <th colspan="2"> USDT Address </th>  
                                         <td colspan="2">  ${response.account_number} </td> 
@@ -210,7 +216,7 @@
                             </div>
 
                             <!-- Right Column (6 Columns) -->
-                            <div class="col-lg-5">
+                            <div class="col-lg-4">
                                 <table class="table table-bordered">
                                     <tr>
                                         <th colspan="2" class="text-center"> Payable Amount </th>  
