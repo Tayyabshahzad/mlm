@@ -79,11 +79,10 @@ class WithdrawalRequestController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|numeric|min:10',
             'review_notes' => 'string',
             'withdrawal_option' => 'required|in:usdt,bank,cash',
         ]);
-
         if (!auth::user()->profile) {
             return redirect()->back()->with('error', 'Please complete your profile first');
         }
@@ -92,31 +91,22 @@ class WithdrawalRequestController extends Controller
         }
         if ($request->withdrawal_option == 'usdt' && !auth::user()->profile->account_number) {
             return redirect()->back()->with('error', 'Please add your USDT Address Details');
-        }
-
-        // Calculate 2% fee and final withdrawal amount
+        } 
+        $actualAmount = $request->amount;
+        $calculatedFee = ($request->withdrawal_option == 'bank') ? ($actualAmount * 0.02) : 0;
+        $expectedAmount = $actualAmount + $calculatedFee;
         
-        if($request->withdrawal_option == 'bank'){
-            $fee = $request->amount * 0.02;
-        }else{
-            $fee = 0;
-        }
-        $totalDeduction = $request->amount + $fee;  
         $onlineWalletSum = Wallet::where('wallet_type', 'online')
-            ->where('user_id', Auth::id())
-            ->sum('balance');
-
-        // Check if the user has enough balance **after** deducting the fee
-        if ($totalDeduction > $onlineWalletSum) {
+        ->where('user_id', Auth::id())
+        ->sum('balance');
+        if ($expectedAmount > $onlineWalletSum) {
             return redirect()->back()->with('error', 'Insufficient balance in the online wallet after fee deduction.');
-        }
-
-        $remainingAmount = $totalDeduction; 
+        } 
+        $remainingAmount = $expectedAmount;  
         $onlineWallets = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id())
         ->orderBy('id', 'asc')
         ->get();
-
         foreach ($onlineWallets as $wallet) {
             if ($remainingAmount == 0) break;
             if ($wallet->balance <= $remainingAmount) {
@@ -127,19 +117,16 @@ class WithdrawalRequestController extends Controller
                 $remainingAmount = 0;
             }
         }
-       
-        // Store withdrawal request with fee details
         WithDrawalequest::create([
             'user_id' => Auth::id(),
             'profile_id' => auth::user()->profile->id,
             'wallet_type' => 'online',
-            'amount' => $request->amount,
+            'amount' => $actualAmount,
             'status' => 'pending',
             'request_type' => $request->withdrawal_option,
             'review_notes' => $request->review_notes,
-            'transfer_fee' => $fee, // Store the deducted fee separately
+            'transfer_fee' => $calculatedFee,
         ]);
-
         return redirect()->route('wallets.online')->with('success', 'Withdrawal request submitted successfully.');
     }
 
