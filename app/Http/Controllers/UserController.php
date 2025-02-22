@@ -516,7 +516,7 @@ class UserController extends Controller
     public function roiPayments()
     {
         $users = User::where('blocked',false)->where('can_login', true)->get();
-        $payments = ROITransaction::orderby('id','desc')->get();
+        $payments = ROITransaction::orderby('created_at','desc')->paginate(20);
         return view('users.roi-payments', compact('users', 'payments'));
     }
 

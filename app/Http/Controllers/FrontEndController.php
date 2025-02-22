@@ -333,7 +333,7 @@ class FrontEndController extends Controller
             if($user->profile->cnic == null){
                 return redirect()->back()->with('error', 'Please Add CNIC Details First.');
             }else{
-                 $this->updatePdf($user->profile); 
+                 $this->updatePdf($user->profile);  
                  Mail::to($user->email)->send(new CompanyAgreement($user));
                  $user->agreement_sent = true;
                  $user->save();
@@ -472,38 +472,31 @@ class FrontEndController extends Controller
         $pdf->setSourceFile($existingPdfPath);
         $template = $pdf->importPage(1);
         $pdf->useTemplate($template);  
-        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->SetFont('Helvetica', '', 9);
         $pdf->SetTextColor(0, 0, 0);  
-        $pdf->SetXY(35, 74); // X and Y coordinates
+        $pdf->SetXY(160, 49); 
+        $pdf->Write(0, Carbon::now()->format('d F Y')); 
+
+        $pdf->SetXY(45, 99); // X and Y coordinates
         $pdf->Write(0, $userDetails['first_name']);  
-
-        $pdf->SetXY(78, 74); // X and Y coordinates
+        $pdf->SetXY(68, 99); // X and Y coordinates
+        $pdf->Write(0, '('.$userDetails->user->username.')');  
+        $pdf->SetXY(133, 99); // X and Y coordinates
         $pdf->Write(0,$userDetails['last_name']);  
-
-
-
-        $pdf->SetXY(155, 74); // X and Y coordinates
+        $pdf->SetXY(100, 106); // X and Y coordinates
         $pdf->Write(0, $userDetails['cnic']);  
-        $pdf->SetXY(70, 80); // X and Y coordinates
+        $pdf->SetXY(80, 114); // X and Y coordinates
         $pdf->Write(0, $userDetails['address']);  
-        
-         
-
         // $pdf->SetXY(120, 205); // X and Y coordinates
         // $pdf->Write(0, $userDetails['first_name']);   
 
-        $pdf->SetXY(132, 180); // X and Y coordinates
+        $pdf->SetXY(130, 263); // X and Y coordinates
         $pdf->Write(0, $userDetails['first_name']);  
-        
-        $pdf->SetXY(145, 180); // X and Y coordinates
-        $pdf->Write(0, '('.$userDetails->user->username.')');  
-        
-        $pdf->SetXY(132, 189); // X and Y coordinates
+        $pdf->SetXY(143, 263); // X and Y coordinates
+        $pdf->Write(0, $userDetails['last_name']);
+
+        $pdf->SetXY(145, 276.90); // X and Y coordinates
         $pdf->Write(0, $userDetails['cnic']);   
-
-        $pdf->SetXY(132, 198); 
-        $pdf->Write(0,  Carbon::now()->format('d F Y')); 
-
         // Save the updated PDF
         $pdf->Output($updatedPdfPath, 'F'); 
         return $updatedPdfPath;
