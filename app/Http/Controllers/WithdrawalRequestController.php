@@ -133,7 +133,7 @@ class WithdrawalRequestController extends Controller
     public function memberTransfer(Request $request)
     {
         $request->validate([ 
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|numeric|min:5',
             'description' => 'string',
             'member_account'=> 'required',
             'wallet_type' =>'required|in:member_transfer'
@@ -141,13 +141,11 @@ class WithdrawalRequestController extends Controller
         $recipient = User::where('username', $request->member_account)
                     ->orWhere('email', $request->member_account)
                     ->first();
+        $sender = Auth::user();
         if (!$recipient) {
             return redirect()->back()->with('error', 'Recipient not exists');
-        }
-        
-        $fee = $request->amount * 0.02;
-        $finalAmount = $request->amount - $fee;
-
+        } 
+        $finalAmount = $request->amount; 
         $onlineWallet = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id());
         $onlineWalletSum = $onlineWallet->sum('balance'); 
@@ -178,6 +176,10 @@ class WithdrawalRequestController extends Controller
                 'commission_type'=>'Member Transfer'
             ]
         );
+        
+        $this->logTransaction($sender->id, $request->amount,$finalAmount, "You transferred {$request->amount} PV to {$recipient->username} via member transfer.");
+        $this->logTransaction($recipient->id, $request->amount, $finalAmount, "You received {$finalAmount} PV from {$sender->username} via member transfer.");
+
         TransactionLog::create([
             'user_id' => Auth::id(),
             'from_wallet_type' => 'online',
@@ -186,6 +188,8 @@ class WithdrawalRequestController extends Controller
             'final_amount' => $request->amount,
             'description' => 'An amount of ' . $request->amount . ' PV has been transferred to ' . $recipient->username . ' via member transfer.'
         ]);
+       
+       
         return redirect()->back()->with('success', 'Transfer successful');
     }
     
@@ -283,6 +287,19 @@ class WithdrawalRequestController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'An error occurred while processing the request.');
         }
+    }
+
+    private function logTransaction($userId, $amount, $finalAmount,$description)
+    {
+        TransactionLog::create([
+            'user_id' => $userId,
+            'from_wallet_type' => 'online',
+            'to_wallet_type' => 'online',
+            'charge' =>0, 
+            'amount' => $amount, 
+            'final_amount' => $finalAmount,
+            'description' => $description,
+        ]);
     }
 
 

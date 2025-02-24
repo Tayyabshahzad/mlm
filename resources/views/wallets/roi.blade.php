@@ -78,7 +78,7 @@
                                         <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $payment->balance }}</span> 
                                     </td> 
                                     <td>
-                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $payment->created_at->format('d-M-Y') }}</span> 
+                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $payment->created_at }}</span> 
                                     </td> 
                                 </tr>  
                                 @endforeach

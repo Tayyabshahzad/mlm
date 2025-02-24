@@ -58,7 +58,8 @@
                                     <th style="min-width: 110px">To Wallet</th>
                                     <th style="min-width: 110px">Amount</th>
                                     <th style="min-width: 110px">Charge</th> 
-                                    <th style="min-width: 120px">Final Transferred</th> 
+                                    <th style="min-width: 120px">Final Transferred</th>
+                                    <th style="min-width: 120px">Description</th>  
                                 </tr>
                             </thead>
                             <tbody>
@@ -85,7 +86,15 @@
                                         </td>
                                         <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> {{ ucfirst($transaction->charge ) }} </span>    </td>
                                         <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ ucfirst($transaction->final_amount ) }}</span>    </td>
-                                        <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">  <i class=""></i> </span>    </td>
+                                        <td>
+                                            <span class="text-dark-75 font-weight-bolder d-block font-size-sm" 
+                                                  data-desc="{{ $transaction->description }}" 
+                                                  data-toggle="modal" 
+                                                  data-target="#description_trans"> 
+                                                <i class="fa fa-eye"></i> 
+                                            </span>
+                                        </td>
+                                        
                                         
                                     </tr>   
                                 @endforeach
@@ -98,6 +107,30 @@
                                 @endif
                             </tbody>
                         </table>
+                        <div class="d-flex justify-content-center align-items-center flex-wrap mt-5">
+                            <div class="d-flex flex-wrap py-2 mr-3">
+                                @if ($transactions->onFirstPage())
+                                    <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-double-arrow-back icon-xs"></i></a>
+                                    <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-arrow-back icon-xs"></i></a>
+                                @else
+                                    <a href="{{ $transactions->url(1) }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-double-arrow-back icon-xs"></i></a>
+                                    <a href="{{ $transactions->previousPageUrl() }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-arrow-back icon-xs"></i></a>
+                                @endif
+                                
+                                @foreach ($transactions->getUrlRange(max(1, $transactions->currentPage() - 2), min($transactions->lastPage(), $transactions->currentPage() + 2)) as $page => $url)
+                                    <a href="{{ $url }}" class="btn btn-icon btn-sm border-0 btn-hover-primary mr-2 my-1 {{ $page == $transactions->currentPage() ? 'active' : '' }}">
+                                        {{ $page }}
+                                    </a>
+                                @endforeach 
+                                @if ($transactions->hasMorePages())
+                                    <a href="{{ $transactions->nextPageUrl() }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-arrow-next icon-xs"></i></a>
+                                    <a href="{{ $transactions->url($transactions->lastPage()) }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-double-arrow-next icon-xs"></i></a>
+                                @else
+                                    <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-arrow-next icon-xs"></i></a>
+                                    <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-double-arrow-next icon-xs"></i></a>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                     <!--end::Table-->
                 </div>
@@ -110,42 +143,29 @@
     <!--end::Entry-->
 </div>
  
-<div class="modal fade" id="WithdrawModel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="description_trans" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form action="{{ route('wallet.transfer.to.online') }}" method="POST">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
+                <div class="modal-header text-right">
+                   
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i aria-hidden="true" class="ki ki-close"></i>
                     </button>
                 </div>
-                <div class="modal-body">
-                <p class="text-center text-danger">
-                    5% Will charge on every transaction 
-                </p>
-                    <div class="form-group row"> 
-                        <div class="col-lg-12 col-xl-12">
-                            <label for="" class="font-weight-bold mr-2">
-                                Transfer Amount
-                            </label>
-                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="amount" min="0.01" step="0.01"
-                             required
-                             placeholder="Enter Amount"
-                             >  
-                        </div>  
-                    </div>  
+                <div class="modal-body ">
+                    <p class="font-weight-bold" id="transactionDescription"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="rounded-0 btn btn-primary btn-sm">Transfer </button>
+                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button> 
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+
  
 
  
@@ -154,7 +174,17 @@
 @section('page_js')
     <script>
          var avatar = new KTImageInput('kt_profile_avatar');  
-
+        
     </script>
+    <script>
+        $(document).ready(function() {
+            $('#description_trans').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget); // Get the button that triggered the modal
+                var description = button.data('desc'); // Extract info from data-* attributes 
+                $('#transactionDescription').text(description); // Inject into modal
+            });
+        });
+    </script>
+        
     
 @endsection

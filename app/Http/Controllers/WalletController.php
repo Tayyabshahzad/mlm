@@ -101,7 +101,7 @@ class WalletController extends Controller
     public function showTransactionHistory()
     {
         $userId = auth()->id();
-        $transactions = TransactionLog::where('user_id', $userId)->latest()->paginate(10); 
+        $transactions = TransactionLog::where('user_id', $userId)->orderBy('created_at','desc')->latest()->paginate(10); 
         return view('wallets.transaction-history', compact('transactions'));
     }
 
