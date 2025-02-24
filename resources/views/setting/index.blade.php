@@ -56,6 +56,9 @@
                             <div class="card-title align-items-start flex-column">
                                 <h3 class="card-label font-weight-bolder text-dark">System Setting</h3> 
                             </div> 
+                            <div class="card-title align-items-start flex-column">
+                                <h3 class="card-label font-weight-bolder text-dark">Last Updated: {{ $setting->updated_at }} </h3> 
+                            </div> 
                         </div>
                         <!--end::Header-->
                         <!--begin::Form-->
