@@ -143,7 +143,7 @@
                      
                     var content = `
                         <input type="hidden" name="request_id" value="${response.id}"/>
-                        <table  class="table table-head-custom table-vertical-center"> 
+                        <table  class="table table-head-custom table-vertical-center "> 
                             <tr>
                                 <th> Username </th>
                                 <th> Amount </th>
@@ -152,7 +152,7 @@
                                 <th> Transfer Fee </th>
                                 <th> Created At </th>
                             </tr>
-                            <tr>    
+                            <tr class="bg-warning">    
                                 <td>  ${response.username} </td>
                                 <td>  ${response.amount} </td>
                                 <td>  ${response.status} </td>
@@ -165,7 +165,7 @@
                         <div class="row">
                             <!-- Left Column (6 Columns) -->
                             <div class="col-lg-8">
-                                <table class="table table-bordered">
+                                <table class="table table-bordered ">
                                     <tr>
                                         <th colspan="4" class="text-center"> Bank Details </th>  
                                     </tr> 
@@ -222,7 +222,7 @@
                                         <th colspan="2" class="text-center"> Payable Amount </th>  
                                     </tr> 
                                     <tr>
-                                        <td class="text-center text-danger" colspan="2">  ${response.payable_amount} PKR </td>  
+                                        <td class="text-center text-danger " colspan="2">  <b> ${response.payable_amount} PKR</b> </td>  
                                     </tr>
                                     <tr>
                                         <th colspan="2" class="text-center"> Transaction Screenshot </th>  

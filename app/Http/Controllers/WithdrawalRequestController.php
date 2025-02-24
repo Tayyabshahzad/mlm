@@ -93,16 +93,15 @@ class WithdrawalRequestController extends Controller
             return redirect()->back()->with('error', 'Please add your USDT Address Details');
         } 
         $actualAmount = $request->amount;
-        $calculatedFee = ($request->withdrawal_option == 'bank') ? ($actualAmount * 0.02) : 0;
-        $expectedAmount = $actualAmount + $calculatedFee;
-        
+        $calculatedFee = ($request->withdrawal_option == 'bank') ? ($actualAmount * 0.02) : 0; 
+        $withdrawableAmount = $actualAmount - $calculatedFee;  
         $onlineWalletSum = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id())
         ->sum('balance');
-        if ($expectedAmount > $onlineWalletSum) {
-            return redirect()->back()->with('error', 'Insufficient balance in the online wallet after fee deduction.');
-        } 
-        $remainingAmount = $expectedAmount;  
+        if ($actualAmount > $onlineWalletSum) {
+            return redirect()->back()->with('error', 'Insufficient balance in the online wallet.');
+        }
+        $remainingAmount = $actualAmount; 
         $onlineWallets = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id())
         ->orderBy('id', 'asc')
@@ -121,7 +120,7 @@ class WithdrawalRequestController extends Controller
             'user_id' => Auth::id(),
             'profile_id' => auth::user()->profile->id,
             'wallet_type' => 'online',
-            'amount' => $actualAmount,
+            'amount' => $withdrawableAmount,
             'status' => 'pending',
             'request_type' => $request->withdrawal_option,
             'review_notes' => $request->review_notes,
@@ -193,7 +192,7 @@ class WithdrawalRequestController extends Controller
 
     public function requests(Request $request)
     {
-        $withDrawsRequests = WithDrawalequest::orderby('id','desc')->get();
+        $withDrawsRequests = WithDrawalequest::orderby('created_at','desc')->get();
         return view('users.widthdrawls-request',compact('withDrawsRequests')); 
     }
 
@@ -217,7 +216,7 @@ class WithdrawalRequestController extends Controller
             'request_type' => $request->request_type ?? '--',
             'transfer_fee' => $request->transfer_fee,
             'current_usd' => $setting->usd,
-            'payable_amount' => round(($request->amount - $request->transfer_fee) * $setting->pv_amount,2),
+            'payable_amount' => round(($request->amount * $setting->pv_amount),2  ),
             'withdraw_screenshot' => asset($request->getFirstMediaUrl('withdraw_screenshot')),
             
         ]);
