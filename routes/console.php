@@ -27,4 +27,4 @@ Schedule::command('roi:generate-weekly')
     ->when(fn () => now()->dayOfWeek !== Carbon::FRIDAY) // Skips Friday
     ->appendOutputTo(storage_path('logs/roi_generation.log')); // Log output
 
-//Schedule::command('app:update-setting')->twiceDaily(1, 13);
+Schedule::command('app:update-setting')->twiceDaily(10, 22);
