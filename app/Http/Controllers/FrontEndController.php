@@ -336,7 +336,7 @@ class FrontEndController extends Controller
             }else{
                  $this->updatePdf($user->profile);   
                  Mail::to($user->email)->send(new CompanyAgreement($user));
-                // $user->agreement_sent = true;
+                 $user->agreement_sent = true;
                  $user->save();
                  return redirect()->back()->with('success', 'An Agreement has been sent to your email.');
             }
