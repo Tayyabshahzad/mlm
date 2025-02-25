@@ -27,6 +27,12 @@
                         <strong> {{ Auth::user()->current_pv_balance }} </strong> 
                     </div> 
                 </div> 
+                <span class="text-muted font-weight-bold ml-15">Time Zone </span>
+                <div class="kt-widget__content ml-5">
+                    <div class="kt-widget__section">
+                        <strong>  {{ now()->format('Y-m-d H:i:s') }} ({{ config('app.timezone') }}) </strong> 
+                    </div> 
+                </div> 
             </div> 
         </div>
     </div>
