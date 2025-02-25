@@ -32,9 +32,11 @@
     </div>
     <!--end::Subheader-->
     <!--begin::Entry-->
+    
     <div class="d-flex flex-column-fluid"> 
-        <div class="container">  
-            <div class="row"> 
+        
+        <div class="container ">   
+            <div class="row">  
                 <div class="col-xl-4"> 
                     <div class="card card-custom gutter-b card-stretch"> 
                         <div class="card-header border-0 pt-5">
@@ -691,6 +693,7 @@
        
         </div> 
     </div>
+    
     <!--end::Entry-->
 </div>
 @endsection

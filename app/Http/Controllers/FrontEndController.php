@@ -243,6 +243,7 @@ class FrontEndController extends Controller
                 'cnic_front' => 'image|mimes:jpg,jpeg,png|max:2048',
                 'cnic_back' => 'image|mimes:jpg,jpeg,png|max:2048', 
                 'address' => 'required|string|max:255',
+                'bio' => 'required|string|max:255',
             ],
             [
                 'phone.phone' =>'Please provide a valid phone number in the correct format for Pakistan.'
@@ -330,12 +331,12 @@ class FrontEndController extends Controller
     public function agreementRequest(){
         $user = auth::user(); 
         if($user->profile){
-            if($user->profile->cnic == null){
+            if($user->profile->cnic == null || $user->profile->first_name == null ||   $user->profile->last_name == null){
                 return redirect()->back()->with('error', 'Please Add CNIC Details First.');
             }else{
-                 $this->updatePdf($user->profile);  
+                 $this->updatePdf($user->profile);   
                  Mail::to($user->email)->send(new CompanyAgreement($user));
-                 $user->agreement_sent = true;
+                // $user->agreement_sent = true;
                  $user->save();
                  return redirect()->back()->with('success', 'An Agreement has been sent to your email.');
             }
@@ -477,10 +478,8 @@ class FrontEndController extends Controller
         $pdf->SetXY(160, 49); 
         $pdf->Write(0, Carbon::now()->format('d F Y')); 
 
-        $pdf->SetXY(45, 99); // X and Y coordinates
-        $pdf->Write(0, $userDetails['first_name']);  
-        $pdf->SetXY(68, 99); // X and Y coordinates
-        $pdf->Write(0, '('.$userDetails->user->username.')');  
+        $pdf->SetXY(40, 99); // X and Y coordinates
+        $pdf->Write(0, $userDetails['first_name']);   
         $pdf->SetXY(133, 99); // X and Y coordinates
         $pdf->Write(0,$userDetails['last_name']);  
         $pdf->SetXY(100, 106); // X and Y coordinates
@@ -490,12 +489,12 @@ class FrontEndController extends Controller
         // $pdf->SetXY(120, 205); // X and Y coordinates
         // $pdf->Write(0, $userDetails['first_name']);   
 
-        $pdf->SetXY(130, 263); // X and Y coordinates
+        $pdf->SetXY(115, 263); // X and Y coordinates
         $pdf->Write(0, $userDetails['first_name']);  
         $pdf->SetXY(143, 263); // X and Y coordinates
         $pdf->Write(0, $userDetails['last_name']);
 
-        $pdf->SetXY(145, 276.90); // X and Y coordinates
+        $pdf->SetXY(145, 275); // X and Y coordinates
         $pdf->Write(0, $userDetails['cnic']);   
         // Save the updated PDF
         $pdf->Output($updatedPdfPath, 'F'); 

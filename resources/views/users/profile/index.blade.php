@@ -104,7 +104,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-xl-3 col-lg-3 col-form-label">First Name</label>
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Full Name <span class="text-danger">*</span> </label>
                                     <div class="col-lg-9 col-xl-6">
                                         <input class="form-control form-control-lg form-control-solid" type="text" name="first_name" value="{{ old('first_name', $profile->first_name ?? '') }}" required />
                                     </div>
@@ -115,7 +115,7 @@
                                     @enderror
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-xl-3 col-lg-3 col-form-label">Last Name</label>
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Son, Daughter, Wife of <span class="text-danger">*</span></label>
                                     <div class="col-lg-9 col-xl-6">
                                         <input class="form-control form-control-lg form-control-solid" type="text" name="last_name" value="{{ old('last_name', $profile->last_name ?? '') }}" required />
 
@@ -127,7 +127,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-xl-3 col-lg-3 col-form-label">Gender</label>
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Gender <span class="text-danger">*</span></label>
                                     <div class="col-lg-9 col-xl-6 pl-10">
                                         <label>
                                             <input class="form-control-solid form-check-input" type="radio" value="1" required name="gender" {{ old('gender', $profile->gender ?? '') == 1 ? 'checked' : '' }} />
@@ -154,7 +154,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-xl-3 col-lg-3 col-form-label">Contact Phone</label>
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Contact Phone <span class="text-danger">*</span></label>
                                     <div class="col-lg-9 col-xl-6">
                                         <div class="input-group input-group-lg input-group-solid">
                                             <div class="input-group-prepend">
@@ -185,7 +185,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-xl-3 col-lg-3 col-form-label">Email Address</label>
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Email Address <span class="text-danger">*</span></label>
                                     <div class="col-lg-9 col-xl-6">
                                         <div class="input-group input-group-lg input-group-solid">
                                             <div class="input-group-prepend">
@@ -199,7 +199,7 @@
                                 </div> 
 
                                 <div class="form-group row">
-                                    <label class="col-xl-3 col-lg-3 col-form-label">Full Resident Address</label>
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Full Resident Address <span class="text-danger">*</span></label>
                                     <div class="col-lg-9 col-xl-6">
                                         <div class="input-group input-group-lg input-group-solid">
                                             <div class="input-group-prepend">
