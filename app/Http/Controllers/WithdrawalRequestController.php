@@ -242,7 +242,7 @@ class WithdrawalRequestController extends Controller
             $withDrawalequest->addMedia($request->file('screenshot'))
                 ->toMediaCollection('withdraw_screenshot');
         }
-        if($withDrawalequest->status = 'rejected'){
+        if($withDrawalequest->status === 'rejected'){ 
             $wallet = Wallet::where('user_id', $withDrawalequest->user->id)
             ->where('wallet_type', 'online') // Adjust the type if necessary
             ->first();
@@ -252,7 +252,7 @@ class WithdrawalRequestController extends Controller
             } else {
                 return redirect()->back()->with('error', 'Wallet not found.');
             }
-        }
+        } 
         return redirect()->back()->with('success', 'Withdrawal request has been updated successfully.');
     }   
  
