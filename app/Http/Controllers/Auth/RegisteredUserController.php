@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PVTransaction;
 use App\Models\ReferralLink;
 use App\Models\ReferralTree;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserWallet;
 use Illuminate\Auth\Events\Registered;
@@ -29,8 +30,8 @@ class RegisteredUserController extends Controller
         // return Inertia::render('Auth/Register', [
         //     'refLink' => $ref,  
         // ]);
-
-        return view('auth.register',compact('ref'));
+        $setting= Setting::first();
+        return view('auth.register',compact('ref','setting'));
     }
 
     /**

@@ -107,11 +107,15 @@
 
         <div class="form-group d-none" id="referral-link-container">
             <label class="font-size-h6 font-weight-bolder text-dark">Scan QR <span class="text-danger">*</span></label>
+            <h6 class="text-center text-danger font-weight-bolder">
+                As of {{ \Carbon\Carbon::today()->format('F j, Y') }}, the exchange rate is approximately 01 USD to {{ $setting->usd }} PKR.
+
+            </h6>
             <img src="{{ asset('assets/custom-images/amount-qr.jpeg') }}" alt="" class=" img-thumbnail"> 
 
             <div class="form-group mt-4">
                 <label class="font-size-h6 font-weight-bolder text-dark">Copy Binance Wallet Address</label>
-
+            
                 <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
                     <div class="btn-group " role="group" aria-label="First group" onclick="copyAddressToClipboard()"> 
                         <div class=" form-control rounded-0" id="walletAddress" style=""> 

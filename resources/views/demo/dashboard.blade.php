@@ -261,11 +261,12 @@
                 <div class="col-lg-12">
                     <div class="card card-custom card-stretch gutter-b">
                         <div class="card-body" style=""> 
-                            <div class="card card-custom  " style="background-color: rgb(149, 238, 233)">
-                                <div class="card-body rounded-0 p-0 d-flex" style="background-image: url({{ asset('assets/custom-images/announcement.svg') }});background-size:70px;background-repeat:no-repeat;background-position:bottom left">
-                                    <div class="d-flex flex-column flex-lg-row-auto w-auto  p-10 p-md-20">
-                                        <h2 class="font-weight-bolder text-dark text-center">
-                                            There is a 10Pv (2500PKR) activation fee for getting an account in GVI System <br/>which will not be taken till 10th February.
+                            <div class="card card-custom  " style="background-color: rgb(33 245 108);">
+                                <div class="card-body rounded-0 p-0  " style="background-image: url({{ asset('assets/custom-images/announcement.svg') }});background-size:40px;background-repeat:no-repeat;background-position:bottom left">
+                                    <div class="  w-auto  p-10 p-md-20">
+                                        <h2 class="font-weight-bolder text-dark text-center" style="line-height:25px">   
+                                            Ramadan & Eidi Package Offer for All Members
+                                            <br>You will receive a 10% direct bonus instead of 5% from March 1st to April 5th, 2025.
                                         </h2>  
                                     </div> 
                                 </div>
