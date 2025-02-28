@@ -119,7 +119,7 @@ class UserController extends Controller
     private function getCommissionForLevel($level)
     { 
         $commissionPercentages = [
-            1 => 5,  // Level 1 gets 5%
+            1 => 10,  // Level 1 gets 5%
             2 => 2,  // Level 2 gets 2%
             3 => 1.5, // Level 3 gets 1.5%
             4 => 1.25,   // Level 4 gets 1%
