@@ -22,9 +22,12 @@ use Carbon\Carbon;
 //     $u->delete();
 // })->daily();
 
-// Schedule::command('roi:generate-weekly')
-//     ->dailyAt('23:59') // Runs at 11:59 PM
-//     ->when(fn () => now()->dayOfWeek !== Carbon::FRIDAY) // Skips Friday
-//     ->appendOutputTo(storage_path('logs/roi_generation.log')); // Log output
+
+
+Schedule::command('roi:generate-weekly')
+->dailyAt('23:59')
+->when(function () {
+    return now()->dayOfWeek !== \Carbon\Carbon::FRIDAY;
+});
 
 Schedule::command('app:update-setting')->twiceDaily(10, 22);
