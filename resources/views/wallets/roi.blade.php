@@ -56,6 +56,7 @@
                             <thead>
                                 <tr class="text-left"> 
                                     <th class="pl-0" style="">S#</th> 
+                                    <th style="min-width: 110px">Day</th>
                                     <th style="min-width: 110px">Month</th>
                                     <th style="min-width: 110px">Percentage</th>
                                     <th style="min-width: 110px">Amount</th> 
@@ -68,6 +69,9 @@
                                     <td>
                                         <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $loop->iteration }}</span>
                                     </td>  
+                                    <td>
+                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $payment->created_at->format('D') }}</a> 
+                                    </td>   
                                     <td>
                                         <a class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $payment->created_at->format('M') }}</a> 
                                     </td>   
