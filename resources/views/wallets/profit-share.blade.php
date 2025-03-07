@@ -117,16 +117,12 @@
                 @csrf
                 <input type="hidden" name="wallet_type" value="profit_share" required>
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5>
-                   
+                    <h5 class="modal-title" id="exampleModalLabel">Transfer to Online Wallet</h5> 
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i aria-hidden="true" class="ki ki-close"></i>
-                    </button>
-                    
-                </div>
-                
-                <div class="modal-body">
-                    
+                    </button> 
+                </div> 
+                <div class="modal-body"> 
                 <p class="text-center text-danger">
                     5% Will charge on every transaction 
                 </p>
@@ -136,7 +132,7 @@
                                 Transfer Amount
                             </label>
                             <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="amount" min="6" step="0.01"
+                             name="amount" min="7" step="0.01"
                              required
                              max="{{ $profits->sum('balance') }}"
                              placeholder="Enter Amount"

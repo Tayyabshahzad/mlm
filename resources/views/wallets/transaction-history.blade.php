@@ -59,12 +59,13 @@
                                     <th style="min-width: 110px">Amount</th>
                                     <th style="min-width: 110px">Charge</th> 
                                     <th style="min-width: 120px">Final Transferred</th>
+                                    <th style="min-width: 120px">Status</th>
                                     <th style="min-width: 120px">Description</th>  
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($transactions  as $transaction)
-                                    <tr class="pl-0">
+                                    <tr class="pl-0 @if($transaction->status == 'debit') bg-light-danger @endif" >
                                         <td>
                                             <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $loop->iteration }}</span>
                                         </td>  
@@ -86,6 +87,7 @@
                                         </td>
                                         <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> {{ ucfirst($transaction->charge ) }} </span>    </td>
                                         <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ ucfirst($transaction->final_amount ) }}</span>    </td>
+                                        <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{  ($transaction->status ) }}</span>    </td>
                                         <td>
                                             <span class="text-dark-75 font-weight-bolder d-block font-size-sm" 
                                                   data-desc="{{ $transaction->description }}" 

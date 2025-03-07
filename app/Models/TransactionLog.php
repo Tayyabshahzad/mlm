@@ -13,6 +13,6 @@ class TransactionLog extends Model
         'amount',
         'charge',
         'final_amount',
-        'description' 
+        'description' ,'status'
     ];
 }

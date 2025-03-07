@@ -6,6 +6,7 @@ use App\Models\TransactionLog;
 use App\Models\Wallet;
 use App\Models\WithDrawalequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WalletController extends Controller
 {
@@ -41,7 +42,7 @@ class WalletController extends Controller
     public function transferToOnline(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:6',
+            'amount' => 'required|numeric|min:7',
             'wallet_type' => 'required',
         ]); 
         $userId = auth()->id();  
@@ -82,18 +83,28 @@ class WalletController extends Controller
     
         // Add the transferred amount (after charges) to the online wallet
         $onlineWallet->balance += $finalTransferAmount;
-        $onlineWallet->save();
-    
-        // Log the transaction
-        TransactionLog::create([
-            'user_id' => $userId,
-            'from_wallet_type' => $wallet_type,
-            'to_wallet_type' => 'online',
-            'amount' => $amountToTransfer,
-            'charge' => $chargeAmount,
-            'final_amount' => $finalTransferAmount,
-        ]);
-    
+        $onlineWallet->save(); 
+        $userName = Auth::user()->username;
+        $this->logTransaction( 
+            $userId,
+            'online',
+            $wallet_type,
+            $amountToTransfer,
+            $finalTransferAmount,
+            "You received {$finalTransferAmount} PV to {$userName} via member transfer.",
+            'debit',
+            $chargeAmount
+        ); 
+        $this->logTransaction( 
+            $userId, 
+            $wallet_type,
+            'online',
+            $amountToTransfer,
+            $finalTransferAmount,
+            "You transferred {$finalTransferAmount} PV to {$userName} via member transfer.", 
+            'credit',
+            $chargeAmount
+        ); 
         return redirect()->back()->with('success', "Funds transferred to Online Wallet! Transfer Amount: $amountToTransfer PV, Charge: $chargeAmount PV, Final Transferred: $finalTransferAmount PV");
     }
 
@@ -104,6 +115,20 @@ class WalletController extends Controller
         $transactions = TransactionLog::where('user_id', $userId)->orderBy('created_at','desc')->latest()->paginate(10); 
         return view('wallets.transaction-history', compact('transactions'));
     }
+    private function logTransaction($userId,$toAddress,$fromAddress,$amount, $finalAmount,$description,$status,$chargeAmount)
+    {
+        TransactionLog::create([
+            'user_id' => $userId,
+            'to_wallet_type' => $toAddress,
+            'from_wallet_type' => $fromAddress, 
+            'charge' =>$chargeAmount, 
+            'amount' => $amount, 
+            'final_amount' => $finalAmount,
+            'description' => $description,
+            'status' =>$status
+        ]);
+    }
+
 
 
     

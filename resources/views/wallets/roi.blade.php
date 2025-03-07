@@ -60,7 +60,7 @@
                                     <th style="min-width: 110px">Month</th>
                                     <th style="min-width: 110px">Percentage</th>
                                     <th style="min-width: 110px">Amount</th> 
-                                    <th style="min-width: 120px">Date</th> 
+                                    <th style="min-width: 120px">Date</th>  
                                 </tr>
                             </thead>
                             <tbody>
@@ -124,7 +124,7 @@
                                 Transfer Amount
                             </label>
                             <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="amount" min="6" ma step="0.01"
+                             name="amount" min="7" ma step="0.01"
                              required
                              max="{{ $payments->sum('balance') }}"
                              placeholder="Enter Amount"

@@ -221,11 +221,11 @@
                                 Amount <span class="text-danger">*</span>
                             </label>
                             <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="amount" min="10" step="0.01"
+                             name="amount" min="21" step="0.01"
                              required 
                              placeholder="Enter Amount"
                              >  
-                             <small class="text-danger">Minimum Transfer Amount: 10PV</small> 
+                             <small class="text-danger">Minimum Transfer Amount: 21PV</small> 
                         </div>  
                         
                         <div class="col-lg-12 col-xl-12">

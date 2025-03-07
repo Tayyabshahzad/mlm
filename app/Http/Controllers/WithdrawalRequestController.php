@@ -79,7 +79,7 @@ class WithdrawalRequestController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:10',
+            'amount' => 'required|numeric|min:21',
             'review_notes' => 'string',
             'withdrawal_option' => 'required|in:usdt,bank,cash',
         ]);
@@ -134,7 +134,7 @@ class WithdrawalRequestController extends Controller
     {
         $request->validate([ 
             'amount' => 'required|numeric|min:5',
-            'description' => 'string',
+            'description' => 'required|string',
             'member_account'=> 'required',
             'wallet_type' =>'required|in:member_transfer'
         ]);        
@@ -175,22 +175,15 @@ class WithdrawalRequestController extends Controller
                 'wallet_from' => Auth::id(),
                 'commission_type'=>'Member Transfer'
             ]
-        );
-        
-        $this->logTransaction($sender->id, $request->amount,$finalAmount, "You transferred {$request->amount} PV to {$recipient->username} via member transfer.");
-        $this->logTransaction($recipient->id, $request->amount, $finalAmount, "You received {$finalAmount} PV from {$sender->username} via member transfer.");
+        ); 
 
-        TransactionLog::create([
-            'user_id' => Auth::id(),
-            'from_wallet_type' => 'online',
-            'to_wallet_type' => 'online',
-            'amount' => $request->amount, 
-            'final_amount' => $request->amount,
-            'description' => 'An amount of ' . $request->amount . ' PV has been transferred to ' . $recipient->username . ' via member transfer.'
-        ]);
-       
-       
-        return redirect()->back()->with('success', 'Transfer successful');
+        $this->logTransaction($sender->id,'online','online',$request->amount,$finalAmount, "You transferred {$request->amount} PV to {$recipient->username} via member transfer.");
+
+        $this->logTransaction($recipient->id,'online','online',$request->amount,$finalAmount, "You received {$finalAmount} PV from {$sender->username} via member transfer."); 
+  
+        return redirect()->
+               back()->
+               with('success', "Funds transferred: {$request->amount} PV to {$recipient->username} via member transfer successfully.");
     }
     
 
@@ -289,12 +282,12 @@ class WithdrawalRequestController extends Controller
         }
     }
 
-    private function logTransaction($userId, $amount, $finalAmount,$description)
+    private function logTransaction($userId,$toAddress,$fromAddress,$amount, $finalAmount,$description)
     {
         TransactionLog::create([
             'user_id' => $userId,
-            'from_wallet_type' => 'online',
-            'to_wallet_type' => 'online',
+            'from_wallet_type' => $toAddress,
+            'to_wallet_type' => $fromAddress,
             'charge' =>0, 
             'amount' => $amount, 
             'final_amount' => $finalAmount,
