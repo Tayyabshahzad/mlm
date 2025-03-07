@@ -71,7 +71,8 @@
                                             <form action="{{ route('rental.percentage.update', $week->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('PUT')
-                                                <input type="number" name="percentage" class="rounded-0 form-control d-inline" style="width: 140px;" value="{{ $week->percentage }}" step="0.01" required>
+                                                <input type="number" name="percentage" class="rounded-0 form-control d-inline" 
+                                                style="width: 140px;" value="{{ $week->percentage }}" step="0.001" required>
                                                 <button type="submit" class="rounded-0 btn btn-success btn-sm">Update</button>
                                             </form>
                                         </td> 
