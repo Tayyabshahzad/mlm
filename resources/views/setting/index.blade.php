@@ -113,6 +113,14 @@
                                     </div> 
                                 </div> 
 
+                                <div class="form-group row">
+                                    <label class="col-xl-3 col-lg-3 col-form-label"> Activation Code Amount </label>
+                                    <div class="col-lg-9 col-xl-6  "> 
+                                        <input class="form-control form-control-lg form-control-solid" 
+                                        type="number" name="activation_code" value="{{ old('activation_code', $setting->activation_code ) }}"  />  
+                                    </div> 
+                                </div> 
+
 
                                 <div class="card-toolbar">
                                     <button type="submit" class="btn btn-success mr-2 rounded-0">Update Setting</button> 

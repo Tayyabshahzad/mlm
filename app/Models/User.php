@@ -133,4 +133,9 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         return $this->hasMany(User::class, 'referrer_user_id');
     }
 
+    public function activationCode()
+    {
+        return $this->belongsTo(ActivationCode::class, 'activation_code_id');
+    }
+
 }

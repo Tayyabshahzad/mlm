@@ -16,7 +16,10 @@ use App\Services\PVService;
 use App\Services\WalletService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
-
+use Illuminate\Support\Facades\Auth;
+use App\Models\ActivationCode;
+use App\Models\Setting;
+use App\Models\TransactionLog;
 class UserController extends Controller
 {
     protected $pvService;
@@ -31,7 +34,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search'); 
-        $teamMembers = User::with('team')
+        $teamMembers = User::with('team','activationCode')
             ->where('id', '!=', auth()->user()->id)
             ->when($search, function ($query, $search) {
                 $query->where(function ($query) use ($search) {
@@ -42,7 +45,7 @@ class UserController extends Controller
             })
             ->orderBy('can_login', 'asc')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(20); 
         $totalMembers = User::count();
         $totalActiveMembers = User::where('can_login',true)->count();
         $totalInActiveMembers = User::where('can_login',false)->count();
@@ -132,7 +135,7 @@ class UserController extends Controller
     public function userDetails(Request $request)
     {
         $userId = $request->get('id');
-        $user = User::find($userId);
+        $user = User::with('activationCode')->find($userId);
         if ($user) {
             return response()->json([
                 'success' => true,
@@ -144,6 +147,10 @@ class UserController extends Controller
                     'amount_proof' => $user->getFirstMediaUrl('user_amount_source'),
                     'transaction_id' => $user->transaction_id,
                     'payment_method'=>$user->payment_method,
+                    'activationCode' =>[
+                        'code' => $user->activationCode->code ?? 'NA' ,
+                        'generated_by' => $user->activationCode->generatedBy->name ?? 'NA' 
+                    ]
                 ],
             ]);
         }
@@ -1081,6 +1088,51 @@ private function getAncestorQualificationDate($ancestorId)
     $ancestor = User::find($ancestorId);
     return $ancestor ? $ancestor->qualification_date : now(); // Example column `qualification_date`
 }
+
+public function activationCode(){
+    $user = Auth::user();
+    $setting = Setting::first();
+    $totalBalance =  Wallet::where('wallet_type', 'online')
+    ->where('user_id', Auth::id())
+    ->sum('balance'); 
+    $activationCodes = ActivationCode::with('generatedBy','usedBy')->orderby('id','desc')->get();
+    return view('users.activation-code',compact('user','setting','totalBalance','activationCodes'));
+   
+}
+
+public function updateActivationCode(Request $request)
+{
+    $request->validate([
+        'id' => 'required|exists:activation_codes,id',
+        'admin_approval' => 'required|in:approved,rejected,pending'
+    ]);  
+    $code = ActivationCode::findOrFail($request->id);
+    if ($code->admin_approval === 'approved' && $request->admin_approval !== 'approved') {
+        return response()->json([
+            'message' => 'Status cannot be reverted after approval.'
+        ], 403);
+    } 
+    $code->admin_approval = $request->admin_approval;
+    $code->save();  
+    $this->logTransaction(Auth::id(),'activation_code', 'admin',  0, 0,0,
+        "Admin updated activation code ID {$code->id} & code {$code->code} to status {$code->admin_approval}.",''
+    ); 
+    return response()->json(['message' => 'Status updated successfully']);
+}
+
+private function logTransaction($userId,$toAddress,$fromAddress,$amount, $finalAmount,$description)
+{
+    TransactionLog::create([
+        'user_id' => $userId,
+        'from_wallet_type' => $toAddress,
+        'to_wallet_type' => $fromAddress,
+        'charge' =>0, 
+        'amount' => $amount, 
+        'final_amount' => $finalAmount,
+        'description' => $description, 
+    ]);
+} 
+
 
 
 

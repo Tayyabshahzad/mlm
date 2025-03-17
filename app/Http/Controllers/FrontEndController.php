@@ -242,8 +242,7 @@ class FrontEndController extends Controller
                 'cnic' => 'required|string|max:255',
                 'cnic_front' => 'image|mimes:jpg,jpeg,png|max:2048',
                 'cnic_back' => 'image|mimes:jpg,jpeg,png|max:2048', 
-                'address' => 'required|string|max:255',
-                'bio' => 'required|string|max:255',
+                'address' => 'required|string|max:255', 
             ],
             [
                 'phone.phone' =>'Please provide a valid phone number in the correct format for Pakistan.'

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\{
+    ActivationCodeController,
     ApprovalController,
     Auth\ForgotPasswordController,
     Auth\ResetPasswordController,
@@ -35,7 +36,11 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
     Route::get('/dashboard', [FrontEndController::class, 'dashboard'])->name('dashboard');
     Route::get('/products', [FrontEndController::class, 'buyProduct'])->name('buy.products');
     Route::get('/waiting-for-approval', [ApprovalController::class, 'index'])->name('approval.waiting');
- 
+    Route::get('/activation-code', [ActivationCodeController::class, 'index'])->name('activation.code');
+    Route::post('/generate-code', [ActivationCodeController::class, 'generateCode'])->middleware('auth');
+    Route::delete('/delete-code/{id}', [ActivationCodeController::class, 'destroy']); 
+
+    
     Route::prefix('profile')->group(function () {
         Route::get('/info', [FrontEndController::class, 'profile'])->name('profile.edit');
         Route::get('/account', [FrontEndController::class, 'accountInformation'])->name('account.information');
@@ -91,6 +96,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::put('info/{user}/update', 'userInfoUpdate')->name('user.info.update');
         Route::post('user/delete', 'userDelete')->name('user.delete');
         Route::get('deleted/user', 'deletedUser')->name('deleted.users');
+        Route::get('activation-code','activationCode')->name('user.activation.code');
+        Route::post('/admin/activation-code/update-status','updateActivationCode')
+    ->name('admin.activation-code.update-status');
+
     }); 
     Route::prefix('rental')->controller(UserController::class)->group(function () {
         Route::get('percentage', 'rentalPercentage')->name('rental.percentage');

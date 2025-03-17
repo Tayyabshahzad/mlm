@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivationCode;
 use App\Models\PVTransaction;
 use App\Models\ReferralLink;
 use App\Models\ReferralTree;
 use App\Models\Setting;
+use App\Models\TransactionLog;
 use App\Models\User;
 use App\Models\UserWallet;
 use Illuminate\Auth\Events\Registered;
@@ -19,6 +21,9 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Str;
+use App\Rules\ValidActivationCode;
+use Carbon\Carbon;
+
 class RegisteredUserController extends Controller
 {
     /**
@@ -41,7 +46,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-         
+      
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:' . User::class,
@@ -50,17 +55,22 @@ class RegisteredUserController extends Controller
             'transaction_id' => 'required|max:50|string|unique:' . User::class,
             'phone_number'=>'required|unique:'.User::class,
             'cc' => 'required',
-            'payment_method'=>'required|in:usdt,bank,cash_slip',
+            'payment_method'=>'required|in:usdt,bank,cash_slip,activation_code',
             'referral_link' => [
                 'required',
                 'string',
                 'exists:referral_links,link',
             ],
            'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-
-        ]);  
-       
+            'activation_code' => [
+                'nullable', // Only required if payment method is activation_code
+                new ValidActivationCode($request->payment_method),
+            ],
+        ]);    
         $referralLink = ReferralLink::where('link', $request->referral_link)->where('is_active',true)->first(); 
+        $activationCodeId = null;
+        
+
         if(!$referralLink){
             return redirect()->back()->with('error','The Referral link is expired or invalid ');
         }
@@ -73,7 +83,7 @@ class RegisteredUserController extends Controller
         while (User::where('username', $username)->exists()) {
             $username = $baseUsername.'-'.$count;
             $count++;
-        } 
+        }  
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -84,9 +94,35 @@ class RegisteredUserController extends Controller
             'sponsor_id' => $referralLink->user->id,
             'transaction_id' =>  $request->transaction_id,
             'phone_number' =>$request->cc .$request->phone_number,
-            'payment_method' =>$request->payment_method,
+            'payment_method' =>$request->payment_method, 
             
         ]); 
+        if ($request->payment_method === 'activation_code') {
+            $activationCode = ActivationCode::where('code', $request->activation_code)
+                ->where('admin_approval', 'approved')
+                ->where('status', 'unused')
+                ->first();
+            if ($activationCode) {
+                $activationCodeId = $activationCode->id;
+                $activationCode->update([
+                        'status' => 'used',
+                        'used_by' => $user->id,
+                        'updated_at'=>Carbon::now()
+                ]); 
+            }
+            $user->activation_code_id= $activationCodeId; 
+            $user->save();
+            $this->logTransaction(
+                 $activationCode->generated_by,
+                'activation_code',
+                'activation_code', 
+                 0,0,
+                 "New user '{$user->name}' was created using an activation code.",
+                'debit'
+            );
+            
+        }
+     
         $user->assignRole('member'); 
         ReferralLink::create([
             'user_id' => $user->id,
@@ -188,7 +224,20 @@ class RegisteredUserController extends Controller
         $user->current_pv_balance += $pvAssigned;
         $user->save();
     }
+    private function logTransaction($userId,$toAddress,$fromAddress,$amount, $finalAmount,$description,$status)
+            {
+                TransactionLog::create([
+                    'user_id' => $userId,
+                    'from_wallet_type' => $toAddress,
+                    'to_wallet_type' => $fromAddress,
+                    'charge' =>0, 
+                    'amount' => $amount, 
+                    'final_amount' => $finalAmount,
+                    'description' => $description,
+                    'status' =>$status
+                ]);
+            } 
 
-
+    
 
 }

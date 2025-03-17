@@ -19,8 +19,7 @@
     <!--begin::Global Theme Styles(used by all pages)-->
 
     <link href="{{ asset('assets/css/themes/layout/aside/dark.css') }}" rel="stylesheet" type="text/css" />
-
-
+    <meta name="csrf-token" content="{{ csrf_token() }}"> 
     <meta charset="utf-8" />
     <title> Global Visioners International | @yield('title')</title>
     <link rel="canonical" href="https://keenthemes.com/metronic" />
@@ -373,8 +372,17 @@
                                                 <i class="menu-bullet menu-bullet-line">
                                                     <span></span>
                                                 </i>
-                                                <span class="menu-text">Buy Products</span>
+                                                <span class="menu-text">Buy Products</span> 
+                                            </a>
+                                        </li>
 
+                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('activation.code') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-line">
+                                                    <span></span>
+                                                </i>
+                                                <span class="menu-text">Activation Code</span> 
                                             </a>
                                         </li>
 
@@ -647,6 +655,18 @@
                                                     </span>
                                                 </a>
                                             </li>
+
+                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('user.activation.code') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot">
+                                                    <span></span>
+                                                </i>
+                                                <span class="menu-text">Activation Code</span>
+
+                                            </a>
+                                            </li>
+
 
                                             <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                                 data-menu-toggle="hover">

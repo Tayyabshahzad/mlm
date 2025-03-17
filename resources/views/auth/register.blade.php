@@ -99,8 +99,11 @@
                 <strong class="mr-5"> 
                     <input class="h-auto rounded-md" type="radio" name="payment_method" value="usdt" required onclick="toggleReferralLink('usdt')" /> USDT
                 </strong>
-                <strong>
+                <strong class="mr-5">
                     <input class="h-auto rounded-md" type="radio" name="payment_method" value="cash_slip" required onclick="toggleReferralLink('cash')" /> Cash Slip
+                </strong>
+                <strong>
+                    <input class="h-auto rounded-md" type="radio" name="payment_method" value="activation_code" required onclick="toggleReferralLink('activation_code')" /> Activation Code
                 </strong>
             </p>
         </div>
@@ -108,8 +111,7 @@
         <div class="form-group d-none" id="referral-link-container">
             <label class="font-size-h6 font-weight-bolder text-dark">Scan QR <span class="text-danger">*</span></label>
             <h6 class="text-center text-danger font-weight-bolder">
-                As of {{ \Carbon\Carbon::today()->format('F j, Y') }}, the exchange rate is approximately 01 USD to {{ $setting->usd }} PKR.
-
+                As of {{ \Carbon\Carbon::today()->format('F j, Y') }}, the exchange rate is approximately 01 USD to {{ $setting->usd }} PKR. 
             </h6>
             <img src="{{ asset('assets/custom-images/amount-qr.jpeg') }}" alt="" class=" img-thumbnail"> 
 
@@ -118,24 +120,28 @@
             
                 <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
                     <div class="btn-group " role="group" aria-label="First group" onclick="copyAddressToClipboard()"> 
-                        <div class=" form-control rounded-0" id="walletAddress" style=""> 
-                          
-                            TJaz7ykL6nnpDaVnPYJRNauKXLNtgLUYJP
-                           
+                        <div class=" form-control rounded-0" id="walletAddress" style="">  
+                            TJaz7ykL6nnpDaVnPYJRNauKXLNtgLUYJP 
                        </div>
                        <button type="button" class="ml-2 btn btn-md btn-outline-secondary btn-icon rounded-0"><i class="la la-copy"></i></button>
-                    </div>
-                    
-                </div>
-
-
-                <input class="form-control form-control-solid h-auto rounded-md" type="text" name="referral_link" value="{{ $ref ?? old('referral_link') }}" autocomplete="off" required />
-                @error('referral_link')
-                <div class="text-danger">{{ $message }}</div>
-                @enderror
+                    </div> 
+                </div> 
             </div>
 
 
+        </div>
+
+        <div class="form-group d-none" id="activation-code-container">
+            <label class="font-size-h6 font-weight-bolder text-dark" for="activation_code">Activation Code <span class="text-danger">*</span></label> 
+            <div class="form-group mt-4">  
+                <input class="form-control form-control-solid h-auto rounded-md"
+                id="activation_code"
+                type="text" name="activation_code" value="{{ old('activation_code') }}"  
+                autocomplete="off"/>
+                @error('activation_code')
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
+            </div> 
         </div>
 
         
@@ -203,13 +209,36 @@
 <script>
     
     function toggleReferralLink(paymentMethod) {
-        const referralLinkContainer = document.getElementById('referral-link-container');
-        if (paymentMethod === 'usdt') {
-            referralLinkContainer.classList.remove('d-none');
-        } else {
-            referralLinkContainer.classList.add('d-none');
-        }
+    const referralLinkContainer = document.getElementById('referral-link-container');
+    const activationCodeContainer = document.getElementById('activation-code-container');
+    const activationCodeInput = document.getElementById('activation_code');
+
+    if (paymentMethod === 'usdt') {
+        referralLinkContainer.classList.remove('d-none');
+        activationCodeContainer.classList.add('d-none');
+        activationCodeInput.removeAttribute('required'); // Remove required
+    } else if (paymentMethod === 'activation_code') {
+        activationCodeContainer.classList.remove('d-none');
+        referralLinkContainer.classList.add('d-none');
+        activationCodeInput.setAttribute('required', 'required'); // Add required
+    } else {
+        referralLinkContainer.classList.add('d-none');
+        activationCodeContainer.classList.add('d-none');
+        activationCodeInput.removeAttribute('required'); // Remove required
     }
+    }
+
+    // Run the function on page load in case of old values
+    document.addEventListener("DOMContentLoaded", function () {
+        const paymentMethod = document.getElementById('payment_method').value;
+        toggleReferralLink(paymentMethod);
+    });
+
+    // Attach event listener to detect changes
+    document.getElementById('payment_method').addEventListener('change', function () {
+        toggleReferralLink(this.value);
+    });
+
 
     
 </script>
