@@ -99,6 +99,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('activation-code','activationCode')->name('user.activation.code');
         Route::post('/admin/activation-code/update-status','updateActivationCode')
     ->name('admin.activation-code.update-status');
+    Route::get('download/contacts', 'downloadContacts')->name('download.contacts');
 
     }); 
     Route::prefix('rental')->controller(UserController::class)->group(function () {

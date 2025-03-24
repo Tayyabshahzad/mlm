@@ -68,6 +68,10 @@
                                             <button type="button" class="rounded-0 mr-3 mb-3 btn btn-warning">Inactive Members : {{ $totalInActiveMembers }}</button>
                                             <button type="button" class="rounded-0 mr-3 mb-3 btn btn-danger">Blocked Members : {{ $totalBlockedMembers }}</button>
                                             <button type="button" class="rounded-0 mr-3 mb-3 btn btn-info">Freeze Accounts : {{ $totalfreezeMembers }}</button>
+                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-success" data-toggle="modal" data-target="#downloadModal">
+                                                Download Contact Details
+                                            </button>
+                                            
                                         </div>
  
                                         <form method="GET" action="{{ route('users.index') }}" class="mb-4">
@@ -263,7 +267,37 @@
             </form>
         </div>
     </div>
-</div> 
+</div>  
+
+<!-- Modal for Date Selection -->
+<div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Date Range</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ route('download.contacts') }}" method="GET">
+                <div class="modal-body">
+                    <label for="start_date">Start Date</label>
+                    <input type="date" name="start_date" id="start_date" class="form-control" required>
+
+                    <label for="end_date" class="mt-3">End Date</label>
+                    <input type="date" name="end_date" id="end_date" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Download</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
  
 @endsection
 @section('page_js')

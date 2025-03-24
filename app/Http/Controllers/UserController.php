@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\ActivationCode;
 use App\Models\Setting;
 use App\Models\TransactionLog;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ContactsExport;
 class UserController extends Controller
 {
     protected $pvService;
@@ -520,12 +522,20 @@ class UserController extends Controller
         // Count the number of users directly sponsored by this user
         return User::where('blocked',false)->where('sponsor_id', $userId)->count();
     } 
-    public function roiPayments()
+    public function roiPayments(Request $request)
     {
-        $users = User::where('blocked',false)->where('can_login', true)->get();
-        $payments = ROITransaction::orderby('created_at','desc')->paginate(20);
+        $query = ROITransaction::query();
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('created_at', [
+                \Carbon\Carbon::parse($request->start_date)->startOfDay(),
+                \Carbon\Carbon::parse($request->end_date)->endOfDay(),
+            ]);
+        }
+        $payments = $query->orderBy('created_at', 'desc')->paginate(20);
+        $users = User::where('blocked', false)->where('can_login', true)->get();
         return view('users.roi-payments', compact('users', 'payments'));
     }
+    
 
     public function submitRoiPayments(Request $request)
     {
@@ -1134,6 +1144,16 @@ private function logTransaction($userId,$toAddress,$fromAddress,$amount, $finalA
 } 
 
 
+
+public function downloadContacts(Request $request)
+{
+    $request->validate([
+        'start_date' => 'required|date',
+        'end_date' => 'required|date|after_or_equal:start_date',
+    ]);
+
+    return Excel::download(new ContactsExport($request->start_date, $request->end_date), "Contacts-info-from ".$request->start_date ."-".$request->end_date.".xlsx");
+}
 
 
 

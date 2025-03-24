@@ -43,9 +43,31 @@
                                 class="mr-3 rounded-0 btn btn-danger font-weight-bolder font-size-sm">Manual ROI</a>
                         </h3>
                         <div class="card-toolbar">
-                            <a href="{{ route('run-schedule') }}"
-                                class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Generate ROI s</a>
+                            {{-- <a href="{{ route('run-schedule') }}"
+                                class="mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Generate ROI s</a> --}}
                         </div>
+
+                        <form method="GET" action="{{ route('roi.payments') }}">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="start_date">Start Date</label>
+                                    <input type="date" name="start_date" id="start_date" class="form-control rounded-0"
+                                        value="{{ request('start_date') }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="end_date">End Date</label>
+                                    <input type="date" name="end_date" id="end_date" class="form-control rounded-0"
+                                        value="{{ request('end_date') }}">
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary rounded-0">Filter</button>
+                                    <a href="{{ route('roi.payments') }}" class="btn btn-secondary ml-2 rounded-0">Reset</a>
+                                </div>
+                            </div>
+                        </form>
+
+                        
+
                     </div>
                     <!--end::Header-->
                     <!--begin::Body-->
@@ -61,7 +83,8 @@
                                         <th style="min-width: 110px">Amount</th>
                                         <th style="min-width: 120px">Percentage</th>
                                         <th style="min-width: 120px">Amount Remaining</th>
-                                        <th style="min-width: 120px">Date</th> 
+                                        <th style="min-width: 120px"> Day</th>
+                                        <th style="min-width: 120px">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -73,9 +96,9 @@
                                             <td style="min-width: 110px">{{ $payment->amount }} </td>
                                             <td style="min-width: 120px">{{ $payment->percentage }}</td>
                                             <td style="min-width: 120px">{{ 200 - $payment->user->roi_wallet_balance }}</td>
-                                            <td style="min-width: 120px">
-                                                {{ $payment->created_at }}
-                                            </td>
+                                            <td style="min-width: 120px"> {{ \Carbon\Carbon::parse($payment->created_at)->format('D') }} </td>
+                                            <td style="min-width: 120px"> {{ \Carbon\Carbon::parse($payment->created_at)->format('d-m-Y h:i A') }} </td>
+
                                             {{-- <td style="min-width: 120px">
                                                 {{ $payment->user->roi_end_date ? $payment->user->roi_end_date : '--' }}
                                             </td> --}}
