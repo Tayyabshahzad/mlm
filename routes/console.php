@@ -53,3 +53,5 @@ Schedule::command('roi:generate-weekly')
 ->onFailure(function () {
     Log::error('roi:generate-weekly command failed on: ' . now());
 });
+
+Schedule::command('roi:test-weekly')->everyMinute();
