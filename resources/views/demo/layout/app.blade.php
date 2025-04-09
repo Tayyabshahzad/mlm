@@ -81,6 +81,26 @@
         .bg-light {
             background-color: #5AB8B0 !important
         }
+
+  .announcement {
+    background-color: #d4edda;
+    color: #155724;
+    border-radius: 10px;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    max-width: 600px;
+    margin: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .announcement p {
+    margin: 10px 0;
+  }
+
+  .announcement strong {
+    font-weight: bold;
+  } 
     </style>
 
 

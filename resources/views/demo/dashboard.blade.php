@@ -259,20 +259,71 @@
             </div>
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="card card-custom card-stretch gutter-b">
-                        <div class="card-body" style=""> 
-                            <div class="card card-custom  " style="background-color: rgb(33 245 108);">
-                                <div class="card-body rounded-0 p-0  " style="background-image: url({{ asset('assets/custom-images/announcement.svg') }});background-size:40px;background-repeat:no-repeat;background-position:bottom left">
-                                    <div class="  w-auto  p-10 p-md-20">
-                                        <h2 class="font-weight-bolder text-dark text-center" style="line-height:25px">   
-                                            Ramadan & Eidi Package Offer for All Members
-                                            <br>You will receive a 10% direct bonus instead of 5% from March 1st to April 5th, 2025.
-                                        </h2>  
-                                    </div> 
-                                </div>
-                            </div> 
-                        </div>
-                    </div>
+
+                    <div style="
+  background: linear-gradient(135deg, #00ff95, #00cfff);
+  color: #ffffff;
+  padding: 25px 30px;
+  border-radius: 14px;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
+  margin: 40px auto;
+  position: relative;
+  overflow: hidden; 
+  min-width: 280px;
+">
+
+  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;">
+    <div style="font-size: 26px; animation: bounce 1.5s infinite;">
+      📣
+    </div>
+    <div style="
+      font-size: 20px;
+      font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    ">
+      Promotion Update – <span style="text-decoration: underline; color: #fffde7;">April 6</span>
+    </div>
+  </div>
+
+  <p style="margin: 12px 0 5px 36px; font-size: 16px; color: rgba(255,255,255,0.9);">
+    Area Heads will now be promoted with 
+    <strong style="color: #ffffff;">7 direct members</strong> instead of 10.
+  </p>
+
+  <p style="margin: 0 0 10px 36px; font-size: 16px; color: rgba(255,255,255,0.85);">
+    Plus, a <strong style="color: #ffffff;">2% additional incentive</strong> will apply! 🎁
+  </p>
+
+  <a href="#" style="
+    display: inline-block;
+    margin-left: 36px;
+    margin-top: 10px;
+    color: #fff9c4;
+    text-decoration: underline;
+    font-size: 14px;
+  ">Learn more</a>
+
+  <style>
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    @media (max-width: 420px) {
+      div[style*='font-size: 20px'] {
+        font-size: 16px !important;
+      }
+    }
+  </style>
+</div>
+
+                  
+
+                   
                 </div> 
                 <div class="col-lg-12">
                     <!--begin::Card-->
