@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Models\TransactionLog;
 use App\Models\Wallet;
 use App\Models\WithDrawalequest;
@@ -14,7 +15,8 @@ class WalletController extends Controller
         $onlineWallets = Wallet::where('wallet_type','online')->where('user_id',auth()->user()->id)->get();
         $withDrawsRequests = WithDrawalequest::where('user_id',auth()->user()->id)->orderby('id','desc')->get();
         $walletSum = Wallet::where('user_id',auth()->user()->id)->sum('balance');
-        return view('wallets.online',compact('onlineWallets','withDrawsRequests','walletSum')); 
+        $setting = Setting::first();
+        return view('wallets.online',compact('onlineWallets','withDrawsRequests','walletSum','setting')); 
     }
 
     public function directIndirect(){ 

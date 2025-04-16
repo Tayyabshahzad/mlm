@@ -41,17 +41,24 @@
                 @if(!Auth::user()->freez_wallet)
                 <div class="card card-custom card-stretch gutter-b ">  
                     <div class="card-header border-0"> 
-                        @if($walletSum >= 700)
-                            <div class="  align-items-center align-items-center justify-content-center pt-5" >
-                                <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
-                                <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
-                            </div>
-                        @else 
-                            <div class="  align-items-center justify-content-center pt-5">
-                                <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
-                                <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a>    
-                                
-                            </div> 
+                        @if($setting->withdraw_block == false)
+                            @if($walletSum >= 700)
+                                <div class="  align-items-center align-items-center justify-content-center pt-5" >
+                                    <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
+                                    <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                                </div>
+                            @else 
+                                <div class="  align-items-center justify-content-center pt-5">
+
+                                    <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
+                                    <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a>    
+                                    
+                                </div> 
+                            @endif
+                        @else
+                        <div class="  align-items-center justify-content-center pt-5"> 
+                            <a href="#" class=" blocked mb-5 mr-3 rounded-0 btn btn-danger font-weight-bolder font-size-sm">Withdraw Has Been Block </a> 
+                        </div> 
                         @endif
                     </div> 
                 </div>

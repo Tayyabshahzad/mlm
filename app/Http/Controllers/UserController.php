@@ -152,7 +152,8 @@ class UserController extends Controller
                     'activationCode' =>[
                         'code' => $user->activationCode->code ?? 'NA' ,
                         'generated_by' => $user->activationCode->generatedBy->name ?? 'NA' 
-                    ]
+                    ],
+                    'created_at'=>$user->created_at,
                 ],
             ]);
         }

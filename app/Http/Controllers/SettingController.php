@@ -18,7 +18,8 @@ class SettingController extends Controller
             'site_name' => 'required|string|max:255',
             'pv_amount' => 'required|numeric',
             'description' => 'required|string',
-            'activation_code' => 'required|numeric'
+            'activation_code' => 'required|numeric',
+            'withdraw_block' => 'required|boolean',
         ]);
 
         $setting = Setting::find($request->id);
@@ -41,7 +42,8 @@ class SettingController extends Controller
             'pv_amount' => $request->pv_amount,
             'description' => $request->description,
             'usd' => $usdToPkrRate,
-            'activation_code' =>$request->activation_code
+            'activation_code' =>$request->activation_code,
+            'withdraw_block' =>$request->withdraw_block
         ]);  
 
         return redirect()->back()->with('success', 'Settings updated successfully.');

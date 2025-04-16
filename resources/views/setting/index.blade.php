@@ -121,6 +121,15 @@
                                     </div> 
                                 </div> 
 
+                                <div class="form-group row">
+                                    <label class="col-xl-3 col-lg-3 col-form-label">Withdraw Block</label>
+                                    <div class="col-lg-9 col-xl-6">
+                                        <input type="radio" name="withdraw_block" value="1" {{ $setting->withdraw_block == 1 ? 'checked' : '' }}> Yes &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <input type="radio" name="withdraw_block" value="0" {{ $setting->withdraw_block == 0 ? 'checked' : '' }}> No
+                                    </div>
+                                </div>
+                                
+
 
                                 <div class="card-toolbar">
                                     <button type="submit" class="btn btn-success mr-2 rounded-0">Update Setting</button> 
