@@ -33,7 +33,7 @@ class GenerateWeeklyROI extends Command
     {
         $users = User::where('blocked',false)->where('can_login', true)->where('freez_wallet',false)->get(); // Fetch all users 
         foreach ($users as $user) {
-            $walletTotal = Wallet::where('user_id', $user->id)->sum('balance');
+            $walletTotal = Wallet::where('user_id', $user->id)->sum('total_amount');
             if ($walletTotal >= 200 ) {
                 continue;
             } 
