@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\{Route, Auth, Artisan};
 use App\Http\Middleware\{CheckUserStatus, CheckBlockedUser};
 
 // Public Routes
-// Look Busy Do noting new ipdate
+// Look Busy Do noting new ipdate/////
 Route::get('log-viewer', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index')->middleware('auth');
 
 Route::get('/', [FrontEndController::class, 'index'])->name('index');
