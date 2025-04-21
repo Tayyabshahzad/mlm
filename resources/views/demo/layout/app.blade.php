@@ -447,6 +447,17 @@
                                                 <span class="menu-text"> Online Wallet </span>
                                             </a>
                                         </li>
+
+                                        <li class="menu-item" aria-haspopup="true">
+                                            <a href="{{ route('wallets.investment') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot">
+                                                    <span></span>
+                                                </i>
+                                                <span class="menu-text"> Investment Wallet </span>
+                                            </a>
+                                        </li>
+
+
                                         <li class="menu-item" aria-haspopup="true">
                                             <a href="{{ route('wallets.direct.indirect') }}" class="menu-link">
                                                 <i class="menu-bullet menu-bullet-dot">

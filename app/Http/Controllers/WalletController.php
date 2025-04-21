@@ -8,9 +8,19 @@ use App\Models\Wallet;
 use App\Models\WithDrawalequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB; 
 
 class WalletController extends Controller
 {
+
+    protected $setting;
+    public function __construct()
+    {
+        $this->setting = Setting::first();
+        view()->share('setting', $this->setting); // Share with all views
+    }
+
+
     public function online(){ 
         $onlineWallets = Wallet::where('wallet_type','online')->where('user_id',auth()->user()->id)->get();
         $withDrawsRequests = WithDrawalequest::where('user_id',auth()->user()->id)->orderby('id','desc')->get();
@@ -20,23 +30,26 @@ class WalletController extends Controller
     }
 
     public function directIndirect(){ 
-        $wallets = Wallet::where('wallet_type','direct_indirect')->where('user_id',auth()->user()->id)->orderBy('level','asc')->get();
+        $wallets = Wallet::where('wallet_type','direct_indirect')->where('user_id',auth()->user()->id)
+        ->orderBy('id', 'desc')
+        ->orderBy('level','asc')
+        ->get();
         return view('wallets.direct-indirect',compact('wallets')); 
     }
 
     public function rewards(){ 
-        $rewards = Wallet::where('wallet_type','reward')->where('user_id',auth()->user()->id)->get();
-        return view('wallets.reward',compact('rewards')); 
+        $wallets = Wallet::where('wallet_type','reward')->where('user_id',auth()->user()->id)->get();
+        return view('wallets.reward',compact('wallets')); 
     }
 
     public function ROI(){ 
-        $payments = Wallet::where('wallet_type','roi')->where('user_id',auth()->user()->id)->get();
-        return view('wallets.roi',compact('payments')); 
+        $wallets = Wallet::where('wallet_type','roi')->where('user_id',auth()->user()->id)->get();
+        return view('wallets.roi',compact('wallets')); 
     }
 
     public function profitShare(){ 
-        $profits = Wallet::where('wallet_type','profit_share')->where('user_id',auth()->user()->id)->get();
-        return view('wallets.profit-share',compact('profits')); 
+        $wallets = Wallet::where('wallet_type','profit_share')->where('user_id',auth()->user()->id)->get();
+        return view('wallets.profit-share',compact('wallets')); 
     }
     public function rank(){ 
         return view('wallets.rank'); 
@@ -93,7 +106,7 @@ class WalletController extends Controller
             $wallet_type,
             $amountToTransfer,
             $finalTransferAmount,
-            "You received {$finalTransferAmount} PV to {$userName} via member transfer.",
+            "You transferred {$amountToTransfer} PV (5% charge applied) from your {$wallet_type} Wallet to your Online Wallet via self-transfer.",  
             'debit',
             $chargeAmount
         ); 
@@ -103,13 +116,18 @@ class WalletController extends Controller
             'online',
             $amountToTransfer,
             $finalTransferAmount,
-            "You transferred {$finalTransferAmount} PV to {$userName} via member transfer.", 
+            "You have received {$finalTransferAmount} PV in your Online Wallet from your {$wallet_type} Wallet via online transfer.", 
             'credit',
             $chargeAmount
         ); 
         return redirect()->back()->with('success', "Funds transferred to Online Wallet! Transfer Amount: $amountToTransfer PV, Charge: $chargeAmount PV, Final Transferred: $finalTransferAmount PV");
     }
 
+    public function investment(){  
+        return view('wallets.investment'); 
+    }
+
+    
 
     public function showTransactionHistory()
     {
@@ -130,6 +148,25 @@ class WalletController extends Controller
             'status' =>$status
         ]);
     }
+
+
+    public function accountTopUp(Request $request)
+    {
+        $userId = auth()->id();  
+        $wallets = Wallet::where('user_id', $userId)
+            ->where('wallet_type', 'online')
+            ->get(); 
+        $totalBalance = $wallets->sum('balance'); 
+        $request->validate([
+            'topUp_amount' => ['required', 'numeric', "max:$totalBalance"],
+            'topUp_description' => 'required',
+        ]); 
+        $amountToTransfer = $request->input('topUp_amount');  
+        $finalTransferAmount = $amountToTransfer; 
+        DB::beginTransaction(); 
+        
+    }
+
 
 
 

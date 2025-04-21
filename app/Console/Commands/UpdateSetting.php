@@ -26,22 +26,36 @@ class UpdateSetting extends Command
 
     /**
      * Execute the console command.
-     */
+     */ 
+
     public function handle()
     {
-        $setting = Setting::first();
-        $response = Http::withOptions([
-            'verify' => false, // Disables SSL verification
-        ])->get('https://api.currencyfreaks.com/v2.0/rates/latest', [
-            'apikey' => '911275d23aa24a51a37d66ed3eae27d2',
-        ]);  
-        if ($response->successful()) { 
-            $data = $response->json(); 
-            $usdToPkrRate = $data['rates']['PKR'];    
-        }   
-        $setting->update([ 
-            'usd' => $usdToPkrRate,  
-            'updated_at' => Carbon::now()
-        ]);    
+        try {
+            $setting = Setting::first(); 
+            $response = Http::withOptions([
+                'verify' => false,
+            ])->get('https://api.coingecko.com/api/v3/simple/price', [
+                'ids' => 'tether',
+                'vs_currencies' => 'pkr',
+            ]); 
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $usdtToPkrRate = $data['tether']['pkr']; 
+                $setting->update([
+                    'usd' => $usdtToPkrRate,
+                    'updated_at' => Carbon::now()
+                ]);
+                $this->info('USDT rate updated to ' . $usdtToPkrRate);
+            } else {
+                $this->error('CoinGecko API failed. Keeping existing USDT rate.');
+            }
+        } catch (\Exception $e) {
+            $this->error('Error in USDT rate update: ' . $e->getMessage());
+        }
     }
+
+
+
+    
 }

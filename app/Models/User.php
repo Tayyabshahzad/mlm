@@ -33,7 +33,8 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         'phone_number',
         'payment_method',
         'agreement_sent',
-        'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id','freez_wallet','blocked'
+        'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id','freez_wallet','blocked','usdt_rate','transferred_amount','converted_usdt_amount','fee_deducted','net_invested_usdt_amount','negative_pv','roi_eligible_investment_amount'
+
     ]; 
     /**
      * The attributes that should be hidden for serialization.

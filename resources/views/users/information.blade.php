@@ -198,6 +198,21 @@
                                                 </div>
                                                 
                                             </div>
+
+                                            <div class="form-group row">
+                                                <label class="col-form-label col-3 text-lg-left text-left">Negative Points</label>
+                                                <div class="col-9">
+                                                    <input class="form-control form-control-lg form-control-solid"
+                                                    type="number" 
+                                                    name="negative_pv" value="{{ old('negative_pv', $user->negative_pv ?? 0) }}" />
+                                                    @error('negative_pv')
+                                                    <div class="text-danger mt-2">
+                                                        <small>{{ $message }}</small>
+                                                    </div>
+                                                @enderror
+                                                </div>
+                                                
+                                            </div>
                                         </div>
                                         <div class="col-xl-6 ">
                                             <div class="row">

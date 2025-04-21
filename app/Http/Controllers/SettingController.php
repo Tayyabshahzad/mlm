@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Artisan;
 class SettingController extends Controller
 {
     public function index(){
         $setting = Setting::first();
-        return view('setting.index',compact('setting'));
+        $walletSettings = json_decode($setting->blocked_wallets, true);
+        return view('setting.index',compact('setting','walletSettings'));
     }
 
     public function update(Request $request)
@@ -20,32 +22,33 @@ class SettingController extends Controller
             'description' => 'required|string',
             'activation_code' => 'required|numeric',
             'withdraw_block' => 'required|boolean',
+            'registration_fee' => 'required|numeric',
+            'block_wallet' => 'nullable|array',
         ]);
 
         $setting = Setting::find($request->id);
         if (!$setting) {
             return redirect()->back()->with('error', 'Setting not found.');
-        }  
-        $response = Http::withOptions([
-            'verify' => false, // Disables SSL verification
-        ])->get('https://api.currencyfreaks.com/v2.0/rates/latest', [
-            'apikey' => '911275d23aa24a51a37d66ed3eae27d2',
-        ]); 
-        
-        if ($response->successful()) { 
-            $data = $response->json(); 
-            $usdToPkrRate = $data['rates']['PKR'];    
-        }  
-
+        }   
+        $blockWallets = $request->input('block_wallet', []); 
         $setting->update([
             'site_name' => $request->site_name,
             'pv_amount' => $request->pv_amount,
-            'description' => $request->description,
-            'usd' => $usdToPkrRate,
+            'description' => $request->description, 
             'activation_code' =>$request->activation_code,
-            'withdraw_block' =>$request->withdraw_block
+            'withdraw_block' =>$request->withdraw_block,
+            'registration_fee' =>$request->registration_fee,
+            'blocked_wallets' => json_encode($blockWallets), 
         ]);  
 
         return redirect()->back()->with('success', 'Settings updated successfully.');
     }
+
+    public function updateUSDT(){
+        Artisan::call('app:update-setting');
+        $output = Artisan::output();
+        return back()->with('status', $output);
+    }
+
+    
 }

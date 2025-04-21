@@ -149,6 +149,15 @@ class UserController extends Controller
                     'amount_proof' => $user->getFirstMediaUrl('user_amount_source'),
                     'transaction_id' => $user->transaction_id,
                     'payment_method'=>$user->payment_method,
+                    'transferred_amount'=>$user->transferred_amount,
+                    'converted_usdt_amount'=>$user->converted_usdt_amount,
+                    'fee_deducted'=>$user->fee_deducted,
+                    'net_invested_usdt_amount'=>$user->net_invested_usdt_amount, 
+                    'usdt_rate'=>$user->usdt_rate, 
+                    'referBy'=> [
+                        'username'=>ucfirst($user->parent->username),
+                        'id'=>$user->parent->id,
+                    ], 
                     'activationCode' =>[
                         'code' => $user->activationCode->code ?? 'NA' ,
                         'generated_by' => $user->activationCode->generatedBy->name ?? 'NA' 
@@ -786,17 +795,18 @@ class UserController extends Controller
     public function userInfoUpdate(Request $request){
        
         $user = User::find($request->id);
-       
+      
         $request->validate([
             'password' => 'nullable|confirmed|min:8', // Password is optional but must match confirmation
             'phone' => 'nullable',
             'freez_wallet' => 'required|boolean', 
             'blocked'=>'boolean',
             'reason' => 'required_if:blocked,1|max:255',
-            'user_id' =>'required'
+            'user_id' =>'required',
+            'negative_pv' => 'numeric|min:0'
         ],[
             'reason.required_if' => 'The reason is required when the account is blocked.',
-        ]);
+        ]); 
         $user = User::find($request->user_id);
         if (!$user) {
             return redirect()->back()->with('error', 'User not found.');
@@ -850,10 +860,12 @@ class UserController extends Controller
             $user->phone_number = $request['phone'];
         }
         //Settings 
+        
         $user->freez_wallet = $request->freez_wallet; 
         $user->blocked = $request->blocked;
         $user->reason = $request->reason;
-        $user->save();
+        $user->negative_pv = $request->negative_pv;
+        $user->save(); 
         $profile->save();  
         return redirect()->back()->with('success', 'Profile updated successfully');
     }

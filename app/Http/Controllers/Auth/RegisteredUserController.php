@@ -22,8 +22,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Str;
 use App\Rules\ValidActivationCode;
-use Carbon\Carbon;
-
+use Carbon\Carbon; 
 class RegisteredUserController extends Controller
 {
     /**
@@ -44,101 +43,126 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
+     
     public function store(Request $request): RedirectResponse
     {
-      
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:' . User::class,
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'transaction_id' => 'required|max:50|string|unique:' . User::class,
-            'phone_number'=>'required|unique:'.User::class,
+            'phone_number' => 'required|unique:' . User::class,
             'cc' => 'required',
-            'payment_method'=>'required|in:usdt,bank,cash_slip,activation_code',
+            'payment_method' => 'required|in:usdt,bank,cash_slip,activation_code',
             'referral_link' => [
                 'required',
                 'string',
                 'exists:referral_links,link',
             ],
-           'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'activation_code' => [
-                'nullable', // Only required if payment method is activation_code
+                'nullable',
                 new ValidActivationCode($request->payment_method),
             ],
-        ]);    
-        $referralLink = ReferralLink::where('link', $request->referral_link)->where('is_active',true)->first(); 
-        $activationCodeId = null;
-        
+            'transferred_amount' => 'required|numeric',
+            'usdt_amount' => 'required|numeric',
+        ]);
 
-        if(!$referralLink){
-            return redirect()->back()->with('error','The Referral link is expired or invalid ');
-        }
-        $baseUsername = Str::slug($request->username);
-        if(!$baseUsername){
-            return redirect()->back()->with('error','Invalid Username format ');
+        $fee = Setting::first()->registration_fee;
+        $netAmount = $request->usdt_amount - $fee;
+        if ($netAmount <= 0) {  
+            return redirect()->back()->withInput()->with('error', 'Insufficient USDT amount after fee deduction.');
         } 
-        $username = $baseUsername;
-        $count = 1; 
-        while (User::where('username', $username)->exists()) {
-            $username = $baseUsername.'-'.$count;
-            $count++;
-        }  
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'username' => $username,
-            'is_active' => true,
-            'phone_verified' => true,
-            'sponsor_id' => $referralLink->user->id,
-            'transaction_id' =>  $request->transaction_id,
-            'phone_number' =>$request->cc .$request->phone_number,
-            'payment_method' =>$request->payment_method, 
-            
-        ]); 
-        if ($request->payment_method === 'activation_code') {
-            $activationCode = ActivationCode::where('code', $request->activation_code)
-                ->where('admin_approval', 'approved')
-                ->where('status', 'unused')
-                ->first();
-            if ($activationCode) {
-                $activationCodeId = $activationCode->id;
-                $activationCode->update([
-                        'status' => 'used',
-                        'used_by' => $user->id,
-                        'updated_at'=>Carbon::now()
-                ]); 
+        DB::beginTransaction();
+
+        try {
+            $referralLink = ReferralLink::where('link', $request->referral_link)
+                ->where('is_active', true)
+                ->firstOrFail();
+
+            $baseUsername = Str::slug($request->username);
+            if (!$baseUsername) {
+                return redirect()->back()->with('error', 'Invalid Username format');
             }
-            $user->activation_code_id= $activationCodeId; 
-            $user->save();
-            $this->logTransaction(
-                 $activationCode->generated_by,
-                'activation_code',
-                'activation_code', 
-                 0,0,
-                 "New user '{$user->name}' was created using an activation code.",
-                'debit'
-            );
-            
+
+            $username = $baseUsername;
+            $count = 1;
+            while (User::where('username', $username)->exists()) {
+                $username = $baseUsername . '-' . $count;
+                $count++;
+            }
+
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'username' => $username,
+                'is_active' => true,
+                'phone_verified' => true,
+                'sponsor_id' => $referralLink->user->id,
+                'transaction_id' => $request->transaction_id,
+                'phone_number' => $request->cc . $request->phone_number,
+                'payment_method' => $request->payment_method,
+                'usdt_rate' => Setting::first()->usd,  
+                'transferred_amount' => $request->transferred_amount,
+                'converted_usdt_amount' => $request->usdt_amount,
+                'fee_deducted' => Setting::first()->registration_fee, 
+                'net_invested_usdt_amount' =>  ($request->usdt_amount - Setting::first()->registration_fee),  
+            ]);
+
+            if ($request->payment_method === 'activation_code') {
+                $activationCode = ActivationCode::where('code', $request->activation_code)
+                    ->where('admin_approval', 'approved')
+                    ->where('status', 'unused')
+                    ->firstOrFail();
+
+                $activationCode->update([
+                    'status' => 'used',
+                    'used_by' => $user->id,
+                    'updated_at' => now()
+                ]);
+
+                $user->activation_code_id = $activationCode->id;
+                $user->save();
+
+                $this->logTransaction(
+                    $activationCode->generated_by,
+                    'activation_code',
+                    'activation_code',
+                    0, 0,
+                    "New user '{$user->name}' was created using an activation code.",
+                    'debit'
+                );
+            }
+
+            $user->assignRole('member');
+
+            ReferralLink::create([
+                'user_id' => $user->id,
+                'link' => $username,
+            ]);
+
+            $this->registerUser($referralLink->user_id, $user->id);
+
+            if ($request->hasFile('amount_src')) {
+                $user->addMedia($request->file('amount_src'))
+                    ->toMediaCollection('user_amount_source');
+            }
+
+            DB::commit();
+
+            Auth::login($user);
+
+            return redirect(route('dashboard', absolute: false));
+
+        } catch (\Throwable $e) { 
+            DB::rollBack();
+            \Log::error('User registration failed: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Something went wrong! ' . $e->getMessage());
         }
-     
-        $user->assignRole('member'); 
-        ReferralLink::create([
-            'user_id' => $user->id,
-            'link' => $username,
-        ]); 
-        // Register user in referral tree
-        $this->registerUser($referralLink->user_id, $user->id); 
-        if ($request->hasFile('amount_src')) {
-            $user->addMedia($request->file('amount_src'))
-                ->toMediaCollection('user_amount_source');
-        }
-    
-        Auth::login($user);
-    
-        return redirect(route('dashboard', absolute: false));
     }
+
      
 
     function registerUser($parentId, $newUserId) {

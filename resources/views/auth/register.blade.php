@@ -6,8 +6,16 @@
 
     <div class="pb-13 pt-lg-0 pt-5 text-center">
 		<img src="{{ asset('assets/custom-images/gvi-text.png') }}" class="max-h-70px" style="width: 90%" alt="" />
-	</div>
-
+	</div> 
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
     
     <form class="form" method="post" action="{{ route('register.user') }}" id=" " enctype="multipart/form-data">
         @csrf
@@ -126,11 +134,8 @@
                        <button type="button" class="ml-2 btn btn-md btn-outline-secondary btn-icon rounded-0"><i class="la la-copy"></i></button>
                     </div> 
                 </div> 
-            </div>
-
-
-        </div>
-
+            </div> 
+        </div> 
         <div class="form-group d-none" id="activation-code-container">
             <label class="font-size-h6 font-weight-bolder text-dark" for="activation_code">Activation Code <span class="text-danger">*</span></label> 
             <div class="form-group mt-4">  
@@ -142,13 +147,7 @@
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
             </div> 
-        </div>
-
-        
-
-
-
-        <!-- Referral Link Field -->
+        </div> 
 
         <div class="form-group d-none">
             <label class="font-size-h6 font-weight-bolder text-dark">Scan QR <span class="text-danger">*</span></label>
@@ -158,21 +157,34 @@
             @error('referral_link')
             <div class="text-danger">{{ $message }}</div>
             @enderror
-        </div>
-
-
-        
-
+        </div> 
         <div class="form-group">
             <label class="font-size-h6 font-weight-bolder text-dark">Transaction ID <span class="text-danger">*</span></label>
             <input class="form-control form-control-solid h-auto rounded-md" type="text" name="transaction_id" value="{{ old('transaction_id') }}"    autocomplete="off" required />
             @error('transaction_id')
-            <div class="text-danger">{{ $message }}</div>
+                <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
 
+        <div class="form-group">
+            <label class="font-size-h6 font-weight-bolder text-dark">Amount You Transferred <span class="text-danger">*</span></label>
+            <input class="form-control form-control-solid h-auto rounded-md" type="text" name="transferred_amount" 
+                id="transferred_amount"
+                placeholder="Transferred Registration Amount"
+                value="{{ old('transferred_amount') }}" autocomplete="off" required />
+            @error('transferred_amount')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
         
-
+            <small id="usdInfo" class="form-text text-danger mt-2"></small>
+        </div>
+        
+        <div class="form-group mt-4">
+            <label class="font-size-h6 font-weight-bolder text-dark">Equivalent in USDT</label>
+            <input class="form-control form-control-solid" 
+            name="usdt_amount"
+            type="text" id="usdt_amount" readonly required>
+        </div> 
         <!-- Amount Proof Field -->
         <div class="form-group">
             <label class="font-size-h6 font-weight-bolder text-dark">Transaction  Proof <span class="text-danger">*</span> </label>
@@ -261,5 +273,28 @@
          
     }
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const rate = {{ $setting->usd ?? 281.10 }}; // fallback rate if not set
+        const pkrInput = document.getElementById('transferred_amount');
+        const usdOutput = document.getElementById('usdt_amount');
+        const usdInfo = document.getElementById('usdInfo');
+
+        pkrInput.addEventListener('blur', function () {
+            const pkr = parseFloat(pkrInput.value);
+
+            if (!isNaN(pkr) && pkr > 0) {
+                const usd = (pkr / rate).toFixed(2);
+                usdOutput.value = usd;
+                usdInfo.innerText = `At rate PKR ${rate}, this equals approx. ${usd} USDT.`;
+            } else {
+                usdOutput.value = '';
+                usdInfo.innerText = '';
+            }
+        });
+    });
+</script>
+
 
 @endsection

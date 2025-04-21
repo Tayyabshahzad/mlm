@@ -40,26 +40,37 @@
             <div class="col-lg-12 col-xxl-12 order-1 order-xxl-2"> 
                 @if(!Auth::user()->freez_wallet)
                 <div class="card card-custom card-stretch gutter-b ">  
-                    <div class="card-header border-0"> 
-                        @if($setting->withdraw_block == false)
-                            @if($walletSum >= 700)
-                                <div class="  align-items-center align-items-center justify-content-center pt-5" >
-                                    <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
-                                    <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
-                                </div>
-                            @else 
-                                <div class="  align-items-center justify-content-center pt-5">
+                    <div class="card-header border-0">  
+                        @php
+                            $blockedWallets = json_decode($setting->blocked_wallets ?? '{}', true); 
+                        @endphp
+                        @if (!($blockedWallets['online'] ?? false))  
+                            @if($setting->withdraw_block == false)
+                                @if($walletSum >= 700)
+                                    <div class="  align-items-center align-items-center justify-content-center pt-5" >
+                                        <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
+                                        <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                                    </div>
+                                @else 
+                                    <div class="  align-items-center justify-content-center pt-5">
 
-                                    <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
-                                    <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a>    
-                                    
-                                </div> 
-                            @endif
-                        @else
+                                        <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
+                                        <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a>    
+                                        
+                                    </div> 
+                                @endif
+                            @else
+                        @endif
+
                         <div class="  align-items-center justify-content-center pt-5"> 
                             <a href="#" class=" blocked mb-5 mr-3 rounded-0 btn btn-danger font-weight-bolder font-size-sm">Withdraw Has Been Block </a> 
                         </div> 
                         @endif
+
+                        <div class="  align-items-center align-items-center justify-content-center pt-5" > 
+                            <a href="#"  data-toggle="modal"   data-target="#TopUpAccount"  class="mb-5 mr-3 rounded-0 btn btn-success font-weight-bolder font-size-sm">TopUp Your Account</a>    
+                        </div>
+
                     </div> 
                 </div>
                 @endif
@@ -100,6 +111,20 @@
                                     <a href="{{ route('show.transaction.history') }}">View Transaction History</a>
                                     <span class="font-weight-bold">
                                         {{ $onlineWallets->sortByDesc('created_at')->first()->created_at ?? 'No records found' }}  
+                                    </span>
+                                </div>   
+
+
+                                <div class="d-flex flex-column flex-grow-1 text-danger">
+                                    <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">
+                                        Negative Points
+                                    </a>
+                                    <small>
+                                        <a class="text-info" href="#">More Details ...</a>
+                                    </small>
+                                    
+                                    <span class="font-weight-bold">
+                                        {{  number_format(Auth::user()->negative_pv)  }} PV  
                                     </span>
                                 </div>   
                             </div> 
@@ -341,6 +366,52 @@
                 <div class="modal-footer">
                     <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
                     <button type="submit" class="rounded-0 btn btn-danger btn-sm">Delete Request </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="TopUpAccount" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="{{ route('account.top.up') }}" method="POST">
+                @csrf
+                <input type="hidden" name="wallet_type" value="online" required>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">TopUp Your Account</h5>
+                    
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body"> 
+                    <p><strong>Available Balance: {{ $onlineWallets->sum('balance') }} </strong></p>
+                    <div class="form-group row"> 
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Amount <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
+                             name="topUp_amount" max="{{ $onlineWallets->sum('balance') }}" step="0.01"
+                             required 
+                             placeholder="Enter Amount"
+                             >   
+                        </div>  
+                        
+                        <div class="col-lg-12 col-xl-12">
+                            <label for="" class="font-weight-bold mr-2">
+                                Description 
+                            </label>
+                            <textarea name="topUp_description" 
+                          class="form-control form-control-sm form-control-solid mb-2" 
+                            required></textarea>
+                        </div>   
+                    </div>  
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="rounded-0 btn btn-primary btn-sm">TopUp </button>
                 </div>
             </form>
         </div>

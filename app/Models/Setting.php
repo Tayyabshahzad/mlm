@@ -12,6 +12,6 @@ class Setting extends Model
         'site_name',
         'pv_amount', 
         'description', 
-        'usd','updated_at','activation_code','withdraw_block'
+        'usd','updated_at','activation_code','withdraw_block','registration_fee','blocked_wallets'
     ]; 
 }

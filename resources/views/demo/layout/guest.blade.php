@@ -89,6 +89,13 @@
 			@endforeach 
 		@endif
 
+		@if (session('error'))
+			<script>
+				toastr.error("{{ session('error') }}");
+			</script>  
+        @endif
+
+
 		<script>
 			const countryCodeDropdown = document.getElementById("countryCode");
 			const phoneInput = document.getElementById("phone");

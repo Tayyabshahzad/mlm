@@ -24,6 +24,8 @@ use App\Http\Middleware\{CheckUserStatus, CheckBlockedUser};
 
 // Public Routes
 // Look Busy Do noting new ipdate
+Route::get('log-viewer', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index')->middleware('auth');
+
 Route::get('/', [FrontEndController::class, 'index'])->name('index');
 Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
 Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
@@ -65,6 +67,7 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
 
     Route::prefix('wallets')->controller(WalletController::class)->group(function () {
         Route::get('online', 'online')->name('wallets.online');
+        Route::get('investment', 'investment')->name('wallets.investment');
         Route::get('direct-indirect', 'directIndirect')->name('wallets.direct.indirect');
         Route::get('rewards', 'rewards')->name('wallets.rewards');
         Route::get('return-on-investment', 'ROI')->name('wallets.roi');
@@ -72,6 +75,7 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::get('rank', 'rank')->name('wallets.rank');
         Route::post('transfer-to-online', 'transferToOnline')->name('wallet.transfer.to.online');
         Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history');
+        Route::post('account-topUp', 'accountTopUp')->name('account.top.up');
     }); 
     
     Route::controller(WithdrawalRequestController::class)->group(function () {
@@ -134,6 +138,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::prefix('setting')->controller(SettingController::class)->group(function () {
         Route::get('/basic', 'index')->name('setting.basic'); 
         Route::post('/update', 'update')->name('setting.update'); 
+        Route::get('update.usdt', 'updateUSDT')->name('rate.manual.update'); 
+       
     });
 
 
