@@ -83,9 +83,14 @@ class WithdrawalRequestController extends Controller
             'review_notes' => 'string',
             'withdrawal_option' => 'required|in:usdt,bank,cash',
         ]);
+        if (auth::user()->negative_pv > 0) {
+            return redirect()->back()->with('error', 'Clear your negative points before withdrawal.'); 
+        }
         if (!auth::user()->profile) {
             return redirect()->back()->with('error', 'Please complete your profile first');
         }
+      
+        
         if ($request->withdrawal_option == 'bank' && !auth::user()->profile->ibn_number && !auth::user()->profile->bank_name &&!auth::user()->profile->account_title ) {
             return redirect()->back()->with('error', 'Please complete your bank details');
         }
@@ -137,7 +142,11 @@ class WithdrawalRequestController extends Controller
             'description' => 'required|string',
             'member_account'=> 'required',
             'wallet_type' =>'required|in:member_transfer'
-        ]);        
+        ]);       
+        if (auth::user()->negative_pv > 0) {
+            return redirect()->back()->with('error', 'Clear your negative points before withdrawal.'); 
+        }
+         
         $recipient = User::where('username', $request->member_account)
                     ->orWhere('email', $request->member_account)
                     ->first();

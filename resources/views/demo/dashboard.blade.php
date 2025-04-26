@@ -21,10 +21,10 @@
                     
                 </div> 
                 <div class="subheader-separator subheader-separator-ver mt-2 mb-2 mr-4 bg-gray-200 ml-2"></div>
-                <span class="text-muted font-weight-bold mr-4">PV Balance </span>
+                <span class="text-muted font-weight-bold mr-4">Available Balance </span>
                 <div class="kt-widget__content">
                     <div class="kt-widget__section">
-                        <strong> {{ Auth::user()->current_pv_balance }} </strong> 
+                        <strong> {{ Auth::user()->roi_eligible_investment_amount }} $ </strong> 
                     </div> 
                 </div> 
                 @role('admin')

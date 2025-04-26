@@ -109,6 +109,7 @@
     <!--end::Entry-->
 </div>
 @if (!($blockedWallets['direct_indirect'] ?? false))
-    @include("wallets.transfer_modal")
+    @include("wallets.transfer_modal", ['wallet' => 'direct_indirect'])
 @endif  
+
 @endsection 

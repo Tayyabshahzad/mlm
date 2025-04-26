@@ -114,8 +114,8 @@
 </div>
  
 
-@if (!($blockedWallets['profit_share'] ?? false))
-    @include("wallets.transfer_modal")
+@if (!($blockedWallets['profit_share'] ?? false)) 
+    @include("wallets.transfer_modal", ['wallet' => 'profit_share'])
 @endif  
   
 @endsection

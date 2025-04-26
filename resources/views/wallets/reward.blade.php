@@ -98,7 +98,7 @@
 </div>
  
 @if (!($blockedWallets['reward'] ?? false))
-    @include("wallets.transfer_modal")
+    @include("wallets.transfer_modal", ['wallet' => 'reward'])
 @endif  
  
 <!--end::Content-->

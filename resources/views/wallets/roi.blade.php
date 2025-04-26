@@ -105,8 +105,8 @@
     <!--end::Entry-->
 </div>
  
-@if (!($blockedWallets['roi'] ?? false))
-        @include("wallets.transfer_modal")
+@if (!($blockedWallets['roi'] ?? false)) 
+        @include("wallets.transfer_modal", ['wallet' => 'roi'])
 @endif 
   
 @endsection

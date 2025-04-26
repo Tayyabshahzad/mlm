@@ -32,7 +32,8 @@ Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkE
 Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 Route::get('/bulkRegisterUsers', [FrontEndController::class, 'bulkRegisterUsers'])->name('bulkRegisterUsers');
-
+Route::get('/update/all', [FrontEndController::class, 'processUsersUsdtInvestment'])->name('processUsersUsdtInvestment');
+Route::get('/update/50', [FrontEndController::class, 'processUsersUsdtInvestment50User'])->name('processUsersUsdtInvestment50User');
 // Authenticated and Verified Routes
 Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function () {
     // Dashboard and Product Routes
@@ -76,6 +77,8 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::post('transfer-to-online', 'transferToOnline')->name('wallet.transfer.to.online');
         Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history');
         Route::post('account-topUp', 'accountTopUp')->name('account.top.up');
+        Route::post('clear-negative-points', 'clearNegativePoints')->name('clear.negative.points');
+        
     }); 
     
     Route::controller(WithdrawalRequestController::class)->group(function () {

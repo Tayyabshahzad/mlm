@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivationCode;
+use App\Models\InvestmentSlab;
 use App\Models\PVTransaction;
 use App\Models\ReferralLink;
 use App\Models\ReferralTree;
 use App\Models\Setting;
 use App\Models\TransactionLog;
 use App\Models\User;
+use App\Models\UserInvestment;
 use App\Models\UserWallet;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -66,7 +68,7 @@ class RegisteredUserController extends Controller
                 new ValidActivationCode($request->payment_method),
             ],
             'transferred_amount' => 'required|numeric',
-            'usdt_amount' => 'required|numeric',
+            'usdt_amount' => 'required|numeric|min:60',
         ]);
 
         $fee = Setting::first()->registration_fee;
@@ -109,6 +111,7 @@ class RegisteredUserController extends Controller
                 'converted_usdt_amount' => $request->usdt_amount,
                 'fee_deducted' => Setting::first()->registration_fee, 
                 'net_invested_usdt_amount' =>  ($request->usdt_amount - Setting::first()->registration_fee),  
+                'roi_eligible_investment_amount' =>  ($request->usdt_amount - Setting::first()->registration_fee),  
             ]);
 
             if ($request->payment_method === 'activation_code') {
@@ -135,9 +138,9 @@ class RegisteredUserController extends Controller
                     'debit'
                 );
             }
-
+            $this->createInitialInvestment($user);
+            $this->checkAndCreateSlabs($user);
             $user->assignRole('member');
-
             ReferralLink::create([
                 'user_id' => $user->id,
                 'link' => $username,
@@ -261,6 +264,43 @@ class RegisteredUserController extends Controller
                     'status' =>$status
                 ]);
             } 
+
+    protected function createInitialInvestment(User $user): void
+    {
+        UserInvestment::create([
+            'user_id' => $user->id,
+            'amount' => $user->net_invested_usdt_amount,
+            'type' => 'join',
+            'description' => 'Initial payment during account creation'
+        ]);
+    }
+ 
+
+    private function checkAndCreateSlabs($user)
+    {
+        $totalInvestment = UserInvestment::where('user_id', $user->id)->sum('amount');
+        $totalSlabs = InvestmentSlab::where('user_id', $user->id)->count(); 
+        $availableInvestment = $totalInvestment - ($totalSlabs * 100);
+        while ($availableInvestment >= 100) {
+            $achievedAt = now();
+            $willPayAt = $achievedAt->copy()->addMonths(24)->startOfMonth()->addMonth();
+
+            $newSlab = new InvestmentSlab();
+            $newSlab->user_id = $user->id;
+            $newSlab->slab_count = $totalSlabs + 1;
+            $newSlab->amount = 100;
+            $newSlab->achived_at = now();
+            $newSlab->current_balance = $user->roi_eligible_investment_amount;
+            $newSlab->maturity_date = now()->addMonths(24);
+            $newSlab->will_pay_at = $willPayAt;
+            $newSlab->status = 'No';
+            $newSlab->save();
+            $totalSlabs++;
+            $availableInvestment -= 100;
+        }
+    }
+
+
 
     
 

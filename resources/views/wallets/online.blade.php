@@ -62,9 +62,7 @@
                             @else
                         @endif
 
-                        <div class="  align-items-center justify-content-center pt-5"> 
-                            <a href="#" class=" blocked mb-5 mr-3 rounded-0 btn btn-danger font-weight-bolder font-size-sm">Withdraw Has Been Block </a> 
-                        </div> 
+                       
                         @endif
 
                         <div class="  align-items-center align-items-center justify-content-center pt-5" > 
@@ -119,12 +117,16 @@
                                     <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">
                                         Negative Points
                                     </a>
-                                    <small>
-                                        <a class="text-info" href="#">More Details ...</a>
-                                    </small>
-                                    
+                                     @if(Auth::user()->negative_pv > 0)
+                                        <small>
+                                            <button class="btn btn-sm btn-danger mb-3 mt-1 no-radius rounded-0" data-toggle="modal" data-target="#clearNegativeModal">
+                                                Clear Points Now
+                                            </button>
+                                        </small>
+                                    @endif
+
                                     <span class="font-weight-bold">
-                                        {{  number_format(Auth::user()->negative_pv)  }} PV  
+                                        -{{ round(Auth::user()->negative_pv,2) }} PV
                                     </span>
                                 </div>   
                             </div> 
@@ -393,7 +395,7 @@
                                 Amount <span class="text-danger">*</span>
                             </label>
                             <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
-                             name="topUp_amount" max="{{ $onlineWallets->sum('balance') }}" step="0.01"
+                             name="topUp_amount" min="5" max="{{ $onlineWallets->sum('balance') }}" step="0.01"
                              required 
                              placeholder="Enter Amount"
                              >   
@@ -417,6 +419,32 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="clearNegativeModal" tabindex="-1" role="dialog" aria-labelledby="clearNegativeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <form action="{{ route('clear.negative.points') }}" method="POST">
+          @csrf
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="clearNegativeModalLabel">Clear Negative Points</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                You currently have <strong>{{ Auth::user()->negative_pv }}</strong> negative points.<br>
+                On clicking <strong>Submit</strong>, this amount will be deducted from your online wallet.
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-success btn-sm rounded-0">Yes, Clear Points</button>
+              <button type="button" class="btn btn-secondary rounded-0" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+      </form>
+    </div>
+  </div>
+  
   
 <!--end::Content-->
 @endsection

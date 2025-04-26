@@ -75,13 +75,12 @@ class UserController extends Controller
         return view('users.deleted-users', compact('teamMembers', 'search'));
     } 
     public function updateStatus(Request $request)
-    {
-
+    { 
         $request->validate([
             'member_id' => [
                 'required',
                 'integer',  
-                'exists:users,id', // Check if member_id exists in the 'id' column of 'users' table
+                'exists:users,id',  
             ],
         ]);
        $user = User::find($request->member_id);
@@ -91,28 +90,14 @@ class UserController extends Controller
         if($user->current_pv_balance <= 100){
             $this->pvService->assignInitialPV($user);   
         }
-        // $user->can_login = true;
-      
-        // Sending mail to user
-        // Mail::to($user->email)->send(new CompanyAgreement($user));
-        // Mail::to($user->email)->send(new WelcomeEmail($user));
-        // Mail::to($user->email)->send(new InvoiceEmail($user)); 
-
-          //$users = User::where('blocked', false)->get(); // Fetch all unblocked users 
-          //foreach ($users as $user) {
-            $this->assignCommissionsUpdated($user);   
-            $user->can_login = true;
-            $user->save();  
-        // }
-       
-
-
-        // $this->assignCommissionsUpdated($user);  
-        
+        $this->assignCommissionsUpdated($user);   
+        $user->can_login = true;
+        $user->save();   
         $this->test($user->sponsor_id, 1);
       
         return redirect()->back()->with('success', 'Member Status has been Updated');
     } 
+
     private function getAncestors($user)
     {
         return \DB::table('referral_trees')
@@ -121,6 +106,7 @@ class UserController extends Controller
             ->where('level', '<=', 7) // Include only ancestors up to Level 7
             ->get();
     }
+
     private function getCommissionForLevel($level)
     { 
         $commissionPercentages = [
@@ -215,38 +201,17 @@ class UserController extends Controller
         $parent = User::where('blocked',false)->find($parentID);
         if (!$parent) {
             return;
-        }
-
-        // $requiredTeamSizes = [
-        //     2 => 2, // Level 2 requires 2 team members
-        //     3 => 3, // Level 3 requires 3 team members
-        //     4 => 4, // Level 4 requires 4 team members
-        //     5 => 5, // Level 5 requires 5 team members
-        //     6 => 6, // Level 6 requires 6 team members
-        //     7 => 7, // Level 7 requires 7 team members
-        // ];
-
-
-        // ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
-        // ['level' => 2, 'reward_amount' => 300, 'users_required' => 50],
-        // ['level' => 3, 'reward_amount' => 1200, 'users_required' => 150],
-        // ['level' => 4, 'reward_amount' => 4000, 'users_required' => 400],
-        // ['level' => 5, 'reward_amount' => 10000, 'users_required' => 1000],
-        // ['level' => 6, 'reward_amount' => 30000, 'users_required' => 2000],
-        // ['level' => 7, 'reward_amount' => 48000, 'users_required' => 4000],
-
-
-
+        } 
 
         $directChildCount = $this->getChildCountAtLevel($parentID, $level);
         $rewardLevels = collect([
-            ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
-            ['level' => 2, 'reward_amount' => 300, 'users_required' => 50],
-            ['level' => 3, 'reward_amount' => 1200, 'users_required' => 150],
-            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 400],
-            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 1000],
-            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 2000],
-            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 4000],
+            ['level' => 1, 'reward_amount' => 130, 'users_required' => 10],
+            ['level' => 2, 'reward_amount' => 260, 'users_required' => 50],
+            ['level' => 3, 'reward_amount' => 875, 'users_required' => 150],
+            ['level' => 4, 'reward_amount' => 3450, 'users_required' => 400],
+            ['level' => 5, 'reward_amount' => 8650, 'users_required' => 1000],
+            ['level' => 6, 'reward_amount' => 26000, 'users_required' => 2000],
+            ['level' => 7, 'reward_amount' => 41500, 'users_required' => 4000],
         ]);
         $specificRewardLevel = $rewardLevels->firstWhere('level', $level);
         for ($i = 1; $i < $level; $i++) {
@@ -287,13 +252,13 @@ class UserController extends Controller
         }
         $directChildCount = $this->getChildCountAtLevel($parentID, $level);
         $rewardLevels = collect([
-            ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
-            ['level' => 2, 'reward_amount' => 300, 'users_required' => 50],
-            ['level' => 3, 'reward_amount' => 1200, 'users_required' => 150],
-            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 400],
-            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 1000],
-            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 2000],
-            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 4000],
+            ['level' => 1, 'reward_amount' => 130, 'users_required' => 10],
+            ['level' => 2, 'reward_amount' => 260, 'users_required' => 50],
+            ['level' => 3, 'reward_amount' => 875, 'users_required' => 150],
+            ['level' => 4, 'reward_amount' => 3450, 'users_required' => 400],
+            ['level' => 5, 'reward_amount' => 8650, 'users_required' => 1000],
+            ['level' => 6, 'reward_amount' => 26000, 'users_required' => 2000],
+            ['level' => 7, 'reward_amount' => 41500, 'users_required' => 4000],
         ]);
         $specificRewardLevel = $rewardLevels->firstWhere('level', $level); 
         for ($i = 1; $i < $level; $i++) {
@@ -329,13 +294,13 @@ class UserController extends Controller
             ->get();
         \Log::info("LOG 1 - { $user->name }  update ho raha ha  jis ka parent {$user->parent->name} ha , ham ny idr {$user->parent->name} k sary user ko get kr liya ha ");
         $rewardLevels = collect([
-            ['level' => 1, 'reward_amount' => 150, 'users_required' => 10],
-            ['level' => 2, 'reward_amount' => 300, 'users_required' => 50],
-            ['level' => 3, 'reward_amount' => 1200, 'users_required' => 150],
-            ['level' => 4, 'reward_amount' => 4000, 'users_required' => 400],
-            ['level' => 5, 'reward_amount' => 10000, 'users_required' => 1000],
-            ['level' => 6, 'reward_amount' => 30000, 'users_required' => 2000],
-            ['level' => 7, 'reward_amount' => 48000, 'users_required' => 4000],
+            ['level' => 1, 'reward_amount' => 130, 'users_required' => 10],
+            ['level' => 2, 'reward_amount' => 260, 'users_required' => 50],
+            ['level' => 3, 'reward_amount' => 875, 'users_required' => 150],
+            ['level' => 4, 'reward_amount' => 3450, 'users_required' => 400],
+            ['level' => 5, 'reward_amount' => 8650, 'users_required' => 1000],
+            ['level' => 6, 'reward_amount' => 26000, 'users_required' => 2000],
+            ['level' => 7, 'reward_amount' => 41500, 'users_required' => 4000],
         ]);
         \Log::info("Loop Start  ------------------  ");
         $sn = 0;
@@ -519,14 +484,8 @@ class UserController extends Controller
                 $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
             }
         }
-    }
-    
-    /**
-     * Get the team size of a user based on direct sponsorship.
-     *
-     * @param int $userId
-     * @return int
-     */
+    } 
+
     private function getTeamSize($userId)
     {
         // Count the number of users directly sponsored by this user
@@ -544,8 +503,7 @@ class UserController extends Controller
         $payments = $query->orderBy('created_at', 'desc')->paginate(20);
         $users = User::where('blocked', false)->where('can_login', true)->get();
         return view('users.roi-payments', compact('users', 'payments'));
-    }
-    
+    } 
 
     public function submitRoiPayments(Request $request)
     {
@@ -568,12 +526,8 @@ class UserController extends Controller
             $user->roi_start_date = Carbon::now();
             $user->roi_end_date = Carbon::now()->addYears(2); // 2 years from start
             $user->save();
-        }
-        // $rois = Wallet::where('wallet_type','roi')->orderBy('id','asc')->get(); 
-        // foreach($rois as $roi){
-        //     $user = User::  where('can_login', true)-> where('blocked',false)->find($roi->user_id);  
-        //     $this->generateParentCommissions($user, $roi->balance);
-        // } 
+        } 
+
         $monthsRemaining = Carbon::now()->diffInMonths($user->roi_end_date, false);
         $remainingPV = 200 - $user->roi_wallet_balance;
         $paymentPercentage = $request->commission_percentage;
@@ -602,8 +556,7 @@ class UserController extends Controller
         ]);
         $this->generateParentCommissions($user, $roiPayment);
         return redirect()->back()->with('success', 'ROI Generated Successfully');
-    }
-
+    } 
 
     public function rentalPercentage(){
         $weeks = Week::all();
@@ -642,67 +595,20 @@ class UserController extends Controller
         }
         $week->delete();
         return redirect()->back()->with('success', 'Week deleted successfully.');
-    } 
-
-    private function old_generateParentCommissions($user, $roiAmount)
-    {
-        $commissionLevels = [
-            1 => 3.5,
-            2 => 3,
-            3 => 2.5,
-            4 => 2,
-            5 => 1.5,
-            6 => 1,
-            7 => 0.5,
-        ];
-        
-        foreach ($commissionLevels as $level => $percentage) { 
-             
-            $parent = $this->getAncestorByLevel($user, $level);  
-           
-            if ($parent) {
-                $directChildrenCount = User::where('blocked',false)->where('sponsor_id', $parent->id)->where('can_login', true)->count();
-              
-                $requiredUsers = $this->getRequiredUsersForLevel($level);  
-                if ($directChildrenCount >= $requiredUsers) { 
-                    $commissionAmount = ($roiAmount * $percentage) / 100;
-                    ROITransaction::create([
-                        'user_id' => $parent->id,
-                        'amount' => $commissionAmount,
-                        'percentage' => $percentage,
-                        'description' => "Profit Share for Level {$level} commission from user {$user->id} | {$user->username}",
-                    ]);
-                    Wallet::create([
-                        'user_id' => $parent->id,
-                        'wallet_type' => 'profit_share',
-                        'balance' => $commissionAmount,
-                        'level' => $level,
-                        'commission_type' => 'profit_share',
-                        'wallet_from' => $user->id,
-                        'percentage' => $percentage,
-                        'total_amount'=> $commissionAmount,
-                    ]);
-                }
-                  
-            }
-        }
-    }
-
-
-
-
+    }  
     private function generateParentCommissions($user, $roiAmount)
     {
+         
         $commissionLevels = [
-            1 => 3.5,
-            2 => 3,
-            3 => 2.5,
-            4 => 2,
-            5 => 1.5,
-            6 => 1,
-            7 => 0.5,
-        ];
-
+            1 => 7.0,
+            2 => 6.0,
+            3 => 5.0,
+            4 => 4.0,
+            5 => 3.0,
+            6 => 2.0,
+            7 => 1.0,
+        ]; 
+        
         foreach ($commissionLevels as $level => $percentage) {
             $parent = $this->getAncestorByLevel($user, $level);
 
@@ -763,18 +669,7 @@ class UserController extends Controller
         ];
 
         return $requiredUsers[$level] ?? 0;  // Default to 0 if level is not defined
-    }
-
-    private function getAncestorByLevelOld($user, $level)
-    {
-        
-        return \DB::table('referral_trees')
-            ->join('users', 'referral_trees.ancestor_id', '=', 'users.id')
-            ->where('referral_trees.descendant_id', $user->id)
-            ->where('referral_trees.level', $level)
-            ->select('users.*')
-            ->first();
-    }
+    } 
 
     private function getAncestorByLevel($user, $level)
     {
@@ -945,9 +840,7 @@ class UserController extends Controller
             ->exists();
     }
     private function manulAssignCommissionsUpdated($user)
-    {
-        
-
+    { 
         $parentUser = User::where('blocked', false)->find($user->sponsor_id);
     
         if ($parentUser) {
@@ -1001,176 +894,61 @@ class UserController extends Controller
         foreach ($users as $user) {
             $activeDirects = $this->manulAssignCommissionsUpdated($user); // Get active direct users 
         }
+    }  
+
+    public function activationCode(){
+        $user = Auth::user();
+        $setting = Setting::first();
+        $totalBalance =  Wallet::where('wallet_type', 'online')
+        ->where('user_id', Auth::id())
+        ->sum('balance'); 
+        $activationCodes = ActivationCode::with('generatedBy','usedBy')->orderby('id','desc')->get();
+        return view('users.activation-code',compact('user','setting','totalBalance','activationCodes'));
+    
     }
 
-    private function assignCommissionsUpdated1($user)
+    public function updateActivationCode(Request $request)
     {
-        $parentUser = User::where('blocked', false)->find($user->sponsor_id); 
-        if ($parentUser) {
-            // Check the immediate sponsor's direct team size for Level 1
-            $directTeamSize = $this->getActiveDirectUsersCount($parentUser->id);
-            $requiredTeamSizeForLevel1 = $this->getTeamSizeRequirementForLevel(1);
-
-            if ($directTeamSize >= $requiredTeamSizeForLevel1) {
-                $directCommissionPercentage = $this->getCommissionForLevel(1); // Level 1 commission
-                $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance;
-
-                // Assign direct commission for the immediate sponsor
-                $this->walletService->assignCommission($parentUser->id, $directCommissionAmount, 'direct', $user, 1);
-            }
-        }
-
-        // Fetch ancestors, excluding the immediate sponsor
-        $ancestors = $this->getAncestors($user)
-            ->filter(function ($ancestor) use ($user) {
-                return $ancestor->ancestor_id !== $user->sponsor_id && $ancestor->level <= 7;
-            });
-
-        foreach ($ancestors as $ancestor) {
-            $level = $ancestor->level; // Get ancestor level
-
-            // Get the ancestor's direct sponsor (one level down from this ancestor)
-            $directSponsor = User::where('id', $ancestor->ancestor_id)->first();
-
-            if (!$directSponsor) {
-                continue; // Skip if the ancestor doesn't exist
-            }
-
-            // Get the direct team size of the direct sponsor
-            $directTeamSize = $this->getActiveDirectUsersCount($directSponsor->id);
-
-            // Get required team size for this level
-            $requiredTeamSize = $this->getTeamSizeRequirementForLevel($level);
-
-            // Assign commission only if the direct team size meets the required criteria
-            if ($directTeamSize >= $requiredTeamSize) {
-                $indirectCommissionPercentage = $this->getCommissionForLevel($level); // Get level commission
-                $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
-
-                // Assign indirect commission for this ancestor
-                $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
-            }
-        }
+        $request->validate([
+            'id' => 'required|exists:activation_codes,id',
+            'admin_approval' => 'required|in:approved,rejected,pending'
+        ]);  
+        $code = ActivationCode::findOrFail($request->id);
+        if ($code->admin_approval === 'approved' && $request->admin_approval !== 'approved') {
+            return response()->json([
+                'message' => 'Status cannot be reverted after approval.'
+            ], 403);
+        } 
+        $code->admin_approval = $request->admin_approval;
+        $code->save();  
+        $this->logTransaction(Auth::id(),'activation_code', 'admin',  0, 0,0,
+            "Admin updated activation code ID {$code->id} & code {$code->code} to status {$code->admin_approval}.",''
+        ); 
+        return response()->json(['message' => 'Status updated successfully']);
     }
 
-
-    private function assignCommissionsUpdated3($user)
+    private function logTransaction($userId,$toAddress,$fromAddress,$amount, $finalAmount,$description)
     {
-        $parentUser = User::where('blocked', false)->find($user->sponsor_id);    
-        if ($parentUser) {
-            $activeDirectUsers = $this->getActiveDirectUsersCount($parentUser->id);    
-            if ($activeDirectUsers >= 1) {  
-                $directCommissionPercentage = $this->getCommissionForLevel(1); // Level 1 commission 
-                $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance;
-                $this->walletService->assignCommission($parentUser->id, $directCommissionAmount, 'direct', $user, 1);
-            }
-            
-           
-        }
-
-        // Step 2: Indirect Commission for Ancestors
-        $ancestors = $this->getAncestors($user)
-            ->filter(function ($ancestor) use ($user) {
-                return $ancestor->ancestor_id !== $user->sponsor_id && $ancestor->level <= 7;
-            });
-
-        foreach ($ancestors as $ancestor) {
-            $level = $ancestor->level;
-            $ancestorUser = User::where('blocked', false)->find($ancestor->ancestor_id);
-            $activeDirectUsers = $this->getActiveDirectUsersCount($ancestorUser->id);
-
-            $teamSizeRequirement = $this->getTeamSizeRequirementForLevel($level);
-
-            // Only assign commissions for new descendants if ancestor meets team size requirement
-            if ($activeDirectUsers >= $teamSizeRequirement) {
-                $isNewUser = $this->isNewDescendant($ancestorUser->id, $user->id); // Check if user is a new descendant
-                if ($isNewUser) {
-                    $indirectCommissionPercentage = $this->getCommissionForLevel($level);
-                    $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
-
-                    // Assign Indirect Commission
-                    $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
-                }
-            }
-        }
-    }
-
-private function isNewDescendant($ancestorId, $descendantId)
-{
-    $qualificationDate = $this->getAncestorQualificationDate($ancestorId);
-    $descendant = \DB::table('users')
-    ->where('id', $descendantId)
-    ->first();
-
-    return $descendant && $descendant->created_at > $qualificationDate;
-}
-
-private function getAncestorQualificationDate($ancestorId)
-{
-    // Fetch the date when ancestor qualified for their current level
-    $ancestor = User::find($ancestorId);
-    return $ancestor ? $ancestor->qualification_date : now(); // Example column `qualification_date`
-}
-
-public function activationCode(){
-    $user = Auth::user();
-    $setting = Setting::first();
-    $totalBalance =  Wallet::where('wallet_type', 'online')
-    ->where('user_id', Auth::id())
-    ->sum('balance'); 
-    $activationCodes = ActivationCode::with('generatedBy','usedBy')->orderby('id','desc')->get();
-    return view('users.activation-code',compact('user','setting','totalBalance','activationCodes'));
-   
-}
-
-public function updateActivationCode(Request $request)
-{
-    $request->validate([
-        'id' => 'required|exists:activation_codes,id',
-        'admin_approval' => 'required|in:approved,rejected,pending'
-    ]);  
-    $code = ActivationCode::findOrFail($request->id);
-    if ($code->admin_approval === 'approved' && $request->admin_approval !== 'approved') {
-        return response()->json([
-            'message' => 'Status cannot be reverted after approval.'
-        ], 403);
+        TransactionLog::create([
+            'user_id' => $userId,
+            'from_wallet_type' => $toAddress,
+            'to_wallet_type' => $fromAddress,
+            'charge' =>0, 
+            'amount' => $amount, 
+            'final_amount' => $finalAmount,
+            'description' => $description, 
+        ]);
     } 
-    $code->admin_approval = $request->admin_approval;
-    $code->save();  
-    $this->logTransaction(Auth::id(),'activation_code', 'admin',  0, 0,0,
-        "Admin updated activation code ID {$code->id} & code {$code->code} to status {$code->admin_approval}.",''
-    ); 
-    return response()->json(['message' => 'Status updated successfully']);
-}
+ 
+    public function downloadContacts(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
 
-private function logTransaction($userId,$toAddress,$fromAddress,$amount, $finalAmount,$description)
-{
-    TransactionLog::create([
-        'user_id' => $userId,
-        'from_wallet_type' => $toAddress,
-        'to_wallet_type' => $fromAddress,
-        'charge' =>0, 
-        'amount' => $amount, 
-        'final_amount' => $finalAmount,
-        'description' => $description, 
-    ]);
-} 
-
-
-
-public function downloadContacts(Request $request)
-{
-    $request->validate([
-        'start_date' => 'required|date',
-        'end_date' => 'required|date|after_or_equal:start_date',
-    ]);
-
-    return Excel::download(new ContactsExport($request->start_date, $request->end_date), "Contacts-info-from ".$request->start_date ."-".$request->end_date.".xlsx");
-}
-
-
-
-
+        return Excel::download(new ContactsExport($request->start_date, $request->end_date), "Contacts-info-from ".$request->start_date ."-".$request->end_date.".xlsx");
+    } 
 
 
 }

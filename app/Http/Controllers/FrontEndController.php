@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\CompanyAgreement;
+use App\Models\InvestmentSlab;
 use App\Models\Otp;
 use App\Models\Product;
 use App\Models\Profile;
@@ -20,8 +21,11 @@ use App\Rules\OtpExists;
 use setasign\Fpdi\Fpdi;
 use Illuminate\Support\Facades\Mail;
 use App\Models\ReferralLink;
+use App\Models\UserInvestment;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class FrontEndController extends Controller
 {
@@ -584,6 +588,368 @@ class FrontEndController extends Controller
         $products = Product::get(); 
         return view('genealogy.product',compact('products')); 
     }
+
+    public function processUsersUsdtInvestment()
+    {   
+        try {
+            DB::beginTransaction(); 
+            $usdtRate = 281.55;
+            $convertedUsdt = 110;
+            $convertedPKR = $convertedUsdt * $usdtRate;
+            $requiredPkr = 27500;
+            $fee = 10;
+            $netUsdt = 100;
+            $negativePointPKR = ($convertedPKR - $requiredPkr);
+            $negativePointUSDT = ($negativePointPKR /$usdtRate ); 
+            $usernames = [
+                'jaweria786', 'kanwal7700', 'agha9514', 'amjad786', 'fazal73',
+                'syed14', 'admin786', 'javed786', 'hussain92', 'khawaja-1',
+                'beqasoorkhandik', 'raasif2004', 'nadim786', 'asia', 'ablangrial',
+                'afzal786', 'khawajapdk', 'bhurban', 'asmat786', 'khalil786',
+                'jugnu70', 'yousaf1984', 'rajgan1', 'malikyasir', 'sana512',
+                'ideal007', 'murshad1', 'malik007', 'khan786', 'pari007',
+            ];
+            $users = User::whereNotIn('username', $usernames)->get();  
+            foreach ($users as $user) {
+                $user->transferred_amount = $convertedPKR;
+                $user->converted_usdt_amount = $convertedUsdt;
+                $user->fee_deducted = $fee;
+                $user->usdt_rate = $usdtRate;
+                $user->net_invested_usdt_amount = $netUsdt;
+                $user->roi_eligible_investment_amount = $netUsdt;
+                $user->negative_pv = $negativePointUSDT;   
+                $user->save();
+                $this->createInitialInvestment($user);
+                $this->checkAndCreateSlabs($user);
+            }
+            DB::commit();
+            return response()->json(['message' => 'Users processed successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function processUsersUsdtInvestment50User()
+    {   
+        try {
+            DB::beginTransaction();  
+            $usdtRate = 281.55;
+            $convertedUsdt = 60;
+            $convertedPKR = $convertedUsdt * $usdtRate; 
+            $fee = 10;
+            $netUsdt = 50;
+            $usernames = [
+                'jaweria786', 'kanwal7700', 'agha9514', 'amjad786', 'fazal73',
+                'syed14', 'admin786', 'javed786', 'hussain92', 'khawaja-1',
+                'beqasoorkhandik', 'raasif2004', 'nadim786', 'asia', 'ablangrial',
+                'afzal786', 'khawajapdk', 'bhurban', 'asmat786', 'khalil786',
+                'jugnu70', 'yousaf1984', 'rajgan1', 'malikyasir', 'sana512',
+                'ideal007', 'murshad1', 'malik007', 'khan786', 'pari007',
+            ];
+    
+            $users = User::whereIn('username', $usernames)->get();  
+            foreach ($users as $user) {
+                $user->transferred_amount = $convertedPKR;
+                $user->converted_usdt_amount = $convertedUsdt;
+                $user->fee_deducted = $fee;
+                $user->usdt_rate = $usdtRate;
+                $user->net_invested_usdt_amount = $netUsdt;
+                $user->roi_eligible_investment_amount = $netUsdt;
+                $user->negative_pv = 0;   
+                $user->save();
+                $this->createInitialInvestment($user); 
+            }
+            DB::commit();
+            return response()->json(['message' => 'Users processed successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function processUsersUsdtInvestment11()
+    {
+        $usdtRate = $this->getLiveUsdtRate(); 
+        dd($usdtRate);
+        try {
+            DB::beginTransaction();
+
+            $usdtRate = $this->getLiveUsdtRate();   
+            $convertedUsdt = 110;
+            $convertedPKR = $usdtRate * $convertedUsdt;
+            $requiredPkr = 27500;
+            $fee = 10;
+            $netUsdt = 100;
+
+            $users = User::all();
+
+            foreach ($users as $user) {
+                // ✅ Check if investment already exists
+                $investmentExists = UserInvestment::where('user_id', $user->id)->exists();
+
+                if ($investmentExists) {
+                    // If already processed, only run the slabs
+                    $this->checkAndCreateSlabs($user);
+                    continue;
+                }
+
+                // ✅ If not yet processed, run full logic
+                $user->transferred_amount = $convertedPKR;
+                $user->converted_usdt_amount = $convertedUsdt;
+                $user->fee_deducted = $fee;
+                $user->net_invested_usdt_amount = $netUsdt;
+                $user->roi_eligible_investment_amount = $netUsdt;
+
+                $extraPkr = $convertedPKR - $requiredPkr;
+
+                if ($extraPkr > 0) {
+                    $wallet = Wallet::firstOrCreate(
+                        [
+                            'user_id' => $user->id,
+                            'wallet_type' => 'online'
+                        ],
+                        [
+                            'balance' => 0.00,
+                            'direct_balance' => 0.00,
+                            'indirect_balance' => 0.00,
+                            'commission_type' => 'online',
+                            'percentage' => 0.00,
+                            'level' => '-',
+                            'total_amount' => 0.00,
+                        ]
+                    );
+
+                    $wallet->balance += $extraPkr;
+                    $wallet->save();
+
+                    $user->negative_pv += $extraPkr;
+                }
+
+                $user->save(); 
+                $this->createInitialInvestment($user);
+                $this->checkAndCreateSlabs($user);
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Users processed successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Investment Processing Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+    
+
+    protected function createInitialInvestment(User $user): void
+    {
+        try {
+            if (!$user->net_invested_usdt_amount || $user->net_invested_usdt_amount <= 0) {
+                throw new \InvalidArgumentException('Invalid invested amount for user ID: ' . $user->id);
+            }
+            UserInvestment::create([
+                'user_id' => $user->id,
+                'amount' => $user->net_invested_usdt_amount,
+                'type' => 'join',
+                'description' => 'Initial payment during account creation',
+            ]);
+        } catch (\Throwable $e) {
+            Log::error("Failed to create initial investment for user ID: {$user->id}", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    } 
+
+    private function checkAndCreateSlabs(User $user): void
+    {
+        DB::beginTransaction(); 
+        try {
+            $totalInvestment = UserInvestment::where('user_id', $user->id)->sum('amount');
+            $totalSlabs = InvestmentSlab::where('user_id', $user->id)->count(); 
+            $availableInvestment = $totalInvestment - ($totalSlabs * 100);
+            if ($availableInvestment < 100) {
+                DB::commit(); // Nothing to do, exit early.
+                return;
+            } 
+            while ($availableInvestment >= 100) {
+                $achievedAt = now();
+                $willPayAt = $achievedAt->copy()->addMonths(24)->startOfMonth()->addMonth();
+                InvestmentSlab::create([
+                    'user_id' => $user->id,
+                    'slab_count' => ++$totalSlabs,
+                    'amount' => 100,
+                    'achived_at' => $achievedAt,
+                    'current_balance' => $user->roi_eligible_investment_amount,
+                    'maturity_date' => $achievedAt->copy()->addMonths(24),
+                    'will_pay_at' => $willPayAt,
+                    'status' => 'No',
+                ]);
+                $availableInvestment -= 100;
+            }
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error("Failed to create slabs for user ID: {$user->id}", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    } 
+
+    private function getLiveUsdtRate()
+    {
+        try { 
+
+            $response = Http::withOptions([
+                'verify' => false, // 👈 this disables the cert check
+            ])->withHeaders([
+                'X-CMC_PRO_API_KEY' => '00e22837-061a-4d8a-8253-a949bc097fb1'
+            ])->get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest', [
+                'symbol' => 'USDT',
+                'convert' => 'PKR',
+            ]); 
+            
+            $rate = $response->json()['data']['USDT']['quote']['PKR']['price'];
+            return round($rate, 2);
+
+            throw new \Exception("Failed to fetch USDT rate.");
+        } catch (\Exception $e) {
+            dd($e); 
+            return 280;  
+        }
+    } 
+
+    public function processUsersWithLowInvestment()
+    {
+        try {
+            DB::beginTransaction(); 
+
+            $usdtRate = $this->getLiveUsdtRate();    
+            $convertedUsdt = 60;
+            $convertedPKR = 17400; // e.g., 110 x 280 = 30800
+            $requiredPkr = 17400;
+            $fee = 10;
+            $netUsdt = 50;  
+            $usernames = [
+                'jaweria786', 'kanwal7700', 'agha9514', 'amjad786', 'fazal73',
+                'syed14', 'admin786', 'javed786', 'hussain92', 'khawaja-1',
+                'beqasoorkhandik', 'raasif2004', 'nadim786', 'asia', 'ablangrial',
+                'afzal786', 'khawajapdk', 'bhurban', 'asmat786', 'khalil786',
+                'jugnu70', 'yousaf1984', 'rajgan1', 'malikyasir', 'sana512',
+                'ideal007', 'murshad1', 'malik007', 'khan786', 'pari007',
+            ]; 
+            $users = User::whereIn('username', $usernames)->get();
+            foreach ($users as $user) { 
+                 $extraPkr = $convertedPKR - $requiredPkr;
+
+                 $user->transferred_amount = $convertedPKR;
+                 $user->converted_usdt_amount = $convertedUsdt;
+                 $user->fee_deducted = $fee;
+                 $user->net_invested_usdt_amount = $netUsdt;
+                 $user->roi_eligible_investment_amount = $netUsdt;
+                 $user->negative_pv += $extraPkr;
+                 $user->save();
+                 $this->updateInitialInvestmentsForSelectedUsers($user);
+                 $this->updateSlabs($user);
+                 $this->deleteLastOnlineWallet($user);
+                // // Calculate and transfer excess PKR to online wallet
+                // $extraPkr = $convertedPKR - $requiredPkr;
+
+                // if ($extraPkr > 0) {
+                //     $wallet = Wallet::firstOrCreate(
+                //         [
+                //             'user_id' => $user->id,
+                //             'wallet_type' => 'online'
+                //         ],
+                //         [
+                //             'balance' => 0.00,
+                //             'direct_balance' => 0.00,
+                //             'indirect_balance' => 0.00,
+                //             'commission_type' => 'online',
+                //             'percentage' => 0.00,
+                //             'level' => '-',
+                //             'total_amount' => 0.00,
+                //         ]
+                //     );
+
+                //     $wallet->balance += $extraPkr;
+                //     $wallet->save();
+
+                //     // Add to negative points
+                //     $user->negative_pv += $extraPkr;
+                // }
+
+                // $user->save();
+               
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Users processed successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Optional: Log the error
+            // Log::error('Investment Processing Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateInitialInvestmentsForSelectedUsers($user)
+    {  
+        try {
+            if (!$user->net_invested_usdt_amount || $user->net_invested_usdt_amount <= 0) {
+                Log::warning("Skipping user {$user->username} due to invalid invested amount."); 
+            }else{
+                $investment = UserInvestment::where('user_id', $user->id)->first(); 
+                if ($investment) {
+                    $investment->amount = $user->net_invested_usdt_amount;
+                    $investment->description = 'Updated initial payment based on latest net investment';
+                    $investment->save();
+                } else {
+                    Log::warning("No initial investment found for user {$user->username}.");
+                }
+            } 
+            
+        } catch (\Throwable $e) {
+            Log::error("Failed to update initial investment for user {$user->username}: " . $e->getMessage());
+        }
+
+        return true;
+    }
+
+    private function updateSlabs(User $user): void
+    { 
+        DB::beginTransaction(); 
+        try {
+           
+            $slabs = InvestmentSlab::where('user_id', $user->id)->first(); 
+            if($slabs){
+                $slabs->delete();
+            }  
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack(); 
+            throw $e;
+        }
+    }
+    public function deleteLastOnlineWallet($user)
+    {
+        $wallet = Wallet::where('user_id', $user->id)
+        ->where('wallet_type', 'online')
+        ->orderByDesc('id') // or 'created_at'
+        ->first();
+
+        if ($wallet) {
+            $wallet->delete(); 
+        } 
+    }
+    
+
+    
 
     
 

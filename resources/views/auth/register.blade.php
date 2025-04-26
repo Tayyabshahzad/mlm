@@ -180,10 +180,13 @@
         </div>
         
         <div class="form-group mt-4">
-            <label class="font-size-h6 font-weight-bolder text-dark">Equivalent in USDT</label>
+            <label class="font-size-h6 font-weight-bolder text-dark">Equivalent in USDT <small class="text-danger">(Minimum Amount is 60 USD)</small> </label>
             <input class="form-control form-control-solid" 
             name="usdt_amount"
-            type="text" id="usdt_amount" readonly required>
+            type="text" id="usdt_amount" min="60" readonly required>
+            @error('usdt_amount')
+            <div class="text-danger">{{ $message }}</div>
+            @enderror
         </div> 
         <!-- Amount Proof Field -->
         <div class="form-group">
