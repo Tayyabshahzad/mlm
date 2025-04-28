@@ -23,6 +23,7 @@ class ActivationCodeController extends Controller
 
     public function generateCode(Request $request)
     {
+        
         $user = Auth::user(); 
         $setting = Setting::first();
         $userTotalBalance = Wallet::where('wallet_type', 'online')

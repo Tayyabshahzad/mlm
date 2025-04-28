@@ -24,7 +24,7 @@
                 <span class="text-muted font-weight-bold mr-4">Available Balance </span>
                 <div class="kt-widget__content">
                     <div class="kt-widget__section">
-                        <strong> {{ Auth::user()->roi_eligible_investment_amount }} $ </strong> 
+                        <strong>${{ Auth::user()->roi_eligible_investment_amount }}</strong> 
                     </div> 
                 </div> 
                 @role('admin')
@@ -110,7 +110,9 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Online Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3"> {{ $data['online_wallet'] }} </div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
+                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['online_wallet'] }} 
+                                        </div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -130,7 +132,8 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Direct/Indirect Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3"> {{ $data['direct_indirect'] }}</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3"> 
+                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['direct_indirect'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -138,7 +141,7 @@
                                     <!--end::Chart-->
                                 </div>
                                 <!--end::Body-->
-                            </div>
+                            </div>  
                             <!--end::Tiles Widget 5-->
                         </div>
 
@@ -149,7 +152,8 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Reward Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['rewardWallet'] }}</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
+                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['rewardWallet'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -168,7 +172,8 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">ROI</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['roi'] }}</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
+                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['roi'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -188,7 +193,8 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Profit Share</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['profit_share'] }}</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
+                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['profit_share'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -208,7 +214,8 @@
                                     <!--begin::Stats-->
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Rank</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">{{ $data['rank'] }}</div>
+                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
+                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['rank'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -245,7 +252,7 @@
                         <!--begin::Body-->
                         <div class="card-body d-flex align-items-center">
                             <div class="py-2">
-                                <h3 class="text-white font-weight-bolder mb-3">Total Earning: {{ number_format($data['total_earning'],2)  }} PV</h3>
+                                <h3 class="text-white font-weight-bolder mb-3">Total Earning: <i class="fas fa-dollar-sign text-white"></i>  {{ number_format($data['total_earning'],2)  }}</h3>
                                 <p class="text-white font-size-lg">
                                     Overview of All Your Wallets
                                 </p>
@@ -259,71 +266,69 @@
             </div>
             <div class="row">
                 <div class="col-lg-12">
-
                     <div style="
-  background: linear-gradient(135deg, #00ff95, #00cfff);
-  color: #ffffff;
-  padding: 25px 30px;
-  border-radius: 14px;
-  font-family: 'Segoe UI', sans-serif;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
-  margin: 40px auto;
-  position: relative;
-  overflow: hidden; 
-  min-width: 280px;
-">
+                    background: linear-gradient(135deg, #00ffc3, #00aaff);
+                    color: #ffffff;
+                    padding: 30px 35px;
+                    border-radius: 16px;
+                    font-family: 'Segoe UI', sans-serif;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                    margin: 40px auto; position: relative; overflow: hidden;  transition: all 0.3s ease;">
 
-  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;">
-    <div style="font-size: 26px; animation: bounce 1.5s infinite;">
-      📣
-    </div>
-    <div style="
-      font-size: 20px;
-      font-weight: bold;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
-    ">
-      Promotion Update – <span style="text-decoration: underline; color: #fffde7;">April 6</span>
-    </div>
-  </div>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;">
+                            <div style="font-size: 30px; animation: bounce 2s infinite;">
+                                🤑
+                            </div>
+                            <div style="
+                                font-size: 22px;
+                                font-weight: bold;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                flex: 1;
+                            ">
+                                Monthly Profits & Bonus – <span style="text-decoration: underline; color: #fffde7;">April 28</span>
+                            </div>
+                        </div>
+    
+                        <p style="margin: 20px 0 8px 42px; font-size: 17px; color: rgba(255,255,255,0.95); line-height: 1.6;">
+                            Withdrawals and Top-Ups are <strong style="color: #ffffff;">now open</strong>!
+                        </p>
+                        
+                        <p style="margin: 0 0 15px 42px; font-size: 16px; color: rgba(255,255,255,0.85); line-height: 1.6;">
+                            Available from <strong style="color: #ffffff;">April 28, 12:00 PM</strong> until <strong style="color: #ffffff;">April 30, 12:00 PM</strong>. ⏳<br>
+                            Complete your transactions within the given time to secure your earnings!
+                        </p>
+                        
+                        <a href="#" style="
+                            display: inline-block;
+                            margin-left: 42px;
+                            margin-top: 12px;
+                            color: #fff9c4;
+                            text-decoration: underline;
+                            font-size: 15px;
+                            transition: color 0.3s;
+                        " onmouseover="this.style.color='#ffff99';" onmouseout="this.style.color='#fff9c4';">
+                            Learn more
+                        </a>
 
-  <p style="margin: 12px 0 5px 36px; font-size: 16px; color: rgba(255,255,255,0.9);">
-    Area Heads will now be promoted with 
-    <strong style="color: #ffffff;">7 direct members</strong> instead of 10.
-  </p>
+                        <style>
+                            @keyframes bounce {
+                                0%, 100% { transform: translateY(0); }
+                                50% { transform: translateY(-8px); }
+                            }
 
-  <p style="margin: 0 0 10px 36px; font-size: 16px; color: rgba(255,255,255,0.85);">
-    Plus, a <strong style="color: #ffffff;">2% additional incentive</strong> will apply! 🎁
-  </p>
-
-  <a href="#" style="
-    display: inline-block;
-    margin-left: 36px;
-    margin-top: 10px;
-    color: #fff9c4;
-    text-decoration: underline;
-    font-size: 14px;
-  ">Learn more</a>
-
-  <style>
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
-    }
-
-    @media (max-width: 420px) {
-      div[style*='font-size: 20px'] {
-        font-size: 16px !important;
-      }
-    }
-  </style>
-</div>
-
-                  
-
-                   
+                            @media (max-width: 480px) {
+                                div[style*='font-size: 22px'] {
+                                    font-size: 18px !important;
+                                }
+                                p, a {
+                                    font-size: 14px !important;
+                                }
+                            }
+                        </style> 
+                    </div>    
+                                   
                 </div> 
                 <div class="col-lg-12">
                     <!--begin::Card-->
@@ -353,7 +358,7 @@
                             <div class="d-flex justify-content-between flex-wrap mt-1">
                                 <div class="d-flex mr-3">
                                     <a href="#" class="text-dark-75 text-hover-primary font-size-h4 font-weight-bold mr-3">
-                                       <strong> Personal Investment {{ $data['initial_investment'] }} PV <span>2X</span> </strong>  
+                                       <strong> Personal Investment ${{ $data['initial_investment'] }}  <span>2X</span> </strong>  
                                     </a>
                                     <a href="#">
                                         <i class="flaticon2-correct text-success font-size-h5"></i>
@@ -395,7 +400,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Total Earned</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i>  {{ $data['total_roi_earned_pv'] }}</span>
                             </div>
                         </div>
                         <!--end::Item-->
@@ -407,7 +412,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Earned This Month</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i>  {{ $data['total_roi_earned_pv'] }}</span>
                             </div>
                         </div>
                         <!--end::Item-->
@@ -419,7 +424,7 @@
                             <div class="d-flex flex-column text-dark-75">
                                 <span class="font-weight-bolder font-size-sm">Remaining</span>
                                 <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span>{{  200 - $data['total_roi_earned_pv']      }} PV</span>
+                                <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i>  {{  200 - $data['total_roi_earned_pv']      }}</span>
                             </div>
                         </div> 
                     </div>
@@ -441,7 +446,7 @@
                           <div class="d-flex justify-content-between flex-wrap mt-1">
                               <div class="d-flex mr-3">
                                   <a href="#" class="text-dark-75 text-hover-primary font-size-h4 font-weight-bold mr-3">
-                                    Personal Investment Cap 700 PV <span>7X</span> 
+                                    Personal Investment Cap <i class="fas fa-dollar-sign text-dark-50"></i> 700  <span>7X</span> 
                                   </a>
                                   <a href="#">
                                       <i class="flaticon2-correct text-success font-size-h5"></i>
@@ -488,7 +493,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Total Earned</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i> {{ $data['total_roi_earned_pv'] }} </span>
                           </div>
                       </div>
                       <!--end::Item-->
@@ -500,7 +505,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Earned This Month</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>{{ $data['total_roi_earned_pv'] }} PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i> {{ $data['total_roi_earned_pv'] }}</span>
                           </div>
                       </div>
                       <!--end::Item-->
@@ -512,7 +517,7 @@
                           <div class="d-flex flex-column text-dark-75">
                               <span class="font-weight-bolder font-size-sm">Remaining</span>
                               <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span>{{ 700 -  $data['total_roi_earned_pv'] }} PV</span>
+                              <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i> {{ 700 -  $data['total_roi_earned_pv'] }}</span>
                           </div>
                       </div> 
                   </div>

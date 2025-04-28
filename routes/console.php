@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Log;
 //     return now()->dayOfWeek !== \Carbon\Carbon::FRIDAY;
 // });
 
-Schedule::command('app:update-setting')->twiceDaily(10, 22);
+//Schedule::command('app:update-setting')->twiceDaily(10, 22);
 
 
 // Schedule::command('roi:generate-weekly')
