@@ -111,7 +111,7 @@
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Online Wallet</div>
                                         <div class="text-inverse-danger font-weight-bolder font-size-h3">
-                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['online_wallet'] }} 
+                                          ${{ $data['online_wallet'] }} 
                                         </div>
                                     </div>
                                     <!--end::Stats-->
@@ -133,7 +133,7 @@
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Direct/Indirect Wallet</div>
                                         <div class="text-inverse-danger font-weight-bolder font-size-h3"> 
-                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['direct_indirect'] }}</div>
+                                           ${{ $data['direct_indirect'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -153,7 +153,7 @@
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Reward Wallet</div>
                                         <div class="text-inverse-danger font-weight-bolder font-size-h3">
-                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['rewardWallet'] }}</div>
+                                          ${{ $data['rewardWallet'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -173,7 +173,7 @@
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">ROI</div>
                                         <div class="text-inverse-danger font-weight-bolder font-size-h3">
-                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['roi'] }}</div>
+                                           ${{ $data['roi'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -194,7 +194,7 @@
                                     <div class="flex-grow-1 card-spacer-x pt-6">
                                         <div class="text-inverse-danger font-weight-bold">Profit Share</div>
                                         <div class="text-inverse-danger font-weight-bolder font-size-h3">
-                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['profit_share'] }}</div>
+                                           ${{ $data['profit_share'] }}</div>
                                     </div>
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
@@ -211,12 +211,22 @@
                             <div class="card card-custom bgi-no-repeat bgi-no-repeat bgi-size-cover gutter-b" style="height: 130px; background-image: url(assets/media/bg/bg-6.jpg)">
                                 <!--begin::Body-->
                                 <div class="card-body d-flex flex-column p-0">
-                                    <!--begin::Stats-->
-                                    <div class="flex-grow-1 card-spacer-x pt-6">
-                                        <div class="text-inverse-danger font-weight-bold">Rank</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
-                                            <i class="fas fa-dollar-sign text-white"></i> {{ $data['rank'] }}</div>
+                                    <!--begin::Stats--> 
+
+                                    <div class="flex-grow-1 card-spacer-x pt-6" style="background: #f9f9ff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                        <div style="font-size: 16px; font-weight: 600; color: #5e548e; margin-bottom: 8px;">
+                                            🎉 Congratulations!
+                                        </div>
+                                        <div style="font-size: 18px; color: #6c5ce7; font-weight: bold;">
+                                            You’ve achieved the rank of:
+                                        </div>
+                                        <div style="font-size: 24px; font-weight: 800; color: #2b2d42; margin-top: 5px;">
+                                            <span style="color: #ff6347;"> Visioners </span>  
+                                           
+                                        </div>
                                     </div>
+                                    
+                                    
                                     <!--end::Stats-->
                                     <!--begin::Chart-->
                                     <div id="kt_tiles_widget_2_chart" class="card-rounded-bottom" style="height: 50px"></div>
@@ -275,42 +285,39 @@
                     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
                     margin: 40px auto; position: relative; overflow: hidden;  transition: all 0.3s ease;">
 
-                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;">
-                            <div style="font-size: 30px; animation: bounce 2s infinite;">
-                                🤑
-                            </div>
-                            <div style="
-                                font-size: 22px;
-                                font-weight: bold;
-                                white-space: nowrap;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                                flex: 1;
-                            ">
-                                Monthly Profits & Bonus – <span style="text-decoration: underline; color: #fffde7;">April 28</span>
-                            </div>
-                        </div>
-    
-                        <p style="margin: 20px 0 8px 42px; font-size: 17px; color: rgba(255,255,255,0.95); line-height: 1.6;">
-                            Withdrawals and Top-Ups are <strong style="color: #ffffff;">now open</strong>!
-                        </p>
-                        
-                        <p style="margin: 0 0 15px 42px; font-size: 16px; color: rgba(255,255,255,0.85); line-height: 1.6;">
-                            Available from <strong style="color: #ffffff;">April 28, 12:00 PM</strong> until <strong style="color: #ffffff;">April 30, 12:00 PM</strong>. ⏳<br>
-                            Complete your transactions within the given time to secure your earnings!
-                        </p>
-                        
-                        <a href="#" style="
-                            display: inline-block;
-                            margin-left: 42px;
-                            margin-top: 12px;
-                            color: #fff9c4;
-                            text-decoration: underline;
-                            font-size: 15px;
-                            transition: color 0.3s;
-                        " onmouseover="this.style.color='#ffff99';" onmouseout="this.style.color='#fff9c4';">
-                            Learn more
-                        </a>
+<div style="display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;">
+    <div style="font-size: 30px; animation: bounce 2s infinite;">
+        🤑
+    </div>
+    <div style="
+        font-size: 22px;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+    ">
+           Withdrawal Processing Window – <span style="text-decoration: underline; color: #fffde7;">Until May 5</span>
+    </div>
+</div>
+
+ 
+<p style="margin: 0 0 15px 42px; font-size: 16px; color: rgba(255,255,255,0.99); line-height: 1.6;">
+    All approved withdrawal amounts will be processed and transferred to your account (or handed in cash) <strong style="color: #ffffff;">before May 5</strong>. 💸<br>
+    Please ensure your withdrawal request is submitted within the window for timely processing.
+</p>
+
+<a href="#" style="
+    display: inline-block;
+    margin-left: 42px;
+    margin-top: 12px;
+    color: #fff9c4;
+    text-decoration: underline;
+    font-size: 15px;
+    transition: color 0.3s;
+" onmouseover="this.style.color='#ffff99';" onmouseout="this.style.color='#fff9c4';">
+    Learn more
+</a>
 
                         <style>
                             @keyframes bounce {
