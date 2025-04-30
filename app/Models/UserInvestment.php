@@ -10,6 +10,11 @@ class UserInvestment extends Model
         'user_id', 
         'amount',
         'type', 
-        'description'
+        'description','investment_from'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class,'investment_from');
+    }
 }

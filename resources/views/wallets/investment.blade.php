@@ -81,7 +81,7 @@
                                                 </svg>
                                                 <!--end::Svg Icon-->
                                             </span>
-                                            <span class="card-title font-weight-bolder text-white font-size-h2 mb-0 mt-6 d-block">{{ $firstInvest->amount }}</span>
+                                            <span class="card-title font-weight-bolder text-white font-size-h2 mb-0 mt-6 d-block">${{ $firstInvest->amount }}</span>
                                             <span class="font-weight-bold text-white font-size-sm">Initial Investment</span>
                                         </div>
                                         <!--end::Body-->
@@ -159,7 +159,7 @@
                                             </tr>
                                         </thead> 
                                         @foreach($investments as $investment)
-                                            <tr class="pl-0">
+                                            <tr class="pl-0 @if($investment->investment_from) bg-light-danger @endif">
                                                 <td>
                                                     <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $loop->iteration }}</span>
                                                 </td>  

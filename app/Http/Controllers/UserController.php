@@ -22,6 +22,9 @@ use App\Models\Setting;
 use App\Models\TransactionLog;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ContactsExport;
+use App\Models\UserInvestment;
+use App\Models\InvestmentSlab;
+
 class UserController extends Controller
 {
     protected $pvService;
@@ -949,6 +952,68 @@ class UserController extends Controller
 
         return Excel::download(new ContactsExport($request->start_date, $request->end_date), "Contacts-info-from ".$request->start_date ."-".$request->end_date.".xlsx");
     } 
+
+    public function accountTopup(Request $request)
+    {
+        $users = User::all();  
+        $investments = UserInvestment::where('investment_from',Auth::user()->id)->get();
+        return view('users.account-topup', compact('users','investments'));
+    } 
+
+    public function storeTopup(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'amount' => 'required|numeric|min:1',
+        ]); 
+        $amountToTransfer = $request->amount;
+        $user = User::findOrFail($request->user_id);
+        $setting = Setting::first(); // or however you retrieve it
+        $companyName = $setting->site_name ?? 'Admin';     
+        $description = "{$companyName} topped up your account with $ {$amountToTransfer} (Cash received by admin)."; 
+        $this->createInitialInvestment($user,$amountToTransfer,$description);
+        $this->checkAndCreateSlabs($user);
+        $this->logTransaction($user->id,'investment','-',$amountToTransfer,$amountToTransfer,"You topped up your account with {$amountToTransfer} $ from your Online Wallet.",
+                'credit',0);
+        return response()->json(['message' => 'Top-up successful!']);
+    }
+
+    protected function createInitialInvestment(User $user, $amountToTransfer,$description): void
+    {
+        UserInvestment::create([
+            'user_id' => $user->id,
+            'amount' => $amountToTransfer,
+            'type' => 'topup',
+            'description' => $description,
+            'investment_from'=>Auth::user()->id
+        ]); 
+        $user->increment('roi_eligible_investment_amount', $amountToTransfer);
+    }
+
+    private function checkAndCreateSlabs($user)
+    {
+        $totalInvestment = UserInvestment::where('user_id', $user->id)->sum('amount');
+        $totalSlabs = InvestmentSlab::where('user_id', $user->id)->count(); 
+        $availableInvestment = $totalInvestment - ($totalSlabs * 100);
+        while ($availableInvestment >= 100) {
+            $achievedAt = now();
+            $willPayAt = $achievedAt->copy()->addMonths(24)->startOfMonth()->addMonth();
+            
+            $newSlab = new InvestmentSlab();
+            $newSlab->user_id = $user->id;
+            $newSlab->slab_count = $totalSlabs + 1;
+            $newSlab->amount = 100;
+            $newSlab->achived_at = now();
+            $newSlab->current_balance = $user->roi_eligible_investment_amount; 
+            $newSlab->maturity_date = now()->addMonths(24);
+            $newSlab->will_pay_at = $willPayAt;
+            $newSlab->status = 'No';
+            $newSlab->save();
+            $totalSlabs++;
+            $availableInvestment -= 100;
+        }
+    }
+    
 
 
 }

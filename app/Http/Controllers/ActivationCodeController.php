@@ -29,7 +29,7 @@ class ActivationCodeController extends Controller
         $userTotalBalance = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id())
         ->sum('balance'); 
-        if ($userTotalBalance < $setting->activation_code) {
+        if ($userTotalBalance < $setting->activation_code || $setting->activation_code < 60) {
             return response()->json(['message' => 'Insufficient PV balance. You need at least '.$setting->activation_code.' PV to generate a code.'], 400);
         } 
         $wallets = Wallet::where('wallet_type', 'online')

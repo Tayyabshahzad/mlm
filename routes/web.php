@@ -105,9 +105,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::post('user/delete', 'userDelete')->name('user.delete');
         Route::get('deleted/user', 'deletedUser')->name('deleted.users');
         Route::get('activation-code','activationCode')->name('user.activation.code');
-        Route::post('/admin/activation-code/update-status','updateActivationCode')
-    ->name('admin.activation-code.update-status');
-    Route::get('download/contacts', 'downloadContacts')->name('download.contacts');
+        Route::post('/admin/activation-code/update-status','updateActivationCode')->name('admin.activation-code.update-status');
+        Route::get('download/contacts', 'downloadContacts')->name('download.contacts');
+        Route::get('topup','accountTopup')->name('user.topup');
+        Route::post('admin/topup','storeTopup')->name('user.topup.store');
 
     }); 
     Route::prefix('rental')->controller(UserController::class)->group(function () {
