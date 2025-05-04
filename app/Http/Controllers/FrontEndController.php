@@ -337,8 +337,7 @@ class FrontEndController extends Controller
             if($user->profile->cnic == null || $user->profile->first_name == null ||   $user->profile->last_name == null){
                 return redirect()->back()->with('error', 'Please Add CNIC Details First.');
             }else{
-                 $this->updatePdf($user->profile,$user);   
-                 dd(1);
+                 $this->updatePdf($user->profile,$user);    
                  Mail::to($user->email)->send(new CompanyAgreement($user));
                  $user->agreement_sent = true;
                  $user->save();
@@ -614,16 +613,16 @@ class FrontEndController extends Controller
             ];
             $users = User::whereNotIn('username', $usernames)->get();  
             foreach ($users as $user) {
-                $user->transferred_amount = $convertedPKR;
-                $user->converted_usdt_amount = $convertedUsdt;
-                $user->fee_deducted = $fee;
-                $user->usdt_rate = $usdtRate;
-                $user->net_invested_usdt_amount = $netUsdt;
-                $user->roi_eligible_investment_amount = $netUsdt;
+                // $user->transferred_amount = $convertedPKR;
+                // $user->converted_usdt_amount = $convertedUsdt;
+                // $user->fee_deducted = $fee;
+                // $user->usdt_rate = $usdtRate;
+                // $user->net_invested_usdt_amount = $netUsdt;
+                // $user->roi_eligible_investment_amount = $netUsdt;
                 $user->negative_pv = $negativePointUSDT;   
                 $user->save();
-                $this->createInitialInvestment($user);
-                $this->checkAndCreateSlabs($user);
+                // $this->createInitialInvestment($user);
+                // $this->checkAndCreateSlabs($user);
             }
             DB::commit();
             return response()->json(['message' => 'Users processed successfully.']);
