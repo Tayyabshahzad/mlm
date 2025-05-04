@@ -337,7 +337,8 @@ class FrontEndController extends Controller
             if($user->profile->cnic == null || $user->profile->first_name == null ||   $user->profile->last_name == null){
                 return redirect()->back()->with('error', 'Please Add CNIC Details First.');
             }else{
-                 $this->updatePdf($user->profile);   
+                 $this->updatePdf($user->profile,$user);   
+                 dd(1);
                  Mail::to($user->email)->send(new CompanyAgreement($user));
                  $user->agreement_sent = true;
                  $user->save();
@@ -467,34 +468,36 @@ class FrontEndController extends Controller
 
     }
 
-    public function updatePdf($userDetails)
+    public function updatePdf($userDetails,$user)
     { 
         $pdf = new Fpdi();  
         $existingPdfPath = public_path('documents/business-agreement-final.pdf');  
-        $updatedPdfPath = public_path("documents/agreement-{$userDetails->user['id']}.pdf");  
+        $updatedPdfPath = public_path("documents/agreements/{$userDetails->user->username}.pdf");  
         $pdf->AddPage();
         $pdf->setSourceFile($existingPdfPath);
         $template = $pdf->importPage(1);
         $pdf->useTemplate($template);  
         $pdf->SetFont('Helvetica', '', 9);
         $pdf->SetTextColor(0, 0, 0);  
-        $pdf->SetXY(160, 49); 
+        $pdf->SetXY(150, 43.3); 
         $pdf->Write(0, Carbon::now()->format('d F Y')); 
 
-        $pdf->SetXY(40, 99); // X and Y coordinates
+        $pdf->SetXY(45, 79); // X and Y coordinates
         $pdf->Write(0, $userDetails['first_name']);   
-        $pdf->SetXY(133, 99); // X and Y coordinates
+        $pdf->SetXY(95, 79); // X and Y coordinates
         $pdf->Write(0,$userDetails['last_name']);  
-        $pdf->SetXY(100, 106); // X and Y coordinates
+        $pdf->SetXY(30, 85); // X and Y coordinates
         $pdf->Write(0, $userDetails['cnic']);  
-        $pdf->SetXY(80, 114); // X and Y coordinates
+        $pdf->SetXY(85, 85); // X and Y coordinates
         $pdf->Write(0, $userDetails['address']);  
-        // $pdf->SetXY(120, 205); // X and Y coordinates
-        // $pdf->Write(0, $userDetails['first_name']);   
+        $pdf->SetXY(70, 130); // X and Y coordinates
+        $pdf->Write(0, $user->roi_eligible_investment_amount);    
+        $pdf->SetXY(115, 130); // X and Y coordinates
+        $pdf->Write(0, $user->username);   
 
         $pdf->SetXY(115, 263); // X and Y coordinates
         $pdf->Write(0, $userDetails['first_name']);  
-        $pdf->SetXY(143, 263); // X and Y coordinates
+        $pdf->SetXY(130, 263); // X and Y coordinates
         $pdf->Write(0, $userDetails['last_name']);
 
         $pdf->SetXY(145, 275); // X and Y coordinates
@@ -593,14 +596,14 @@ class FrontEndController extends Controller
     {   
         try {
             DB::beginTransaction(); 
-            $usdtRate = 281.55;
+            $usdtRate = 290;
             $convertedUsdt = 110;
-            $convertedPKR = $convertedUsdt * $usdtRate;
+            $convertedPKR = $convertedUsdt * $usdtRate; // 31900
             $requiredPkr = 27500;
             $fee = 10;
             $netUsdt = 100;
-            $negativePointPKR = ($convertedPKR - $requiredPkr);
-            $negativePointUSDT = ($negativePointPKR /$usdtRate ); 
+            $negativePointPKR = ($convertedPKR - $requiredPkr); // 4400
+            $negativePointUSDT = ($negativePointPKR /$usdtRate ); //15.17
             $usernames = [
                 'jaweria786', 'kanwal7700', 'agha9514', 'amjad786', 'fazal73',
                 'syed14', 'admin786', 'javed786', 'hussain92', 'khawaja-1',

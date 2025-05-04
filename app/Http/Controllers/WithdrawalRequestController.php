@@ -79,7 +79,7 @@ class WithdrawalRequestController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:21',
+            'amount' => 'required|numeric|min:15',
             'review_notes' => 'string',
             'withdrawal_option' => 'required|in:usdt,bank,cash',
         ]);
@@ -98,7 +98,8 @@ class WithdrawalRequestController extends Controller
             return redirect()->back()->with('error', 'Please add your USDT Address Details');
         } 
         $actualAmount = $request->amount;
-        $calculatedFee = ($request->withdrawal_option == 'bank') ? ($actualAmount * 0.02) : 0; 
+        //$calculatedFee = ($request->withdrawal_option == 'bank') ? ($actualAmount * 0.02) : 0; 
+        $calculatedFee = 0;
         $withdrawableAmount = $actualAmount - $calculatedFee;  
         $onlineWalletSum = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id())

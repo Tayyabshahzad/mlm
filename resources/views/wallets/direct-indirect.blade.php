@@ -39,7 +39,7 @@
                 <!--begin::Header-->
                 <div class="card-header border-0 py-5">
                     <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label font-weight-bolder text-dark">Total Balance : {{ $wallets->sum('balance') }} PV</span> 
+                        <span class="card-label font-weight-bolder text-dark">Total Balance : ${{ $wallets->sum('balance') }}</span> 
                     </h3>
                     <div class="card-toolbar">
                         @php
@@ -63,7 +63,7 @@
 
                                     <th style="min-width: 110px">User Name</th>
                                     <th style="min-width: 110px">Commission</th>
-                                    <th style="min-width: 110px">PV</th>
+                                    <th style="min-width: 110px">USDT</th>
                                     <th style="min-width: 110px">Commission Type</th>
                                     <th style="min-width: 110px">Level</th> 
                                     <th style="min-width: 120px">Date</th> 
@@ -85,7 +85,7 @@
                                     </td>
                                     <td>
                                         <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 
-                                            @if($wallet->commission_type == 'direct') {{ $wallet->direct_balance }} @else  {{ $wallet->indirect_balance }}  @endif PV
+                                           $@if($wallet->commission_type == 'direct') {{ $wallet->direct_balance }} @else  {{ $wallet->indirect_balance }}  @endif  
                                          </span> 
                                     </td>
                                     <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> {{ ucfirst($wallet->commission_type) }} </span>    </td>
