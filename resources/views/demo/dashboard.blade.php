@@ -276,63 +276,62 @@
             </div>
             <div class="row">
                 <div class="col-lg-12">
-                    <div style="
-                    background: linear-gradient(135deg, #00ffc3, #00aaff);
-                    color: #ffffff;
-                    padding: 30px 35px;
-                    border-radius: 16px;
-                    font-family: 'Segoe UI', sans-serif;
-                    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                    margin: 40px auto; position: relative; overflow: hidden;  transition: all 0.3s ease;">
+                        <div style="
+                        background: linear-gradient(135deg, #00ffc3, #00aaff);
+                        color: #ffffff;
+                        padding: 30px 35px;
+                        border-radius: 16px;
+                        font-family: 'Segoe UI', sans-serif;
+                        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                        margin: 40px auto; position: relative; overflow: hidden;  transition: all 0.3s ease;">
 
-<div style="display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;">
-    <div style="font-size: 30px; animation: bounce 2s infinite;">
-        🤑
-    </div>
-    <div style="
-        font-size: 22px;
-        font-weight: bold;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        flex: 1;
-    ">
-           Withdrawal Processing Window – <span style="text-decoration: underline; color: #fffde7;">Until May 5</span>
-    </div>
-</div>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;">
+                        <div style="font-size: 30px; animation: bounce 2s infinite;">
+                            🎯 
+                        </div>
+                        <div style="
+                        font-size: 22px;
+                        font-weight: bold;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        flex: 1;
+                        ">
+                       Second Level Reward Increased! <span style="text-decoration: underline; color: #fffde7;">Until May 25</span>
+                        </div>
+                        </div>
 
- 
-<p style="margin: 0 0 15px 42px; font-size: 16px; color: rgba(255,255,255,0.99); line-height: 1.6;">
-    All approved withdrawal amounts will be processed and transferred to your account (or handed in cash) <strong style="color: #ffffff;">before May 5</strong>. 💸<br>
-    Please ensure your withdrawal request is submitted within the window for timely processing.
-</p>
 
-<a href="#" style="
-    display: inline-block;
-    margin-left: 42px;
-    margin-top: 12px;
-    color: #fff9c4;
-    text-decoration: underline;
-    font-size: 15px;
-    transition: color 0.3s;
-" onmouseover="this.style.color='#ffff99';" onmouseout="this.style.color='#fff9c4';">
-    Learn more
-</a>
+                        <p style="margin: 0 0 15px 42px; font-size: 16px; color: rgba(255,255,255,0.99); line-height: 1.6;">
+                            We’ve upgraded the Second Level Reward from $260 to $350 to boost your <br class="br"></earnings> Take advantage of this enhanced reward and grow your network today! 🚀
+                        </p>
+
+                        <a href="#" style="
+                        display: inline-block;
+                        margin-left: 42px;
+                        margin-top: 12px;
+                        color: #fff9c4;
+                        text-decoration: underline;
+                        font-size: 15px;
+                        transition: color 0.3s;
+                        " onmouseover="this.style.color='#ffff99';" onmouseout="this.style.color='#fff9c4';">
+                        Learn more
+                        </a>
 
                         <style>
-                            @keyframes bounce {
-                                0%, 100% { transform: translateY(0); }
-                                50% { transform: translateY(-8px); }
-                            }
+                        @keyframes bounce {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-8px); }
+                        }
 
-                            @media (max-width: 480px) {
-                                div[style*='font-size: 22px'] {
-                                    font-size: 18px !important;
-                                }
-                                p, a {
-                                    font-size: 14px !important;
-                                }
-                            }
+                        @media (max-width: 480px) {
+                        div[style*='font-size: 22px'] {
+                        font-size: 18px !important;
+                        }
+                        p, a {
+                        font-size: 14px !important;
+                        }
+                        }
                         </style> 
                     </div>    
                                    
