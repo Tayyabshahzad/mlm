@@ -24,6 +24,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ContactsExport;
 use App\Models\UserInvestment;
 use App\Models\InvestmentSlab;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -115,14 +117,18 @@ class UserController extends Controller
         $commissionPercentages = [
             1 => 5,  // Level 1 gets 5%
             2 => 2,  // Level 2 gets 2%
-            3 => 1.5, // Level 3 gets 1.5%
-            4 => 1.25,   // Level 4 gets 1%
-            5 => 1, // Level 5 gets 0.8%
-            6 => 0.75, // Level 6 gets 0.5%
-            7 => 0.50, // Level 7 gets 0.1%
+            3 => 1.50, // Level 3 gets 1.50%
+            4 => 1.25,   // Level 4 gets 1.25%
+            5 => 1, // Level 5 gets 1%
+            6 => 0.75, // Level 6 gets 0.75%
+            7 => 0.50, // Level 7 gets 0.50%
         ]; 
-        $percentage = $commissionPercentages[$level] ?? 0;
-        return ($investmentAmount * $percentage) / 100;
+        $percentage = $commissionPercentages[$level] ?? 0; 
+        $calculatedAmount = ($investmentAmount * $percentage) / 100;
+        return [
+            'percentage' => $percentage,           // e.g., 5
+            'commission_amount' => $calculatedAmount  // e.g., 50
+        ]; 
     } 
     public function userDetails(Request $request)
     {
@@ -227,20 +233,20 @@ class UserController extends Controller
             ])->first();
 
             if (!$previousReward || $previousReward->balance <= 0) {
-                \Log::info("Skipping reward for level {$level} because reward for level {$i} is not achieved.");
+                Log::info("Skipping reward for level {$level} because reward for level {$i} is not achieved.");
                 return;
             }
         }
         
-        \Log::info("Level: " . $level . " directChildCount: " . $directChildCount . " specificRewardLevel: " . $specificRewardLevel['users_required']);
+        Log::info("Level: " . $level . " directChildCount: " . $directChildCount . " specificRewardLevel: " . $specificRewardLevel['users_required']);
         // $usersRequired = $rewardLevels; 
         if ($directChildCount >= $specificRewardLevel['users_required']) {
-            \Log::info('condition meet');
+            Log::info('condition meet');
             $this->assignReward($parentID, $specificRewardLevel['reward_amount'], $specificRewardLevel['level']);
         }
         $parentExists  = User::where('blocked',false)->find($parent->sponsor_id);
         if ($parentExists) {
-            \Log::info('parentExists: ' . $parentExists->id);
+            Log::info('parentExists: ' . $parentExists->id);
             $this->test($parentExists->id, $level+1);
         }
     }
@@ -368,7 +374,7 @@ class UserController extends Controller
     } 
     public function calculateDirectReferrals($userId)
     {
-        return \DB::table('users')->where('sponsor_id', $userId)->where('can_login', 1)->count();
+        return DB::table('users')->where('sponsor_id', $userId)->where('can_login', 1)->count();
     }
     public function calculateTeamSize($userId, $childUser)
     {
@@ -449,10 +455,8 @@ class UserController extends Controller
         $parentUser = User::where('blocked',false)->find($user->sponsor_id);
        
         if ($parentUser) {
-            $directCommissionPercentage = $this->getCommissionForLevel(1,$user->roi_eligible_investment_amount); // Level 1 for direct commission 
-            $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance; 
-            // Assign only direct commission for immediate sponsor
-            $this->walletService->assignCommission($parentUser->id, $directCommissionAmount, 'direct', $user, 1);
+            $directCommissionPercentage = $this->getCommissionForLevel(1,$user->roi_eligible_investment_amount); // Level 1 for direct commission  
+            $this->walletService->assignCommission($parentUser->id, $directCommissionPercentage['commission_amount'], 'direct', $user, 1,$directCommissionPercentage['percentage']);
         }
     
         // Exclude the immediate sponsor from ancestors list
@@ -478,11 +482,8 @@ class UserController extends Controller
             // Check team size condition for the current level (default to 0 if not defined)
             $requiredTeamSize = $requiredTeamSizes[$level] ?? 0;
             if ($teamSize >= $requiredTeamSize) {
-                $indirectCommissionPercentage = $this->getCommissionForLevel($level,$user->roi_eligible_investment_amount); // Get commission for the ancestor's level
-                $indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
-    
-                // Assign Indirect Commission for Ancestors
-                $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionAmount, 'indirect', $user, $level);
+                $indirectCommissionPercentage = $this->getCommissionForLevel($level,$user->roi_eligible_investment_amount); // Get commission for the ancestor's level 
+                $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionPercentage['commission_amount'], 'indirect', $user, $level,$indirectCommissionPercentage['percentage']);
             }
         }
     } 
@@ -786,9 +787,8 @@ class UserController extends Controller
             // Check if the parent user has enough active direct users
             $activeDirectUsers = $this->getActiveDirectUsersCount($parentUser->id);  
             if ($activeDirectUsers >= 1) { 
-                $directCommissionPercentage = $this->getCommissionForLevel(1,$user->roi_eligible_investment_amount); // Level 1 for direct commission
-                $directCommissionAmount = ($directCommissionPercentage / 100) * $user->current_pv_balance; 
-                $this->walletService->assignCommission($parentUser->id, $directCommissionPercentage, 'direct', $user, 1); 
+                $directCommissionPercentage = $this->getCommissionForLevel(1,$user->roi_eligible_investment_amount);  
+                $this->walletService->assignCommission($parentUser->id, $directCommissionPercentage['commission_amount'], 'direct', $user, 1,$directCommissionPercentage['percentage']); 
             }
 
         }  
@@ -809,9 +809,8 @@ class UserController extends Controller
 
             if ($activeDirectUsers >= $teamSizeRequirement) {
                 $indirectCommissionPercentage = $this->getCommissionForLevel($level,$user->roi_eligible_investment_amount); // Get commission for the ancestor's level
-                //$indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance;
- 
-                $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionPercentage, 'indirect', $user, $level);
+                //$indirectCommissionAmount = ($indirectCommissionPercentage / 100) * $user->current_pv_balance; 
+                $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionPercentage['commission_amount'], 'indirect', $user, $level,$indirectCommissionPercentage['percentage']);
             }
         }
     }
@@ -855,7 +854,7 @@ class UserController extends Controller
                 // Check if direct commission already exists
                 if (!$this->commissionExists($parentUser->id, $user->id, 'direct', 1)) {
                     // Assign direct commission for the immediate sponsor
-                    $this->walletService->assignCommission($parentUser->id, $directCommissionPercentage, 'direct', $user, 1);
+                    $this->walletService->assignCommission($parentUser->id, $directCommissionPercentage['commission_amount'], 'direct', $user, 1,$directCommissionPercentage['percentage']);
                 }
             }
         }
@@ -882,7 +881,7 @@ class UserController extends Controller
                 // Check if indirect commission already exists
                 if (!$this->commissionExists($ancestor->ancestor_id, $user->id, 'indirect', $level)) {
                     // Assign Indirect Commission for Ancestors
-                    $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionPercentage, 'indirect', $user, $level);
+                    $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionPercentage['commission_amount'], 'indirect', $user, $level,$directCommissionPercentage['percentage']);
                 }
             }
         }

@@ -60,7 +60,7 @@ class WalletService
         $wallet->save(); 
     }
 
-    public function assignCommission($userId, $amount, $type, $user,$level)
+    public function assignCommission($userId, $amount, $type, $user,$level,$percentage)
 {
     if ($amount <= 0) {
         return; // Skip if no valid amount to assign
@@ -87,6 +87,7 @@ class WalletService
         $wallet->indirect_balance += $amount;
        
     }
+    $wallet->percentage += $percentage;
     $wallet->total_amount += $amount;
     // Save the wallet
     $wallet->save();

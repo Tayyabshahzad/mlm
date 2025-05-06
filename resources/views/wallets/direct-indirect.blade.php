@@ -62,7 +62,7 @@
                                     <th class="pl-0" style="">S#</th>
 
                                     <th style="min-width: 110px">User Name</th>
-                                    <th style="min-width: 110px">Commission</th>
+                                    <th style="min-width: 110px">Commission %</th>
                                     <th style="min-width: 110px">USDT</th>
                                     <th style="min-width: 110px">Commission Type</th>
                                     <th style="min-width: 110px">Level</th> 
@@ -80,7 +80,7 @@
                                     </td>  
                                     <td>
                                         <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> 
-                                           @if($wallet->commission_type == 'direct') {{ $wallet->direct_balance }} @else  {{ $wallet->indirect_balance }}  @endif%
+                                            {{ $wallet->percentage }}  %
                                         </span> 
                                     </td>
                                     <td>

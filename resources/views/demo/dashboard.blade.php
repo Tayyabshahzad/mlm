@@ -638,19 +638,27 @@
                                     $percentage = ($count / $maxValue) * 100; 
                                     $visibleWidth = $percentage > 13 ? $percentage : 18;
                                     $rewardImages = [
-                                        1 => '150PV.jpg',
-                                        2 => '300PV.jpg',
-                                        3 => '1000PV.jpg',
-                                        4 => '4000PV.jpg',
-                                        5 => '10000PV.jpg',
-                                        6 => '30000PV.jpg',
-                                        7 => '48000PV.jpg',
+                                        1 => '130$.jpg',
+                                        2 => '350$.jpg',
+                                        3 => '875$.jpg',
+                                        4 => '3450$.jpg',
+                                        5 => '8650$.jpg',
+                                        6 => '26000$.jpg',
+                                        7 => '41500$.jpg',
                                     ];
                                     $rewardImage = $rewardImages[$level] ?? 'default.jpg';
+                                    $rewardAmount = str_replace('.jpg', '', $rewardImage);
                                 @endphp
-                                <li>
-                                    <div class="progress-warpper text-center mb-20" style="position: relative;">
+                               
+                                <li class="mb-3">
+                                   
+                                    <div class="progress-warpper text-center mt-0 mb-10" 
+                                    style="position: relative;top:-1.4rem">
+                                        <strong class="text-center">
+                                            {{ $rewardAmount }}
+                                        </strong>
                                         <div class="progress" style="height:16px;width:78%">
+                                           
                                             <div 
                                                 class="progress-bar 
                                                     {{ 
@@ -673,6 +681,7 @@
                                             <small>{{ $count }} / {{ $maxValue }}</small> 
                                         </b> 
                                     </div>
+                                   
                                     <img 
                                         class="img img-thumbnail"
                                         src="{{ asset('assets/custom-images/rewards/' . $rewardImage) }}" 
@@ -682,8 +691,8 @@
                                             right: 2em;
                                             margin-top: -9em;
                                             width: 50px;
-                                            height: 50px;"
-                                    />
+                                            height: 50px;" />
+                                    
                                 </li>
                             @endforeach
                             
