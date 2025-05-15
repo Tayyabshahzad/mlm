@@ -1,5 +1,284 @@
 @extends('demo.layout.app')
 @section('content')
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --accent-color: #4cc9f0;
+        --success-color: #4ad66d;
+        --warning-color: #f8961e;
+        --danger-color: #f94144;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+    }
+    
+    /* Modern Card Styling */
+    .modern-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        overflow: hidden;
+        background: white;
+        margin-bottom: 24px;
+    }
+    
+    .modern-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+    
+    .modern-card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 20px 25px;
+        background: transparent;
+    }
+    
+    .modern-card-title {
+        font-weight: 600;
+        color: var(--dark-color);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    
+    /* Wallet Cards */
+    .wallet-card {
+        border-radius: 12px;
+        color: white;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 20px;
+        height: 130px;
+        transition: var(--transition);
+    }
+    
+    .wallet-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .wallet-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .wallet-card .wallet-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 5px;
+        opacity: 0.9;
+    }
+    
+    .wallet-card .wallet-amount {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+    
+    /* Progress Circles */
+    .progress-circle-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    
+    .progress-circle {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: conic-gradient(var(--primary-color) 0%, var(--primary-color) var(--progress), #e9ecef var(--progress));
+    }
+    
+    .progress-circle .inner-circle {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .progress-circle .percentage {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--dark-color);
+    }
+    
+    /* Reward Levels */
+    .reward-level {
+        position: relative;
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .reward-level:last-child {
+        border-bottom: none;
+    }
+    
+    .reward-progress {
+        height: 12px;
+        border-radius: 6px;
+        margin: 10px 0;
+    }
+    
+    .reward-badge {
+        position: absolute;
+        right: 45px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Announcement Banner */
+    .announcement-banner {
+        background: linear-gradient(135deg, #4361ee, #4cc9f0);
+        color: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .announcement-banner::after {
+        content: '';
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    
+    .announcement-icon {
+        font-size: 2.5rem;
+        margin-right: 15px;
+        animation: bounce 2s infinite;
+    }
+    
+    .announcement-title {
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+    
+    .announcement-text {
+        opacity: 0.9;
+        margin-bottom: 15px;
+    }
+    
+    .announcement-link {
+        color: white;
+        text-decoration: underline;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+    
+    .announcement-link:hover {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    /* Investment Progress Cards */
+    .investment-card {
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+        background: white;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .investment-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0.1;
+    }
+    
+    .investment-title {
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        color: var(--dark-color);
+    }
+    
+    .progress-label {
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+    
+    .progress-value {
+        font-weight: 700;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .wallet-card {
+            height: auto;
+            padding: 15px;
+        }
+        
+        .wallet-card .wallet-amount {
+            font-size: 1.5rem;
+        }
+        
+        .progress-circle {
+            width: 150px;
+            height: 150px;
+        }
+        
+        .progress-circle .inner-circle {
+            width: 120px;
+            height: 120px;
+        }
+    }
+
+    .target-section {
+        display: block !important;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+</style>
+
 <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
     <!--begin::Subheader-->
     <div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
@@ -13,12 +292,9 @@
                 <div class="kt-widget__content">
                     <div class="kt-widget__section">
                         <a href="#" class="kt-widget__username">
-                            
                             <i class="flaticon2-correct kt-font-success"></i>
                         </a>
-                        
                     </div>
-                    
                 </div> 
                 <div class="subheader-separator subheader-separator-ver mt-2 mb-2 mr-4 bg-gray-200 ml-2"></div>
                 <span class="text-muted font-weight-bold mr-4">Available Balance </span>
@@ -31,7 +307,7 @@
                 <span class="text-muted font-weight-bold ml-15">Time & Time Zone </span>
                 <div class="kt-widget__content ml-5">
                     <div class="kt-widget__section">
-                        <strong>  {{ now()->format('Y-m-d H:i:s') }} ({{ config('app.timezone') }}) </strong> 
+                        <strong>{{ now()->format('Y-m-d H:i:s') }} ({{ config('app.timezone') }})</strong> 
                     </div> 
                 </div> 
                 @endrole
@@ -39,604 +315,310 @@
         </div>
     </div>
     <!--end::Subheader-->
-    <!--begin::Entry-->
     
+    <!--begin::Dashboard Content-->
     <div class="d-flex flex-column-fluid"> 
-        
-        <div class="container ">   
+        <div class="container">   
             <div class="row">  
+                <!-- Leaderboard Card -->
                 <div class="col-xl-4"> 
-                    <div class="card card-custom gutter-b card-stretch"> 
-                        <div class="card-header border-0 pt-5">
-                            <div class="card-title">
-                                <div class="card-label">
-                                    <div class="font-weight-bolder">Weekly Sales Stats</div>
-                                    <div class="font-size-sm text-muted mt-2">0 PV</div>
+                    <div class="modern-card"> 
+                        <div class="modern-card-header">
+                            <h5 class="modern-card-title">Weekly Sales Stats</h5>
+                            <div class="font-size-sm text-muted mt-1">0 PV</div>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="font-weight-bolder mb-4">Leaderboard</h4>
+                            
+                            @foreach ($data['team_size'] as $team)
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50 symbol-light mr-3 flex-shrink-0">
+                                        <div class="symbol-label">
+                                            <img src="{{ asset($team->getFirstMediaUrl('user_profile_images')) }}" class="h-50" alt="{{ $team->name }}" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <a href="#" class="font-weight-bolder text-dark">{{ ucfirst($team->name) }}</a>
+                                        <div class="text-muted font-size-sm">Direct</div>
+                                    </div>
                                 </div>
-                            </div> 
-                        </div>
-                        <!--end::Header-->
-                        <!--begin::Body-->
-                        <div class="card-body d-flex flex-column px-0">
-
-                           
-                            <!--begin::Chart-->
-                            <div id="kt_tiles_widget_1_chart" data-color="info" style="height: 125px"></div>
-                            <!--end::Chart-->
-                            <!--begin::Items-->
-
-                          
-
-                            <div class="flex-grow-1 card-spacer-x">
-                                <h3 class="  font-weight-bolder my-7">Leaderboard</h3>
-                                <!--begin::Item-->
-
-                                @foreach ($data['team_size']  as $team ) 
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <div class="d-flex align-items-center mr-2">
-                                            <div class="symbol symbol-50 symbol-light mr-3 flex-shrink-0">
-                                                <div class="symbol-label">
-                                                    <img src="{{asset($team->getFirstMediaUrl('user_profile_images')) }}" alt="" class="h-50" />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <a href="#" class="font-size-h6 text-dark-75 text-hover-primary font-weight-bolder"> {{ ucfirst($team->name) }}</a>
-                                                <div class="font-size-sm text-muted font-weight-bold mt-1">Direct</div>
-                                            </div>
-                                        </div>
-                                        <div class="label label-light label-inline font-weight-bold text-dark-50 py-4 px-3 font-size-base">
-                                            {{ $team->team->count() }}
-                                        </div>
-                                    </div> 
-                                @endforeach
-                                <!--end::Item-->
- 
-
-                                
-                                <!--end::Item-->
+                                <span class="badge badge-light badge-pill font-weight-bold py-2 px-3">
+                                    {{ $team->team->count() }}
+                                </span>
                             </div>
-                            <!--end::Items-->
+                            @endforeach
                         </div>
-                        <!--end::Body-->
                     </div>
-                    <!--end::Tiles Widget 1-->
                 </div>
+                
+                <!-- Wallet Cards -->
                 <div class="col-xl-8">
-                    <div class="row"> 
-                        <div class="col-xl-6"> 
-                            <div class="card card-custom bgi-no-repeat bgi-no-repeat bgi-size-cover gutter-b" style="height: 130px; background-image: url(assets/media/bg/bg-8.jpg)">
-                                <!--begin::Body-->
-                                <div class="card-body d-flex flex-column p-0">
-                                    <!--begin::Stats-->
-                                    <div class="flex-grow-1 card-spacer-x pt-6">
-                                        <div class="text-inverse-danger font-weight-bold">Online Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
-                                          ${{ $data['online_wallet'] }} 
-                                        </div>
-                                    </div>
-                                    <!--end::Stats-->
-                                    <!--begin::Chart-->
-                                    <div id="kt_tiles_widget_2_chart" class="card-rounded-bottom" style="height: 50px"></div>
-                                    <!--end::Chart-->
+                    <div class="row">
+                        <!-- Online Wallet -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="wallet-card" style="background: linear-gradient(135deg, #4361ee, #3a0ca3);">
+                                <div class="wallet-title">Online Wallet</div>
+                                <div class="wallet-amount">${{ $data['online_wallet'] }}</div>
+                                <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
+                                    <div class="progress-bar bg-white" style="width: 60%"></div>
                                 </div>
-                                <!--end::Body-->
                             </div>
-                            <!--end::Tiles Widget 5-->
                         </div>
-
-
-                        <div class="col-xl-6"> 
-                            <div class="card card-custom bgi-no-repeat bgi-no-repeat bgi-size-cover gutter-b" style="height: 130px; background-image: url(assets/media/bg/bg-5.jpg)">
-                                <!--begin::Body-->
-                                <div class="card-body d-flex flex-column p-0">
-                                    <!--begin::Stats-->
-                                    <div class="flex-grow-1 card-spacer-x pt-6">
-                                        <div class="text-inverse-danger font-weight-bold">Direct/Indirect Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3"> 
-                                           ${{ $data['direct_indirect'] }}</div>
-                                    </div>
-                                    <!--end::Stats-->
-                                    <!--begin::Chart-->
-                                    <div id="kt_tiles_widget_2_chart" class="card-rounded-bottom" style="height: 50px"></div>
-                                    <!--end::Chart-->
+                        
+                        <!-- Direct/Indirect Wallet -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="wallet-card" style="background: linear-gradient(135deg, #7209b7, #560bad);">
+                                <div class="wallet-title">Direct/Indirect Wallet</div>
+                                <div class="wallet-amount">${{ $data['direct_indirect'] }}</div>
+                                <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
+                                    <div class="progress-bar bg-white" style="width: 45%"></div>
                                 </div>
-                                <!--end::Body-->
-                            </div>  
-                            <!--end::Tiles Widget 5-->
+                            </div>
                         </div>
-
-                        <div class="col-xl-6"> 
-                            <div class="card card-custom bgi-no-repeat bgi-no-repeat bgi-size-cover gutter-b" style="height: 130px; background-image: url(assets/media/bg/bg-1.jpg)">
-                                <!--begin::Body-->
-                                <div class="card-body d-flex flex-column p-0">
-                                    <!--begin::Stats-->
-                                    <div class="flex-grow-1 card-spacer-x pt-6">
-                                        <div class="text-inverse-danger font-weight-bold">Reward Wallet</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
-                                          ${{ $data['rewardWallet'] }}</div>
-                                    </div>
-                                    <!--end::Stats-->
-                                    <!--begin::Chart-->
-                                    <div id="kt_tiles_widget_2_chart" class="card-rounded-bottom" style="height: 50px"></div>
-                                    <!--end::Chart-->
+                        
+                        <!-- Reward Wallet -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="wallet-card" style="background: linear-gradient(135deg, #f72585, #b5179e);">
+                                <div class="wallet-title">Reward Wallet</div>
+                                <div class="wallet-amount">${{ $data['rewardWallet'] }}</div>
+                                <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
+                                    <div class="progress-bar bg-white" style="width: 30%"></div>
                                 </div>
-                                <!--end::Body-->
                             </div>
-                            <!--end::Tiles Widget 5-->
                         </div>
-
-                        <div class="col-xl-6"> 
-                            <div class="card card-custom bgi-no-repeat bgi-no-repeat bgi-size-cover gutter-b" style="height: 130px; background-image: url(assets/media/bg/bg-4.jpg)">
-                                <!--begin::Body-->
-                                <div class="card-body d-flex flex-column p-0">
-                                    <!--begin::Stats-->
-                                    <div class="flex-grow-1 card-spacer-x pt-6">
-                                        <div class="text-inverse-danger font-weight-bold">ROI</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
-                                           ${{ $data['roi'] }}</div>
-                                    </div>
-                                    <!--end::Stats-->
-                                    <!--begin::Chart-->
-                                    <div id="kt_tiles_widget_2_chart" class="card-rounded-bottom" style="height: 50px"></div>
-                                    <!--end::Chart-->
+                        
+                        <!-- ROI -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="wallet-card" style="background: linear-gradient(135deg, #4895ef, #3f37c9);">
+                                <div class="wallet-title">ROI</div>
+                                <div class="wallet-amount">${{ $data['roi'] }}</div>
+                                <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
+                                    <div class="progress-bar bg-white" style="width: 75%"></div>
                                 </div>
-                                <!--end::Body-->
                             </div>
-                            <!--end::Tiles Widget 5-->
                         </div>
-
-
-                        <div class="col-xl-6"> 
-                            <div class="card card-custom bgi-no-repeat bgi-no-repeat bgi-size-cover gutter-b" style="height: 130px; background-image: url(assets/media/bg/bg-2.jpg)">
-                                <!--begin::Body-->
-                                <div class="card-body d-flex flex-column p-0">
-                                    <!--begin::Stats-->
-                                    <div class="flex-grow-1 card-spacer-x pt-6">
-                                        <div class="text-inverse-danger font-weight-bold">Profit Share</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3">
-                                           ${{ $data['profit_share'] }}</div>
-                                    </div>
-                                    <!--end::Stats-->
-                                    <!--begin::Chart-->
-                                    <div id="kt_tiles_widget_2_chart" class="card-rounded-bottom" style="height: 50px"></div>
-                                    <!--end::Chart-->
+                        
+                        <!-- Profit Share -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="wallet-card" style="background: linear-gradient(135deg, #4cc9f0, #4895ef);">
+                                <div class="wallet-title">Profit Share</div>
+                                <div class="wallet-amount">${{ $data['profit_share'] }}</div>
+                                <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
+                                    <div class="progress-bar bg-white" style="width: 50%"></div>
                                 </div>
-                                <!--end::Body-->
                             </div>
-                            <!--end::Tiles Widget 5-->
-                        </div> 
-
-
-                        <div class="col-xl-6"> 
-                            <div class="card card-custom bgi-no-repeat bgi-no-repeat bgi-size-cover gutter-b" style="height: 130px; background-image: url(assets/media/bg/bg-6.jpg)">
-                                <!--begin::Body-->
-                                <div class="card-body d-flex flex-column p-0">
-                                    <!--begin::Stats--> 
-
-                                    <div class="flex-grow-1 card-spacer-x pt-6" style="background: #f9f9ff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                                        <div style="font-size: 16px; font-weight: 600; color: #5e548e; margin-bottom: 8px;">
-                                            🎉 Congratulations!
-                                        </div>
-                                        <div style="font-size: 18px; color: #6c5ce7; font-weight: bold;">
-                                            You’ve achieved the rank of:
-                                        </div>
-                                        <div style="font-size: 24px; font-weight: 800; color: #2b2d42; margin-top: 5px;">
-                                            <span style="color: #ff6347;"> Visioners </span>  
-                                           
-                                        </div>
-                                    </div>
-                                    
-                                    
-                                    <!--end::Stats-->
-                                    <!--begin::Chart-->
-                                    <div id="kt_tiles_widget_2_chart" class="card-rounded-bottom" style="height: 50px"></div>
-                                    <!--end::Chart-->
+                        </div>
+                        
+                        <!-- Rank Achievement -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="wallet-card" style="background: linear-gradient(135deg, #4ad66d, #38b000);">
+                                <div class="wallet-title">Your Rank</div>
+                                <div class="wallet-amount">Visioners</div>
+                                <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
+                                    <div class="progress-bar bg-white" style="width: 80%"></div>
                                 </div>
-                                <!--end::Body-->
                             </div>
-                            <!--end::Tiles Widget 5-->
-                        </div>  
- 
-                        <div class="col-xl-12"> 
-                            <div class="card card-custom bgi-no-repeat bgi-no-repeat bgi-size-cover gutter-b" style="height: 130px; background-image: url(assets/media/bg/bg-10.jpg)">
-                                <!--begin::Body-->
-                                <div class="card-body d-flex flex-column p-0">
-                                    <!--begin::Stats-->
-                                    <div class="flex-grow-1 card-spacer-x pt-6">
-                                        <div class="text-inverse-danger font-weight-bold">Total Team Size</div>
-                                        <div class="text-inverse-danger font-weight-bolder font-size-h3"> {{ $data['totalTeam'] }} </div>
-                                    </div>
-                                    <!--end::Stats-->
-                                    <!--begin::Chart-->
-                                    <div id="kt_tiles_widget_2_chart" class="card-rounded-bottom" style="height: 50px"></div>
-                                    <!--end::Chart-->
+                        </div>
+                        
+                        <!-- Total Team Size -->
+                        <div class="col-12">
+                            <div class="wallet-card" style="background: linear-gradient(135deg, #f8961e, #f3722c);">
+                                <div class="wallet-title">Total Team Size</div>
+                                <div class="wallet-amount">{{ $data['totalTeam'] }}</div>
+                                <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
+                                    <div class="progress-bar bg-white" style="width: 65%"></div>
                                 </div>
-                                <!--end::Body-->
                             </div>
-                            <!--end::Tiles Widget 5-->
-                        </div>  
-
+                        </div>
                     </div>
-                    <!--begin::Mixed Widget 20-->
-                    <div class="card card-custom bgi-no-repeat gutter-b" style="height: 175px; background-color: #4AB58E; background-position: calc(100% + 1rem) bottom; background-size: 25% auto; background-image: url(assets/media/svg/humans/custom-1.svg)">
-                        <!--begin::Body-->
+                    
+                    <!-- Total Earnings Card -->
+                    <div class="modern-card" style="background: linear-gradient(135deg, #4AB58E, #3a86ff); color: white;">
                         <div class="card-body d-flex align-items-center">
-                            <div class="py-2">
-                                <h3 class="text-white font-weight-bolder mb-3">Total Earning: <i class="fas fa-dollar-sign text-white"></i>  {{ number_format($data['total_earning'],2)  }}</h3>
-                                <p class="text-white font-size-lg">
+                            <div>
+                                <h3 class="text-white font-weight-bolder mb-2">Total Earnings: ${{ number_format($data['total_earning'], 2) }}</h3>
+                                <p class="text-white opacity-80 mb-0">
                                     Overview of All Your Wallets
                                 </p>
                             </div>
+                            <div class="ml-auto">
+                                <i class="fas fa-wallet fa-3x opacity-20"></i>
+                            </div>
                         </div>
-                        <!--end::Body-->
                     </div>
-                    <!--end::Mixed Widget 20-->
                 </div>
-                 
             </div>
-            <div class="row">
-                <div class="col-lg-12">
-                        <div style="
-                        background: linear-gradient(135deg, #00ffc3, #00aaff);
-                        color: #ffffff;
-                        padding: 30px 35px;
-                        border-radius: 16px;
-                        font-family: 'Segoe UI', sans-serif;
-                        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                        margin: 40px auto; position: relative; overflow: hidden;  transition: all 0.3s ease;">
-
-                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;">
-                        <div style="font-size: 30px; animation: bounce 2s infinite;">
-                            🎯 
-                        </div>
-                        <div style="
-                        font-size: 22px;
-                        font-weight: bold;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        flex: 1;
-                        ">
-                       Second Level Reward Increased! <span style="text-decoration: underline; color: #fffde7;">Until May 25</span>
-                        </div>
-                        </div>
-
-
-                        <p style="margin: 0 0 15px 42px; font-size: 16px; color: rgba(255,255,255,0.99); line-height: 1.6;">
-                            We’ve upgraded the Second Level Reward from $260 to $350 to boost your <br class="br"></earnings> Take advantage of this enhanced reward and grow your network today! 🚀
+            
+            <!-- Announcement Banner -->
+            <div class="announcement-banner">
+                <div class="d-flex align-items-start">
+                    <div class="announcement-icon">🎯</div>
+                    <div>
+                        <h3 class="announcement-title">Second Level Reward Increased!</h3>
+                        <p class="announcement-text">
+                            We've upgraded the Second Level Reward from $260 to $350 to boost your earnings. 
+                            Take advantage of this enhanced reward and grow your network today!
                         </p>
-
-                        <a href="#" style="
-                        display: inline-block;
-                        margin-left: 42px;
-                        margin-top: 12px;
-                        color: #fff9c4;
-                        text-decoration: underline;
-                        font-size: 15px;
-                        transition: color 0.3s;
-                        " onmouseover="this.style.color='#ffff99';" onmouseout="this.style.color='#fff9c4';">
-                        Learn more
-                        </a>
-
-                        <style>
-                        @keyframes bounce {
-                        0%, 100% { transform: translateY(0); }
-                        50% { transform: translateY(-8px); }
-                        }
-
-                        @media (max-width: 480px) {
-                        div[style*='font-size: 22px'] {
-                        font-size: 18px !important;
-                        }
-                        p, a {
-                        font-size: 14px !important;
-                        }
-                        }
-                        </style> 
-                    </div>    
-                                   
-                </div> 
-                <div class="col-lg-12">
-                    <!--begin::Card-->
-                    <div class="card card-custom gutter-b">
-                        <div class="card-header">
-                            <div class="card-title">
-                                <h3 class="card-label">Business Summary</h3>
-                            </div>
-                        </div>
-                        <div class="card-body">  
-                            <div id="chart_3"></div> 
-                        </div>
+                        <a href="#" class="announcement-link">Learn more about this offer</a>
                     </div>
-                    <!--end::Card-->
-                </div>
-
-                
-            </div> 
-
-            <div class="card card-custom gutter-b wave  wave-animated-info wave-info" 
-              style="background-position: right top; background-size: 30% auto; background-image: url(assets/media/svg/shapes/abstract-3.svg);background-size:cover">
-                <div class="card-body">
-                    <!--begin::Details-->
-                    <div class="d-flex mb-9"> 
-                        <div class="flex-grow-1">
-                            <!--begin::Title-->
-                            <div class="d-flex justify-content-between flex-wrap mt-1">
-                                <div class="d-flex mr-3">
-                                    <a href="#" class="text-dark-75 text-hover-primary font-size-h4 font-weight-bold mr-3">
-                                       <strong> Personal Investment ${{ $data['initial_investment'] }}  <span>2X</span> </strong>  
-                                    </a>
-                                    <a href="#">
-                                        <i class="flaticon2-correct text-success font-size-h5"></i>
-                                    </a>
-                                </div> 
-                            </div>
-                            <!--end::Title-->
-                            <!--begin::Content-->
-                            <div class="d-flex flex-wrap justify-content-between mt-1">
-                                <div class="d-flex flex-column flex-grow-1 pr-8">
-                                    <div class="d-flex flex-wrap mb-4">
-                                         
-                                    </div>
-                                    
-                                </div>
-                                <div class="d-flex align-items-center w-25 flex-fill float-right mt-lg-12 mt-8">
-                                    <span class="font-weight-bold text-dark-75">Progress</span>
-                                    <div class="progress progress-xs mx-3 w-100">
-                                        <div class="progress-bar bg-danger" role="progressbar" 
-                                         style="width:{{ $data['total_roi_earned_pv'] }}%;" 
-                                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="200"></div>
-                                    </div>
-                                    <span class="font-weight-bolder text-dark">{{ $data['total_roi_earned_pv'] }}%</span>
-                                </div>
-                            </div>
-                            <!--end::Content-->
-                        </div>
-                        <!--end::Info-->
-                    </div>
-                    <!--end::Details-->
-                    <div class="separator separator-solid"></div>
-                    <!--begin::Items-->
-                    <div class="d-flex align-items-center flex-wrap mt-8 ">
-                        <!--begin::Item-->
-                        <div class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
-                            <span class="mr-4">
-                                <i class="flaticon-piggy-bank display-4 text-muted font-weight-bold"></i>
-                            </span>
-                            <div class="d-flex flex-column text-dark-75">
-                                <span class="font-weight-bolder font-size-sm">Total Earned</span>
-                                <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i>  {{ $data['total_roi_earned_pv'] }}</span>
-                            </div>
-                        </div>
-                        <!--end::Item-->
-                        <!--begin::Item-->
-                        <div class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
-                            <span class="mr-4">
-                                <i class="flaticon-confetti display-4 text-muted font-weight-bold"></i>
-                            </span>
-                            <div class="d-flex flex-column text-dark-75">
-                                <span class="font-weight-bolder font-size-sm">Earned This Month</span>
-                                <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i>  {{ $data['total_roi_earned_pv'] }}</span>
-                            </div>
-                        </div>
-                        <!--end::Item-->
-                        <!--begin::Item-->
-                        <div class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
-                            <span class="mr-4">
-                                <i class="flaticon-pie-chart display-4 text-muted font-weight-bold"></i>
-                            </span>
-                            <div class="d-flex flex-column text-dark-75">
-                                <span class="font-weight-bolder font-size-sm">Remaining</span>
-                                <span class="font-weight-bolder font-size-h5">
-                                <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i>  {{  200 - $data['total_roi_earned_pv']      }}</span>
-                            </div>
-                        </div> 
-                    </div>
-                    <!--begin::Items-->
                 </div>
             </div>
-
-
             
-
-
-            <div class="card card-custom gutter-b wave  wave-animated wave-info" 
-            style="background-position: right top; background-size: 30% auto; background-image: url(assets/media/svg/shapes/abstract-4.svg);background-size:cover">
-              <div class="card-body">
-                  <!--begin::Details-->
-                  <div class="d-flex mb-9"> 
-                      <div class="flex-grow-1">
-                          <!--begin::Title-->
-                          <div class="d-flex justify-content-between flex-wrap mt-1">
-                              <div class="d-flex mr-3">
-                                  <a href="#" class="text-dark-75 text-hover-primary font-size-h4 font-weight-bold mr-3">
-                                    Personal Investment Cap <i class="fas fa-dollar-sign text-dark-50"></i> 700  <span>7X</span> 
-                                  </a>
-                                  <a href="#">
-                                      <i class="flaticon2-correct text-success font-size-h5"></i>
-                                  </a>
-                              </div> 
-                          </div>
-                          <!--end::Title-->
-                          <!--begin::Content-->
-                          <div class="d-flex flex-wrap justify-content-between mt-1">
-                              <div class="d-flex flex-column flex-grow-1 pr-8">
-                                  <div class="d-flex flex-wrap mb-4">
-                                       
-                                  </div>
-                                  
-                              </div>
-                              <div class="d-flex align-items-center w-25 flex-fill float-right mt-lg-12 mt-8">
-                                <span class="font-weight-bold text-dark-75">Progress</span>
-                                <div class="progress progress-xs mx-3 w-100">
-                                    <div 
-                                        class="progress-bar bg-danger" 
-                                        role="progressbar" 
-                                        style="width: {{ ($data['total_roi_earned_pv'] / 700) * 100 }}%;" 
-                                        aria-valuenow="{{ $data['total_roi_earned_pv'] }}" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="700">
+            <!-- Business Summary Chart -->
+            <div class="modern-card">
+                <div class="modern-card-header">
+                    <h5 class="modern-card-title">Business Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div id="chart_3" style="height: 300px;"></div>
+                </div>
+            </div>
+            
+            <!-- Investment Progress Cards -->
+            <div class="row">
+                <!-- 2X Investment -->
+                <div class="col-lg-6">
+                    <div class="investment-card">
+                        <h4 class="investment-title">Personal Investment: ${{ $data['initial_investment'] }} <span class="badge badge-success ml-2">2X</span></h4>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="progress-label mr-3">Progress</span>
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: {{ $data['total_roi_earned_pv'] }}%"></div>
+                            </div>
+                            <span class="progress-value ml-3">{{ $data['total_roi_earned_pv'] }}%</span>
+                        </div>
+                        
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="mb-1">
+                                    <i class="fas fa-piggy-bank text-muted"></i>
+                                </div>
+                                <div class="font-weight-bold">Total Earned</div>
+                                <div>${{ $data['total_roi_earned_pv'] }}</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="mb-1">
+                                    <i class="fas fa-gift text-muted"></i>
+                                </div>
+                                <div class="font-weight-bold">This Month</div>
+                                <div>${{ $data['total_roi_earned_pv'] }}</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="mb-1">
+                                    <i class="fas fa-chart-pie text-muted"></i>
+                                </div>
+                                <div class="font-weight-bold">Remaining</div>
+                                <div>${{ 200 - $data['total_roi_earned_pv'] }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 7X Investment -->
+                <div class="col-lg-6">
+                    <div class="investment-card">
+                        <h4 class="investment-title">Investment Cap <span class="badge badge-primary ml-2">7X</span></h4>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="progress-label mr-3">Progress</span>
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                <div class="progress-bar bg-danger" style="width: {{ ($data['total_roi_earned_pv'] / 700) * 100 }}%"></div>
+                            </div>
+                            <span class="progress-value ml-3">{{ round(($data['total_roi_earned_pv'] / 700) * 100, 2) }}%</span>
+                        </div>
+                        
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="mb-1">
+                                    <i class="fas fa-piggy-bank text-muted"></i>
+                                </div>
+                                <div class="font-weight-bold">Total Earned</div>
+                                <div>${{ $data['total_roi_earned_pv'] }}</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="mb-1">
+                                    <i class="fas fa-gift text-muted"></i>
+                                </div>
+                                <div class="font-weight-bold">This Month</div>
+                                <div>${{ $data['total_roi_earned_pv'] }}</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="mb-1">
+                                    <i class="fas fa-chart-pie text-muted"></i>
+                                </div>
+                                <div class="font-weight-bold">Remaining</div>
+                                <div>${{ 700 - $data['total_roi_earned_pv'] }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reward and Rank Targets -->
+            <div class="row">
+                <!-- Reward Target -->
+                <div class="col-lg-6" id="reward-target-wrapper"> 
+                    <div class="modern-card"> 
+                        <div class="modern-card-header">
+                            <h5 class="modern-card-title">Reward Target</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="progress-circle-container">
+                                <div class="progress-circle" style="--progress: {{ $data['reward'] }}%">
+                                    <div class="inner-circle">
+                                        <span class="percentage">{{ $data['reward'] }}%</span>
                                     </div>
                                 </div>
-                                <span class="font-weight-bolder text-dark">{{ round(($data['total_roi_earned_pv'] / 700) * 100, 2) }}%</span>
                             </div>
-                          </div>
-                          <!--end::Content-->
-                      </div>
-                      <!--end::Info-->
-                  </div>
-                  <!--end::Details-->
-                  <div class="separator separator-solid"  ></div>
-                  <!--begin::Items-->
-                  <div class="d-flex align-items-center flex-wrap mt-8 ">
-                      <!--begin::Item-->
-                      <div class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
-                          <span class="mr-4">
-                              <i class="flaticon-piggy-bank display-4 text-muted font-weight-bold"></i>
-                          </span>
-                          <div class="d-flex flex-column text-dark-75">
-                              <span class="font-weight-bolder font-size-sm">Total Earned</span>
-                              <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i> {{ $data['total_roi_earned_pv'] }} </span>
-                          </div>
-                      </div>
-                      <!--end::Item-->
-                      <!--begin::Item-->
-                      <div class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
-                          <span class="mr-4">
-                              <i class="flaticon-confetti display-4 text-muted font-weight-bold"></i>
-                          </span>
-                          <div class="d-flex flex-column text-dark-75">
-                              <span class="font-weight-bolder font-size-sm">Earned This Month</span>
-                              <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i> {{ $data['total_roi_earned_pv'] }}</span>
-                          </div>
-                      </div>
-                      <!--end::Item-->
-                      <!--begin::Item-->
-                      <div class="d-flex align-items-center flex-lg-fill mr-5 mb-2">
-                          <span class="mr-4">
-                              <i class="flaticon-pie-chart display-4 text-muted font-weight-bold"></i>
-                          </span>
-                          <div class="d-flex flex-column text-dark-75">
-                              <span class="font-weight-bolder font-size-sm">Remaining</span>
-                              <span class="font-weight-bolder font-size-h5">
-                              <span class="text-dark-50 font-weight-bold"></span> <i class="fas fa-dollar-sign text-dark-50"></i> {{ 700 -  $data['total_roi_earned_pv'] }}</span>
-                          </div>
-                      </div> 
-                  </div>
-                  <!--begin::Items-->
-              </div>
-          </div>
-
-         
-          <div class="row">
-           
-            
-          <style> .progress-circle {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            border-radius: 100%;
-            background: conic-gradient(#00d1d1 0%, #00d1d1 30%, #e3f9f9 30%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-          
-          /* Inner Circle to Keep Center Empty */
-          .inner-circle {
-            position: absolute;
-            width: 190px; /* Slightly smaller than the outer circle */
-            height: 190px;
-            border-radius: 50%;
-            background: #fff; /* Matches the background to appear hollow */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-          
-          /* Percentage Text */
-          .percentage {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-          }
-
-  
-
-
-          </style>
-            <div class="col-lg-6 " id="reward-target-wrapper"> 
-                <div class="card card-custom card-stretch gutter-b"> 
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title font-weight-bolder">Reward Target</h3>
-                        <div class="card-toolbar"> 
+                            <p class="text-muted mb-4">
+                                Notes: Click to get more details for your upcoming rewards
+                            </p>
+                            <button id="generateRewardTargetReport" class="btn btn-primary btn-lg w-100 py-3">
+                                View Reward Target
+                            </button>
                         </div>
-                    </div> 
-                    <div class="card-body d-flex justify-content-center  flex-column text-center justify-center">
-                        <div class="graph-wrapper" style="  display: flex;  width: 100%;  justify-content: center;">
-                            <div class="progress-circle" data-progress="{{ $data['reward']  }}">
-                                <div class="inner-circle">
-                                  <span class="percentage"> {{ $data['reward']  }}%</span>
-                                </div>
-                            </div>
-                        </div> 
-                        <div class="pt-5" >
-                            <p class="text-center font-weight-normal font-size-lg pb-7">Notes: Click to get more details for your upcoming rewards
-                         </p>
-                            <button type="" id="generateRewardTargetReport" class="btn btn-success btn-shadow-hover font-weight-bolder w-100 py-3">View Reward Target</button>
-                        </div>
-                    </div>  
-                </div> 
-            </div> 
-
-            <div class="col-lg-6" id="rank-target-wrapper"> 
-                <div class="card card-custom card-stretch gutter-b"> 
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title font-weight-bolder">Rank Target </h3>
-                        <div class="card-toolbar"> 
-                        </div>
-                    </div> 
-                    <div class="card-body d-flex flex-column">
-                        <div class="graph-wrapper" style="  display: flex;  width: 100%;  justify-content: center;">
-                            <div class="progress-circle" data-progress="0">
-                                <div class="inner-circle">
-                                  <span class="percentage">0%</span>
-                                </div>
-                            </div>
-                        </div> 
-                        <div class="pt-5">
-                            <p class="text-center font-weight-normal font-size-lg pb-7">Notes: Click to get more details for your upcoming Targets
-                         </p>
-                            <button type="" id="generateRankTargetReport" class="btn btn-success btn-shadow-hover font-weight-bolder w-100 py-3">View Rank Target</button>
-                        </div>
-                    </div>  
-                </div> 
-            </div> 
-
-
-            <div class="col-lg-12 d-none" id="reward-target-details"> 
-                <div class="card card-custom card-stretch gutter-b"> 
-                    <div class="card-header border-0 py-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label font-weight-bolder text-dark">Reward Target Details</span>
-        
-                        </h3> 
                     </div>
-                    <div class="card-body pt-0 pb-3">
-                        <div class="tab-content">
-                            
-                            <ol class="display-5">
+                </div>
+                
+                <!-- Rank Target -->
+                <div class="col-lg-6" id="rank-target-wrapper"> 
+                    <div class="modern-card"> 
+                        <div class="modern-card-header">
+                            <h5 class="modern-card-title">Rank Target</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="progress-circle-container">
+                                <div class="progress-circle" style="--progress: 0%">
+                                    <div class="inner-circle">
+                                        <span class="percentage">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-4">
+                                Notes: Click to get more details for your upcoming Targets
+                            </p>
+                            <button id="generateRankTargetReport" class="btn btn-primary btn-lg w-100 py-3">
+                                View Rank Target
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reward Target Details -->
+                <div class="col-lg-12 d-none" id="reward-target-details"> 
+                    <div class="modern-card"> 
+                        <div class="modern-card-header">
+                            <h5 class="modern-card-title">Reward Target Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="reward-levels">
                                 @foreach ($data['levelCount'] as $level => $count)
                                 @php
-                                    // Define the maximum value for each level
                                     $maxValues = [1 => 10, 2 => 50, 3 => 150, 4 => 400, 5 => 1000, 6 => 2000, 7 => 4000];
-                                    $maxValue = $maxValues[$level] ?? 1; // Default max value to 1 if undefined
-                                    $percentage = ($count / $maxValue) * 100; 
-                                    $visibleWidth = $percentage > 13 ? $percentage : 18;
+                                    $maxValue = $maxValues[$level] ?? 1;
+                                    $percentage = ($count / $maxValue) * 100;
                                     $rewardImages = [
                                         1 => '130$.jpg',
                                         2 => '350$.jpg',
@@ -646,155 +628,110 @@
                                         6 => '26000$.jpg',
                                         7 => '41500$.jpg',
                                     ];
-                                    $rewardImage = $rewardImages[$level] ?? 'default.jpg';
+                                    $rewardImage = $rewardImages[$level] ;
                                     $rewardAmount = str_replace('.jpg', '', $rewardImage);
                                 @endphp
-                               
-                                <li class="mb-3">
-                                   
-                                    <div class="progress-warpper text-center mt-0 mb-10" 
-                                    style="position: relative;top:-1.4rem">
-                                        <strong class="text-center">
-                                            {{ $rewardAmount }}
-                                        </strong>
-                                        <div class="progress" style="height:16px;width:78%">
-                                           
-                                            <div 
-                                                class="progress-bar 
-                                                    {{ 
-                                                        $level % 7 == 0 ? 'bg-primary' : 
-                                                        ($level % 6 == 0 ? 'bg-secondary' : 
-                                                        ($level % 5 == 0 ? 'bg-success' : 
-                                                        ($level % 4 == 0 ? 'bg-danger' : 
-                                                        ($level % 3 == 0 ? 'bg-warning' : 
-                                                        ($level % 2 == 0 ? 'bg-info' : 'bg-light'))))) }}" 
-                                                role="progressbar" 
-                                                style="width: {{ $visibleWidth }}%;" 
-                                                aria-valuenow="{{ $count }}" 
-                                                aria-valuemin="0" 
-                                                aria-valuemax="{{ $maxValue }}">
-
-                                                &nbsp;{{ $count }} / {{ $maxValue }}
+                                
+                                <div class="reward-level">
+                                    <h6 class="font-weight-bold mb-2">Level {{ $level }} Reward</h6>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="flex-grow-1">
+                                            <div class="progress reward-progress">
+                                                <div class="progress-bar 
+                                                    @if($level % 7 == 0) bg-primary 
+                                                    @elseif($level % 6 == 0) bg-secondary 
+                                                    @elseif($level % 5 == 0) bg-success 
+                                                    @elseif($level % 4 == 0) bg-danger 
+                                                    @elseif($level % 3 == 0) bg-warning 
+                                                    @elseif($level % 2 == 0) bg-info 
+                                                    @else bg-light @endif" 
+                                                    style="width: {{ $percentage }}%">
+                                                </div>
                                             </div>
                                         </div>
-                                        <b>
-                                            <small>{{ $count }} / {{ $maxValue }}</small> 
-                                        </b> 
+                                        <div class="ml-3 font-weight-bold">
+                                            {{ $count }} / {{ $maxValue }}
+                                        </div>
                                     </div>
-                                   
-                                    <img 
-                                        class="img img-thumbnail"
-                                        src="{{ asset('assets/custom-images/rewards/' . $rewardImage) }}" 
-                                        alt="Reward Image"
-                                        style="
-                                            position: absolute; 
-                                            right: 2em;
-                                            margin-top: -9em;
-                                            width: 50px;
-                                            height: 50px;" />
-                                    
-                                </li>
-                            @endforeach
-                            
-                            </ol>
-                            
-                            
-                            
+                                    <div class="reward-badge" style="background-image: url({{ asset('assets/custom-images/reward/' . $rewardImage) }})">
+                                        
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
-                    
-                </div> 
-            </div> 
-              {{-- rank details --}}
-            
-            <div class="col-lg-12 d-none" id="rank-target-details"> 
-                <div class="card card-custom card-stretch gutter-b"> 
-                    <div class="card-header border-0 py-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label font-weight-bolder text-dark">Rank Target Details</span> 
-                        </h3> 
-                    </div>
-                    <!--end::Header-->
-                    <!--begin::Body-->
-                    <div class="card-body pt-0 pb-3 ">
-                        <div class="tab-content">
-                             <ol class="display-5">
-                                <li>
-                                    <div class="progress mt-20 mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
+                </div>
+                
+                <!-- Rank Target Details -->
+                <div class="col-lg-12 d-none" id="rank-target-details"> 
+                    <div class="modern-card"> 
+                        <div class="modern-card-header">
+                            <h5 class="modern-card-title">Rank Target Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="reward-levels">
+                                @for($i = 1; $i <= 7; $i++)
+                                <div class="reward-level">
+                                    <h6 class="font-weight-bold mb-2">Rank {{ $i }}</h6>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="flex-grow-1">
+                                            <div class="progress reward-progress">
+                                                <div class="progress-bar bg-primary" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3 font-weight-bold">0 / 10</div>
                                     </div>
-                                </li>
-                                <li>
-                                    <div class="progress mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="progress mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="progress mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="progress mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="progress mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="progress mb-10">
-                                        <div class="progress-bar bg-primary" role="progressbar" 
-                                        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"> 0 </div>
-                                    </div>
-                                </li>
-                             </ol>
-                            
-                           
+                                </div>
+                                @endfor
+                            </div>
                         </div>
                     </div>
-                    <!--end::Body-->
-                </div> 
-            </div> 
-
-       
-        </div> 
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <!--end::Entry-->
+    <!--end::Dashboard Content-->
 </div>
 @endsection
+
 @section('page_js')
-    <script src="{{ asset('assets/js/pages/features/charts/apexcharts.js') }}"></script>
-    <script>
-        $(document).ready(function () { 
-            
-           
-            $('#generateRewardTargetReport').on('click', function () { 
-                $('#reward-target-details').removeClass('d-none'); 
-                $('#rank-target-details').addClass('d-none').removeClass('d-block'); 
-            });
+<script src="{{ asset('assets/js/pages/features/charts/apexcharts.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {  
+        $('.progress-circle').each(function () {
+            const styleAttr = $(this).attr('style') || '';
+            const match = styleAttr.match(/--progress:\s*(\d+)%/);
 
-            // Handle Rank Target button click
-            $('#generateRankTargetReport').on('click', function () {
-                $('#rank-target-details').removeClass('d-none'); 
-                $('#reward-target-details').addClass('d-none'); 
-            });
-
-           
+            if (match) {
+                const progress = match[1];
+                $(this).css('background', `conic-gradient(var(--primary-color) 0%, var(--primary-color) ${progress}%, #e9ecef ${progress}%)`);
+            }
         });
-    </script>
+
+        
+        // Handle Reward Target button click
+        $('#generateRewardTargetReport').on('click', function(e) { 
+            e.preventDefault();
+            $('#reward-target-details').removeClass('d-none').addClass('target-section');
+            $('#rank-target-details').addClass('d-none');
+            $('html, body').animate({
+                scrollTop: $('#reward-target-details').offset().top - 20
+            }, 300);
+        });
+
+        // Handle Rank Target button click
+        $('#generateRankTargetReport').on('click', function(e) {
+            e.preventDefault();
+            $('#rank-target-details').removeClass('d-none').addClass('target-section');
+            $('#reward-target-details').addClass('d-none');
+            $('html, body').animate({
+                scrollTop: $('#rank-target-details').offset().top - 20
+            }, 300);
+        });
+
+        
+    });
+</script>
 @endsection

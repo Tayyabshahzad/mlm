@@ -952,27 +952,54 @@ class UserController extends Controller
     public function accountTopup(Request $request)
     {
         $users = User::all();  
-        $investments = UserInvestment::where('investment_from',Auth::user()->id)->get();
-        return view('users.account-topup', compact('users','investments'));
+        $wallets = Wallet::where('wallet_src','top_up')->get();
+        return view('users.account-topup', compact('users','wallets'));
     } 
+
+    
+
 
     public function storeTopup(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:1',
-        ]); 
-        $amountToTransfer = $request->amount;
+        ]);
+        $amountToTopUp = $request->amount;
         $user = User::findOrFail($request->user_id);
-        $setting = Setting::first(); // or however you retrieve it
-        $companyName = $setting->site_name ?? 'Admin';     
-        $description = "{$companyName} topped up your account with $ {$amountToTransfer} (Cash received by admin)."; 
-        $this->createInitialInvestment($user,$amountToTransfer,$description);
-        $this->checkAndCreateSlabs($user);
-        $this->logTransaction($user->id,'investment','-',$amountToTransfer,$amountToTransfer,"You topped up your account with {$amountToTransfer} $ from your Online Wallet.",
-                'credit',0);
-        return response()->json(['message' => 'Top-up successful!']);
+        DB::beginTransaction();
+        try { 
+            $onlineWallet = Wallet::create([
+                'user_id' => $user->id,
+                'wallet_type' => 'online',
+                'commission_type' => 'online',
+                'level' => 'online',
+                'balance' => $amountToTopUp,  
+                'wallet_src' => 'top_up'
+            ]); 
+            $setting = Setting::first();
+            $companyName = $setting->site_name ?? 'Admin';
+            $description = "{$companyName} topped up your online wallet with $ {$amountToTopUp} (Cash received by admin).";
+            $this->logTransaction(
+                $user->id,
+                'topup',
+                'online',
+                $amountToTopUp,
+                $onlineWallet->balance,
+                $description,
+                'credit',
+                0
+            );
+
+            DB::commit();
+            return response()->json(['message' => 'Top-up successful!']);
+
+        } catch (\Exception $e) { 
+            DB::rollBack();
+            return response()->json(['error' => 'Top-up failed: ' . $e->getMessage()], 500);
+        }
     }
+
 
     protected function createInitialInvestment(User $user, $amountToTransfer,$description): void
     {

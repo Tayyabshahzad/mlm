@@ -38,39 +38,37 @@
 
 
             <div class="col-lg-12 col-xxl-12 order-1 order-xxl-2"> 
-                @if(!Auth::user()->freez_wallet)
-                <div class="card card-custom card-stretch gutter-b ">  
-                    <div class="card-header border-0">  
-                        @php
-                            $blockedWallets = json_decode($setting->blocked_wallets ?? '{}', true); 
-                        @endphp
-                        @if (!($blockedWallets['online'] ?? false))  
-                            @if($setting->withdraw_block == false)
-                                @if($walletSum >= 700)
-                                    <div class="  align-items-center align-items-center justify-content-center pt-5" >
-                                        <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
-                                        <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
-                                    </div>
-                                @else 
-                                    <div class="  align-items-center justify-content-center pt-5">
-
-                                        <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
-                                        <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a>    
-                                        
-                                    </div> 
+                @if(!Auth::user()->freez_wallet )   
+                @if(!(float) Auth::user()->negative_pv > 0)
+                        <div class="card card-custom card-stretch gutter-b ">  
+                            <div class="card-header border-0">  
+                                @php
+                                    $blockedWallets = json_decode($setting->blocked_wallets ?? '{}', true); 
+                                @endphp
+                                @if (!($blockedWallets['online'] ?? false))  
+                                    @if($setting->withdraw_block == false)
+                                        @if($walletSum >= 700)
+                                            <div class="  align-items-center align-items-center justify-content-center pt-5" >
+                                                <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
+                                                <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                                            </div>
+                                        @else 
+                                            <div class="  align-items-center justify-content-center pt-5">
+                                                    <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
+                                                    <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a> 
+                                            </div> 
+                                        @endif
+                                    @else
+                                @endif 
                                 @endif
-                            @else
-                        @endif
 
-                       
-                        @endif
+                                <div class="  align-items-center align-items-center justify-content-center pt-5" > 
+                                    <a href="#"  data-toggle="modal"   data-target="#TopUpAccount"  class="mb-5 mr-3 rounded-0 btn btn-success font-weight-bolder font-size-sm">TopUp Your Account</a>    
+                                </div>
 
-                        <div class="  align-items-center align-items-center justify-content-center pt-5" > 
-                            <a href="#"  data-toggle="modal"   data-target="#TopUpAccount"  class="mb-5 mr-3 rounded-0 btn btn-success font-weight-bolder font-size-sm">TopUp Your Account</a>    
+                            </div> 
                         </div>
-
-                    </div> 
-                </div>
+                    @endif
                 @endif
                
                
@@ -95,7 +93,7 @@
                                 </div> 
                                 <div class="d-flex flex-column flex-grow-1">
                                     <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">Total Balance</a>
-                                    <span class=" font-weight-bold">{{ $onlineWallets->sum('balance') }} PV</span>
+                                     <span class=" font-weight-bold">${{ $onlineWallets->sum('balance') }}</span>
                                 </div>  
                                 <div class="symbol symbol-45 symbol-light mr-5">
                                     <span class="symbol-label">
@@ -126,7 +124,7 @@
                                     @endif
 
                                     <span class="font-weight-bold">
-                                        -{{ round(Auth::user()->negative_pv,2) }} PV
+                                        -${{ round(Auth::user()->negative_pv,2) }}
                                     </span>
                                 </div>   
                             </div> 
@@ -141,8 +139,8 @@
                                     </span>
                                 </div> 
                                 <div class="d-flex flex-column flex-grow-1">
-                                    <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">Total Earned PV</a>
-                                    <span class=" font-weight-bold">{{ $walletSum }} PV</span>
+                                    <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">Total Earned</a>
+                                    <span class=" font-weight-bold">${{ $walletSum }}</span>
                                 </div> 
                                 @if($walletSum >= 700)
                                     <div class="d-flex align-items-center">

@@ -1,5 +1,9 @@
 @extends('demo.layout.app')
 @section('title', 'Account TopUp')
+@section('custom_css')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+@endsection
 @section('content')
     <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
@@ -49,13 +53,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($investments as $investment )
+                                    @foreach ($wallets as $wallet )
                                         <tr class=" "> 
                                             <td>{{ $loop->iteration }}</td>
-                                            <th>{{ $investment->amount }}</th>
-                                            <th>{{ $investment->type }}</th>
-                                            <td>{{ $investment->user->name }}</td> 
-                                            <td>{{ $investment->created_at  }}</td>  
+                                            <th>{{ $wallet->balance }}</th>
+                                            <th>{{ $wallet->wallet_type }}</th>
+                                            <td>{{ $wallet->user->name }}</td> 
+                                            <td>{{ $wallet->created_at  }}</td>  
                                         </tr>
                                     @endforeach
                                 </tbody> 
@@ -77,7 +81,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="account-top-up">  Generate Activation Code </h5>
+                    <h5 class="modal-title" id="account-top-up">  Account TopUp </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i aria-hidden="true" class="ki ki-close"></i>
                     </button>
@@ -87,11 +91,13 @@
                             @csrf
                             <div class="form-group">
                                 <label for="user_id">Select User</label>
-                                <select name="user_id" id="user_id" class="form-control" required>
+
+                                <select  style="width: 100%; height:50px!important" name="user_id" id="user_id" class="js-example-basic-single  " name="state" required>
+                                    <option value="" disabled selected> Select User </option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                                     @endforeach
-                                </select>
+                                </select> 
                             </div>
                         
                             <div class="form-group">
@@ -112,6 +118,7 @@
 
 @endsection
 @section('page_js') 
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $('#generateTopUP').click(function(e) {
         e.preventDefault();
@@ -137,6 +144,12 @@
             }
         });
     });
+
+    $(document).ready(function() {
+        $('.js-example-basic-single').select2();
+    });
+
+
 </script>
 
 @endsection
