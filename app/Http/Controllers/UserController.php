@@ -217,7 +217,7 @@ class UserController extends Controller
         $rewardLevels = collect([
             ['level' => 1, 'reward_amount' => 130, 'users_required' => 10],
             ['level' => 2, 'reward_amount' => 350, 'users_required' => 50],
-            ['level' => 3, 'reward_amount' => 875, 'users_required' => 150],
+            ['level' => 3, 'reward_amount' => 1050, 'users_required' => 150],
             ['level' => 4, 'reward_amount' => 3450, 'users_required' => 400],
             ['level' => 5, 'reward_amount' => 8650, 'users_required' => 1000],
             ['level' => 6, 'reward_amount' => 26000, 'users_required' => 2000],
@@ -264,7 +264,7 @@ class UserController extends Controller
         $rewardLevels = collect([
             ['level' => 1, 'reward_amount' => 130, 'users_required' => 10],
             ['level' => 2, 'reward_amount' => 260, 'users_required' => 50],
-            ['level' => 3, 'reward_amount' => 875, 'users_required' => 150],
+            ['level' => 3, 'reward_amount' => 1050, 'users_required' => 150],
             ['level' => 4, 'reward_amount' => 3450, 'users_required' => 400],
             ['level' => 5, 'reward_amount' => 8650, 'users_required' => 1000],
             ['level' => 6, 'reward_amount' => 26000, 'users_required' => 2000],
@@ -306,7 +306,7 @@ class UserController extends Controller
         $rewardLevels = collect([
             ['level' => 1, 'reward_amount' => 130, 'users_required' => 10],
             ['level' => 2, 'reward_amount' => 260, 'users_required' => 50],
-            ['level' => 3, 'reward_amount' => 875, 'users_required' => 150],
+            ['level' => 3, 'reward_amount' => 1050, 'users_required' => 150],
             ['level' => 4, 'reward_amount' => 3450, 'users_required' => 400],
             ['level' => 5, 'reward_amount' => 8650, 'users_required' => 1000],
             ['level' => 6, 'reward_amount' => 26000, 'users_required' => 2000],
