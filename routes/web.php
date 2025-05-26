@@ -76,8 +76,7 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::get('profit-share', 'profitShare')->name('wallets.profit.share');
         Route::get('rank', 'rank')->name('wallets.rank');
         Route::post('transfer-to-online', 'transferToOnline')->name('wallet.transfer.to.online');
-        Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history');
-        Route::post('account-topUp', 'accountTopUp')->name('account.top.up');
+        Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history'); 
         Route::post('clear-negative-points', 'clearNegativePoints')->name('clear.negative.points');
         
     }); 
@@ -111,13 +110,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
       
       // Route::post('admin/topup','storeTopup')->name('user.topup.store');
 
-    }); 
+    });  
 
-     Route::prefix('users')->controller(TopupController::class)->group(function () { 
-        Route::get('topup','index')->name('user.topup.index');
-        Route::post('topup','store')->name('user.topup.store');
-
-    }); 
     Route::prefix('rental')->controller(UserController::class)->group(function () {
         Route::get('percentage', 'rentalPercentage')->name('rental.percentage');
         Route::post('add/percentage', 'addRentalPercentage')->name('add.rental.percentage');
@@ -156,7 +150,13 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
 
 });
 
-// Blocked Users
+Route::prefix('account')->controller(TopupController::class)->middleware(['auth', 'verified'])->group(function () {
+    Route::get('top-ups', 'index')->name('account.topups.index');
+    Route::post('top-ups', 'store')->name('account.topups.store');
+    Route::post('top-ups/process', 'topUp')->name('account.topups.process');
+});
+
+
 Route::controller(BlockedUserController::class)->middleware(['auth'])->group(function () {
     Route::get('blocked', 'index')->name('blocked.index');
 });

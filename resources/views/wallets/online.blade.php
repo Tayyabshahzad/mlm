@@ -4,17 +4,17 @@
  <!--begin::Content-->
  <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
     <!--begin::Subheader-->
-    <div class="subheader py-2 py-lg-6 subheader-solid" id="kt_subheader">
-        <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+    <div class="py-2 subheader py-lg-6 subheader-solid" id="kt_subheader">
+        <div class="flex-wrap container-fluid d-flex align-items-center justify-content-between flex-sm-nowrap">
             <!--begin::Info-->
-            <div class="d-flex align-items-center flex-wrap mr-1"> 
+            <div class="flex-wrap mr-1 d-flex align-items-center"> 
                 <!--begin::Page Heading-->
-                <div class="d-flex align-items-baseline flex-wrap mr-5">
+                <div class="flex-wrap mr-5 d-flex align-items-baseline">
                     <!--begin::Page Title-->
-                    <h5 class="text-dark font-weight-bold my-1 mr-5">Online  Wallet </h5>
+                    <h5 class="my-1 mr-5 text-dark font-weight-bold">Online  Wallet </h5>
                     <!--end::Page Title-->
                     <!--begin::Breadcrumb-->
-                    <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2 font-size-sm">
+                    <ul class="p-0 my-2 breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold font-size-sm">
                         <li class="breadcrumb-item">
                             <a href="{{  route('dashboard') }}" class="text-muted">Dashboard</a>
                         </li>
@@ -33,36 +33,36 @@
     </div> 
     <!--end::Subheader-->
     <!--begin::Entry-->
-    <div class="  flex-column-fluid"> 
+    <div class=" flex-column-fluid"> 
         <div class="container"> 
 
 
-            <div class="col-lg-12 col-xxl-12 order-1 order-xxl-2"> 
+            <div class="order-1 col-lg-12 col-xxl-12 order-xxl-2"> 
                 @if(!Auth::user()->freez_wallet )   
                 @if(!(float) Auth::user()->negative_pv > 0)
                         <div class="card card-custom card-stretch gutter-b ">  
-                            <div class="card-header border-0">  
+                            <div class="border-0 card-header">  
                                 @php
                                     $blockedWallets = json_decode($setting->blocked_wallets ?? '{}', true); 
                                 @endphp
                                 @if (!($blockedWallets['online'] ?? false))  
                                     @if($setting->withdraw_block == false)
                                         @if($walletSum >= 700)
-                                            <div class="  align-items-center align-items-center justify-content-center pt-5" >
-                                                <a href="#" disabled  class="disabled  mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
-                                                <a href="#" disabled   class="disabled mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                                            <div class="pt-5 align-items-center justify-content-center" >
+                                                <a href="#" disabled  class="mb-5 mr-3 disabled rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
+                                                <a href="#" disabled   class="mb-5 mr-3 disabled rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
                                             </div>
                                         @else 
-                                            <div class="  align-items-center justify-content-center pt-5">
-                                                    <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class=" mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
-                                                    <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class=" mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a> 
+                                            <div class="pt-5 align-items-center justify-content-center">
+                                                    <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class="mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
+                                                    <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class="mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a> 
                                             </div> 
                                         @endif
                                     @else
                                 @endif 
                                 @endif
 
-                                <div class="  align-items-center align-items-center justify-content-center pt-5" > 
+                                <div class="pt-5 align-items-center justify-content-center" > 
                                     <a href="#"  data-toggle="modal"   data-target="#TopUpAccount"  class="mb-5 mr-3 rounded-0 btn btn-success font-weight-bolder font-size-sm">TopUp Your Account</a>    
                                 </div>
 
@@ -74,17 +74,17 @@
                
                
                 <div class="card card-custom card-stretch gutter-b"> 
-                    <div class="card-header border-0"> 
+                    <div class="border-0 card-header"> 
                         <h3 class="card-title font-weight-bolder text-dark">Account Balance Details</h3> 
                     </div> 
 
 
-                    <div class="card-body pt-0"> 
+                    <div class="pt-0 card-body"> 
                         <div class="mb-10">
                             <!--begin::Section-->
                             <div class="d-flex align-items-center">
                                 <!--begin::Symbol-->
-                                <div class="symbol symbol-45 symbol-light mr-5">
+                                <div class="mr-5 symbol symbol-45 symbol-light">
                                     <span class="symbol-label">
                                         <span class="navi-icon">
                                             <i class="flaticon2-graph-1 text-warning"></i>
@@ -92,10 +92,10 @@
                                     </span>
                                 </div> 
                                 <div class="d-flex flex-column flex-grow-1">
-                                    <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">Total Balance</a>
+                                    <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Total Balance</a>
                                      <span class=" font-weight-bold">${{ $onlineWallets->sum('balance') }}</span>
                                 </div>  
-                                <div class="symbol symbol-45 symbol-light mr-5">
+                                <div class="mr-5 symbol symbol-45 symbol-light">
                                     <span class="symbol-label">
                                         <span class="navi-icon">
                                             <i class=" flaticon-calendar-3 text-warning"></i>
@@ -103,7 +103,7 @@
                                     </span>
                                 </div> 
                                 <div class="d-flex flex-column flex-grow-1">
-                                    <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">Last Transaction Date</a>
+                                    <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Last Transaction Date</a>
                                     <a href="{{ route('show.transaction.history') }}">View Transaction History</a>
                                     <span class="font-weight-bold">
                                         {{ $onlineWallets->sortByDesc('created_at')->first()->created_at ?? 'No records found' }}  
@@ -112,12 +112,12 @@
 
 
                                 <div class="d-flex flex-column flex-grow-1 text-danger">
-                                    <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">
+                                    <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">
                                         Negative Points
                                     </a>
                                      @if(Auth::user()->negative_pv > 0)
                                         <small>
-                                            <button class="btn btn-sm btn-danger mb-3 mt-1 no-radius rounded-0" data-toggle="modal" data-target="#clearNegativeModal">
+                                            <button class="mt-1 mb-3 btn btn-sm btn-danger no-radius rounded-0" data-toggle="modal" data-target="#clearNegativeModal">
                                                 Clear Points Now
                                             </button>
                                         </small>
@@ -129,9 +129,9 @@
                                 </div>   
                             </div> 
 
-                            <div class="d-flex align-items-center mt-10">
+                            <div class="mt-10 d-flex align-items-center">
                                 <!--begin::Symbol-->
-                                <div class="symbol symbol-45 symbol-light mr-5">
+                                <div class="mr-5 symbol symbol-45 symbol-light">
                                     <span class="symbol-label">
                                         <span class="navi-icon">
                                             <i class="flaticon2-graph-1 text-warning"></i>
@@ -139,7 +139,7 @@
                                     </span>
                                 </div> 
                                 <div class="d-flex flex-column flex-grow-1">
-                                    <a href="#" class="font-weight-bold text-dark-75 text-hover-primary font-size-lg mb-1">Total Earned</a>
+                                    <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Total Earned</a>
                                     <span class=" font-weight-bold">${{ $walletSum }}</span>
                                 </div> 
                                 @if($walletSum >= 700)
@@ -153,10 +153,10 @@
                 </div> 
 
                 <div class="card card-custom card-stretch gutter-b"> 
-                    <div class="card-header border-0">
+                    <div class="border-0 card-header">
                         <h3 class="card-title font-weight-bolder text-dark">Withdrawal Requests</h3> 
                     </div>
-                    <div class="card-body pt-0"> 
+                    <div class="pt-0 card-body"> 
                         <div class="mb-10">
                             <div class="table-responsive">
                                 <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_4">
@@ -249,10 +249,10 @@
                     <p><strong>Available Balance: {{ $onlineWallets->sum('balance') }} </strong></p>
                     <div class="form-group row"> 
                         <div class="col-lg-12 col-xl-12">
-                            <label for="" class="font-weight-bold mr-2">
+                            <label for="" class="mr-2 font-weight-bold">
                                 Amount <span class="text-danger">*</span>
                             </label>
-                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
+                            <input type="number" class="mb-2 form-control form-control-sm form-control-solid" 
                              name="amount" min="15" step="0.01"
                              required 
                              placeholder="Enter Amount"
@@ -261,13 +261,13 @@
                         </div>  
                         
                         <div class="col-lg-12 col-xl-12">
-                            <label for="" class="font-weight-bold mr-2">
+                            <label for="" class="mr-2 font-weight-bold">
                                 Description 
                             </label>
-                            <textarea name="target_account_details" id="target_account_details" class="form-control form-control-sm form-control-solid mb-2" required></textarea>
+                            <textarea name="target_account_details" id="target_account_details" class="mb-2 form-control form-control-sm form-control-solid" required></textarea>
                         </div>  
                         <div class="col-lg-12 col-xl-12">
-                            <label for="" class="font-weight-bold mr-2 mb-10    ">
+                            <label for="" class="mb-10 mr-2 font-weight-bold ">
                                 Choose Withdraw Option <span class="text-danger"> *</span>
                             </label>
                             <div>
@@ -303,10 +303,10 @@
                 <div class="modal-body"> 
                     <div class="form-group row"> 
                         <div class="col-lg-12 col-xl-12">
-                            <label for="" class="font-weight-bold mr-2">
+                            <label for="" class="mr-2 font-weight-bold">
                                 Username / Email Address <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control form-control-sm form-control-solid mb-2" 
+                            <input type="text" class="mb-2 form-control form-control-sm form-control-solid" 
                              name="member_account"   
                              required  
                              placeholder="Enter Member Account email or password"
@@ -314,10 +314,10 @@
                         </div>  
 
                         <div class="col-lg-12 col-xl-12">
-                            <label for="" class="font-weight-bold mr-2">
+                            <label for="" class="mr-2 font-weight-bold">
                                 Amount <span class="text-danger">*</span>
                             </label>
-                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
+                            <input type="number" class="mb-2 form-control form-control-sm form-control-solid" 
                              name="amount" min="5" step="0.01"
                              required 
                              max="{{ $onlineWallets->sum('balance') }}"
@@ -327,10 +327,10 @@
                         </div>  
 
                         <div class="col-lg-12 col-xl-12">
-                            <label for="" class="font-weight-bold mr-2">
+                            <label for="" class="mr-2 font-weight-bold">
                                 Description 
                             </label>
-                            <textarea name="description" id="description" class="form-control form-control-sm form-control-solid mb-2"></textarea>
+                            <textarea name="description" id="description" class="mb-2 form-control form-control-sm form-control-solid"></textarea>
                             
                         </div>  
                     </div>  
@@ -356,9 +356,9 @@
                         <i aria-hidden="true" class="ki ki-close"></i>
                     </button>
                 </div>
-                <div class=" "> 
+                <div class=""> 
                     <div class="form-group row">  
-                        <p class="text-danger-75 font-weight-bolder  p-12  pb-1 text-danger">
+                        <p class="p-12 pb-1 text-danger-75 font-weight-bolder text-danger">
                            Are You Sure to Delete Withdrawal Request ? 
                         </p> 
                     </div>  
@@ -375,39 +375,38 @@
 <div class="modal fade" id="TopUpAccount" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="{{ route('account.top.up') }}" method="POST">
+            <form action="{{ route('account.topups.process') }}" method="POST">
                 @csrf
                 <input type="hidden" name="wallet_type" value="online" required>
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">TopUp Your Account</h5>
-                    
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i aria-hidden="true" class="ki ki-close"></i>
                     </button>
                 </div>
-                <div class="modal-body"> 
+                <div class="modal-body">
                     <p><strong>Available Balance: {{ $onlineWallets->sum('balance') }} </strong></p>
-                    <div class="form-group row"> 
+                    <div class="form-group row">
                         <div class="col-lg-12 col-xl-12">
-                            <label for="" class="font-weight-bold mr-2">
+                            <label for="" class="mr-2 font-weight-bold">
                                 Amount <span class="text-danger">*</span>
                             </label>
-                            <input type="number" class="form-control form-control-sm form-control-solid mb-2" 
+                            <input type="number" class="mb-2 form-control form-control-sm form-control-solid"
                              name="topUp_amount" min="5" max="{{ $onlineWallets->sum('balance') }}" step="0.01"
-                             required 
+                             required
                              placeholder="Enter Amount"
-                             >   
-                        </div>  
-                        
+                             >
+                        </div>
+
                         <div class="col-lg-12 col-xl-12">
-                            <label for="" class="font-weight-bold mr-2">
-                                Description 
+                            <label for="" class="mr-2 font-weight-bold">
+                                Description
                             </label>
-                            <textarea name="topUp_description" 
-                          class="form-control form-control-sm form-control-solid mb-2" 
+                            <textarea name="topUp_description"
+                          class="mb-2 form-control form-control-sm form-control-solid"
                             required></textarea>
-                        </div>   
-                    </div>  
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>

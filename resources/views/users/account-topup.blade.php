@@ -12,14 +12,14 @@
     <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Subheader-->
-        <div class="subheader py-2 py-lg-6 subheader-solid" id="kt_subheader">
-            <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+        <div class="py-2 subheader py-lg-6 subheader-solid" id="kt_subheader">
+            <div class="flex-wrap container-fluid d-flex align-items-center justify-content-between flex-sm-nowrap">
                 <!--begin::Info-->
-                <div class="d-flex align-items-center flex-wrap mr-1">
+                <div class="flex-wrap mr-1 d-flex align-items-center">
                     <!--begin::Page Heading-->
-                    <div class="d-flex align-items-baseline flex-wrap mr-5"> 
-                        <h5 class="text-dark font-weight-bold my-1 mr-5">Account TopUp </h5> 
-                        <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2 font-size-sm">
+                    <div class="flex-wrap mr-5 d-flex align-items-baseline"> 
+                        <h5 class="my-1 mr-5 text-dark font-weight-bold">Account TopUp </h5> 
+                        <ul class="p-0 my-2 breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold font-size-sm">
                             <li class="breadcrumb-item">
                                 <a href="{{ route('dashboard') }}" class="text-muted">Dashboard</a>
                             </li>
@@ -37,14 +37,14 @@
         <div class="flex-column-fluid">
             <div class="container">
                 <div class="card card-custom gutter-b"> 
-                    <div class="card-header border-0 py-5 justify-content-right">
+                    <div class="py-5 border-0 card-header justify-content-right">
                         <h3 class="card-title "> 
                             <button type="button" 
                             data-toggle="modal" data-target="#account-top-up"
                             class="btn btn-danger btn-sm font-weight-bold rounded-0">Account TopUp</button>  
                         </h3> 
                     </div> 
-                    <div class="card-body py-0"> 
+                    <div class="py-0 card-body"> 
                         <div class="table-responsive">
                             <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_4">
                                 <thead>
@@ -59,7 +59,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($wallets as $wallet )
-                                        <tr class=" "> 
+                                        <tr class=""> 
                                             <td>{{ $loop->iteration }}</td>
                                             <th>{{ $wallet->balance }}</th>
                                             <th>{{ $wallet->wallet_type }}</th>
@@ -72,8 +72,8 @@
                             </table> 
                         </div>
                         <!--begin::Pagination-->
-                        <div class="d-flex justify-content-between align-items-center flex-wrap">
-                            <div class="d-flex flex-wrap py-2 mr-3">
+                        <div class="flex-wrap d-flex justify-content-between align-items-center">
+                            <div class="flex-wrap py-2 mr-3 d-flex">
                                 
                             </div>
                         </div> 
@@ -98,7 +98,7 @@
                             <div class="form-group">
                                 <label for="user_id">Select User</label>
 
-                                <select  style="width: 100%;  " name="user_id" id="user_id" class="js-example-basic-single  " name="state" required>
+                                <select  style="width: 100%;  " name="user_id" id="user_id" class="js-example-basic-single " name="state" required>
                                     <option value="" disabled selected> Select User </option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">
@@ -140,7 +140,7 @@
         };
 
         $.ajax({
-            url: '{{ route("user.topup.store") }}',
+            url: '{{ route("account.topups.store") }}',
             type: 'POST',
             data: formData,
             success: function(response) { 

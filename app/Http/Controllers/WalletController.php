@@ -158,7 +158,6 @@ class WalletController extends Controller
         return view('wallets.investment',compact('lastInvest','firstInvest','totalInvest','investments')); 
     }
 
-    
 
     public function showTransactionHistory()
     {
@@ -180,12 +179,6 @@ class WalletController extends Controller
             'status' =>$status
         ]);
     }
-
-   
-
-   
-
-   
 
     public function clearNegativePoints(Request $request)
     {
@@ -257,16 +250,5 @@ class WalletController extends Controller
 
         return $deducted;  
     }
-
-        
-
-
-
-
-
-
-
-
-    
 
 }

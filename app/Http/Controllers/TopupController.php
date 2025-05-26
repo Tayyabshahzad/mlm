@@ -24,7 +24,7 @@ class TopupController extends Controller
     private const SLAB_MATURITY_MONTHS = 24;
 
     private CommissionService $commissionService;
-    private WalletService $walletService; 
+    private WalletService $walletService;
 
     public function __construct(CommissionService $commissionService, WalletService $walletService,private InvestmentSlabService $investmentSlabService )
     {
@@ -32,12 +32,12 @@ class TopupController extends Controller
         $this->walletService = $walletService;
     }
 
-     public function index(Request $request)
+    public function index(Request $request)
     {
-        $users = User::all();  
+        $users = User::all();
         $wallets = Wallet::where('wallet_src','top_up')->orderBy('id','desc')->get();
         return view('users.account-topup', compact('users','wallets'));
-    } 
+    }
 
 
     public function store(Request $request)
@@ -45,17 +45,17 @@ class TopupController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:1',
-        ]); 
+        ]);
 
         $user = User::findOrFail($validated['user_id']);
         $amount = $validated['amount'];
 
         DB::beginTransaction();
 
-        try { 
+        try {
             $wallet = $this->createTopupWallet($user, $amount);
-            $this->logTopupTransaction($user, $amount, $wallet->balance);  
-            DB::commit(); 
+            $this->logTopupTransaction($user, $amount, $wallet->balance);
+            DB::commit();
             Log::info("Admin top-up successful", [
                 'user_id' => $user->id,
                 'amount' => $amount,
@@ -81,30 +81,54 @@ class TopupController extends Controller
                 'error' => 'Top-up failed: ' . $e->getMessage()
             ], 500);
         }
-    }  
-     
-    private function assignTopupCommissions(User $user, float $topupAmount): void
-    {
+    }
+
+    public function topUp(Request $request): RedirectResponse
+    { 
+        $user = Auth::user();
+        $totalBalance = $this->getTotalOnlineBalance($user);
+        $validated = $request->validate([
+            'topUp_amount' => [
+                'required', 
+                'numeric', 
+                "min:" . self::MIN_TOPUP_AMOUNT,
+                "max:$totalBalance"
+            ],
+            'topUp_description' => 'required|string|max:255',
+        ]);
+
+        $amount = $validated['topUp_amount'];
+        $description = $validated['topUp_description'];
+        if ($totalBalance < $amount) {
+            return back()->with('error', 'Insufficient balance in your online wallet.');
+        }
+        DB::beginTransaction(); 
         try {
-            // Process direct commission (Level 1)
-            $this->processDirectCommissionForTopup($user, $topupAmount);
-            
-            // Process indirect commissions (Levels 2-7)
-            $this->processIndirectCommissionsForTopup($user, $topupAmount);
-            
-            Log::info("Top-up commissions processed for user {$user->id}");
-            
+            $this->deductFromOnlineWallets($user, $amount);
+            $this->createUserInvestment($user, $amount, $description);
+            $this->assignCommissionsForTopup($user, $amount);
+            $this->investmentSlabService->createSlabsForUser($user);
+            $this->logInvestmentTransaction($user, $amount);
+
+            DB::commit();
+
+            return back()->with('success', "Your account has been topped up with $$amount");
+
         } catch (\Exception $e) {
-            Log::error("Failed to process top-up commissions for user {$user->id}: " . $e->getMessage());
-            throw $e;
+            DB::rollBack();
+            Log::error("User top-up failed", [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Top-up failed: ' . $e->getMessage());
         }
     }
 
-    
     private function processDirectCommissionForTopup(User $user, float $amount): void
     {
         $sponsor = User::where('blocked', false)->find($user->sponsor_id);
-        
         if (!$sponsor) {
             Log::info("No sponsor found for user {$user->id}");
             return;
@@ -137,7 +161,6 @@ class TopupController extends Controller
         Log::info("Direct commission assigned: User {$sponsor->id}, Amount {$commissionAmount}");
     }
 
-   
     private function processIndirectCommissionsForTopup(User $user, float $amount): void
     {
         // Get ancestors from referral tree (excluding direct sponsor)
@@ -195,7 +218,6 @@ class TopupController extends Controller
         }
     }
 
-     
     private function getCommissionSummary(User $user): array
     {
         // This could be useful to return commission information in the API response
@@ -222,50 +244,6 @@ class TopupController extends Controller
             'final_amount' => $finalAmount,
             'description' => $description, 
         ]);
-    } 
-
-    public function topUp(Request $request): RedirectResponse
-    {
-        $user = Auth::user();
-        $totalBalance = $this->getTotalOnlineBalance($user);
-        $validated = $request->validate([
-            'topUp_amount' => [
-                'required', 
-                'numeric', 
-                "min:" . self::MIN_TOPUP_AMOUNT,
-                "max:$totalBalance"
-            ],
-            'topUp_description' => 'required|string|max:255',
-        ]);
-
-        $amount = $validated['topUp_amount'];
-        $description = $validated['topUp_description'];
-        if ($totalBalance < $amount) {
-            return back()->with('error', 'Insufficient balance in your online wallet.');
-        }
-        DB::beginTransaction();
-
-        try {
-            $this->deductFromOnlineWallets($user, $amount);
-            $this->assignCommissionsForTopup($user, $amount);
-            $this->createUserInvestment($user, $amount, $description);
-            $this->investmentSlabService->createSlabsForUser($user);
-            $this->logInvestmentTransaction($user, $amount);
-
-            DB::commit();
-
-            return back()->with('success', "Your account has been topped up with $$amount");
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("User top-up failed", [
-                'user_id' => $user->id,
-                'amount' => $amount,
-                'error' => $e->getMessage()
-            ]);
-
-            return back()->with('error', 'Top-up failed: ' . $e->getMessage());
-        } 
     }
 
     protected function createInitialInvestment(User $user, $amountToTransfer,$description): void
@@ -357,9 +335,8 @@ class TopupController extends Controller
         try {
             $this->processDirectCommissionForTopup($user, $amount);
             $this->processIndirectCommissionsForTopup($user, $amount);
-            
             Log::info("Commissions processed", ['user_id' => $user->id,  'username' => $user->username, 'amount' => $amount]);
-            
+
         } catch (\Exception $e) {
             Log::error("Commission processing failed", [
                 'user_id' => $user->id,
@@ -377,6 +354,31 @@ class TopupController extends Controller
             ->sum('balance');
     }
 
+    private function createUserInvestment(User $user, float $amount, string $description): void
+    {
+        UserInvestment::create([
+            'user_id' => $user->id,
+            'amount' => $amount,
+            'type' => 'topup',
+            'description' => $description
+        ]);
 
+        $user->increment('roi_eligible_investment_amount', $amount);
+    }
+
+    private function logInvestmentTransaction(User $user, float $amount): void
+    {
+        $description = "You topped up your account with $$amount from your Online Wallet.";
+
+        $this->logTransaction(
+            $user->id,
+            'investment',
+            'online',
+            $amount,
+            $amount,
+            $description,
+            'debit'
+        );
+    }
 
 }

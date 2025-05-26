@@ -139,13 +139,13 @@
         <div class="d-flex align-items-center">
 
             <!--begin::Aside Mobile Toggle-->
-            <button class="btn p-0 burger-icon burger-icon-left" id="kt_aside_mobile_toggle">
+            <button class="p-0 btn burger-icon burger-icon-left" id="kt_aside_mobile_toggle">
                 <span></span>
             </button>
-            <button class="btn p-0 burger-icon ml-4 d-none" id="kt_header_mobile_toggle">
+            <button class="p-0 ml-4 btn burger-icon d-none" id="kt_header_mobile_toggle">
                 <span></span>
             </button>
-            <button class="btn btn-hover-text-primary p-0 ml-2" id="kt_header_mobile_topbar_toggle">
+            <button class="p-0 ml-2 btn btn-hover-text-primary" id="kt_header_mobile_topbar_toggle">
                 <span class="svg-icon svg-icon-xl">
                     <!--begin::Svg Icon | path:assets/media/svg/icons/General/User.svg-->
                     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px"
@@ -170,15 +170,15 @@
     <!--end::Header Mobile-->
     <div class="d-flex flex-column flex-root">
         <!--begin::Page-->
-        <div class="d-flex flex-row flex-column-fluid page">
+        <div class="flex-row d-flex flex-column-fluid page">
             <!--begin::Aside-->
             <div class="aside aside-left aside-fixed d-flex flex-column flex-row-auto" id="kt_aside">
                 <div class="brand flex-column-auto" id="kt_brand">
                     <a href="{{ route('dashboard') }}" class="brand-logo">
                         <img alt="Logo" src="{{ asset('assets/custom-images/logo-white.png') }}" width="100%" />
                     </a>
-                    <button class="brand-toggle btn btn-sm px-0" id="kt_aside_toggle">
-                        <span class="svg-icon svg-icon svg-icon-xl">
+                    <button class="px-0 brand-toggle btn btn-sm" id="kt_aside_toggle">
+                        <span class="svg-icon svg-icon-xl">
                             <!--begin::Svg Icon | path:assets/media/svg/icons/Navigation/Angle-double-left.svg-->
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                                 width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
@@ -202,7 +202,7 @@
                 <!--begin::Aside Menu-->
                 <div class="aside-menu-wrapper flex-column-fluid" id="kt_aside_menu_wrapper">
                     <!--begin::Menu Container-->
-                    <div id="kt_aside_menu" class="aside-menu my-4" data-menu-vertical="1" data-menu-scroll="1"
+                    <div id="kt_aside_menu" class="my-4 aside-menu" data-menu-vertical="1" data-menu-scroll="1"
                         data-menu-dropdown-timeout="500">
                         <!--begin::Menu Nav-->
                         <ul class="menu-nav">
@@ -732,7 +732,7 @@
                                         <ul class="menu-subnav">
                                             <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                                 data-menu-toggle="hover">
-                                                <a href="{{ route('user.topup.index') }}"
+                                                <a href="{{ route('account.topups.index') }}"
                                                     class="menu-link menu-toggle">
                                                     <i class="menu-bullet menu-bullet-dot">
                                                         <span></span>
@@ -970,15 +970,15 @@
                         <div class="header-menu-wrapper header-menu-wrapper-left" id="kt_header_menu_wrapper">
                             <!--begin::Header Menu-->
                             <div id="kt_header_menu"
-                                class="header-menu header-menu-mobile header-menu-layout-default pt-5">
+                                class="pt-5 header-menu header-menu-mobile header-menu-layout-default">
 
-                                <div class="d-flex flex-wrap mb-4 ">
+                                <div class="flex-wrap mb-4 d-flex ">
                                     <!-- Hidden link for reference -->
                                     <span id="refLink"
                                         style="display: none;">{{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link }}</span>
 
                                     <!-- Button for copying link -->
-                                    <button onclick="copyToClipboard()" class="btn btn sm rounded-0 btn-info">
+                                    <button onclick="copyToClipboard()" class="btn sm rounded-0 btn-info">
                                         Copy Referral Link
                                     </button>
 
@@ -1002,7 +1002,7 @@
                             <div class="dropdown" id="kt_quick_search_toggle">
                                 <!--begin::Toggle-->
                                 <div class="topbar-item" data-toggle="dropdown" data-offset="10px,0px">
-                                    <div class="btn btn-icon btn-clean btn-lg btn-dropdown mr-1">
+                                    <div class="mr-1 btn btn-icon btn-clean btn-lg btn-dropdown">
 
                                     </div>
                                 </div>
@@ -1016,7 +1016,7 @@
                             <div class="dropdown">
                                 <!--begin::Toggle-->
                                 <div class="topbar-item" data-toggle="dropdown" data-offset="10px,0px">
-                                    <div class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1 pulse pulse-primary">
+                                    <div class="mr-1 btn btn-icon btn-clean btn-dropdown btn-lg pulse pulse-primary">
                                         <span class="svg-icon svg-icon-xl svg-icon-primary">
                                             <!--begin::Svg Icon | path:assets/media/svg/icons/Code/Compiling.svg-->
                                             <svg xmlns="http://www.w3.org/2000/svg"
@@ -1041,21 +1041,21 @@
                                 <!--end::Toggle-->
                                 <!--begin::Dropdown-->
                                 <div
-                                    class="dropdown-menu p-0 m-0 dropdown-menu-right dropdown-menu-anim-up dropdown-menu-lg">
+                                    class="p-0 m-0 dropdown-menu dropdown-menu-right dropdown-menu-anim-up dropdown-menu-lg">
                                     <form>
                                         <!--begin::Header-->
-                                        <div class="d-flex flex-column pt-12 bgi-size-cover bgi-no-repeat rounded-top"
+                                        <div class="pt-12 d-flex flex-column bgi-size-cover bgi-no-repeat rounded-top"
                                             style="background-image: url(assets/media/misc/bg-1.jpg)">
                                             <!--begin::Title-->
                                             <h4 class="d-flex flex-center rounded-top">
                                                 <span class="text-white">User Notifications</span>
                                                 <span
-                                                    class="btn btn-text btn-success btn-sm font-weight-bold btn-font-md ml-2">23
+                                                    class="ml-2 btn btn-text btn-success btn-sm font-weight-bold btn-font-md">23
                                                     new</span>
                                             </h4>
                                             <!--end::Title-->
                                             <!--begin::Tabs-->
-                                            <ul class="nav nav-bold nav-tabs nav-tabs-line nav-tabs-line-3x nav-tabs-line-transparent-white nav-tabs-line-active-border-success mt-3 px-8"
+                                            <ul class="px-8 mt-3 nav nav-bold nav-tabs nav-tabs-line nav-tabs-line-3x nav-tabs-line-transparent-white nav-tabs-line-active-border-success"
                                                 role="tablist">
                                                 <li class="nav-item">
                                                     <a class="nav-link active show" data-toggle="tab"
@@ -1076,15 +1076,15 @@
                                         <!--begin::Content-->
                                         <div class="tab-content">
                                             <!--begin::Tabpane-->
-                                            <div class="tab-pane active show p-8"
+                                            <div class="p-8 tab-pane active show"
                                                 id="topbar_notifications_notifications" role="tabpanel">
                                                 <!--begin::Scroll-->
                                                 <div class="scroll pr-7 mr-n7" data-scroll="true" data-height="300"
                                                     data-mobile-height="200">
                                                     <!--begin::Item-->
-                                                    <div class="d-flex align-items-center mb-6">
+                                                    <div class="mb-6 d-flex align-items-center">
                                                         <!--begin::Symbol-->
-                                                        <div class="symbol symbol-40 symbol-light-primary mr-5">
+                                                        <div class="mr-5 symbol symbol-40 symbol-light-primary">
                                                             <span class="symbol-label">
                                                                 <span class="svg-icon svg-icon-lg svg-icon-primary">
                                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Home/Library.svg-->
@@ -1114,7 +1114,7 @@
                                                         <!--begin::Text-->
                                                         <div class="d-flex flex-column font-weight-bold">
                                                             <a href="#"
-                                                                class="text-dark text-hover-primary mb-1 font-size-lg">Cool
+                                                                class="mb-1 text-dark text-hover-primary font-size-lg">Cool
                                                                 App</a>
                                                             <span class="text-muted">Marketing campaign planning</span>
                                                         </div>
@@ -1122,9 +1122,9 @@
                                                     </div>
                                                     <!--end::Item-->
                                                     <!--begin::Item-->
-                                                    <div class="d-flex align-items-center mb-6">
+                                                    <div class="mb-6 d-flex align-items-center">
                                                         <!--begin::Symbol-->
-                                                        <div class="symbol symbol-40 symbol-light-warning mr-5">
+                                                        <div class="mr-5 symbol symbol-40 symbol-light-warning">
                                                             <span class="symbol-label">
                                                                 <span class="svg-icon svg-icon-lg svg-icon-warning">
                                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Write.svg-->
@@ -1154,7 +1154,7 @@
                                                         <!--begin::Text-->
                                                         <div class="d-flex flex-column font-weight-bold">
                                                             <a href="#"
-                                                                class="text-dark-75 text-hover-primary mb-1 font-size-lg">Awesome
+                                                                class="mb-1 text-dark-75 text-hover-primary font-size-lg">Awesome
                                                                 SAAS</a>
                                                             <span class="text-muted">Project status update
                                                                 meeting</span>
@@ -1163,9 +1163,9 @@
                                                     </div>
                                                     <!--end::Item-->
                                                     <!--begin::Item-->
-                                                    <div class="d-flex align-items-center mb-6">
+                                                    <div class="mb-6 d-flex align-items-center">
                                                         <!--begin::Symbol-->
-                                                        <div class="symbol symbol-40 symbol-light-success mr-5">
+                                                        <div class="mr-5 symbol symbol-40 symbol-light-success">
                                                             <span class="symbol-label">
                                                                 <span class="svg-icon svg-icon-lg svg-icon-success">
                                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Group-chat.svg-->
@@ -1193,7 +1193,7 @@
                                                         <!--begin::Text-->
                                                         <div class="d-flex flex-column font-weight-bold">
                                                             <a href="#"
-                                                                class="text-dark text-hover-primary mb-1 font-size-lg">Claudy
+                                                                class="mb-1 text-dark text-hover-primary font-size-lg">Claudy
                                                                 Sys</a>
                                                             <span class="text-muted">Project Deployment &amp;
                                                                 Launch</span>
@@ -1202,9 +1202,9 @@
                                                     </div>
                                                     <!--end::Item-->
                                                     <!--begin::Item-->
-                                                    <div class="d-flex align-items-center mb-6">
+                                                    <div class="mb-6 d-flex align-items-center">
                                                         <!--begin::Symbol-->
-                                                        <div class="symbol symbol-40 symbol-light-danger mr-5">
+                                                        <div class="mr-5 symbol symbol-40 symbol-light-danger">
                                                             <span class="symbol-label">
                                                                 <span class="svg-icon svg-icon-lg svg-icon-danger">
                                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/General/Attachment2.svg-->
@@ -1242,7 +1242,7 @@
                                                         <!--begin::Text-->
                                                         <div class="d-flex flex-column font-weight-bold">
                                                             <a href="#"
-                                                                class="text-dark text-hover-primary mb-1 font-size-lg">Trilo
+                                                                class="mb-1 text-dark text-hover-primary font-size-lg">Trilo
                                                                 Service</a>
                                                             <span class="text-muted">Analytics &amp; Requirement
                                                                 Study</span>
@@ -1251,9 +1251,9 @@
                                                     </div>
                                                     <!--end::Item-->
                                                     <!--begin::Item-->
-                                                    <div class="d-flex align-items-center mb-6">
+                                                    <div class="mb-6 d-flex align-items-center">
                                                         <!--begin::Symbol-->
-                                                        <div class="symbol symbol-40 symbol-light-info mr-5">
+                                                        <div class="mr-5 symbol symbol-40 symbol-light-info">
                                                             <span class="symbol-label">
                                                                 <span class="svg-icon svg-icon-lg svg-icon-info">
                                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Shield-user.svg-->
@@ -1284,7 +1284,7 @@
                                                         <!--begin::Text-->
                                                         <div class="d-flex flex-column font-weight-bold">
                                                             <a href="#"
-                                                                class="text-dark text-hover-primary mb-1 font-size-lg">Bravia
+                                                                class="mb-1 text-dark text-hover-primary font-size-lg">Bravia
                                                                 SAAS</a>
                                                             <span class="text-muted">Reporting Application</span>
                                                         </div>
@@ -1292,9 +1292,9 @@
                                                     </div>
                                                     <!--end::Item-->
                                                     <!--begin::Item-->
-                                                    <div class="d-flex align-items-center mb-6">
+                                                    <div class="mb-6 d-flex align-items-center">
                                                         <!--begin::Symbol-->
-                                                        <div class="symbol symbol-40 symbol-light-danger mr-5">
+                                                        <div class="mr-5 symbol symbol-40 symbol-light-danger">
                                                             <span class="symbol-label">
                                                                 <span class="svg-icon svg-icon-lg svg-icon-danger">
                                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Mail-notification.svg-->
@@ -1322,7 +1322,7 @@
                                                         <!--begin::Text-->
                                                         <div class="d-flex flex-column font-weight-bold">
                                                             <a href="#"
-                                                                class="text-dark text-hover-primary mb-1 font-size-lg">Express
+                                                                class="mb-1 text-dark text-hover-primary font-size-lg">Express
                                                                 Wind</a>
                                                             <span class="text-muted">Software Analytics &amp;
                                                                 Design</span>
@@ -1331,9 +1331,9 @@
                                                     </div>
                                                     <!--end::Item-->
                                                     <!--begin::Item-->
-                                                    <div class="d-flex align-items-center mb-6">
+                                                    <div class="mb-6 d-flex align-items-center">
                                                         <!--begin::Symbol-->
-                                                        <div class="symbol symbol-40 symbol-light-success mr-5">
+                                                        <div class="mr-5 symbol symbol-40 symbol-light-success">
                                                             <span class="symbol-label">
                                                                 <span class="svg-icon svg-icon-lg svg-icon-success">
                                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Design/Bucket.svg-->
@@ -1362,7 +1362,7 @@
                                                         <!--begin::Text-->
                                                         <div class="d-flex flex-column font-weight-bold">
                                                             <a href="#"
-                                                                class="text-dark text-hover-primary mb-1 font-size-lg">Bruk
+                                                                class="mb-1 text-dark text-hover-primary font-size-lg">Bruk
                                                                 Fitness</a>
                                                             <span class="text-muted">Web Design &amp;
                                                                 Development</span>
@@ -1375,7 +1375,7 @@
                                                 <!--begin::Action-->
                                                 <div class="d-flex flex-center pt-7">
                                                     <a href="#"
-                                                        class="btn btn-light-primary font-weight-bold text-center">See
+                                                        class="text-center btn btn-light-primary font-weight-bold">See
                                                         All</a>
                                                 </div>
                                                 <!--end::Action-->
@@ -1384,12 +1384,12 @@
                                             <!--begin::Tabpane-->
                                             <div class="tab-pane" id="topbar_notifications_events" role="tabpanel">
                                                 <!--begin::Nav-->
-                                                <div class="navi navi-hover scroll my-4" data-scroll="true"
+                                                <div class="my-4 navi navi-hover scroll" data-scroll="true"
                                                     data-height="300" data-mobile-height="200">
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon2-line-chart text-success"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1403,7 +1403,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon2-paper-plane text-danger"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1417,7 +1417,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i
                                                                     class="flaticon2-user flaticon2-line- text-success"></i>
                                                             </div>
@@ -1432,7 +1432,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon2-pin text-primary"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1446,7 +1446,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon2-sms text-danger"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1460,7 +1460,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon2-pie-chart-3 text-warning"></i>
                                                             </div>
                                                             <div class="navinavinavi-text">
@@ -1474,7 +1474,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon-pie-chart-1 text-info"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1488,7 +1488,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon2-settings text-success"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1502,7 +1502,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i
                                                                     class="flaticon-safe-shield-protection text-primary"></i>
                                                             </div>
@@ -1517,7 +1517,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon2-notification text-primary"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1531,7 +1531,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon2-fax text-success"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1545,7 +1545,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon-download-1 text-danger"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1559,7 +1559,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon-security text-warning"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1573,7 +1573,7 @@
                                                     <!--begin::Item-->
                                                     <a href="#" class="navi-item">
                                                         <div class="navi-link">
-                                                            <div class="navi-icon mr-2">
+                                                            <div class="mr-2 navi-icon">
                                                                 <i class="flaticon2-analytics-1 text-success"></i>
                                                             </div>
                                                             <div class="navi-text">
@@ -1591,7 +1591,7 @@
                                             <!--begin::Tabpane-->
                                             <div class="tab-pane" id="topbar_notifications_logs" role="tabpanel">
                                                 <!--begin::Nav-->
-                                                <div class="d-flex flex-center text-center text-muted min-h-200px">All
+                                                <div class="text-center d-flex flex-center text-muted min-h-200px">All
                                                     caught up!
                                                     <br />No new notifications.
                                                 </div>
@@ -1609,7 +1609,7 @@
                             <div class="dropdown">
                                 <!--begin::Toggle-->
                                 <div class="topbar-item" data-toggle="dropdown" data-offset="10px,0px">
-                                    <div class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1">
+                                    <div class="mr-1 btn btn-icon btn-clean btn-dropdown btn-lg">
                                         <span class="svg-icon svg-icon-xl svg-icon-primary">
                                             <!--begin::Svg Icon | path:assets/media/svg/icons/Media/Equalizer.svg-->
                                             <svg xmlns="http://www.w3.org/2000/svg"
@@ -1635,12 +1635,12 @@
                                 <!--end::Toggle-->
                                 <!--begin::Dropdown-->
                                 <div
-                                    class="dropdown-menu p-0 m-0 dropdown-menu-right dropdown-menu-anim-up dropdown-menu-lg">
+                                    class="p-0 m-0 dropdown-menu dropdown-menu-right dropdown-menu-anim-up dropdown-menu-lg">
                                     <!--begin:Header-->
-                                    <div class="d-flex flex-column flex-center py-10 bgi-size-cover bgi-no-repeat rounded-top"
+                                    <div class="py-10 d-flex flex-column flex-center bgi-size-cover bgi-no-repeat rounded-top"
                                         style="background-image: url(assets/media/misc/bg-1.jpg)">
                                         <h4 class="text-white font-weight-bold">Quick Actions</h4>
-                                        <span class="btn btn-success btn-sm font-weight-bold font-size-sm mt-2">23
+                                        <span class="mt-2 btn btn-success btn-sm font-weight-bold font-size-sm">23
                                             tasks pending</span>
                                     </div>
                                     <!--end:Header-->
@@ -1649,7 +1649,7 @@
                                         <!--begin:Item-->
                                         <div class="col-6">
                                             <a href="#"
-                                                class="d-block py-10 px-5 text-center bg-hover-light border-right border-bottom">
+                                                class="px-5 py-10 text-center d-block bg-hover-light border-right border-bottom">
                                                 <span class="svg-icon svg-icon-3x svg-icon-success">
                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Shopping/Euro.svg-->
                                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -1669,7 +1669,7 @@
                                                     <!--end::Svg Icon-->
                                                 </span>
                                                 <span
-                                                    class="d-block text-dark-75 font-weight-bold font-size-h6 mt-2 mb-1">Accounting</span>
+                                                    class="mt-2 mb-1 d-block text-dark-75 font-weight-bold font-size-h6">Accounting</span>
                                                 <span class="d-block text-dark-50 font-size-lg">eCommerce</span>
                                             </a>
                                         </div>
@@ -1677,7 +1677,7 @@
                                         <!--begin:Item-->
                                         <div class="col-6">
                                             <a href="#"
-                                                class="d-block py-10 px-5 text-center bg-hover-light border-bottom">
+                                                class="px-5 py-10 text-center d-block bg-hover-light border-bottom">
                                                 <span class="svg-icon svg-icon-3x svg-icon-success">
                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Mail-attachment.svg-->
                                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -1697,7 +1697,7 @@
                                                     <!--end::Svg Icon-->
                                                 </span>
                                                 <span
-                                                    class="d-block text-dark-75 font-weight-bold font-size-h6 mt-2 mb-1">Administration</span>
+                                                    class="mt-2 mb-1 d-block text-dark-75 font-weight-bold font-size-h6">Administration</span>
                                                 <span class="d-block text-dark-50 font-size-lg">Console</span>
                                             </a>
                                         </div>
@@ -1705,7 +1705,7 @@
                                         <!--begin:Item-->
                                         <div class="col-6">
                                             <a href="#"
-                                                class="d-block py-10 px-5 text-center bg-hover-light border-right">
+                                                class="px-5 py-10 text-center d-block bg-hover-light border-right">
                                                 <span class="svg-icon svg-icon-3x svg-icon-success">
                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Shopping/Box2.svg-->
                                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -1725,14 +1725,14 @@
                                                     <!--end::Svg Icon-->
                                                 </span>
                                                 <span
-                                                    class="d-block text-dark-75 font-weight-bold font-size-h6 mt-2 mb-1">Projects</span>
+                                                    class="mt-2 mb-1 d-block text-dark-75 font-weight-bold font-size-h6">Projects</span>
                                                 <span class="d-block text-dark-50 font-size-lg">Pending Tasks</span>
                                             </a>
                                         </div>
                                         <!--end:Item-->
                                         <!--begin:Item-->
                                         <div class="col-6">
-                                            <a href="#" class="d-block py-10 px-5 text-center bg-hover-light">
+                                            <a href="#" class="px-5 py-10 text-center d-block bg-hover-light">
                                                 <span class="svg-icon svg-icon-3x svg-icon-success">
                                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Group.svg-->
                                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -1753,7 +1753,7 @@
                                                     <!--end::Svg Icon-->
                                                 </span>
                                                 <span
-                                                    class="d-block text-dark-75 font-weight-bold font-size-h6 mt-2 mb-1">Customers</span>
+                                                    class="mt-2 mb-1 d-block text-dark-75 font-weight-bold font-size-h6">Customers</span>
                                                 <span class="d-block text-dark-50 font-size-lg">Latest cases</span>
                                             </a>
                                         </div>
@@ -1765,7 +1765,7 @@
                             </div>
 
                             <div class="topbar-item">
-                                <div class="btn btn-icon btn-clean btn-lg mr-1" id="kt_quick_panel_toggle">
+                                <div class="mr-1 btn btn-icon btn-clean btn-lg" id="kt_quick_panel_toggle">
                                     <span class="svg-icon svg-icon-xl svg-icon-primary">
                                         <!--begin::Svg Icon | path:assets/media/svg/icons/Layout/Layout-4-blocks.svg-->
                                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -1788,7 +1788,7 @@
                             <!--end::Quick panel-->
                             <!--begin::Chat-->
                             <div class="topbar-item">
-                                <div class="btn btn-icon btn-clean btn-lg mr-1" data-toggle="modal"
+                                <div class="mr-1 btn btn-icon btn-clean btn-lg" data-toggle="modal"
                                     data-target="#kt_chat_modal">
                                     <span class="svg-icon svg-icon-xl svg-icon-primary">
                                         <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Group-chat.svg-->
@@ -1815,8 +1815,8 @@
                             <div class="dropdown">
                                 <!--begin::Toggle-->
                                 <div class="topbar-item" data-toggle="dropdown" data-offset="10px,0px">
-                                    <div class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1">
-                                        <img class="h-20px w-20px rounded-sm"
+                                    <div class="mr-1 btn btn-icon btn-clean btn-dropdown btn-lg">
+                                        <img class="rounded-sm h-20px w-20px"
                                             src="{{ asset('assets/media/svg/flags/226-united-states.svg') }}"
                                             alt="" />
                                     </div>
@@ -1824,13 +1824,13 @@
                                 <!--end::Toggle-->
                                 <!--begin::Dropdown-->
                                 <div
-                                    class="dropdown-menu p-0 m-0 dropdown-menu-anim-up dropdown-menu-sm dropdown-menu-right">
+                                    class="p-0 m-0 dropdown-menu dropdown-menu-anim-up dropdown-menu-sm dropdown-menu-right">
                                     <!--begin::Nav-->
-                                    <ul class="navi navi-hover py-4">
+                                    <ul class="py-4 navi navi-hover">
                                         <!--begin::Item-->
                                         <li class="navi-item">
                                             <a href="#" class="navi-link">
-                                                <span class="symbol symbol-20 mr-3">
+                                                <span class="mr-3 symbol symbol-20">
                                                     <img src="{{ asset('assets/media/svg/flags/226-united-states.svg') }}"
                                                         alt="" />
                                                 </span>
@@ -1841,7 +1841,7 @@
                                         <!--begin::Item-->
                                         <li class="navi-item active">
                                             <a href="#" class="navi-link">
-                                                <span class="symbol symbol-20 mr-3">
+                                                <span class="mr-3 symbol symbol-20">
                                                     <img src="{{ asset('assets/media/svg/flags/128-spain.svg') }}"
                                                         alt="" />
                                                 </span>
@@ -1852,7 +1852,7 @@
                                         <!--begin::Item-->
                                         <li class="navi-item">
                                             <a href="#" class="navi-link">
-                                                <span class="symbol symbol-20 mr-3">
+                                                <span class="mr-3 symbol symbol-20">
                                                     <img src="{{ asset('assets/media/svg/flags/162-germany.svg') }}"
                                                         alt="" />
                                                 </span>
@@ -1863,7 +1863,7 @@
                                         <!--begin::Item-->
                                         <li class="navi-item">
                                             <a href="#" class="navi-link">
-                                                <span class="symbol symbol-20 mr-3">
+                                                <span class="mr-3 symbol symbol-20">
                                                     <img src="{{ asset('assets/media/svg/flags/063-japan.svg') }}"
                                                         alt="" />
                                                 </span>
@@ -1874,7 +1874,7 @@
                                         <!--begin::Item-->
                                         <li class="navi-item">
                                             <a href="#" class="navi-link">
-                                                <span class="symbol symbol-20 mr-3">
+                                                <span class="mr-3 symbol symbol-20">
                                                     <img src="{{ asset('assets/media/svg/flags/195-france.svg') }}"
                                                         alt="" />
                                                 </span>
@@ -1890,12 +1890,12 @@
                             <!--end::Languages-->
                             <!--begin::User-->
                             <div class="topbar-item">
-                                <div class="btn btn-icon btn-icon-mobile w-auto btn-clean d-flex align-items-center btn-lg px-2"
+                                <div class="w-auto px-2 btn btn-icon btn-icon-mobile btn-clean d-flex align-items-center btn-lg"
                                     id="kt_quick_user_toggle">
                                     <span
-                                        class="text-muted font-weight-bold font-size-base d-none d-md-inline mr-1">Hi,</span>
+                                        class="mr-1 text-muted font-weight-bold font-size-base d-none d-md-inline">Hi,</span>
                                     <span
-                                        class="text-dark-50 font-weight-bolder font-size-base d-none d-md-inline mr-3">{{ Auth::user()->username }}</span>
+                                        class="mr-3 text-dark-50 font-weight-bolder font-size-base d-none d-md-inline">{{ Auth::user()->username }}</span>
                                     <span class="symbol symbol-lg-35 symbol-25 symbol-light-success">
                                         <span
                                             class="symbol-label font-size-h5 font-weight-bold">{{ substr(Auth::user()->username, 0, 1) }}
@@ -1911,12 +1911,12 @@
                 </div>
                 <!--end::Header-->
                 <!--begin::Content-->
-                <div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader2">
-                    <div class="container-fluid   align-items-center justify-content-between ">
+                <div class="py-2 subheader py-lg-4 subheader-solid" id="kt_subheader2">
+                    <div class="container-fluid align-items-center justify-content-between ">
                         <!--begin::Info-->
-                        <div class="  align-items-center  mr-2">
+                        <div class="mr-2 align-items-center">
                             <!--begin::Page Title-->
-                            <p class="text-dark text-center font-weight-bold mt-2 mb-2 ml-5"
+                            <p class="mt-2 mb-2 ml-5 text-center text-dark font-weight-bold"
                                 onclick="copyToClipboard()">
                                 {{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link }}
                                 <i class="la la-copy"></i>
@@ -1938,20 +1938,20 @@
     </div>
     <!--end::Main-->
     <!-- begin::User Panel-->
-    <div id="kt_quick_user" class="offcanvas offcanvas-right p-10">
+    <div id="kt_quick_user" class="p-10 offcanvas offcanvas-right">
         <!--begin::Header-->
-        <div class="offcanvas-header d-flex align-items-center justify-content-between pb-5">
-            <h3 class="font-weight-bold m-0">User Profile </h3>
+        <div class="pb-5 offcanvas-header d-flex align-items-center justify-content-between">
+            <h3 class="m-0 font-weight-bold">User Profile </h3>
             <a href="#" class="btn btn-xs btn-icon btn-light btn-hover-primary" id="kt_quick_user_close">
                 <i class="ki ki-close icon-xs text-muted"></i>
             </a>
         </div>
         <!--end::Header-->
         <!--begin::Content-->
-        <div class="offcanvas-content pr-5 mr-n5">
+        <div class="pr-5 offcanvas-content mr-n5">
             <!--begin::Header-->
-            <div class="d-flex align-items-center mt-5">
-                <div class="symbol symbol-100 mr-5">
+            <div class="mt-5 d-flex align-items-center">
+                <div class="mr-5 symbol symbol-100">
                     <div class="symbol-label"
                         style="background-image:url({{ asset(Auth::user()->getFirstMediaUrl('user_profile_images')) }})">
                     </div>
@@ -1960,11 +1960,11 @@
                 <div class="d-flex flex-column">
                     <a href="#" class="font-weight-bold font-size-h5 text-dark-75 text-hover-primary">
                         {{ Auth::user()->name }} </a>
-                    <div class="text-muted mt-1"> {{ Auth::user()->username }} </div>
-                    <div class="navi mt-2">
+                    <div class="mt-1 text-muted"> {{ Auth::user()->username }} </div>
+                    <div class="mt-2 navi">
                         <a href="#" class="navi-item">
-                            <span class="navi-link p-0 pb-2">
-                                <span class="navi-icon mr-1">
+                            <span class="p-0 pb-2 navi-link">
+                                <span class="mr-1 navi-icon">
                                     <span class="svg-icon svg-icon-lg svg-icon-primary">
                                         <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Mail-notification.svg-->
                                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -1993,7 +1993,7 @@
                         </form>
 
 
-                        <a href="#" class="btn btn-sm btn-light-primary font-weight-bolder py-2 px-5"
+                        <a href="#" class="px-5 py-2 btn btn-sm btn-light-primary font-weight-bolder"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             Sign Out
                         </a>
@@ -2004,14 +2004,14 @@
             </div>
             <!--end::Header-->
             <!--begin::Separator-->
-            <div class="separator separator-dashed mt-8 mb-5"></div>
+            <div class="mt-8 mb-5 separator separator-dashed"></div>
             <!--end::Separator-->
             <!--begin::Nav-->
-            <div class="navi navi-spacer-x-0 p-0">
+            <div class="p-0 navi navi-spacer-x-0">
                 <!--begin::Item-->
                 <a href="{{ route('profile.edit') }}" class="navi-item">
                     <div class="navi-link">
-                        <div class="symbol symbol-40 bg-light mr-3">
+                        <div class="mr-3 symbol symbol-40 bg-light">
                             <div class="symbol-label">
                                 <span class="svg-icon svg-icon-md svg-icon-success">
                                     <!--begin::Svg Icon | path:assets/media/svg/icons/General/Notification2.svg-->
@@ -2043,7 +2043,7 @@
                 <!--begin::Item-->
                 <a href="custom/apps/user/profile-3.html" class="navi-item">
                     <div class="navi-link">
-                        <div class="symbol symbol-40 bg-light mr-3">
+                        <div class="mr-3 symbol symbol-40 bg-light">
                             <div class="symbol-label">
                                 <span class="svg-icon svg-icon-md svg-icon-warning">
                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Shopping/Chart-bar1.svg-->
@@ -2077,7 +2077,7 @@
                 <!--begin::Item-->
                 <a href="custom/apps/user/profile-2.html" class="navi-item">
                     <div class="navi-link">
-                        <div class="symbol symbol-40 bg-light mr-3">
+                        <div class="mr-3 symbol symbol-40 bg-light">
                             <div class="symbol-label">
                                 <span class="svg-icon svg-icon-md svg-icon-danger">
                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Files/Selected-file.svg-->
@@ -2108,7 +2108,7 @@
                 <!--begin::Item-->
                 <a href="custom/apps/userprofile-1/overview.html" class="navi-item">
                     <div class="navi-link">
-                        <div class="symbol symbol-40 bg-light mr-3">
+                        <div class="mr-3 symbol symbol-40 bg-light">
                             <div class="symbol-label">
                                 <span class="svg-icon svg-icon-md svg-icon-primary">
                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Mail-opened.svg-->
@@ -2147,8 +2147,8 @@
                 <h5 class="mb-5">Recent Notifications</h5>
                 <!--end:Heading-->
                 <!--begin::Item-->
-                <div class="d-flex align-items-center bg-light-warning rounded p-5 gutter-b">
-                    <span class="svg-icon svg-icon-warning mr-5">
+                <div class="p-5 rounded d-flex align-items-center bg-light-warning gutter-b">
+                    <span class="mr-5 svg-icon svg-icon-warning">
                         <span class="svg-icon svg-icon-lg">
                             <!--begin::Svg Icon | path:assets/media/svg/icons/Home/Library.svg-->
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -2167,18 +2167,18 @@
                             <!--end::Svg Icon-->
                         </span>
                     </span>
-                    <div class="d-flex flex-column flex-grow-1 mr-2">
+                    <div class="mr-2 d-flex flex-column flex-grow-1">
                         <a href="#"
-                            class="font-weight-normal text-dark-75 text-hover-primary font-size-lg mb-1">Another
+                            class="mb-1 font-weight-normal text-dark-75 text-hover-primary font-size-lg">Another
                             purpose persuade</a>
                         <span class="text-muted font-size-sm">Due in 2 Days</span>
                     </div>
-                    <span class="font-weight-bolder text-warning py-1 font-size-lg">+28%</span>
+                    <span class="py-1 font-weight-bolder text-warning font-size-lg">+28%</span>
                 </div>
                 <!--end::Item-->
                 <!--begin::Item-->
-                <div class="d-flex align-items-center bg-light-success rounded p-5 gutter-b">
-                    <span class="svg-icon svg-icon-success mr-5">
+                <div class="p-5 rounded d-flex align-items-center bg-light-success gutter-b">
+                    <span class="mr-5 svg-icon svg-icon-success">
                         <span class="svg-icon svg-icon-lg">
                             <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Write.svg-->
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -2197,18 +2197,18 @@
                             <!--end::Svg Icon-->
                         </span>
                     </span>
-                    <div class="d-flex flex-column flex-grow-1 mr-2">
+                    <div class="mr-2 d-flex flex-column flex-grow-1">
                         <a href="#"
-                            class="font-weight-normal text-dark-75 text-hover-primary font-size-lg mb-1">Would be to
+                            class="mb-1 font-weight-normal text-dark-75 text-hover-primary font-size-lg">Would be to
                             people</a>
                         <span class="text-muted font-size-sm">Due in 2 Days</span>
                     </div>
-                    <span class="font-weight-bolder text-success py-1 font-size-lg">+50%</span>
+                    <span class="py-1 font-weight-bolder text-success font-size-lg">+50%</span>
                 </div>
                 <!--end::Item-->
                 <!--begin::Item-->
-                <div class="d-flex align-items-center bg-light-danger rounded p-5 gutter-b">
-                    <span class="svg-icon svg-icon-danger mr-5">
+                <div class="p-5 rounded d-flex align-items-center bg-light-danger gutter-b">
+                    <span class="mr-5 svg-icon svg-icon-danger">
                         <span class="svg-icon svg-icon-lg">
                             <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Group-chat.svg-->
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -2226,18 +2226,18 @@
                             <!--end::Svg Icon-->
                         </span>
                     </span>
-                    <div class="d-flex flex-column flex-grow-1 mr-2">
+                    <div class="mr-2 d-flex flex-column flex-grow-1">
                         <a href="#"
-                            class="font-weight-normel text-dark-75 text-hover-primary font-size-lg mb-1">Purpose would
+                            class="mb-1 font-weight-normel text-dark-75 text-hover-primary font-size-lg">Purpose would
                             be to persuade</a>
                         <span class="text-muted font-size-sm">Due in 2 Days</span>
                     </div>
-                    <span class="font-weight-bolder text-danger py-1 font-size-lg">-27%</span>
+                    <span class="py-1 font-weight-bolder text-danger font-size-lg">-27%</span>
                 </div>
                 <!--end::Item-->
                 <!--begin::Item-->
-                <div class="d-flex align-items-center bg-light-info rounded p-5">
-                    <span class="svg-icon svg-icon-info mr-5">
+                <div class="p-5 rounded d-flex align-items-center bg-light-info">
+                    <span class="mr-5 svg-icon svg-icon-info">
                         <span class="svg-icon svg-icon-lg">
                             <!--begin::Svg Icon | path:assets/media/svg/icons/General/Attachment2.svg-->
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -2265,13 +2265,13 @@
                             <!--end::Svg Icon-->
                         </span>
                     </span>
-                    <div class="d-flex flex-column flex-grow-1 mr-2">
+                    <div class="mr-2 d-flex flex-column flex-grow-1">
                         <a href="#"
-                            class="font-weight-normel text-dark-75 text-hover-primary font-size-lg mb-1">The best
+                            class="mb-1 font-weight-normel text-dark-75 text-hover-primary font-size-lg">The best
                             product</a>
                         <span class="text-muted font-size-sm">Due in 2 Days</span>
                     </div>
-                    <span class="font-weight-bolder text-info py-1 font-size-lg">+8%</span>
+                    <span class="py-1 font-weight-bolder text-info font-size-lg">+8%</span>
                 </div>
                 <!--end::Item-->
             </div>
@@ -2283,10 +2283,10 @@
 
     <!--end::Quick Cart-->
     <!--begin::Quick Panel-->
-    <div id="kt_quick_panel" class="offcanvas offcanvas-right pt-5 pb-10">
+    <div id="kt_quick_panel" class="pt-5 pb-10 offcanvas offcanvas-right">
         <!--begin::Header-->
-        <div class="offcanvas-header offcanvas-header-navs d-flex align-items-center justify-content-between mb-5">
-            <ul class="nav nav-bold nav-tabs nav-tabs-line nav-tabs-line-3x nav-tabs-primary flex-grow-1 px-10"
+        <div class="mb-5 offcanvas-header offcanvas-header-navs d-flex align-items-center justify-content-between">
+            <ul class="px-10 nav nav-bold nav-tabs nav-tabs-line nav-tabs-line-3x nav-tabs-primary flex-grow-1"
                 role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" data-toggle="tab" href="#kt_quick_panel_logs">Audit Logs</a>
@@ -2298,7 +2298,7 @@
                     <a class="nav-link" data-toggle="tab" href="#kt_quick_panel_settings">Settings</a>
                 </li>
             </ul>
-            <div class="offcanvas-close mt-n1 pr-5">
+            <div class="pr-5 offcanvas-close mt-n1">
                 <a href="#" class="btn btn-xs btn-icon btn-light btn-hover-primary"
                     id="kt_quick_panel_close">
                     <i class="ki ki-close icon-xs text-muted"></i>
@@ -2307,111 +2307,111 @@
         </div>
         <!--end::Header-->
         <!--begin::Content-->
-        <div class="offcanvas-content px-10">
+        <div class="px-10 offcanvas-content">
             <div class="tab-content">
                 <!--begin::Tabpane-->
-                <div class="tab-pane fade show pt-3 pr-5 mr-n5 active" id="kt_quick_panel_logs" role="tabpanel">
+                <div class="pt-3 pr-5 tab-pane fade show mr-n5 active" id="kt_quick_panel_logs" role="tabpanel">
                     <!--begin::Section-->
                     <div class="mb-15">
-                        <h5 class="font-weight-bold mb-5">System Messages</h5>
+                        <h5 class="mb-5 font-weight-bold">System Messages</h5>
                         <!--begin: Item-->
-                        <div class="d-flex align-items-center flex-wrap mb-5">
-                            <div class="symbol symbol-50 symbol-light mr-5">
+                        <div class="flex-wrap mb-5 d-flex align-items-center">
+                            <div class="mr-5 symbol symbol-50 symbol-light">
                                 <span class="symbol-label">
                                     <img src="{{ asset('assets/media/svg/misc/006-plurk.svg') }}"
                                         class="h-50 align-self-center" alt="" />
                                 </span>
                             </div>
-                            <div class="d-flex flex-column flex-grow-1 mr-2">
+                            <div class="mr-2 d-flex flex-column flex-grow-1">
                                 <a href="#"
-                                    class="font-weight-bolder text-dark-75 text-hover-primary font-size-lg mb-1">Top
+                                    class="mb-1 font-weight-bolder text-dark-75 text-hover-primary font-size-lg">Top
                                     Authors</a>
                                 <span class="text-muted font-weight-bold">Most Successful Fellas</span>
                             </div>
                             <span
-                                class="btn btn-sm btn-light font-weight-bolder py-1 my-lg-0 my-2 text-dark-50">+82$</span>
+                                class="py-1 my-2 btn btn-sm btn-light font-weight-bolder my-lg-0 text-dark-50">+82$</span>
                         </div>
                         <!--end: Item-->
                         <!--begin: Item-->
-                        <div class="d-flex align-items-center flex-wrap mb-5">
-                            <div class="symbol symbol-50 symbol-light mr-5">
+                        <div class="flex-wrap mb-5 d-flex align-items-center">
+                            <div class="mr-5 symbol symbol-50 symbol-light">
                                 <span class="symbol-label">
                                     <img src="{{ asset('assets/media/svg/misc/015-telegram.svg') }}"
                                         class="h-50 align-self-center" alt="" />
                                 </span>
                             </div>
-                            <div class="d-flex flex-column flex-grow-1 mr-2">
+                            <div class="mr-2 d-flex flex-column flex-grow-1">
                                 <a href="#"
-                                    class="font-weight-bolder text-dark-75 text-hover-primary font-size-lg mb-1">Popular
+                                    class="mb-1 font-weight-bolder text-dark-75 text-hover-primary font-size-lg">Popular
                                     Authors</a>
                                 <span class="text-muted font-weight-bold">Most Successful Fellas</span>
                             </div>
                             <span
-                                class="btn btn-sm btn-light font-weight-bolder my-lg-0 my-2 py-1 text-dark-50">+280$</span>
+                                class="py-1 my-2 btn btn-sm btn-light font-weight-bolder my-lg-0 text-dark-50">+280$</span>
                         </div>
                         <!--end: Item-->
                         <!--begin: Item-->
-                        <div class="d-flex align-items-center flex-wrap mb-5">
-                            <div class="symbol symbol-50 symbol-light mr-5">
+                        <div class="flex-wrap mb-5 d-flex align-items-center">
+                            <div class="mr-5 symbol symbol-50 symbol-light">
                                 <span class="symbol-label">
                                     <img src="{{ asset('assets/media/svg/misc/003-puzzle.svg') }}"
                                         class="h-50 align-self-center" alt="" />
                                 </span>
                             </div>
-                            <div class="d-flex flex-column flex-grow-1 mr-2">
+                            <div class="mr-2 d-flex flex-column flex-grow-1">
                                 <a href="#"
-                                    class="font-weight-bolder text-dark-75 text-hover-primary font-size-lg mb-1">New
+                                    class="mb-1 font-weight-bolder text-dark-75 text-hover-primary font-size-lg">New
                                     Users</a>
                                 <span class="text-muted font-weight-bold">Most Successful Fellas</span>
                             </div>
                             <span
-                                class="btn btn-sm btn-light font-weight-bolder my-lg-0 my-2 py-1 text-dark-50">+4500$</span>
+                                class="py-1 my-2 btn btn-sm btn-light font-weight-bolder my-lg-0 text-dark-50">+4500$</span>
                         </div>
                         <!--end: Item-->
                         <!--begin: Item-->
-                        <div class="d-flex align-items-center flex-wrap mb-5">
-                            <div class="symbol symbol-50 symbol-light mr-5">
+                        <div class="flex-wrap mb-5 d-flex align-items-center">
+                            <div class="mr-5 symbol symbol-50 symbol-light">
                                 <span class="symbol-label">
                                     <img src="{{ asset('assets/media/svg/misc/005-bebo.svg') }}"
                                         class="h-50 align-self-center" alt="" />
                                 </span>
                             </div>
-                            <div class="d-flex flex-column flex-grow-1 mr-2">
+                            <div class="mr-2 d-flex flex-column flex-grow-1">
                                 <a href="#"
-                                    class="font-weight-bolder text-dark-75 text-hover-primary font-size-lg mb-1">Active
+                                    class="mb-1 font-weight-bolder text-dark-75 text-hover-primary font-size-lg">Active
                                     Customers</a>
                                 <span class="text-muted font-weight-bold">Most Successful Fellas</span>
                             </div>
                             <span
-                                class="btn btn-sm btn-light font-weight-bolder my-lg-0 my-2 py-1 text-dark-50">+4500$</span>
+                                class="py-1 my-2 btn btn-sm btn-light font-weight-bolder my-lg-0 text-dark-50">+4500$</span>
                         </div>
                         <!--end: Item-->
                         <!--begin: Item-->
-                        <div class="d-flex align-items-center flex-wrap">
-                            <div class="symbol symbol-50 symbol-light mr-5">
+                        <div class="flex-wrap d-flex align-items-center">
+                            <div class="mr-5 symbol symbol-50 symbol-light">
                                 <span class="symbol-label">
                                     <img src="{{ asset('assets/media/svg/misc/014-kickstarter.svg') }}"
                                         class="h-50 align-self-center" alt="" />
                                 </span>
                             </div>
-                            <div class="d-flex flex-column flex-grow-1 mr-2">
+                            <div class="mr-2 d-flex flex-column flex-grow-1">
                                 <a href="#"
-                                    class="font-weight-bolder text-dark-75 text-hover-primary font-size-lg mb-1">Bestseller
+                                    class="mb-1 font-weight-bolder text-dark-75 text-hover-primary font-size-lg">Bestseller
                                     Theme</a>
                                 <span class="text-muted font-weight-bold">Most Successful Fellas</span>
                             </div>
                             <span
-                                class="btn btn-sm btn-light font-weight-bolder my-lg-0 my-2 py-1 text-dark-50">+4500$</span>
+                                class="py-1 my-2 btn btn-sm btn-light font-weight-bolder my-lg-0 text-dark-50">+4500$</span>
                         </div>
                         <!--end: Item-->
                     </div>
                     <!--end::Section-->
                     <!--begin::Section-->
                     <div class="mb-5">
-                        <h5 class="font-weight-bold mb-5">Notifications</h5>
+                        <h5 class="mb-5 font-weight-bold">Notifications</h5>
                         <!--begin: Item-->
-                        <div class="d-flex align-items-center bg-light-warning rounded p-5 mb-5">
-                            <span class="svg-icon svg-icon-warning mr-5">
+                        <div class="p-5 mb-5 rounded d-flex align-items-center bg-light-warning">
+                            <span class="mr-5 svg-icon svg-icon-warning">
                                 <span class="svg-icon svg-icon-lg">
                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Home/Library.svg-->
                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -2431,18 +2431,18 @@
                                     <!--end::Svg Icon-->
                                 </span>
                             </span>
-                            <div class="d-flex flex-column flex-grow-1 mr-2">
+                            <div class="mr-2 d-flex flex-column flex-grow-1">
                                 <a href="#"
-                                    class="font-weight-normal text-dark-75 text-hover-primary font-size-lg mb-1">Another
+                                    class="mb-1 font-weight-normal text-dark-75 text-hover-primary font-size-lg">Another
                                     purpose persuade</a>
                                 <span class="text-muted font-size-sm">Due in 2 Days</span>
                             </div>
-                            <span class="font-weight-bolder text-warning py-1 font-size-lg">+28%</span>
+                            <span class="py-1 font-weight-bolder text-warning font-size-lg">+28%</span>
                         </div>
                         <!--end: Item-->
                         <!--begin: Item-->
-                        <div class="d-flex align-items-center bg-light-success rounded p-5 mb-5">
-                            <span class="svg-icon svg-icon-success mr-5">
+                        <div class="p-5 mb-5 rounded d-flex align-items-center bg-light-success">
+                            <span class="mr-5 svg-icon svg-icon-success">
                                 <span class="svg-icon svg-icon-lg">
                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Write.svg-->
                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -2462,18 +2462,18 @@
                                     <!--end::Svg Icon-->
                                 </span>
                             </span>
-                            <div class="d-flex flex-column flex-grow-1 mr-2">
+                            <div class="mr-2 d-flex flex-column flex-grow-1">
                                 <a href="#"
-                                    class="font-weight-normal text-dark-75 text-hover-primary font-size-lg mb-1">Would
+                                    class="mb-1 font-weight-normal text-dark-75 text-hover-primary font-size-lg">Would
                                     be to people</a>
                                 <span class="text-muted font-size-sm">Due in 2 Days</span>
                             </div>
-                            <span class="font-weight-bolder text-success py-1 font-size-lg">+50%</span>
+                            <span class="py-1 font-weight-bolder text-success font-size-lg">+50%</span>
                         </div>
                         <!--end: Item-->
                         <!--begin: Item-->
-                        <div class="d-flex align-items-center bg-light-danger rounded p-5 mb-5">
-                            <span class="svg-icon svg-icon-danger mr-5">
+                        <div class="p-5 mb-5 rounded d-flex align-items-center bg-light-danger">
+                            <span class="mr-5 svg-icon svg-icon-danger">
                                 <span class="svg-icon svg-icon-lg">
                                     <!--begin::Svg Icon | path:assets/media/svg/icons/Communication/Group-chat.svg-->
                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -2492,18 +2492,18 @@
                                     <!--end::Svg Icon-->
                                 </span>
                             </span>
-                            <div class="d-flex flex-column flex-grow-1 mr-2">
+                            <div class="mr-2 d-flex flex-column flex-grow-1">
                                 <a href="#"
-                                    class="font-weight-normel text-dark-75 text-hover-primary font-size-lg mb-1">Purpose
+                                    class="mb-1 font-weight-normel text-dark-75 text-hover-primary font-size-lg">Purpose
                                     would be to persuade</a>
                                 <span class="text-muted font-size-sm">Due in 2 Days</span>
                             </div>
-                            <span class="font-weight-bolder text-danger py-1 font-size-lg">-27%</span>
+                            <span class="py-1 font-weight-bolder text-danger font-size-lg">-27%</span>
                         </div>
                         <!--end: Item-->
                         <!--begin: Item-->
-                        <div class="d-flex align-items-center bg-light-info rounded p-5">
-                            <span class="svg-icon svg-icon-info mr-5">
+                        <div class="p-5 rounded d-flex align-items-center bg-light-info">
+                            <span class="mr-5 svg-icon svg-icon-info">
                                 <span class="svg-icon svg-icon-lg">
                                     <!--begin::Svg Icon | path:assets/media/svg/icons/General/Attachment2.svg-->
                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -2532,13 +2532,13 @@
                                     <!--end::Svg Icon-->
                                 </span>
                             </span>
-                            <div class="d-flex flex-column flex-grow-1 mr-2">
+                            <div class="mr-2 d-flex flex-column flex-grow-1">
                                 <a href="#"
-                                    class="font-weight-normel text-dark-75 text-hover-primary font-size-lg mb-1">The
+                                    class="mb-1 font-weight-normel text-dark-75 text-hover-primary font-size-lg">The
                                     best product</a>
                                 <span class="text-muted font-size-sm">Due in 2 Days</span>
                             </div>
-                            <span class="font-weight-bolder text-info py-1 font-size-lg">+8%</span>
+                            <span class="py-1 font-weight-bolder text-info font-size-lg">+8%</span>
                         </div>
                         <!--end: Item-->
                     </div>
@@ -2546,13 +2546,13 @@
                 </div>
                 <!--end::Tabpane-->
                 <!--begin::Tabpane-->
-                <div class="tab-pane fade pt-2 pr-5 mr-n5" id="kt_quick_panel_notifications" role="tabpanel">
+                <div class="pt-2 pr-5 tab-pane fade mr-n5" id="kt_quick_panel_notifications" role="tabpanel">
                     <!--begin::Nav-->
                     <div class="navi navi-icon-circle navi-spacer-x-0">
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon-bell text-success icon-lg"></i>
                                     </div>
@@ -2566,8 +2566,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon2-box text-danger icon-lg"></i>
                                     </div>
@@ -2581,8 +2581,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon-psd text-primary icon-lg"></i>
                                     </div>
@@ -2596,8 +2596,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon2-supermarket text-warning icon-lg"></i>
                                     </div>
@@ -2611,8 +2611,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon-paper-plane-1 text-success icon-lg"></i>
                                     </div>
@@ -2626,8 +2626,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon-safe-shield-protection text-danger icon-lg"></i>
                                     </div>
@@ -2641,8 +2641,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon-notepad text-primary icon-lg"></i>
                                     </div>
@@ -2656,8 +2656,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon-users-1 text-warning icon-lg"></i>
                                     </div>
@@ -2671,8 +2671,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon2-box text-info icon-lg"></i>
                                     </div>
@@ -2686,8 +2686,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon2-download text-success icon-lg"></i>
                                     </div>
@@ -2701,8 +2701,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon2-supermarket text-danger icon-lg"></i>
                                     </div>
@@ -2716,8 +2716,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon-bell text-primary icon-lg"></i>
                                     </div>
@@ -2731,8 +2731,8 @@
                         <!--end::Item-->
                         <!--begin::Item-->
                         <a href="#" class="navi-item">
-                            <div class="navi-link rounded">
-                                <div class="symbol symbol-50 mr-3">
+                            <div class="rounded navi-link">
+                                <div class="mr-3 symbol symbol-50">
                                     <div class="symbol-label">
                                         <i class="flaticon-paper-plane-1 text-success icon-lg"></i>
                                     </div>
@@ -2749,12 +2749,12 @@
                 </div>
                 <!--end::Tabpane-->
                 <!--begin::Tabpane-->
-                <div class="tab-pane fade pt-3 pr-5 mr-n5" id="kt_quick_panel_settings" role="tabpanel">
+                <div class="pt-3 pr-5 tab-pane fade mr-n5" id="kt_quick_panel_settings" role="tabpanel">
                     <form class="form">
                         <!--begin::Section-->
                         <div>
-                            <h5 class="font-weight-bold mb-3">Customer Care</h5>
-                            <div class="form-group mb-0 row align-items-center">
+                            <h5 class="mb-3 font-weight-bold">Customer Care</h5>
+                            <div class="mb-0 form-group row align-items-center">
                                 <label class="col-8 col-form-label">Enable Notifications:</label>
                                 <div class="col-4 d-flex justify-content-end">
                                     <span class="switch switch-success switch-sm">
@@ -2765,7 +2765,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="form-group mb-0 row align-items-center">
+                            <div class="mb-0 form-group row align-items-center">
                                 <label class="col-8 col-form-label">Enable Case Tracking:</label>
                                 <div class="col-4 d-flex justify-content-end">
                                     <span class="switch switch-success switch-sm">
@@ -2776,7 +2776,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="form-group mb-0 row align-items-center">
+                            <div class="mb-0 form-group row align-items-center">
                                 <label class="col-8 col-form-label">Support Portal:</label>
                                 <div class="col-4 d-flex justify-content-end">
                                     <span class="switch switch-success switch-sm">
@@ -2789,11 +2789,11 @@
                             </div>
                         </div>
                         <!--end::Section-->
-                        <div class="separator separator-dashed my-6"></div>
+                        <div class="my-6 separator separator-dashed"></div>
                         <!--begin::Section-->
                         <div class="pt-2">
-                            <h5 class="font-weight-bold mb-3">Reports</h5>
-                            <div class="form-group mb-0 row align-items-center">
+                            <h5 class="mb-3 font-weight-bold">Reports</h5>
+                            <div class="mb-0 form-group row align-items-center">
                                 <label class="col-8 col-form-label">Generate Reports:</label>
                                 <div class="col-4 d-flex justify-content-end">
                                     <span class="switch switch-sm switch-danger">
@@ -2804,7 +2804,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="form-group mb-0 row align-items-center">
+                            <div class="mb-0 form-group row align-items-center">
                                 <label class="col-8 col-form-label">Enable Report Export:</label>
                                 <div class="col-4 d-flex justify-content-end">
                                     <span class="switch switch-sm switch-danger">
@@ -2815,7 +2815,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="form-group mb-0 row align-items-center">
+                            <div class="mb-0 form-group row align-items-center">
                                 <label class="col-8 col-form-label">Allow Data Collection:</label>
                                 <div class="col-4 d-flex justify-content-end">
                                     <span class="switch switch-sm switch-danger">
@@ -2828,11 +2828,11 @@
                             </div>
                         </div>
                         <!--end::Section-->
-                        <div class="separator separator-dashed my-6"></div>
+                        <div class="my-6 separator separator-dashed"></div>
                         <!--begin::Section-->
                         <div class="pt-2">
-                            <h5 class="font-weight-bold mb-3">Memebers</h5>
-                            <div class="form-group mb-0 row align-items-center">
+                            <h5 class="mb-3 font-weight-bold">Memebers</h5>
+                            <div class="mb-0 form-group row align-items-center">
                                 <label class="col-8 col-form-label">Enable Member singup:</label>
                                 <div class="col-4 d-flex justify-content-end">
                                     <span class="switch switch-sm switch-primary">
@@ -2843,7 +2843,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="form-group mb-0 row align-items-center">
+                            <div class="mb-0 form-group row align-items-center">
                                 <label class="col-8 col-form-label">Allow User Feedbacks:</label>
                                 <div class="col-4 d-flex justify-content-end">
                                     <span class="switch switch-sm switch-primary">
@@ -2854,7 +2854,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="form-group mb-0 row align-items-center">
+                            <div class="mb-0 form-group row align-items-center">
                                 <label class="col-8 col-form-label">Enable Customer Portal:</label>
                                 <div class="col-4 d-flex justify-content-end">
                                     <span class="switch switch-sm switch-primary">
@@ -2883,7 +2883,7 @@
                 <!--begin::Card-->
                 <div class="card card-custom">
                     <!--begin::Header-->
-                    <div class="card-header align-items-center px-4 py-3">
+                    <div class="px-4 py-3 card-header align-items-center">
                         <div class="text-left flex-grow-1">
                             <!--begin::Dropdown Menu-->
                             <div class="dropdown dropdown-inline">
@@ -2908,9 +2908,9 @@
                                         <!--end::Svg Icon-->
                                     </span>
                                 </button>
-                                <div class="dropdown-menu p-0 m-0 dropdown-menu-right dropdown-menu-md">
+                                <div class="p-0 m-0 dropdown-menu dropdown-menu-right dropdown-menu-md">
                                     <!--begin::Navigation-->
-                                    <ul class="navi navi-hover py-5">
+                                    <ul class="py-5 navi navi-hover">
                                         <li class="navi-item">
                                             <a href="#" class="navi-link">
                                                 <span class="navi-icon">
@@ -2955,7 +2955,7 @@
                                                 <span class="navi-text">Settings</span>
                                             </a>
                                         </li>
-                                        <li class="navi-separator my-3"></li>
+                                        <li class="my-3 navi-separator"></li>
                                         <li class="navi-item">
                                             <a href="#" class="navi-link">
                                                 <span class="navi-icon">
@@ -3004,9 +3004,9 @@
                             <!--begin::Messages-->
                             <div class="messages">
                                 <!--begin::Message In-->
-                                <div class="d-flex flex-column mb-5 align-items-start">
+                                <div class="mb-5 d-flex flex-column align-items-start">
                                     <div class="d-flex align-items-center">
-                                        <div class="symbol symbol-circle symbol-40 mr-3">
+                                        <div class="mr-3 symbol symbol-circle symbol-40">
                                             <img alt="Pic" src="assets/media/users/300_12.jpg" />
                                         </div>
                                         <div>
@@ -3017,32 +3017,32 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
+                                        class="p-5 mt-2 text-left rounded bg-light-success text-dark-50 font-weight-bold font-size-lg max-w-400px">
                                         How likely are you to recommend our company to your friends and family?</div>
                                 </div>
                                 <!--end::Message In-->
                                 <!--begin::Message Out-->
-                                <div class="d-flex flex-column mb-5 align-items-end">
+                                <div class="mb-5 d-flex flex-column align-items-end">
                                     <div class="d-flex align-items-center">
                                         <div>
                                             <span class="text-muted font-size-sm">3 minutes</span>
                                             <a href="#"
                                                 class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
                                         </div>
-                                        <div class="symbol symbol-circle symbol-40 ml-3">
+                                        <div class="ml-3 symbol symbol-circle symbol-40">
                                             <img alt="Pic" src="assets/media/users/300_21.jpg" />
                                         </div>
                                     </div>
                                     <div
-                                        class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
+                                        class="p-5 mt-2 text-right rounded bg-light-primary text-dark-50 font-weight-bold font-size-lg max-w-400px">
                                         Hey there, we’re just writing to let you know that you’ve been subscribed to a
                                         repository on GitHub.</div>
                                 </div>
                                 <!--end::Message Out-->
                                 <!--begin::Message In-->
-                                <div class="d-flex flex-column mb-5 align-items-start">
+                                <div class="mb-5 d-flex flex-column align-items-start">
                                     <div class="d-flex align-items-center">
-                                        <div class="symbol symbol-circle symbol-40 mr-3">
+                                        <div class="mr-3 symbol symbol-circle symbol-40">
                                             <img alt="Pic" src="assets/media/users/300_21.jpg" />
                                         </div>
                                         <div>
@@ -3053,31 +3053,31 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
+                                        class="p-5 mt-2 text-left rounded bg-light-success text-dark-50 font-weight-bold font-size-lg max-w-400px">
                                         Ok, Understood!</div>
                                 </div>
                                 <!--end::Message In-->
                                 <!--begin::Message Out-->
-                                <div class="d-flex flex-column mb-5 align-items-end">
+                                <div class="mb-5 d-flex flex-column align-items-end">
                                     <div class="d-flex align-items-center">
                                         <div>
                                             <span class="text-muted font-size-sm">Just now</span>
                                             <a href="#"
                                                 class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
                                         </div>
-                                        <div class="symbol symbol-circle symbol-40 ml-3">
+                                        <div class="ml-3 symbol symbol-circle symbol-40">
                                             <img alt="Pic" src="assets/media/users/300_21.jpg" />
                                         </div>
                                     </div>
                                     <div
-                                        class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
+                                        class="p-5 mt-2 text-right rounded bg-light-primary text-dark-50 font-weight-bold font-size-lg max-w-400px">
                                         You’ll receive notifications for all issues, pull requests!</div>
                                 </div>
                                 <!--end::Message Out-->
                                 <!--begin::Message In-->
-                                <div class="d-flex flex-column mb-5 align-items-start">
+                                <div class="mb-5 d-flex flex-column align-items-start">
                                     <div class="d-flex align-items-center">
-                                        <div class="symbol symbol-circle symbol-40 mr-3">
+                                        <div class="mr-3 symbol symbol-circle symbol-40">
                                             <img alt="Pic" src="assets/media/users/300_12.jpg" />
                                         </div>
                                         <div>
@@ -3088,34 +3088,34 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
+                                        class="p-5 mt-2 text-left rounded bg-light-success text-dark-50 font-weight-bold font-size-lg max-w-400px">
                                         You can unwatch this repository immediately by clicking here:
                                         <a href="#">https://github.com</a>
                                     </div>
                                 </div>
                                 <!--end::Message In-->
                                 <!--begin::Message Out-->
-                                <div class="d-flex flex-column mb-5 align-items-end">
+                                <div class="mb-5 d-flex flex-column align-items-end">
                                     <div class="d-flex align-items-center">
                                         <div>
                                             <span class="text-muted font-size-sm">Just now</span>
                                             <a href="#"
                                                 class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
                                         </div>
-                                        <div class="symbol symbol-circle symbol-40 ml-3">
+                                        <div class="ml-3 symbol symbol-circle symbol-40">
                                             <img alt="Pic" src="assets/media/users/300_21.jpg" />
                                         </div>
                                     </div>
                                     <div
-                                        class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
+                                        class="p-5 mt-2 text-right rounded bg-light-primary text-dark-50 font-weight-bold font-size-lg max-w-400px">
                                         Discover what students who viewed Learn Figma - UI/UX Design. Essential Training
                                         also viewed</div>
                                 </div>
                                 <!--end::Message Out-->
                                 <!--begin::Message In-->
-                                <div class="d-flex flex-column mb-5 align-items-start">
+                                <div class="mb-5 d-flex flex-column align-items-start">
                                     <div class="d-flex align-items-center">
-                                        <div class="symbol symbol-circle symbol-40 mr-3">
+                                        <div class="mr-3 symbol symbol-circle symbol-40">
                                             <img alt="Pic" src="assets/media/users/300_12.jpg" />
                                         </div>
                                         <div>
@@ -3126,24 +3126,24 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">
+                                        class="p-5 mt-2 text-left rounded bg-light-success text-dark-50 font-weight-bold font-size-lg max-w-400px">
                                         Most purchased Business courses during this sale!</div>
                                 </div>
                                 <!--end::Message In-->
                                 <!--begin::Message Out-->
-                                <div class="d-flex flex-column mb-5 align-items-end">
+                                <div class="mb-5 d-flex flex-column align-items-end">
                                     <div class="d-flex align-items-center">
                                         <div>
                                             <span class="text-muted font-size-sm">Just now</span>
                                             <a href="#"
                                                 class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
                                         </div>
-                                        <div class="symbol symbol-circle symbol-40 ml-3">
+                                        <div class="ml-3 symbol symbol-circle symbol-40">
                                             <img alt="Pic" src="assets/media/users/300_21.jpg" />
                                         </div>
                                     </div>
                                     <div
-                                        class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">
+                                        class="p-5 mt-2 text-right rounded bg-light-primary text-dark-50 font-weight-bold font-size-lg max-w-400px">
                                         Company BBQ to celebrate the last quater achievements and goals. Food and drinks
                                         provided</div>
                                 </div>
@@ -3157,10 +3157,10 @@
                     <!--begin::Footer-->
                     <div class="card-footer align-items-center">
                         <!--begin::Compose-->
-                        <textarea class="form-control border-0 p-0" rows="2" placeholder="Type a message"></textarea>
-                        <div class="d-flex align-items-center justify-content-between mt-5">
+                        <textarea class="p-0 border-0 form-control" rows="2" placeholder="Type a message"></textarea>
+                        <div class="mt-5 d-flex align-items-center justify-content-between">
                             <div class="mr-3">
-                                <a href="#" class="btn btn-clean btn-icon btn-md mr-1">
+                                <a href="#" class="mr-1 btn btn-clean btn-icon btn-md">
                                     <i class="flaticon2-photograph icon-lg"></i>
                                 </a>
                                 <a href="#" class="btn btn-clean btn-icon btn-md">
@@ -3169,7 +3169,7 @@
                             </div>
                             <div>
                                 <button type="button"
-                                    class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6">Send</button>
+                                    class="px-6 py-2 btn btn-primary btn-md text-uppercase font-weight-bold chat-send">Send</button>
                             </div>
                         </div>
                         <!--begin::Compose-->
