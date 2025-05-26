@@ -181,84 +181,11 @@ class WalletController extends Controller
         ]);
     }
 
-    public function accountTopUp(Request $request)
-    {
-        $user = Auth::user();
-        $wallets = Wallet::where('user_id', $user->id)
-            ->where('wallet_type', 'online')
-            ->get();
-        $totalBalance = $wallets->sum('balance');
-        $request->validate([
-            'topUp_amount' => ['required', 'numeric', "min:5","max:$totalBalance"],
-            'topUp_description' => 'required',
-        ]);
-        $amountToTransfer = $request->input('topUp_amount');
-        $description = $request->input('topUp_description');
-        if ($totalBalance < $amountToTransfer) {
-            return redirect()->back()->with('error', 'Insufficient balance in your online wallet.');
-        }
-        try {
-            DB::beginTransaction();
-            $remainingAmount = $amountToTransfer;
-            foreach ($wallets as $wallet) {
-                if ($remainingAmount <= 0) break;
-                $deductAmount = min($wallet->balance, $remainingAmount);
-                $wallet->balance -= $deductAmount;
-                $wallet->save();
-                $remainingAmount -= $deductAmount;
-            }
-            $this->logTransaction($user->id,'investment','online',$amountToTransfer,$amountToTransfer,"You topped up your account with {$amountToTransfer} $ from your Online Wallet.",
-                'debit',0);
-            $this->createInitialInvestment($user,$amountToTransfer,$description);
-            $this->checkAndCreateSlabs($user);
-            DB::commit();
+   
 
-            return redirect()->back()->with('success', "Your Account has been topped up with {$amountToTransfer} $");
-        } catch (\Exception $e) {
-            DB::rollBack();
+   
 
-            return redirect()->back()->with('error', 'Something went wrong during top-up: ' . $e->getMessage());
-        }
-    }
-
-
-
-    
-
-    protected function createInitialInvestment(User $user, $amountToTransfer,$description): void
-    {
-        UserInvestment::create([
-            'user_id' => $user->id,
-            'amount' => $amountToTransfer,
-            'type' => 'topup',
-            'description' => $description
-        ]); 
-        $user->increment('roi_eligible_investment_amount', $amountToTransfer);
-    }
-
-    private function checkAndCreateSlabs($user)
-    {
-        $totalInvestment = UserInvestment::where('user_id', $user->id)->sum('amount');
-        $totalSlabs = InvestmentSlab::where('user_id', $user->id)->count(); 
-        $availableInvestment = $totalInvestment - ($totalSlabs * 100);
-        while ($availableInvestment >= 100) {
-            $achievedAt = now();
-            $willPayAt = $achievedAt->copy()->addMonths(24)->startOfMonth()->addMonth();
-            
-            $newSlab = new InvestmentSlab();
-            $newSlab->user_id = $user->id;
-            $newSlab->slab_count = $totalSlabs + 1;
-            $newSlab->amount = 100;
-            $newSlab->achived_at = now();
-            $newSlab->current_balance = $user->roi_eligible_investment_amount; 
-            $newSlab->maturity_date = now()->addMonths(24);
-            $newSlab->will_pay_at = $willPayAt;
-            $newSlab->status = 'No';
-            $newSlab->save();
-            $totalSlabs++;
-            $availableInvestment -= 100;
-        }
-    }
+   
 
     public function clearNegativePoints(Request $request)
     {

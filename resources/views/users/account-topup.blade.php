@@ -2,7 +2,11 @@
 @section('title', 'Account TopUp')
 @section('custom_css')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
+<style>
+    .select2-container--default .select2-selection--single{
+        height: 95%;
+    }
+</style>
 @endsection
 @section('content')
     <!--begin::Content-->
@@ -44,12 +48,13 @@
                         <div class="table-responsive">
                             <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_4">
                                 <thead>
-                                    <tr class=" ">
-                                        <th class=" "> S#</th>
-                                        <th class=" "> Amount</th>
-                                        <th class=" "> Type</th>
-                                        <th class=" "> TopUp For</th> 
-                                        <th class=" "> Date</th>  
+                                    <tr class="">
+                                        <th class=""> S#</th>
+                                        <th class=""> Amount</th>
+                                        <th class=""> Type</th>
+                                        <th class=""> TopUp For (Username)</th>
+                                        <th class=""> TopUp For (Name)</th> 
+                                        <th class=""> Date</th>  
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -58,6 +63,7 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <th>{{ $wallet->balance }}</th>
                                             <th>{{ $wallet->wallet_type }}</th>
+                                            <td>{{ $wallet->user->username }}</td> 
                                             <td>{{ $wallet->user->name }}</td> 
                                             <td>{{ $wallet->created_at  }}</td>  
                                         </tr>
@@ -92,10 +98,12 @@
                             <div class="form-group">
                                 <label for="user_id">Select User</label>
 
-                                <select  style="width: 100%; height:50px!important" name="user_id" id="user_id" class="js-example-basic-single  " name="state" required>
+                                <select  style="width: 100%;  " name="user_id" id="user_id" class="js-example-basic-single  " name="state" required>
                                     <option value="" disabled selected> Select User </option>
                                     @foreach($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                                        <option value="{{ $user->id }}">
+                                            {{ $user->name }}
+                                            ({{ $user->username }})</option>
                                     @endforeach
                                 </select> 
                             </div>
@@ -120,6 +128,8 @@
 @section('page_js') 
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+
+    
     $('#generateTopUP').click(function(e) {
         e.preventDefault();
 
@@ -137,6 +147,7 @@
                 toastr.success(response.message);
                 $('#account-top-up').modal('hide');
                 $('#topupForm')[0].reset();
+                  location.reload();
             },
             error: function(xhr) {
                 toastr.error(xhr.responseJSON.message);

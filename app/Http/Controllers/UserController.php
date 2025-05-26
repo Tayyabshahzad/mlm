@@ -2,14 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\CompanyAgreement;
-use App\Mail\InvoiceEmail;
-use App\Mail\WelcomeEmail;
 use App\Models\Profile;
 use App\Models\ROITransaction;
 use App\Models\User;
-use App\Models\Wallet;
-use App\Models\WalletTransactions;
+use App\Models\Wallet; 
 use App\Models\Week;
 use Illuminate\Http\Request;
 use App\Services\PVService;
@@ -25,7 +21,7 @@ use App\Exports\ContactsExport;
 use App\Models\UserInvestment;
 use App\Models\InvestmentSlab;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Log; 
 
 class UserController extends Controller
 {
@@ -88,7 +84,7 @@ class UserController extends Controller
                 'exists:users,id',  
             ],
         ]);
-       $user = User::find($request->member_id);
+        $user = User::find($request->member_id);
         if ($user->can_login) {
             return redirect()->back()->with('error', 'This User is Already Activated');
         } 
@@ -280,20 +276,20 @@ class UserController extends Controller
             ])->first();
     
             if (!$previousReward || $previousReward->balance <= 0) {
-                \Log::info("Skipping reward for level {$level} because reward for level {$i} is not achieved.");
+                Log::info("Skipping reward for level {$level} because reward for level {$i} is not achieved.");
                 return;
             }
         }
 
-        \Log::info("Level: " . $level . " directChildCount: " . $directChildCount . " specificRewardLevel: " . $specificRewardLevel['users_required']);
+        Log::info("Level: " . $level . " directChildCount: " . $directChildCount . " specificRewardLevel: " . $specificRewardLevel['users_required']);
         // $usersRequired = $rewardLevels; 
         if ($directChildCount >= $specificRewardLevel['users_required']) {
-          \Log::info('Condition met for level ' . $level);
+          Log::info('Condition met for level ' . $level);
             $this->assignReward($parentID, $specificRewardLevel['reward_amount'], $specificRewardLevel['level']);
         }
         $parentExists  = User::where('blocked',false)->find($parent->sponsor_id);
         if ($parentExists) {
-            \Log::info('parentExists: ' . $parentExists->id);
+            Log::info('parentExists: ' . $parentExists->id);
             $this->assignRewardToUser($parentExists->id, $level+1);
         }
     }
@@ -302,7 +298,7 @@ class UserController extends Controller
         $directChildren = User::where('blocked',false)->where('sponsor_id', $userId)
             ->where('can_login', 1) // Only active users
             ->get();
-        \Log::info("LOG 1 - { $user->name }  update ho raha ha  jis ka parent {$user->parent->name} ha , ham ny idr {$user->parent->name} k sary user ko get kr liya ha ");
+        Log::info("LOG 1 - { $user->name }  update ho raha ha  jis ka parent {$user->parent->name} ha , ham ny idr {$user->parent->name} k sary user ko get kr liya ha ");
         $rewardLevels = collect([
             ['level' => 1, 'reward_amount' => 130, 'users_required' => 10],
             ['level' => 2, 'reward_amount' => 260, 'users_required' => 50],
@@ -312,11 +308,11 @@ class UserController extends Controller
             ['level' => 6, 'reward_amount' => 26000, 'users_required' => 2000],
             ['level' => 7, 'reward_amount' => 41500, 'users_required' => 4000],
         ]);
-        \Log::info("Loop Start  ------------------  ");
+        Log::info("Loop Start  ------------------  ");
         $sn = 0;
         foreach ($rewardLevels as $level) {
             $sn++;
-            \Log::info("Iteration  -----------  " . $sn);
+            Log::info("Iteration  -----------  " . $sn);
             // Check if reward for this level has already been assigned
             //Wallet ke table min dakh rha ha k shahzad ke id k sat same level min entry to nhin ha agr ha to skip kro do process
             $existingReward = Wallet::where([
@@ -325,52 +321,52 @@ class UserController extends Controller
                 ['commission_type', '=', 'reward'],
                 ['level', '=', $level['level']],
             ])->exists();
-            \Log::info("LOG 2 -  Idr Chek kia ha {$user->parent->name} ko rward level {$level['level']} pr paly sy assign to  nhin ha ");
+            Log::info("LOG 2 -  Idr Chek kia ha {$user->parent->name} ko rward level {$level['level']} pr paly sy assign to  nhin ha ");
             if ($existingReward) {
                 // Skip if reward for this level is already assigned
                 continue;
             }
             //Loop k level 1 pr check k agr loop min level one ha to tm shahzad k wo sary bandy ly k eg. aqil , faisal , qasim aow phir un bandon ko count kro agr count k bad un ka number 7 k braber ha to assing revard ka functon call kro or shahazad ko level 1 dy do 
-            \Log::info("LOG 3 - {$user->parent->name} ko Rward level {$level['level']} pr koi be assing nhin huwa");
+            Log::info("LOG 3 - {$user->parent->name} ko Rward level {$level['level']} pr koi be assing nhin huwa");
 
             if ($level['level'] === 1) {
-                \Log::info(" LOG 4 -Loop min jb level " . $level['level'] . "ho jy ga to ham check kryn gy k  {$user->parent->name} k bachon ga count kia ha gr wo count  7 ko match kr jata ha to level 1 rewad mil gya ga  ");
+                Log::info(" LOG 4 -Loop min jb level " . $level['level'] . "ho jy ga to ham check kryn gy k  {$user->parent->name} k bachon ga count kia ha gr wo count  7 ko match kr jata ha to level 1 rewad mil gya ga  ");
                 // For Level 1, use direct referrals count
                 $directReferralsCount = $this->calculateDirectReferrals($userId);
                 if ($directReferralsCount >= $level['users_required']) {
-                    \Log::info($level['users_required'] . " user ke condation meet kr gy level 1 open ho gya ");
+                    Log::info($level['users_required'] . " user ke condation meet kr gy level 1 open ho gya ");
                     $this->assignReward($userId, $level['reward_amount'], $level['level']);
-                    \Log::info("Level 1 reward assigned to parent user id --  {$userId}");
+                    Log::info("Level 1 reward assigned to parent user id --  {$userId}");
                     break;
                 }
             } else {
-                \Log::info(" LOG 4 -Loop min jb level " . $level['level'] . "ho jy ga ha or is bar ham indirect user ko check kr ahy hin  ");
+                Log::info(" LOG 4 -Loop min jb level " . $level['level'] . "ho jy ga ha or is bar ham indirect user ko check kr ahy hin  ");
                 // For other levels, calculate combined team size of direct children
                 $totalTeamSize = 0;
                 //directChildren children min wo parson hin jo shahzad k user hin remember hm tayyab ko create kr rahy hin
-                \Log::info(" LOG 5 -  {$user->parent->name}  pr loop laga ha or  {$user->parent->name} k hr user ko loop min add kia ha idr hamry pas  {$user->parent->name} k total child count " . $directChildren->count() . " hain");
+                Log::info(" LOG 5 -  {$user->parent->name}  pr loop laga ha or  {$user->parent->name} k hr user ko loop min add kia ha idr hamry pas  {$user->parent->name} k total child count " . $directChildren->count() . " hain");
                 foreach ($directChildren as $child) {
                     // Ab idr sb user ke list a gy ha jo shahzad k users k mtlb qasim asin etc or asim yeh qasim ke id ko pick kr k us ke team member ko check kia ja raha ha for exp is function ko asim ke id yeh aqil ke id pass ho gy ha
-                    \Log::info(" LOG 6 -  Ab idr sb ak ak child jis ka parent {$user->parent->name}  ha, us ke team k count check kia ja raha hs is check ke waja yeh ha k ham ny  {$user->parent->name}  ko next level pr move krna ha  currentally is child {$child->name} k tem ko check kia ja raha ha ");
+                    Log::info(" LOG 6 -  Ab idr sb ak ak child jis ka parent {$user->parent->name}  ha, us ke team k count check kia ja raha hs is check ke waja yeh ha k ham ny  {$user->parent->name}  ko next level pr move krna ha  currentally is child {$child->name} k tem ko check kia ja raha ha ");
                     $childTeamSize = $this->calculateTeamSize($child->id, $child);
                     $totalTeamSize += $childTeamSize;
-                    \Log::info("Sub Child {$child->name} has team size of: {$childTeamSize}");
+                    Log::info("Sub Child {$child->name} has team size of: {$childTeamSize}");
                 }
 
-                \Log::info("Total team size for Level {$level['level']} check: {$totalTeamSize}");
+                Log::info("Total team size for Level {$level['level']} check: {$totalTeamSize}");
 
                 if ($totalTeamSize >= $level['users_required']) {
                     $this->assignReward($userId, $level['reward_amount'], $level['level']);
-                    \Log::info("Level {$level['level']} reward assigned to user {$userId} with total team size {$totalTeamSize}");
+                    Log::info("Level {$level['level']} reward assigned to user {$userId} with total team size {$totalTeamSize}");
                     break;
                 } else {
-                    \Log::info("Next Level Open nin huwa");
+                    Log::info("Next Level Open nin huwa");
                 }
             }
 
-            \Log::info("End ------------------  ");
+            Log::info("End ------------------  ");
         }
-        \Log::info("-------------Loop End  ------------------  ");
+        Log::info("-------------Loop End  ------------------  ");
     } 
     public function calculateDirectReferrals($userId)
     {
@@ -381,60 +377,44 @@ class UserController extends Controller
 
         $directReferrals = User::where('blocked',false)->where('sponsor_id', $userId)
             ->where('can_login', 1)
-            ->get();
-        // asim user ko count kro
-        $directReferralsCount = $directReferrals->count();
-
-        // Log direct referrals
-        \Log::info("Idr ham ny {$childUser->name} k direct team ka cont kia ha =  {$directReferralsCount} .");
-
-        // Downline team size calculation (recursively)
-        \Log::info("recursively query  .");
+            ->get(); 
+        $directReferralsCount = $directReferrals->count(); 
+        Log::info("Idr ham ny {$childUser->name} k direct team ka cont kia ha =  {$directReferralsCount} ."); 
+        Log::info("recursively query  .");
         $downlineTeamSize = $directReferrals->sum(function ($child) {
             return $this->calculateTeamSize($child->id);
-        });
-
-        // Total team size
-        $totalTeamSize = $directReferralsCount + $downlineTeamSize;
-
-        // Log team size calculation
-        \Log::info("Team size for user {$childUser->name}: Direct Referrals = {$directReferralsCount}, Downline = {$downlineTeamSize}, Total = {$totalTeamSize}");
+        }); 
+        $totalTeamSize = $directReferralsCount + $downlineTeamSize; 
+        Log::info("Team size for user {$childUser->name}: Direct Referrals = {$directReferralsCount}, Downline = {$downlineTeamSize}, Total = {$totalTeamSize}");
 
         return $totalTeamSize;
     } 
 
     private function assignReward($userId, $amount, $level)
-    {
-        // Check if the reward for this level has already been assigned
+    { 
         $existingReward = Wallet::where([
             ['user_id', '=', $userId],
             ['wallet_type', '=', 'reward'],
             ['commission_type', '=', 'reward'],
             ['level', '=', $level],
         ])->first();
-        \Log::info("Checking if wallet exists for user {$userId} at level {$level}: " . ($existingReward ? 'Exists' : 'Does not exist'));
-        if ($existingReward && $existingReward->balance > 0) {
-            // Reward for this level already assigned, skip
-            \Log::info("Reward already assigned", [
+        Log::info("Checking if wallet exists for user {$userId} at level {$level}: " . ($existingReward ? 'Exists' : 'Does not exist'));
+        if ($existingReward && $existingReward->balance > 0) { 
+            Log::info("Reward already assigned", [
                 'user_id' => $userId,
                 'level' => $level,
             ]);
             return;
-        }
-
-        // Fetch or create reward wallet
+        } 
         $wallet = Wallet::firstOrCreate(
             ['user_id' => $userId, 'wallet_type' => 'reward', 'commission_type' => 'reward', 'level' => $level],
             ['balance' => 0.00]
         );
-        \Log::info("Wallet created for user {$userId} at level {$level}");
-        // Add reward to wallet
+        Log::info("Wallet created for user {$userId} at level {$level}"); 
         $wallet->balance += $amount;
         $wallet->total_amount += $amount;
-        $wallet->save();
-
-        // Log reward assignment
-        \Log::info("Reward assigned", [
+        $wallet->save(); 
+        Log::info("Reward assigned", [
             'user_id' => $userId,
             'amount' => $amount,
             'level' => $level,
@@ -447,52 +427,8 @@ class UserController extends Controller
             ->where('sponsor_id', $userId)
             // ->where('can_login', true) // Ensure user is active
             ->count();
-    }
- 
-    private function assignCommissions($user)
-    {
-        // Fetch the immediate sponsor
-        $parentUser = User::where('blocked',false)->find($user->sponsor_id);
-       
-        if ($parentUser) {
-            $directCommissionPercentage = $this->getCommissionForLevel(1,$user->roi_eligible_investment_amount); // Level 1 for direct commission  
-            $this->walletService->assignCommission($parentUser->id, $directCommissionPercentage['commission_amount'], 'direct', $user, 1,$directCommissionPercentage['percentage']);
-        }
-    
-        // Exclude the immediate sponsor from ancestors list
-        $ancestors = $this->getAncestors($user)
-            ->filter(function ($ancestor) use ($user) {
-                return $ancestor->ancestor_id !== $user->sponsor_id && $ancestor->level <= 7;
-            });
-    
-        foreach ($ancestors as $ancestor) {
-            $level = $ancestor->level; // Get level of ancestor 
-            // Check team size condition for each level
-            $ancestorUser = User::where('blocked',false)->find($ancestor->ancestor_id);
-            $teamSize = $this->getTeamSize($ancestorUser->id); // Fetch team size
-            $requiredTeamSizes = [
-                2 => 2, // Level 2 requires 2 team members
-                3 => 3, // Level 3 requires 3 team members
-                4 => 4, // Level 4 requires 4 team members
-                5 => 5, // Level 5 requires 5 team members
-                6 => 6, // Level 6 requires 6 team members
-                7 => 7, // Level 7 requires 7 team members
-            ];
-    
-            // Check team size condition for the current level (default to 0 if not defined)
-            $requiredTeamSize = $requiredTeamSizes[$level] ?? 0;
-            if ($teamSize >= $requiredTeamSize) {
-                $indirectCommissionPercentage = $this->getCommissionForLevel($level,$user->roi_eligible_investment_amount); // Get commission for the ancestor's level 
-                $this->walletService->assignCommission($ancestor->ancestor_id, $indirectCommissionPercentage['commission_amount'], 'indirect', $user, $level,$indirectCommissionPercentage['percentage']);
-            }
-        }
-    } 
+    }  
 
-    private function getTeamSize($userId)
-    {
-        // Count the number of users directly sponsored by this user
-        return User::where('blocked',false)->where('sponsor_id', $userId)->count();
-    } 
     public function roiPayments(Request $request)
     {
         $query = ROITransaction::query();
@@ -783,8 +719,7 @@ class UserController extends Controller
     private function assignCommissionsUpdated($user)
     { 
         $parentUser = User::where('blocked', false)->find($user->sponsor_id); 
-        if ($parentUser) {
-            // Check if the parent user has enough active direct users
+        if ($parentUser) { 
             $activeDirectUsers = $this->getActiveDirectUsersCount($parentUser->id);  
             if ($activeDirectUsers >= 1) { 
                 $directCommissionPercentage = $this->getCommissionForLevel(1,$user->roi_eligible_investment_amount);  
@@ -949,15 +884,8 @@ class UserController extends Controller
         return Excel::download(new ContactsExport($request->start_date, $request->end_date), "Contacts-info-from ".$request->start_date ."-".$request->end_date.".xlsx");
     } 
 
-    public function accountTopup(Request $request)
-    {
-        $users = User::all();  
-        $wallets = Wallet::where('wallet_src','top_up')->get();
-        return view('users.account-topup', compact('users','wallets'));
-    } 
-
-    
-
+   
+ 
 
     public function storeTopup(Request $request)
     {
@@ -998,45 +926,5 @@ class UserController extends Controller
             DB::rollBack();
             return response()->json(['error' => 'Top-up failed: ' . $e->getMessage()], 500);
         }
-    }
-
-
-    protected function createInitialInvestment(User $user, $amountToTransfer,$description): void
-    {
-        UserInvestment::create([
-            'user_id' => $user->id,
-            'amount' => $amountToTransfer,
-            'type' => 'topup',
-            'description' => $description,
-            'investment_from'=>Auth::user()->id
-        ]); 
-        $user->increment('roi_eligible_investment_amount', $amountToTransfer);
-    }
-
-    private function checkAndCreateSlabs($user)
-    {
-        $totalInvestment = UserInvestment::where('user_id', $user->id)->sum('amount');
-        $totalSlabs = InvestmentSlab::where('user_id', $user->id)->count(); 
-        $availableInvestment = $totalInvestment - ($totalSlabs * 100);
-        while ($availableInvestment >= 100) {
-            $achievedAt = now();
-            $willPayAt = $achievedAt->copy()->addMonths(24)->startOfMonth()->addMonth();
-            
-            $newSlab = new InvestmentSlab();
-            $newSlab->user_id = $user->id;
-            $newSlab->slab_count = $totalSlabs + 1;
-            $newSlab->amount = 100;
-            $newSlab->achived_at = now();
-            $newSlab->current_balance = $user->roi_eligible_investment_amount; 
-            $newSlab->maturity_date = now()->addMonths(24);
-            $newSlab->will_pay_at = $willPayAt;
-            $newSlab->status = 'No';
-            $newSlab->save();
-            $totalSlabs++;
-            $availableInvestment -= 100;
-        }
-    }
-    
-
-
+    } 
 }

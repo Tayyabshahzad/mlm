@@ -732,7 +732,7 @@
                                         <ul class="menu-subnav">
                                             <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                                 data-menu-toggle="hover">
-                                                <a href="{{ route('user.topup') }}"
+                                                <a href="{{ route('user.topup.index') }}"
                                                     class="menu-link menu-toggle">
                                                     <i class="menu-bullet menu-bullet-dot">
                                                         <span></span>

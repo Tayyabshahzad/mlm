@@ -14,6 +14,7 @@ use App\Http\Controllers\{
     ReportController,
     ScheduleRoiController,
     SettingController,
+    TopupController,
     UserController,
     WalletController,
     WithdrawalRequestController
@@ -107,8 +108,14 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('activation-code','activationCode')->name('user.activation.code');
         Route::post('/admin/activation-code/update-status','updateActivationCode')->name('admin.activation-code.update-status');
         Route::get('download/contacts', 'downloadContacts')->name('download.contacts');
-        Route::get('topup','accountTopup')->name('user.topup');
-        Route::post('admin/topup','storeTopup')->name('user.topup.store');
+      
+      // Route::post('admin/topup','storeTopup')->name('user.topup.store');
+
+    }); 
+
+     Route::prefix('users')->controller(TopupController::class)->group(function () { 
+        Route::get('topup','index')->name('user.topup.index');
+        Route::post('topup','store')->name('user.topup.store');
 
     }); 
     Route::prefix('rental')->controller(UserController::class)->group(function () {
