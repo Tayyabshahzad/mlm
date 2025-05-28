@@ -6,217 +6,221 @@ use App\Models\ROITransaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Week;
+use App\Services\AccountManagementService;
+use App\Services\ROICommissionService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GenerateWeeklyROI extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature =  'roi:generate-weekly';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
+    protected $signature = 'roi:generate-weekly';
     protected $description = 'Generate weekly ROI and distribute commissions for all eligible users';
 
-    /**
-     * Execute the console command.
-     */
-    
-     public function handle()
+    private AccountManagementService $accountService;
+    private ROICommissionService $ROICommissionService;
+    private array $counters = ['processed' => 0, 'skipped' => 0, 'stopped' => 0];
+
+    public function __construct(
+        AccountManagementService $accountService,
+        ROICommissionService $ROICommissionService
+    ) {
+        parent::__construct();
+        $this->accountService = $accountService;
+        $this->ROICommissionService = $ROICommissionService;
+    }
+
+    public function handle(): int
     {
-        $users = User::where('blocked',false)->where('can_login', true)->where('freez_wallet',false)->get(); // Fetch all users 
-        foreach ($users as $user) {
-
-            $totalRoiPaid = Wallet::where('user_id', $user->id)
-            ->where('wallet_type', 'roi')
-            ->sum('total_amount');
-            $investedAmount = $user->roi_eligible_investment_amount;
-            if ($totalRoiPaid >= ($investedAmount * 2)) {
-                $this->info("Skipping user {$user->id} | {$user->name} - Already earned 2x ROI.");
-                continue;
-            }
-            // ✅ Skip if already paid today
-            if ($user->last_roi_payment_date && Carbon::parse($user->last_roi_payment_date)->isToday()) {
-                $this->info("Skipping user {$user->id} | {$user->name} - ROI already generated today.");
-                continue;
-            }
-
-            if (!$user->roi_start_date) {
-                $user->roi_start_date = now();
-                $user->roi_end_date = now()->addYears(2);
-                $user->save();
-            }
-
-            $week = Week::first(); // or where('active', true) if you have multiple
-            $percentage = $week->percentage; // Example: 0.10 means 10%
-            $roiPayment = ($investedAmount * $percentage) / 100;
-            $user->roi_wallet_balance += $roiPayment;
-            $user->last_roi_payment_date = now();
-            $user->save();
-
-            Wallet::create([
-                'user_id' => $user->id,
-                'wallet_type' => 'roi',
-                'balance' => $roiPayment,
-                'level' => '-',
-                'commission_type' => 'Roi',
-                'total_amount' => $roiPayment,
-                'percentage' => $percentage,
-            ]);
-
-
-            ROITransaction::create([
-                'user_id' => $user->id,
-                'amount' => $roiPayment,
-                'percentage' => $percentage,
-                'description' => 'Weekly ROI Generated',
-            ]);
-
-            // old Condation
-            // $walletTotal = Wallet::where('user_id', $user->id)->sum('total_amount'); old condation
-            // $walletTotal = $user->sum('roi_eligible_investment_amount');
-            // if ($walletTotal < 100 ) {
-            //     continue;
-            // } 
-            // // Skip if an ROI transaction has already been created today
-            // if ($user->last_roi_payment_date && Carbon::parse($user->last_roi_payment_date)->isToday()) {
-            //     $this->info("Skipping user {$user->id} | {$user->name} - ROI already generated today.");
-            //     continue;
-            // }
-
-            // // Initialize ROI start and end dates if not set
-            // if (!$user->roi_start_date) {
-            //     $user->roi_start_date = Carbon::now();
-            //     $user->roi_end_date = Carbon::now()->addYears(2);
-            //     $user->save();
-            // }
-
-            // $monthsRemaining = Carbon::now()->diffInMonths($user->roi_end_date, false);
-            // $remainingPV = (200 - $user->roi_wallet_balance);
+        $this->info('Starting Weekly ROI generation...');
         
-            // $dailyPercentage = Week::first();
-            // $paymentPercentage = $dailyPercentage->percentage; // Example: fixed percentage, adjust as needed
-            // $maxMonthlyPayment = $remainingPV / $monthsRemaining;
-            // $roiPayment = ($remainingPV * $paymentPercentage) / 100;
-
-            // $user->roi_wallet_balance += $roiPayment;
-            // $user->last_roi_payment_date = Carbon::now();
-            // $user->save();
-
-            // // Create wallet entry for ROI
-            // Wallet::create([
-            //     'user_id' => $user->id,
-            //     'wallet_type' => 'roi',
-            //     'balance' => $roiPayment,
-            //     'level' => '-',
-            //     'commission_type' => 'Roi',
-            //     'total_amount'=> $roiPayment,
-            //     'percentage' => $paymentPercentage,
-            // ]);
-
-            // // Record the ROI transaction
-            // ROITransaction::create([
-            //     'user_id' => $user->id,
-            //     'amount' => $roiPayment,
-            //     'percentage' => $paymentPercentage,
-            //     'description' => 'Weekly ROI Generated',
-            // ]);
-
-            // Generate parent commissions
-            $this->generateParentCommissions($user, $roiPayment);
-
-            $this->info("ROI generated for user {$user->id} | {$user->name}");
+        $week = $this->getWeekConfiguration(); 
+        if (!$week) {
+            return Command::FAILURE;
         }
 
-        $this->info('Weekly ROI generation completed.');
+        $users = $this->getEligibleUsers();
+      
+        foreach ($users as $user) {
+            $this->processUser($user, $week);
+        }
+
+        $this->displaySummary();
+        return Command::SUCCESS;
     }
- 
 
-    private function generateParentCommissions($user, $roiAmount)
+    private function getWeekConfiguration(): ?Week
     {
-        $commissionLevels = [
-            1 => 7.0,
-            2 => 6.0,
-            3 => 5.0,
-            4 => 4.0,
-            5 => 3.0,
-            6 => 2.0,
-            7 => 1.0,
-        ];
-        foreach ($commissionLevels as $level => $percentage) {
-            $parent = $this->getAncestorByLevel($user, $level);
+        $week = Week::first();
+        if (!$week) {
+            $this->error('No week configuration found');
+        }
+        return $week;
+    }
 
-            if ($parent) { 
-                $totalDownlineCount = $this->countDownlineUsers($parent->id, $level);
-                $requiredUsers = $this->getRequiredUsersForLevel($level);
+    private function getEligibleUsers()
+    {
+        return User::where('blocked', false)
+                ->where('can_login', true)
+                ->where('freez_wallet', false)
+                ->where(function ($query) {
+                    $query->whereNull('roi_status')
+                      ->orWhere('roi_status', 'active');
+                })
+                ->get();
+    }
 
-                if ($totalDownlineCount >= $requiredUsers) {
-                    $commissionAmount = ($roiAmount * $percentage) / 100; 
-
-                    ROITransaction::create([
-                        'user_id' => $parent->id,
-                        'amount' => $commissionAmount,
-                        'percentage' => $percentage,
-                        'description' => "Level {$level} commission from user {$user->id} | {$user->name}",
-                    ]);
-
-                    Wallet::create([
-                        'user_id' => $parent->id,
-                        'wallet_type' => 'profit_share',
-                        'balance' => $commissionAmount,
-                        'level' => $level,
-                        'commission_type' => 'profit_share',
-                        'wallet_from' => $user->id,
-                        'percentage' => $percentage,
-                        'total_amount' => $commissionAmount,
-                    ]);
-
-                    $this->info("Commission of $commissionAmount assigned to User {$parent->id} for Level {$level}");
-                }
+    private function processUser(User $user, Week $week): void
+    {
+        try {
+            DB::beginTransaction(); 
+            // Early checks for account eligibility
+            if ($this->shouldSkipUser($user)) {
+                DB::commit();
+                return;
             }
+           
+            // Initialize ROI dates if needed
+            $this->initializeRoiDates($user);
+
+            // Calculate and validate ROI payment
+            $roiPayment = $this->calculateRoiPayment($user, $week);
+         
+            if ($roiPayment <= 0) {
+                $this->logUserAction($user, 'stopped', 'No ROI due - at 2X limit');
+                $this->counters['stopped']++;
+                DB::commit();
+                return;
+            }
+
+            // Process the ROI payment
+            $this->processRoiPayment($user, $roiPayment, $week->percentage);
+               
+            // Generate commissions for upline
+            $this->ROICommissionService->generateCommissions($user, $roiPayment); 
+            // Final check for 2X limit
+            $this->handleFinalAccountCheck($user);
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->handleUserProcessingError($user, $e);
         }
     }
 
-
-    private function getRequiredUsersForLevel($level)
+    private function shouldSkipUser(User $user): bool
     {
-        $requiredUsers = [
-            1 => 10,  // Level 1 needs 10 users
-            2 => 50,  // Level 2 needs 50 users
-            3 => 150,  // Level 3 needs 150 users
-            4 => 400,  // Level 4 needs 400 users
-            5 => 1000,  // Level 5 needs 1000 users
-            6 => 2000,  // Level 6 needs 2000 users
-            7 => 4000,  // Level 7 needs 4000 users
-        ];
+        // Check and stop if 2X limit reached
+        if ($this->accountService->checkAndStopAccountAt2X($user)) {
+            $this->logUserAction($user, 'stopped', 'Reached 2X limit');
+            $this->counters['stopped']++;
+            return true;
+        }
 
-        return $requiredUsers[$level] ?? 0;  // Default to 0 if level is not defined
-    }
-    private function countDownlineUsers($parentId, $level)
-    {
-        return \DB::table('referral_trees')
-            ->where('ancestor_id', $parentId)
-            ->where('level', '<=', $level)  // Include all users up to this level
-            ->count();
-    }
+        // Check if user can receive ROI
+        if (!$this->accountService->canReceiveRoi($user)) {
+            $this->logUserAction($user, 'skipped', 'ROI disabled');
+            $this->counters['skipped']++;
+            return true;
+        }
 
+        // Skip if already paid today
+        if ($this->wasRoiPaidToday($user)) {
+            $this->logUserAction($user, 'skipped', 'ROI already generated today');
+            $this->counters['skipped']++;
+            return true;
+        }
 
-    private function getAncestorByLevel($user, $level)
-    {
-        return User::whereIn('id', function ($query) use ($user, $level) {
-            $query->select('ancestor_id')
-                ->from('referral_trees')
-                ->where('descendant_id', $user->id)
-                ->where('level', $level);
-        })->first(); // Get only one parent per level
+        return false;
     }
 
-    
+    private function wasRoiPaidToday(User $user): bool
+    {
+        return $user->last_roi_payment_date && 
+               Carbon::parse($user->last_roi_payment_date)->isToday();
+    }
+
+    private function initializeRoiDates(User $user): void
+    {
+        if (!$user->roi_start_date) {
+            $user->update([
+                'roi_start_date' => now(),
+                'roi_end_date' => now()->addYears(2)
+            ]);
+        }
+    }
+
+    private function calculateRoiPayment(User $user, Week $week): float
+    {
+        $investedAmount = $user->roi_eligible_investment_amount;
+        $proposedAmount = ($investedAmount * $week->percentage) / 100;
+        
+        return $this->accountService->calculateSafeRoiAmount($user, $proposedAmount);
+    }
+
+    private function processRoiPayment(User $user, float $amount, float $percentage): void
+    {
+        // Update user
+        $user->increment('roi_wallet_balance', $amount);
+        $user->update(['last_roi_payment_date' => now()]);
+
+        // Create wallet entry
+        Wallet::create([
+            'user_id' => $user->id,
+            'wallet_type' => 'roi',
+            'balance' => $amount,
+            'level' => '-',
+            'commission_type' => 'Roi',
+            'total_amount' => $amount,
+            'percentage' => $percentage,
+        ]);
+
+        // Create transaction record
+        ROITransaction::create([
+            'user_id' => $user->id,
+            'amount' => $amount,
+            'percentage' => $percentage,
+            'description' => 'Weekly ROI Generated',
+        ]);
+
+        $this->logUserAction($user, 'processed', "Amount: {$amount}");
+    }
+
+    private function handleFinalAccountCheck(User $user): void
+    {
+        if ($this->accountService->checkAndStopAccountAt2X($user)) {
+            $this->logUserAction($user, 'stopped', 'Reached 2X limit after payment');
+            $this->counters['stopped']++;
+        } else {
+            $this->counters['processed']++;
+        }
+    }
+
+    private function handleUserProcessingError(User $user, \Exception $e): void
+    {
+        $errorMessage = "Failed to process ROI for user {$user->id}: " . $e->getMessage();
+        Log::error($errorMessage);
+        $this->error($errorMessage);
+    }
+
+    private function logUserAction(User $user, string $action, string $message): void
+    {
+        $logMessage = ucfirst($action) . " user {$user->id} | {$user->name} - {$message}";
+        
+        if ($action === 'processed') {
+            $this->info("ROI generated for " . $logMessage);
+        } else {
+            $this->info($logMessage);
+        }
+    }
+
+    private function displaySummary(): void
+    {
+        $this->info("Weekly ROI generation completed.");
+        $this->info("Processed: {$this->counters['processed']} users");
+        $this->info("Skipped: {$this->counters['skipped']} users");
+        $this->info("Stopped: {$this->counters['stopped']} users");
+    }
 }

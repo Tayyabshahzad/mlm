@@ -17,8 +17,9 @@ use App\Http\Controllers\{
     TopupController,
     UserController,
     WalletController,
-    WithdrawalRequestController
-};
+    WithdrawalRequestController,
+    ROIMonitoringController
+}; 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\{Route, Auth, Artisan};
 use App\Http\Middleware\{CheckUserStatus, CheckBlockedUser};
@@ -43,9 +44,7 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
     Route::get('/waiting-for-approval', [ApprovalController::class, 'index'])->name('approval.waiting');
     Route::get('/activation-code', [ActivationCodeController::class, 'index'])->name('activation.code');
     Route::post('/generate-code', [ActivationCodeController::class, 'generateCode'])->middleware('auth');
-    Route::delete('/delete-code/{id}', [ActivationCodeController::class, 'destroy']); 
-
-    
+    Route::delete('/delete-code/{id}', [ActivationCodeController::class, 'destroy']);
     Route::prefix('profile')->group(function () {
         Route::get('/info', [FrontEndController::class, 'profile'])->name('profile.edit');
         Route::get('/account', [FrontEndController::class, 'accountInformation'])->name('account.information');
@@ -60,12 +59,12 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
         Route::get('/generate/otp', [FrontEndController::class, 'generateOtp'])->name('generate.otp');
         Route::post('/verify/otp', [FrontEndController::class, 'verifyOtp'])->name('verify.otp');
-    }); 
+    });
 
     Route::prefix('genealogy')->controller(GenealogyController::class)->group(function () {
         Route::get('team', 'team')->name('genealogy.team');
         Route::get('team/members', 'teamMembers')->name('genealogy.team.members');
-    }); 
+    });
 
     Route::prefix('wallets')->controller(WalletController::class)->group(function () {
         Route::get('online', 'online')->name('wallets.online');
@@ -78,9 +77,8 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::post('transfer-to-online', 'transferToOnline')->name('wallet.transfer.to.online');
         Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history'); 
         Route::post('clear-negative-points', 'clearNegativePoints')->name('clear.negative.points');
-        
-    }); 
-    
+    });
+
     Route::controller(WithdrawalRequestController::class)->group(function () {
         Route::get('/withdrawals', 'index')->name('withdrawals.index');
         Route::get('/withdrawals/create', 'create')->name('withdrawals.create');
@@ -107,10 +105,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('activation-code','activationCode')->name('user.activation.code');
         Route::post('/admin/activation-code/update-status','updateActivationCode')->name('admin.activation-code.update-status');
         Route::get('download/contacts', 'downloadContacts')->name('download.contacts');
-      
+        
       // Route::post('admin/topup','storeTopup')->name('user.topup.store');
 
-    });  
+    });
 
     Route::prefix('rental')->controller(UserController::class)->group(function () {
         Route::get('percentage', 'rentalPercentage')->name('rental.percentage');
@@ -143,9 +141,16 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::prefix('setting')->controller(SettingController::class)->group(function () {
         Route::get('/basic', 'index')->name('setting.basic'); 
         Route::post('/update', 'update')->name('setting.update'); 
-        Route::get('update.usdt', 'updateUSDT')->name('rate.manual.update'); 
-       
+        Route::get('update.usdt', 'updateUSDT')->name('rate.manual.update');
     });
+
+    Route::controller(ROIMonitoringController::class)->group(function () {
+        Route::get('/roi-monitoring', 'index')->name('users.roi.monitoring'); 
+        Route::post('/users/roi/stop/{user}', 'stopAccount')->name('users.roi.stop'); 
+        Route::get('/roi-reactivate', 'reactivate')->name('users.roi.reactivate');
+    });
+
+     
 
 
 });
