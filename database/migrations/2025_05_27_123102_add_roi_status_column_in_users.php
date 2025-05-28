@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->enum('roi_status', ['active', 'stopped'])->default('active')->after('can_login'); 
             $table->timestamp('account_stopped_at')->nullable()->after('roi_status');
-            $table->string('stop_reason')->nullable()->after('stop_reason'); 
+            $table->string('stop_reason')->nullable()->after('account_stopped_at'); 
              $table->string('stop_reason_description')->nullable(); 
         });
     }
@@ -28,7 +28,8 @@ return new class extends Migration
             $table->dropColumn([
                 'roi_status',
                 'account_stopped_at',
-                'stop_reason'
+                'stop_reason',
+                'stop_reason_description'
             ]);
         });
     }
