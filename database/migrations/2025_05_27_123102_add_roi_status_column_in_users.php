@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('roi_status', ['active', 'stopped'])->default('active')->after('can_login'); 
-            $table->timestamp('account_stopped_at')->nullable()->after('roi_status');
-            $table->string('stop_reason')->nullable()->after('account_stopped_at'); 
+            $table->enum('roi_status', ['active', 'stopped'])->default('active'); 
+            $table->timestamp('account_stopped_at')->nullable();
+            $table->string('stop_reason')->nullable(); 
              $table->string('stop_reason_description')->nullable(); 
         });
     }
