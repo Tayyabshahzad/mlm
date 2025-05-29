@@ -51,10 +51,62 @@ class WalletController extends Controller
         return view('wallets.roi',compact('wallets')); 
     }
 
-    public function profitShare(){ 
-        $wallets = Wallet::where('wallet_type','profit_share')->where('user_id',auth()->user()->id)->get();
-        return view('wallets.profit-share',compact('wallets')); 
-    }
+    public function profitShare(Request $request){ 
+        $query = Wallet::where('wallet_type','profit_share')->where('user_id', auth()->user()->id);
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('level') && $request->level !== 'all') {
+            $query->where('level', $request->level);
+        }
+
+        if ($request->filled('search')) {
+            $query->whereHas('form', function($q) use ($request) {
+                $q->where('username', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('min_percentage')) {
+            $query->where('percentage', '>=', $request->min_percentage);
+        }
+        
+        if ($request->filled('max_percentage')) {
+            $query->where('percentage', '<=', $request->max_percentage);
+        }
+
+        if ($request->filled('min_balance')) {
+            $query->where('balance', '>=', $request->min_balance);
+        }
+
+        if ($request->filled('max_balance')) {
+            $query->where('balance', '<=', $request->max_balance);
+        }
+        
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        $allowedSortFields = ['created_at', 'level', 'percentage', 'balance'];
+        if (in_array($sortBy, $allowedSortFields)) {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+        
+        $wallets = $query->get();
+        
+        // Get unique levels for filter dropdown
+        $levels = Wallet::where('wallet_type','profit_share')
+                    ->where('user_id', auth()->user()->id)
+                    ->distinct()
+                    ->pluck('level')
+                    ->sort();
+    
+    return view('wallets.profit-share', compact('wallets', 'levels')); 
+}
+
     public function rank(){ 
         return view('wallets.rank'); 
     }

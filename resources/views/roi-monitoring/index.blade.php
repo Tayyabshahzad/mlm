@@ -477,38 +477,38 @@
                                                             <div>
                                                                 <strong>{{ $user->name }}</strong>
                                                                 <br>
-                                                                <small class="text-muted">ID: {{ $user->id }}</small>
+                                                                <small class="text-muted">Username: {{ $user->username }}</small>
                                                                 <br>
                                                                 <small class="text-muted">{{ $user->email }}</small>
                                                             </div>
                                                         </td>
                                                         <td>
                                                             <div>
-                                                                <strong>₨{{ number_format($user->roi_stats['invested_amount']) }}</strong>
+                                                                <strong>${{ number_format($user->roi_stats['invested_amount']) }}</strong>
                                                                 <br>
                                                                 <small class="text-muted">
                                                                     2X Limit:
-                                                                    ₨{{ number_format($user->roi_stats['two_x_limit']) }}
+                                                                    ${{ number_format($user->roi_stats['two_x_limit']) }}
                                                                 </small>
                                                             </div>
                                                         </td>
                                                         <td>
                                                             <div>
-                                                                <strong>₨{{ number_format($user->roi_stats['total_roi_paid']) }}</strong>
+                                                                <strong>${{ number_format($user->roi_stats['total_roi_paid']) }}</strong>
                                                                 <br>
                                                                 <small class="text-success">
                                                                     Direct:
-                                                                    ₨{{ number_format($user->roi_stats['direct_roi_paid']) }}
+                                                                    ${{ number_format($user->roi_stats['direct_roi_paid']) }}
                                                                 </small>
                                                                 <br>
                                                                 <small class="text-info">
                                                                     Commission:
-                                                                    ₨{{ number_format($user->roi_stats['commission_earned']) }}
+                                                                    ${{ number_format($user->roi_stats['commission_earned']) }}
                                                                 </small>
                                                                 <br>
                                                                 <small class="text-primary">
                                                                     Remaining:
-                                                                    ₨{{ number_format($user->roi_stats['remaining_amount']) }}
+                                                                    ${{ number_format($user->roi_stats['remaining_amount']) }}
                                                                 </small>
                                                             </div>
                                                         </td>

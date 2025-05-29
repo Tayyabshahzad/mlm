@@ -4,17 +4,17 @@
  <!--begin::Content-->
  <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
     <!--begin::Subheader-->
-    <div class="subheader py-2 py-lg-6 subheader-solid" id="kt_subheader">
-        <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+    <div class="py-2 subheader py-lg-6 subheader-solid" id="kt_subheader">
+        <div class="flex-wrap container-fluid d-flex align-items-center justify-content-between flex-sm-nowrap">
             <!--begin::Info-->
-            <div class="d-flex align-items-center flex-wrap mr-1"> 
+            <div class="flex-wrap mr-1 d-flex align-items-center"> 
                 <!--begin::Page Heading-->
-                <div class="d-flex align-items-baseline flex-wrap mr-5">
+                <div class="flex-wrap mr-5 d-flex align-items-baseline">
                     <!--begin::Page Title-->
-                    <h5 class="text-dark font-weight-bold my-1 mr-5">Profit Share Wallet </h5>
+                    <h5 class="my-1 mr-5 text-dark font-weight-bold">Profit Share Wallet </h5>
                     <!--end::Page Title-->
                     <!--begin::Breadcrumb-->
-                    <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2 font-size-sm">
+                    <ul class="p-0 my-2 breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold font-size-sm">
                         <li class="breadcrumb-item">
                             <a href="{{  route('dashboard') }}" class="text-muted">Dashboard</a>
                         </li>
@@ -33,11 +33,115 @@
     </div> 
     <!--end::Subheader-->
     <!--begin::Entry-->
-    <div class="  flex-column-fluid"> 
+   <div class="container"> 
+            <!-- Filter Card -->
+            <div class="card card-custom gutter-b">
+                <div class="card-header">
+                    <div class="card-title">
+                        <h3 class="card-label">Filters</h3>
+                    </div>
+                    <div class="card-toolbar">
+                        <button type="button" class="btn btn-sm btn-light-primary" data-toggle="collapse" data-target="#filterForm">
+                            <i class="fas fa-filter"></i> Toggle Filters
+                        </button>
+                    </div>
+                </div>
+                <div class="collapse {{ request()->hasAny(['date_from', 'date_to', 'level', 'search', 'min_percentage', 'max_percentage', 'min_balance', 'max_balance']) ? 'show' : '' }}" id="filterForm">
+                    <div class="card-body">
+                        <form method="GET" action="{{ route('wallets.profit.share') }}" id="filterFormData">
+                            <div class="row">
+                                <!-- Date Range -->
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Date From</label>
+                                    <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
+                                </div>
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Date To</label>
+                                    <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
+                                </div>
+                                
+                                <!-- Level Filter -->
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Level</label>
+                                    <select name="level" class="form-control">
+                                        <option value="all">All Levels</option>
+                                        @foreach($levels as $level)
+                                            <option value="{{ $level }}" {{ request('level') == $level ? 'selected' : '' }}>
+                                                Level {{ $level }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                
+                                <!-- Username Search -->
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Search Username</label>
+                                    <input type="text" name="search" class="form-control" placeholder="Enter username" value="{{ request('search') }}">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <!-- Percentage Range -->
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Min Percentage</label>
+                                    <input type="number" name="min_percentage" class="form-control" step="0.01" placeholder="0.00" value="{{ request('min_percentage') }}">
+                                </div>
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Max Percentage</label>
+                                    <input type="number" name="max_percentage" class="form-control" step="0.01" placeholder="100.00" value="{{ request('max_percentage') }}">
+                                </div>
+                                
+                                <!-- Balance Range -->
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Min Balance</label>
+                                    <input type="number" name="min_balance" class="form-control" step="0.01" placeholder="0.00" value="{{ request('min_balance') }}">
+                                </div>
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Max Balance</label>
+                                    <input type="number" name="max_balance" class="form-control" step="0.01" placeholder="0.00" value="{{ request('max_balance') }}">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <!-- Sort Options -->
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Sort By</label>
+                                    <select name="sort_by" class="form-control">
+                                        <option value="created_at" {{ request('sort_by') == 'created_at' ? 'selected' : '' }}>Date</option>
+                                        <option value="level" {{ request('sort_by') == 'level' ? 'selected' : '' }}>Level</option>
+                                        <option value="percentage" {{ request('sort_by') == 'percentage' ? 'selected' : '' }}>Percentage</option>
+                                        <option value="balance" {{ request('sort_by') == 'balance' ? 'selected' : '' }}>Balance</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3 col-md-3">
+                                    <label class="form-label">Sort Order</label>
+                                    <select name="sort_order" class="form-control">
+                                        <option value="desc" {{ request('sort_order') == 'desc' ? 'selected' : '' }}>Descending</option>
+                                        <option value="asc" {{ request('sort_order') == 'asc' ? 'selected' : '' }}>Ascending</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="mb-3 col-md-6 d-flex align-items-end">
+                                    <button type="submit" class="mr-2 btn btn-primary">
+                                        <i class="fas fa-search"></i> Apply Filters
+                                    </button>
+                                    <a href="{{ route('wallets.profit.share') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Clear Filters
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+    <div class=" flex-column-fluid"> 
         <div class="container"> 
             <div class="card card-custom gutter-b">
                 <!--begin::Header-->
-                <div class="card-header border-0 py-5">
+                <div class="py-5 border-0 card-header">
                     <h3 class="card-title align-items-start flex-column">
                         <span class="card-label font-weight-bolder text-dark">Total Balance : {{ $wallets->sum('balance') }} PV</span> 
                     </h3>
@@ -53,7 +157,7 @@
                 </div>
                 <!--end::Header-->
                 <!--begin::Body-->
-                <div class="card-body py-0">
+                <div class="py-0 card-body">
                     <!--begin::Table-->
                     <div class="table-responsive">
                         <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_4">

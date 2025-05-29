@@ -75,6 +75,11 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         return $this->hasMany(User::class,'sponsor_id');
     }
 
+    public function referralTrees()
+    {
+        return $this->hasMany(ReferralTree::class,'sponsor_id');
+    }
+
     public function directTeam()
     {
         return $this->hasMany(User::class,'sponsor_id');
