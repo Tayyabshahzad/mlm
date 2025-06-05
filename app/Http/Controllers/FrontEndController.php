@@ -509,17 +509,16 @@ class FrontEndController extends Controller
 
     public function bulkRegisterUsers()
     {
-        $parentUsername = 'arslan-1'; 
+        $parentUsername = 'arshiya_6'; 
         $parent = User::where('username', $parentUsername)->firstOrFail();
         $parentId = $parent->id;  
         DB::beginTransaction();
-        try {
-            // Loop to create 50 users
-            for ($i = 1; $i <= 9; $i++) {
-                $name = "sikander-$i";
-                $email = "sikander-$i@example.com";
+        try { 
+            for ($i = 1; $i <= 8; $i++) {
+                $name = "abdul_hassan_$i";
+                $email = "abdul_hassan_$i@example.com";
                 $password = Hash::make('password'); // Default password
-                $username = "sikander-$i"; 
+                $username = "abdul_hassan_$i"; 
                 // Create user
                 $newUser = User::create([
                     'name' => $name,
@@ -529,9 +528,19 @@ class FrontEndController extends Controller
                     'transaction_id'=>'222',
                     'is_active' => true,
                     'phone_verified' => true,
-                    'sponsor_id' => $parentId,
-                ]);
+                    'sponsor_id' => $parentId,  
+                    'transaction_id' => "admin-child--$i",
+                    'phone_number' => "223333-$i",
+                    'payment_method' => "cash_slip",
+                    'usdt_rate' => 234,  
+                    'transferred_amount' => 2343,
+                    'converted_usdt_amount' => 2343,
+                    'fee_deducted' => 10, 
+                    'net_invested_usdt_amount' => 2343,  
+                    'roi_eligible_investment_amount' => 2343,  
 
+
+                ]); 
                 // Assign default role
                 $newUser->assignRole('member');
 

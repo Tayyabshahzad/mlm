@@ -56,6 +56,10 @@ class UserController extends Controller
         if ($user->can_login) {
             return redirect()->back()->with('error', 'This User is Already Activated');
         }
+
+        //  $info = $this->rewardService->repairMissingRewards(8);
+        //  dd($info);
+
         try {
             DB::beginTransaction();
 
@@ -343,7 +347,7 @@ class UserController extends Controller
                 \Carbon\Carbon::parse($request->end_date)->endOfDay(),
             ]);
         }
-        $payments = $query->orderBy('created_at', 'desc')->paginate(20);
+        $payments = $query->orderBy('created_at', 'desc')->paginate(100);
         $users = User::where('blocked', false)->where('can_login', true)->get();
         return view('users.roi-payments', compact('users', 'payments'));
     } 

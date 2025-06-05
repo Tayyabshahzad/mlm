@@ -93,7 +93,7 @@ class GenerateWeeklyROI extends Command
                 DB::commit();
                 return;
             }
-
+         
             // Process the ROI payment
             $this->processRoiPayment($user, $roiPayment, $week->percentage);
                
