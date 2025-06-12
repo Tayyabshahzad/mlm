@@ -20,6 +20,6 @@ class ScheduleServiceProvider extends ServiceProvider
     public function boot(Schedule $schedule): void
     {
         // Define your scheduled tasks here
-        $schedule->command('roi:generate-weekly')->everyMinute('00:00'); // Every Sunday at midnight
+      //  $schedule->command('roi:generate-weekly')->everyMinute('00:00'); // Every Sunday at midnight
     }
 }
