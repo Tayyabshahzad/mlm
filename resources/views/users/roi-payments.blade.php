@@ -4,17 +4,17 @@
     <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Subheader-->
-        <div class="subheader py-2 py-lg-6 subheader-solid" id="kt_subheader">
-            <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+        <div class="py-2 subheader py-lg-6 subheader-solid" id="kt_subheader">
+            <div class="flex-wrap container-fluid d-flex align-items-center justify-content-between flex-sm-nowrap">
                 <!--begin::Info-->
-                <div class="d-flex align-items-center flex-wrap mr-1">
+                <div class="flex-wrap mr-1 d-flex align-items-center">
                     <!--begin::Page Heading-->
-                    <div class="d-flex align-items-baseline flex-wrap mr-5">
+                    <div class="flex-wrap mr-5 d-flex align-items-baseline">
                         <!--begin::Page Title-->
-                        <h5 class="text-dark font-weight-bold my-1 mr-5">Return on Investment </h5>
+                        <h5 class="my-1 mr-5 text-dark font-weight-bold">Return on Investment </h5>
                         <!--end::Page Title-->
                         <!--begin::Breadcrumb-->
-                        <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2 font-size-sm">
+                        <ul class="p-0 my-2 breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold font-size-sm">
                             <li class="breadcrumb-item">
                                 <a href="{{ route('dashboard') }}" class="text-muted">Dashboard</a>
                             </li>
@@ -33,11 +33,11 @@
         </div>
         <!--end::Subheader-->
         <!--begin::Entry-->
-        <div class="  flex-column-fluid">
+        <div class=" flex-column-fluid">
             <div class="container">
                 <div class="card card-custom gutter-b">
                     <!--begin::Header-->
-                    <div class="card-header border-0 py-5">
+                    <div class="py-5 border-0 card-header">
                         <h3 class="card-title align-items-start flex-column">
                             <a href="#" data-toggle="modal" data-target="#WithdrawModel"
                                 class="mr-3 rounded-0 btn btn-danger font-weight-bolder font-size-sm">Manual ROI</a>
@@ -48,7 +48,7 @@
                         </div>
 
                         <form method="GET" action="{{ route('roi.payments') }}">
-                            <div class="row mb-3">
+                            <div class="mb-3 row">
                                 <div class="col-md-4">
                                     <label for="start_date">Start Date</label>
                                     <input type="date" name="start_date" id="start_date" class="form-control rounded-0"
@@ -61,7 +61,7 @@
                                 </div>
                                 <div class="col-md-4 d-flex align-items-end">
                                     <button type="submit" class="btn btn-primary rounded-0">Filter</button>
-                                    <a href="{{ route('roi.payments') }}" class="btn btn-secondary ml-2 rounded-0">Reset</a>
+                                    <a href="{{ route('roi.payments') }}" class="ml-2 btn btn-secondary rounded-0">Reset</a>
                                 </div>
                             </div>
                         </form>
@@ -71,7 +71,7 @@
                     </div>
                     <!--end::Header-->
                     <!--begin::Body-->
-                    <div class="card-body py-0">
+                    <div class="py-0 card-body">
                         <!--begin::Table-->
                         <div class="table-responsive">
                             <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_4">
@@ -84,7 +84,7 @@
                                         <th style="min-width: 120px">Percentage</th>
                                         <th style="min-width: 120px">Amount Remaining</th>
                                         <th style="min-width: 120px"> Day</th>
-                                        <th style="min-width: 120px">Date</th>
+                                        <th style="min-width: 120px">Date Time</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -114,8 +114,8 @@
 
                         </div>
                         <!--begin::Pagination-->
-                        <div class="d-flex justify-content-between align-items-center flex-wrap">
-                            <div class="d-flex flex-wrap py-2 mr-3">
+                        <div class="flex-wrap d-flex justify-content-between align-items-center">
+                            <div class="flex-wrap py-2 mr-3 d-flex">
                                 {!! $payments->links('pagination::bootstrap-4') !!}
                             </div>
                         </div>
@@ -148,10 +148,10 @@
                         <div class="form-group row">
 
                             <div class="col-lg-12 col-xl-12">
-                                <label for="" class="font-weight-bold mr-2">
+                                <label for="" class="mr-2 font-weight-bold">
                                     Select Member
                                 </label>
-                                <select class="form-control form-control-sm form-control-solid mb-2" name="user_id"
+                                <select class="mb-2 form-control form-control-sm form-control-solid" name="user_id"
                                     required>
                                     <option disabled selected value=""> Select Member </option>
                                     @foreach ($users as $user)
@@ -161,10 +161,10 @@
                                 </select>
                             </div>
                             <div class="col-lg-12 col-xl-12">
-                                <label for="" class="font-weight-bold mr-2">
+                                <label for="" class="mr-2 font-weight-bold">
                                     Transfer Amount Percentage
                                 </label>
-                                <input type="number" class="form-control form-control-sm form-control-solid mb-2"
+                                <input type="number" class="mb-2 form-control form-control-sm form-control-solid"
                                     name="commission_percentage" min="0.01" step="0.01" required
                                     placeholder=" Percentage">
                                 <div class="form-group">

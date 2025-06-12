@@ -281,14 +281,14 @@
 
 <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
     <!--begin::Subheader-->
-    <div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
-        <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+    <div class="py-2 subheader py-lg-4 subheader-solid" id="kt_subheader">
+        <div class="flex-wrap container-fluid d-flex align-items-center justify-content-between flex-sm-nowrap">
             <!--begin::Info-->
-            <div class="d-flex align-items-center flex-wrap mr-2">
+            <div class="flex-wrap mr-2 d-flex align-items-center">
                 <!--begin::Page Title-->
-                <h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">Dashboard</h5> 
-                <div class="subheader-separator subheader-separator-ver mt-2 mb-2 mr-4 bg-gray-200"></div>
-                <span class="text-muted font-weight-bold mr-4">Level 1 </span>
+                <h5 class="mt-2 mb-2 mr-5 text-dark font-weight-bold">Dashboard</h5> 
+                <div class="mt-2 mb-2 mr-4 bg-gray-200 subheader-separator subheader-separator-ver"></div>
+                <span class="mr-4 text-muted font-weight-bold">Level 1 </span>
                 <div class="kt-widget__content">
                     <div class="kt-widget__section">
                         <a href="#" class="kt-widget__username">
@@ -296,8 +296,8 @@
                         </a>
                     </div>
                 </div> 
-                <div class="subheader-separator subheader-separator-ver mt-2 mb-2 mr-4 bg-gray-200 ml-2"></div>
-                <span class="text-muted font-weight-bold mr-4">Available Balance </span>
+                <div class="mt-2 mb-2 ml-2 mr-4 bg-gray-200 subheader-separator subheader-separator-ver"></div>
+                <span class="mr-4 text-muted font-weight-bold">Available Balance </span>
                 <div class="kt-widget__content">
                     <div class="kt-widget__section">
                         <strong>${{ Auth::user()->roi_eligible_investment_amount }}</strong> 
@@ -305,9 +305,11 @@
                 </div> 
                 @role('admin')
                 <span class="text-muted font-weight-bold ml-15">Time & Time Zone </span>
-                <div class="kt-widget__content ml-5">
+                <div class="ml-5 kt-widget__content">
                     <div class="kt-widget__section">
-                        <strong>{{ now()->format('Y-m-d H:i:s') }} ({{ config('app.timezone') }})</strong> 
+                        <strong>   
+                             {{ now()->format('h:i A') }} 
+                            ({{ config('app.timezone') }})</strong> 
                     </div> 
                 </div> 
                 @endrole
@@ -325,15 +327,15 @@
                     <div class="modern-card"> 
                         <div class="modern-card-header">
                             <h5 class="modern-card-title">Weekly Sales Stats</h5>
-                            <div class="font-size-sm text-muted mt-1">0 PV</div>
+                            <div class="mt-1 font-size-sm text-muted">0 PV</div>
                         </div>
                         <div class="card-body">
-                            <h4 class="font-weight-bolder mb-4">Leaderboard</h4>
+                            <h4 class="mb-4 font-weight-bolder">Leaderboard</h4>
                             
                             @foreach ($data['team_size'] as $team)
-                            <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="mb-3 d-flex align-items-center justify-content-between">
                                 <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50 symbol-light mr-3 flex-shrink-0">
+                                    <div class="flex-shrink-0 mr-3 symbol symbol-50 symbol-light">
                                         <div class="symbol-label">
                                             <img src="{{ asset($team->getFirstMediaUrl('user_profile_images')) }}" class="h-50" alt="{{ $team->name }}" />
                                         </div>
@@ -343,7 +345,7 @@
                                         <div class="text-muted font-size-sm">Direct</div>
                                     </div>
                                 </div>
-                                <span class="badge badge-light badge-pill font-weight-bold py-2 px-3">
+                                <span class="px-3 py-2 badge badge-light badge-pill font-weight-bold">
                                     {{ $team->team->count() }}
                                 </span>
                             </div>
@@ -361,7 +363,7 @@
                                 <div class="wallet-title">Online Wallet</div>
                                 <div class="wallet-amount">${{ $data['online_wallet'] }}</div>
                                 <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
-                                    <div class="progress-bar bg-white" style="width: 60%"></div>
+                                    <div class="bg-white progress-bar" style="width: 60%"></div>
                                 </div>
                             </div>
                         </div>
@@ -372,7 +374,7 @@
                                 <div class="wallet-title">Direct/Indirect Wallet</div>
                                 <div class="wallet-amount">${{ $data['direct_indirect'] }}</div>
                                 <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
-                                    <div class="progress-bar bg-white" style="width: 45%"></div>
+                                    <div class="bg-white progress-bar" style="width: 45%"></div>
                                 </div>
                             </div>
                         </div>
@@ -383,7 +385,7 @@
                                 <div class="wallet-title">Reward Wallet</div>
                                 <div class="wallet-amount">${{ $data['rewardWallet'] }}</div>
                                 <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
-                                    <div class="progress-bar bg-white" style="width: 30%"></div>
+                                    <div class="bg-white progress-bar" style="width: 30%"></div>
                                 </div>
                             </div>
                         </div>
@@ -394,7 +396,7 @@
                                 <div class="wallet-title">ROI</div>
                                 <div class="wallet-amount">${{ $data['roi'] }}</div>
                                 <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
-                                    <div class="progress-bar bg-white" style="width: 75%"></div>
+                                    <div class="bg-white progress-bar" style="width: 75%"></div>
                                 </div>
                             </div>
                         </div>
@@ -405,7 +407,7 @@
                                 <div class="wallet-title">Profit Share</div>
                                 <div class="wallet-amount">${{ $data['profit_share'] }}</div>
                                 <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
-                                    <div class="progress-bar bg-white" style="width: 50%"></div>
+                                    <div class="bg-white progress-bar" style="width: 50%"></div>
                                 </div>
                             </div>
                         </div>
@@ -416,7 +418,7 @@
                                 <div class="wallet-title">Your Rank</div>
                                 <div class="wallet-amount">Visioners</div>
                                 <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
-                                    <div class="progress-bar bg-white" style="width: 80%"></div>
+                                    <div class="bg-white progress-bar" style="width: 80%"></div>
                                 </div>
                             </div>
                         </div>
@@ -427,7 +429,7 @@
                                 <div class="wallet-title">Total Team Size</div>
                                 <div class="wallet-amount">{{ $data['totalTeam'] }}</div>
                                 <div class="progress" style="height: 4px; background: rgba(255,255,255,0.2);">
-                                    <div class="progress-bar bg-white" style="width: 65%"></div>
+                                    <div class="bg-white progress-bar" style="width: 65%"></div>
                                 </div>
                             </div>
                         </div>
@@ -437,8 +439,8 @@
                     <div class="modern-card" style="background: linear-gradient(135deg, #4AB58E, #3a86ff); color: white;">
                         <div class="card-body d-flex align-items-center">
                             <div>
-                                <h3 class="text-white font-weight-bolder mb-2">Total Earnings: ${{ number_format($data['total_earning'], 2) }}</h3>
-                                <p class="text-white opacity-80 mb-0">
+                                <h3 class="mb-2 text-white font-weight-bolder">Total Earnings: ${{ number_format($data['total_earning'], 2) }}</h3>
+                                <p class="mb-0 text-white opacity-80">
                                     Overview of All Your Wallets
                                 </p>
                             </div>
@@ -480,17 +482,17 @@
                 <!-- 2X Investment -->
                 <div class="col-lg-6">
                     <div class="investment-card">
-                        <h4 class="investment-title">Personal Investment: ${{ $data['initial_investment'] }} <span class="badge badge-success ml-2">2X</span></h4>
+                        <h4 class="investment-title">Personal Investment: ${{ $data['initial_investment'] }} <span class="ml-2 badge badge-success">2X</span></h4>
                         
-                        <div class="d-flex align-items-center mb-3">
-                            <span class="progress-label mr-3">Progress</span>
+                        <div class="mb-3 d-flex align-items-center">
+                            <span class="mr-3 progress-label">Progress</span>
                             <div class="progress flex-grow-1" style="height: 8px;">
                                 <div class="progress-bar bg-primary" style="width: {{ $data['total_roi_earned_pv'] }}%"></div>
                             </div>
-                            <span class="progress-value ml-3">{{ $data['total_roi_earned_pv'] }}%</span>
+                            <span class="ml-3 progress-value">{{ $data['total_roi_earned_pv'] }}%</span>
                         </div>
                         
-                        <div class="row text-center">
+                        <div class="text-center row">
                             <div class="col-4">
                                 <div class="mb-1">
                                     <i class="fas fa-piggy-bank text-muted"></i>
@@ -519,17 +521,17 @@
                 <!-- 7X Investment -->
                 <div class="col-lg-6">
                     <div class="investment-card">
-                        <h4 class="investment-title">Investment Cap <span class="badge badge-primary ml-2">7X</span></h4>
+                        <h4 class="investment-title">Investment Cap <span class="ml-2 badge badge-primary">7X</span></h4>
                         
-                        <div class="d-flex align-items-center mb-3">
-                            <span class="progress-label mr-3">Progress</span>
+                        <div class="mb-3 d-flex align-items-center">
+                            <span class="mr-3 progress-label">Progress</span>
                             <div class="progress flex-grow-1" style="height: 8px;">
                                 <div class="progress-bar bg-danger" style="width: {{ ($data['total_roi_earned_pv'] / 700) * 100 }}%"></div>
                             </div>
-                            <span class="progress-value ml-3">{{ round(($data['total_roi_earned_pv'] / 700) * 100, 2) }}%</span>
+                            <span class="ml-3 progress-value">{{ round(($data['total_roi_earned_pv'] / 700) * 100, 2) }}%</span>
                         </div>
                         
-                        <div class="row text-center">
+                        <div class="text-center row">
                             <div class="col-4">
                                 <div class="mb-1">
                                     <i class="fas fa-piggy-bank text-muted"></i>
@@ -564,7 +566,7 @@
                         <div class="modern-card-header">
                             <h5 class="modern-card-title">Reward Target</h5>
                         </div>
-                        <div class="card-body text-center">
+                        <div class="text-center card-body">
                             <div class="progress-circle-container">
                                 <div class="progress-circle" style="--progress: {{ $data['reward'] }}%">
                                     <div class="inner-circle">
@@ -572,10 +574,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="text-muted mb-4">
+                            <p class="mb-4 text-muted">
                                 Notes: Click to get more details for your upcoming rewards
                             </p>
-                            <button id="generateRewardTargetReport" class="btn btn-primary btn-lg w-100 py-3">
+                            <button id="generateRewardTargetReport" class="py-3 btn btn-primary btn-lg w-100">
                                 View Reward Target
                             </button>
                         </div>
@@ -588,7 +590,7 @@
                         <div class="modern-card-header">
                             <h5 class="modern-card-title">Rank Target</h5>
                         </div>
-                        <div class="card-body text-center">
+                        <div class="text-center card-body">
                             <div class="progress-circle-container">
                                 <div class="progress-circle" style="--progress: 0%">
                                     <div class="inner-circle">
@@ -596,10 +598,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="text-muted mb-4">
+                            <p class="mb-4 text-muted">
                                 Notes: Click to get more details for your upcoming Targets
                             </p>
-                            <button id="generateRankTargetReport" class="btn btn-primary btn-lg w-100 py-3">
+                            <button id="generateRankTargetReport" class="py-3 btn btn-primary btn-lg w-100">
                                 View Rank Target
                             </button>
                         </div>
@@ -633,8 +635,8 @@
                                 @endphp
                                 
                                 <div class="reward-level">
-                                    <h6 class="font-weight-bold mb-2">Level {{ $level }} Reward</h6>
-                                    <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-2 font-weight-bold">Level {{ $level }} Reward</h6>
+                                    <div class="mb-2 d-flex align-items-center">
                                         <div class="flex-grow-1">
                                             <div class="progress reward-progress">
                                                 <div class="progress-bar 
@@ -673,8 +675,8 @@
                             <div class="reward-levels">
                                 @for($i = 1; $i <= 7; $i++)
                                 <div class="reward-level">
-                                    <h6 class="font-weight-bold mb-2">Rank {{ $i }}</h6>
-                                    <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-2 font-weight-bold">Rank {{ $i }}</h6>
+                                    <div class="mb-2 d-flex align-items-center">
                                         <div class="flex-grow-1">
                                             <div class="progress reward-progress">
                                                 <div class="progress-bar bg-primary" style="width: 0%"></div>

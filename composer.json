@@ -17,6 +17,7 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
         "maatwebsite/excel": "^3.1",
+        "opcodesio/log-viewer": "^3.17",
         "propaganistas/laravel-phone": "^5.3",
         "rap2hpoutre/laravel-log-viewer": "^2.5",
         "setasign/fpdf": "^1.8",
