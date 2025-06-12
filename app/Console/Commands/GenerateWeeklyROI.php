@@ -128,6 +128,7 @@ class GenerateWeeklyROI extends Command
 
         // Skip if already paid today
         if ($this->wasRoiPaidToday($user)) {
+            info($this->wasRoiPaidToday($user));
             $this->logUserAction($user, 'skipped', 'ROI already generated today');
             $this->counters['skipped']++;
             return true;
@@ -138,8 +139,7 @@ class GenerateWeeklyROI extends Command
 
     private function wasRoiPaidToday(User $user): bool
     {
-        return $user->last_roi_payment_date && 
-               Carbon::parse($user->last_roi_payment_date)->isToday();
+        return $user->last_roi_payment_date &&  Carbon::parse($user->last_roi_payment_date)->isToday();
     }
 
     private function initializeRoiDates(User $user): void
