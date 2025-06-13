@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
  
 Schedule::command('roi:generate-weekly')
-->dailyAt('23:59')
+->dailyAt('23:40')
 ->timezone('Asia/Karachi')
 ->when(function () {
     return Carbon::now('Asia/Karachi')->dayOfWeek !== Carbon::FRIDAY;

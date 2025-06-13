@@ -20,8 +20,7 @@ class GenerateWeeklyROI extends Command
 
     private AccountManagementService $accountService;
     private ROICommissionService $ROICommissionService;
-    private array $counters = ['processed' => 0, 'skipped' => 0, 'stopped' => 0];
-
+    private array $counters = ['processed' => 0, 'skipped' => 0, 'stopped' => 0]; 
     public function __construct(
         AccountManagementService $accountService,
         ROICommissionService $ROICommissionService
@@ -41,9 +40,9 @@ class GenerateWeeklyROI extends Command
         }
 
         $users = $this->getEligibleUsers();
-      
+        $todayDate = Carbon::now();
         foreach ($users as $user) {
-            $this->processUser($user, $week);
+            $this->processUser($user, $week, $todayDate);
         }
 
         $this->displaySummary();
@@ -71,7 +70,7 @@ class GenerateWeeklyROI extends Command
                 ->get();
     }
 
-    private function processUser(User $user, Week $week): void
+    private function processUser(User $user, Week $week, $todayDate): void
     {
         try {
             DB::beginTransaction(); 
@@ -95,7 +94,7 @@ class GenerateWeeklyROI extends Command
             }
          
             // Process the ROI payment
-            $this->processRoiPayment($user, $roiPayment, $week->percentage);
+            $this->processRoiPayment($user, $roiPayment, $week->percentage,$todayDate);
                
             // Generate commissions for upline
             $this->ROICommissionService->generateCommissions($user, $roiPayment); 
@@ -160,11 +159,11 @@ class GenerateWeeklyROI extends Command
         return $this->accountService->calculateSafeRoiAmount($user, $proposedAmount);
     }
 
-    private function processRoiPayment(User $user, float $amount, float $percentage): void
+    private function processRoiPayment(User $user, float $amount, float $percentage, $todayDate): void
     {
         // Update user
         $user->increment('roi_wallet_balance', $amount);
-        $user->update(['last_roi_payment_date' => now()]);
+        $user->update(['last_roi_payment_date' => $todayDate]);
 
         // Create wallet entry
         Wallet::create([

@@ -149,9 +149,7 @@ class FrontEndController extends Controller
         //return Inertia::render('Dashboard');
     }
     public function dashboard(){ 
-
-
-        
+         
         $referralCounts = DB::table('referral_trees')
         ->select('referral_trees.level', DB::raw('COUNT(referral_trees.descendant_id) as count'))
         ->join('users', 'referral_trees.descendant_id', '=', 'users.id') // Join with users table
