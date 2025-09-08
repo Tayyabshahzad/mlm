@@ -150,7 +150,28 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('/roi-reactivate', 'reactivate')->name('users.roi.reactivate');
     });
 
-     
+    // Pending Rewards Management Routes
+    Route::prefix('pending-rewards')->controller(App\Http\Controllers\Admin\PendingRewardController::class)->group(function () {
+        Route::get('/', 'index')->name('admin.pending-rewards.index');
+        Route::get('/{pendingReward}', 'show')->name('admin.pending-rewards.show');
+        Route::post('/{pendingReward}/approve', 'approve')->name('admin.pending-rewards.approve');
+        Route::post('/{pendingReward}/deny', 'deny')->name('admin.pending-rewards.deny');
+        Route::post('/bulk-approve', 'bulkApprove')->name('admin.pending-rewards.bulk-approve');
+        Route::get('/{pendingReward}/reverify', 'reverify')->name('admin.pending-rewards.reverify');
+    });
+
+    // Reward Settings Management Routes
+    Route::prefix('reward-settings')->controller(App\Http\Controllers\Admin\RewardSettingsController::class)->group(function () {
+        Route::get('/', 'index')->name('admin.reward-settings.index');
+        Route::get('/create', 'create')->name('admin.reward-settings.create');
+        Route::post('/', 'store')->name('admin.reward-settings.store');
+        Route::get('/{rewardSetting}/edit', 'edit')->name('admin.reward-settings.edit');
+        Route::put('/{rewardSetting}', 'update')->name('admin.reward-settings.update');
+        Route::delete('/{rewardSetting}', 'destroy')->name('admin.reward-settings.destroy');
+        Route::get('/{rewardSetting}/toggle', 'toggleStatus')->name('admin.reward-settings.toggle');
+        Route::get('/reset-defaults', 'resetToDefaults')->name('admin.reward-settings.reset');
+        Route::get('/export', 'export')->name('admin.reward-settings.export');
+    });
 
 
 });

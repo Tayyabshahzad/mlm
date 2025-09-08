@@ -29,8 +29,9 @@ class WalletController extends Controller
         $onlineWallets = Wallet::where('wallet_type','online')->where('user_id',auth()->user()->id)->get();
         $withDrawsRequests = WithDrawalequest::where('user_id',auth()->user()->id)->orderby('id','desc')->get();
         $walletSum = Wallet::where('user_id',auth()->user()->id)->sum('balance');
+        $totalEarned = Wallet::where('user_id',auth()->user()->id)->sum('balance');
         $setting = Setting::first();
-        return view('wallets.online',compact('onlineWallets','withDrawsRequests','walletSum','setting')); 
+        return view('wallets.online',compact('onlineWallets','withDrawsRequests','walletSum','setting','totalEarned')); 
     }
 
     public function directIndirect(){ 
@@ -46,10 +47,16 @@ class WalletController extends Controller
         return view('wallets.reward',compact('wallets')); 
     }
 
-    public function ROI(){ 
-        $wallets = Wallet::where('wallet_type','roi')->where('user_id',auth()->user()->id)->get();
-        return view('wallets.roi',compact('wallets')); 
+    public function ROI()
+    {
+        $walletQuery = Wallet::where('wallet_type', 'roi')
+            ->where('user_id', auth()->id()); 
+        $totalEarning   = $walletQuery->sum('total_amount');
+        $currentBalance = $walletQuery->sum('balance'); 
+        $wallets = $walletQuery->get(); 
+        return view('wallets.roi', compact('wallets', 'totalEarning', 'currentBalance'));
     }
+
 
     public function profitShare(Request $request){ 
         $query = Wallet::where('wallet_type','profit_share')->where('user_id', auth()->user()->id);

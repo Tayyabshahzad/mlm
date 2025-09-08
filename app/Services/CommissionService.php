@@ -11,13 +11,13 @@ class CommissionService
     private WalletService $walletService;
 
     private const COMMISSION_RATES = [
-        1 => 5.00,    // Level 1: 5%
+        1 => 7.00,    // Level 1: 5%
         2 => 2.00,    // Level 2: 2%
         3 => 1.50,    // Level 3: 1.5%
-        4 => 1.25,    // Level 4: 1.25%
-        5 => 1.00,    // Level 5: 1%
-        6 => 0.75,    // Level 6: 0.75%
-        7 => 0.50,    // Level 7: 0.5%
+        4 => 1,    // Level 4: 1.25%
+        5 => 0.75,    // Level 5: 1%
+        6 => 0.50,    // Level 6: 0.75%
+        7 => 0.25,    // Level 7: 0.5%
     ];
 
     private const TEAM_SIZE_REQUIREMENTS = [

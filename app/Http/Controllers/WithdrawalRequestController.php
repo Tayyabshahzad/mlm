@@ -144,57 +144,57 @@ class WithdrawalRequestController extends Controller
             'member_account'=> 'required',
             'wallet_type' =>'required|in:member_transfer'
         ]);       
-        if (auth::user()->negative_pv > 0) {
+
+        $sender = Auth::user(); 
+        if ($sender->negative_pv > 0) {
             return redirect()->back()->with('error', 'Clear your negative points before withdrawal.'); 
-        }
-         
+        } 
         $recipient = User::where('username', $request->member_account)
-                    ->orWhere('email', $request->member_account)
-                    ->first();
-        $sender = Auth::user();
+                        ->orWhere('email', $request->member_account)
+                        ->first();
+
         if (!$recipient) {
             return redirect()->back()->with('error', 'Recipient not exists');
-        } 
-        $finalAmount = $request->amount; 
-        $onlineWallet = Wallet::where('wallet_type', 'online')
-        ->where('user_id', Auth::id());
-        $onlineWalletSum = $onlineWallet->sum('balance'); 
-        if ($request->amount > $onlineWalletSum) {
+        }  
+        $amount = $request->amount;  
+        $onlineWalletSum = Wallet::where('wallet_type', 'online')
+                                ->where('user_id', $sender->id)
+                                ->sum('balance');  
+        if ($amount > $onlineWalletSum) {
             return redirect()->back()->with('error','Insufficient balance in the online wallet.');
-        }  
-        $remainingAmount = $request->amount; // let say 10
-        $onlineWallets = $onlineWallet->orderBy('id', 'asc')->get();   
-        foreach ($onlineWallets as $wallet) {
-            if ($remainingAmount == 0) break; 
-            if ($wallet->balance <= $remainingAmount) {
-                $remainingAmount -= $wallet->balance;
-                $wallet->update(['balance' => 0]);
-            } else {
-                $wallet->update(['balance' => $wallet->balance - $remainingAmount]);
-                $remainingAmount = 0;
-            }
-        }  
-        $wallet = Wallet::Create(
-            [
-                'user_id' => $recipient->id,
-                'wallet_type' => 'online',
-                'balance' => $request->amount,
-                'direct_balance' => 0.00,
-                'indirect_balance' => 0.00,
-                'level' => '-',
-                'wallet_from' => Auth::id(),
-                'commission_type'=>'Member Transfer'
-            ]
-        ); 
+        }   
+        Wallet::create([
+            'user_id' => $sender->id,
+            'wallet_type' => 'online',
+            'balance' => -$amount,   
+            'transaction_type' => 'debit',
+            'direct_balance' => 0.00,
+            'indirect_balance' => 0.00,
+            'level' => '-',
+            'wallet_from' => $recipient->id,
+            'commission_type' => 'Member Transfer',
+            'description' => "Transferred {$amount} PV to {$recipient->username}",
+            'total_earning' => 0, // not added to earnings
+        ]); 
+        Wallet::create([
+            'user_id' => $recipient->id,
+            'wallet_type' => 'online',
+            'balance' => $amount,  
+             'transaction_type' => 'credit',
+            'direct_balance' => 0.00,
+            'indirect_balance' => 0.00,
+            'level' => '-',
+            'wallet_from' => $sender->id,
+            'commission_type' => 'Member Transfer',
+            'description' => "Received {$amount} PV from {$sender->username}",
+            'total_earning' => 0, // not added to earnings
+        ]); 
+        $this->logTransaction($sender->id,'online','online',-$amount,$amount, "You transferred {$amount} PV to {$recipient->username} via member transfer.");
+        $this->logTransaction($recipient->id,'online','online',$amount,$amount, "You received {$amount} PV from {$sender->username} via member transfer."); 
 
-        $this->logTransaction($sender->id,'online','online',$request->amount,$finalAmount, "You transferred {$request->amount} PV to {$recipient->username} via member transfer.");
-
-        $this->logTransaction($recipient->id,'online','online',$request->amount,$finalAmount, "You received {$finalAmount} PV from {$sender->username} via member transfer."); 
-  
-        return redirect()->
-               back()->
-               with('success', "Funds transferred: {$request->amount} PV to {$recipient->username} via member transfer successfully.");
+        return redirect()->back()->with('success', "Funds transferred: {$amount} PV to {$recipient->username} via member transfer successfully.");
     }
+
     
 
     public function requests(Request $request)

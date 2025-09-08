@@ -34,6 +34,7 @@ class TopupController extends Controller
 
     public function index(Request $request)
     {
+         
         $users = User::all();
         $wallets = Wallet::where('wallet_src','top_up')->orderBy('id','desc')->get();
         return view('users.account-topup', compact('users','wallets'));

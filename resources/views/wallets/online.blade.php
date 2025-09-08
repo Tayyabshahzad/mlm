@@ -47,7 +47,7 @@
                                 @endphp
                                 @if (!($blockedWallets['online'] ?? false))  
                                     @if($setting->withdraw_block == false)
-                                        @if($walletSum >= 700)
+                                        @if($walletSum >= 122700)
                                             <div class="pt-5 align-items-center justify-content-center" >
                                                 <a href="#" disabled  class="mb-5 mr-3 disabled rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
                                                 <a href="#" disabled   class="mb-5 mr-3 disabled rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
@@ -94,6 +94,7 @@
                                 <div class="d-flex flex-column flex-grow-1">
                                     <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Total Balance</a>
                                      <span class=" font-weight-bold">${{ $onlineWallets->sum('balance') }}</span>
+                                     
                                 </div>  
                                 <div class="mr-5 symbol symbol-45 symbol-light">
                                     <span class="symbol-label">
@@ -140,7 +141,7 @@
                                 </div> 
                                 <div class="d-flex flex-column flex-grow-1">
                                     <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Total Earned</a>
-                                    <span class=" font-weight-bold">${{ $walletSum }}</span>
+                                    <span class=" font-weight-bold">${{ $totalEarned }}</span>
                                 </div> 
                                 @if($walletSum >= 700)
                                     <div class="d-flex align-items-center">

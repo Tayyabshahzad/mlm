@@ -209,6 +209,7 @@ class FrontEndController extends Controller
             'totalTeam' => $levelCounts->sum(),
             'reward' =>$totalRewardPercentage
         ]; 
+       
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
     }
