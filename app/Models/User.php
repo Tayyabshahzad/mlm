@@ -13,6 +13,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\HasMedia; 
  
 use Illuminate\Database\Eloquent\Model;
+
 class User extends Authenticatable implements ShouldQueue,HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -33,6 +34,12 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         'phone_number',
         'payment_method',
         'agreement_sent',
+        'agreement_balance',
+        'agreement_balance_locked',
+        'current_rank_level',
+        'eligible_for_binary_2x',
+        'eligible_for_binary_7x',
+        'total_binary_earnings',
         'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id','freez_wallet','blocked','usdt_rate','transferred_amount','converted_usdt_amount','fee_deducted','net_invested_usdt_amount','negative_pv','roi_eligible_investment_amount', 'roi_status', 'roi_stopped_at','stop_reason','stop_reason_description'
 
     ]; 
@@ -142,6 +149,58 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
     public function activationCode()
     {
         return $this->belongsTo(ActivationCode::class, 'activation_code_id');
+    }
+
+    public function wallets()
+    {
+        return $this->hasMany(Wallet::class);
+    }
+
+    public function binarySystems()
+    {
+        return $this->hasMany(BinarySystem::class);
+    }
+
+    public function binary2x()
+    {
+        return $this->hasOne(BinarySystem::class)->where('system_type', '2x')->where('is_active', true);
+    }
+
+    public function binary7x()
+    {
+        return $this->hasOne(BinarySystem::class)->where('system_type', '7x')->where('is_active', true);
+    }
+
+    public function currentRank()
+    {
+        return $this->hasOne(UserRank::class)->where('is_active', true);
+    }
+
+    public function rankHistory()
+    {
+        return $this->hasMany(UserRank::class)->orderBy('achieved_at', 'desc');
+    }
+
+    public function canAccessBinary($type)
+    {
+        if ($type === '2x') {
+            return $this->eligible_for_binary_2x;
+        }
+        if ($type === '7x') {
+            return $this->eligible_for_binary_7x;
+        }
+        return false;
+    }
+
+    public function updateAgreementBalance()
+    {
+        if ($this->agreement_balance_locked) {
+            $totalInvestment = $this->wallets()
+                ->where('wallet_type', 'investment')
+                ->sum('total_amount');
+
+            $this->update(['agreement_balance' => $totalInvestment]);
+        }
     }
 
 }

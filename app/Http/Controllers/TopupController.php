@@ -11,6 +11,7 @@ use App\Models\UserInvestment;
 use App\Services\CommissionService;
 use App\Services\InvestmentSlabService;
 use App\Services\WalletService;
+use App\Services\AccountManagementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,11 +26,17 @@ class TopupController extends Controller
 
     private CommissionService $commissionService;
     private WalletService $walletService;
+    private AccountManagementService $accountManagementService;
 
-    public function __construct(CommissionService $commissionService, WalletService $walletService,private InvestmentSlabService $investmentSlabService )
-    {
+    public function __construct(
+        CommissionService $commissionService,
+        WalletService $walletService,
+        private InvestmentSlabService $investmentSlabService,
+        AccountManagementService $accountManagementService
+    ) {
         $this->commissionService = $commissionService;
         $this->walletService = $walletService;
+        $this->accountManagementService = $accountManagementService;
     }
 
     public function index(Request $request)
@@ -364,7 +371,78 @@ class TopupController extends Controller
             'description' => $description
         ]);
 
+        // Get current investment amount before updating
+        $previousInvestment = $user->roi_eligible_investment_amount;
+
+        // Increase the total investment amount
         $user->increment('roi_eligible_investment_amount', $amount);
+
+        // Handle 2x cap reset logic
+        $this->handle2XCapReset($user, $previousInvestment, $amount);
+    }
+
+    /**
+     * Handle investment increase and withdrawal re-enablement on topup
+     * ROI NEVER restarts once 2X is reached, but withdrawals can be re-enabled at 7X
+     */
+    private function handle2XCapReset(User $user, float $previousInvestment, float $topupAmount): void
+    {
+        $wasStoppedFor7X = ($user->roi_status === 'stopped' && $user->stop_reason === '7x_limit_reached');
+        $currentStats = $this->accountManagementService->getRoiAccountStats($user);
+
+        // Log the investment increase
+        Log::info("Investment increased via topup", [
+            'user_id' => $user->id,
+            'previous_investment' => $previousInvestment,
+            'topup_amount' => $topupAmount,
+            'new_investment' => $user->roi_eligible_investment_amount,
+            'new_2x_limit' => $user->roi_eligible_investment_amount * 2,
+            'new_7x_limit' => $user->roi_eligible_investment_amount * 7,
+            'total_earned_before' => $currentStats['total_roi_paid'],
+            'was_stopped_for_7x' => $wasStoppedFor7X
+        ]);
+
+        // Handle 7X withdrawal re-enablement
+        if ($wasStoppedFor7X) {
+            // Only reactivate for withdrawal purposes, ROI remains stopped if 2X was reached
+            $hasReached2X = $this->accountManagementService->hasReached2XLimit($user);
+
+            if ($hasReached2X) {
+                // ROI stays stopped forever, but withdrawals are re-enabled
+                $user->update([
+                    'roi_status' => 'stopped',
+                    'stop_reason' => '2x_limit_reached',
+                    'stop_reason_description' => 'ROI permanently stopped at 2X limit. Withdrawals re-enabled due to topup.',
+                    'roi_stopped_at' => $user->roi_stopped_at // Keep original stop date
+                ]);
+
+                Log::info("Withdrawals re-enabled after 7X topup, but ROI remains stopped at 2X", [
+                    'user_id' => $user->id,
+                    'withdrawal_enabled' => true,
+                    'roi_status' => 'stopped_at_2x'
+                ]);
+            } else {
+                // If somehow 2X wasn't reached, reactivate normally
+                $this->accountManagementService->reactivateRoiAccount($user);
+                $user->update([
+                    'stop_reason_description' => 'ROI and withdrawals reactivated due to topup - 7X cap increased'
+                ]);
+
+                Log::info("ROI and withdrawals reactivated after topup", [
+                    'user_id' => $user->id,
+                    'new_7x_limit' => $user->roi_eligible_investment_amount * 7
+                ]);
+            }
+        }
+
+        // Always log current status
+        Log::info("Post-topup status", [
+            'user_id' => $user->id,
+            'roi_can_receive' => $this->accountManagementService->canReceiveRoi($user),
+            'withdrawal_enabled' => $this->accountManagementService->isWithdrawalEnabled($user),
+            'has_reached_2x' => $this->accountManagementService->hasReached2XLimit($user),
+            'has_reached_7x' => $this->accountManagementService->hasReached7XLimit($user)
+        ]);
     }
 
     private function logInvestmentTransaction(User $user, float $amount): void

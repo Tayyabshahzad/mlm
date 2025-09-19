@@ -22,7 +22,7 @@ class RewardService
         7 => ['reward_amount' => 41500, 'users_required' => 70],
     ];
 
-    private const MAX_REWARD_LEVELS = 10; // Increased to support more levels
+    private const MAX_REWARD_LEVELS = 7; // Increased to support more levels
 
     /**
      * Get reward levels from database with fallback to constants

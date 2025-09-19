@@ -45,18 +45,33 @@
                                 @php
                                     $blockedWallets = json_decode($setting->blocked_wallets ?? '{}', true); 
                                 @endphp
-                                @if (!($blockedWallets['online'] ?? false))  
+                                @if (!($blockedWallets['online'] ?? false))
                                     @if($setting->withdraw_block == false)
                                         @if($walletSum >= 122700)
                                             <div class="pt-5 align-items-center justify-content-center" >
                                                 <a href="#" disabled  class="mb-5 mr-3 disabled rounded-0 btn btn-info font-weight-bolder font-size-sm">Withdrawal Request</a>
-                                                <a href="#" disabled   class="mb-5 mr-3 disabled rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>    
+                                                <a href="#" disabled   class="mb-5 mr-3 disabled rounded-0 btn btn-primary font-weight-bolder font-size-sm">Transfer to Member </a>
                                             </div>
-                                        @else 
+                                        @elseif(!$roiStats['withdrawal_enabled'])
+                                            <!-- 7x Limit Reached - Withdrawal Disabled -->
+                                            <div class="pt-5 align-items-center justify-content-center">
+                                                <a href="#" disabled class="mb-5 mr-3 disabled rounded-0 btn btn-danger font-weight-bolder font-size-sm">
+                                                    Withdrawal Disabled (7X Reached)
+                                                </a>
+                                                <a href="#" disabled class="mb-5 mr-3 disabled rounded-0 btn btn-secondary font-weight-bolder font-size-sm">
+                                                    Transfer Disabled
+                                                </a>
+                                            </div>
+                                            <div class="alert alert-warning mt-3">
+                                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                                <strong>Withdrawal Disabled:</strong> You've reached your 7X earnings limit.
+                                                <strong>Topup your account</strong> to increase the limit and re-enable withdrawals.
+                                            </div>
+                                        @else
                                             <div class="pt-5 align-items-center justify-content-center">
                                                     <a href="#"   data-toggle="modal"   data-target="#WithdrawModel"  class="mb-5 mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Create Withdrawal Request</a>
-                                                    <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class="mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a> 
-                                            </div> 
+                                                    <a href="#"   data-toggle="modal"    data-target="#WithdrawModelTransfer"  class="mb-5 mr-3 rounded-0 btn btn-primary font-weight-bolder font-size-sm">Member Transfer </a>
+                                            </div>
                                         @endif
                                     @else
                                 @endif 
@@ -87,14 +102,14 @@
                                 <div class="mr-5 symbol symbol-45 symbol-light">
                                     <span class="symbol-label">
                                         <span class="navi-icon">
-                                            <i class="flaticon2-graph-1 text-warning"></i>
+                                            <i class="flaticon2-wallet text-success"></i>
                                         </span>
                                     </span>
-                                </div> 
+                                </div>
                                 <div class="d-flex flex-column flex-grow-1">
-                                    <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Total Balance</a>
-                                     <span class=" font-weight-bold">${{ $onlineWallets->sum('balance') }}</span>
-                                     
+                                    <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Available Balance</a>
+                                    <small class="text-muted">Current spendable balance in your online wallet</small>
+                                    <span class="font-weight-bold text-success">${{ number_format($availableBalance, 2) }}</span>
                                 </div>  
                                 <div class="mr-5 symbol symbol-45 symbol-light">
                                     <span class="symbol-label">
@@ -135,25 +150,304 @@
                                 <div class="mr-5 symbol symbol-45 symbol-light">
                                     <span class="symbol-label">
                                         <span class="navi-icon">
-                                            <i class="flaticon2-graph-1 text-warning"></i>
+                                            <i class="flaticon2-graph-1 text-primary"></i>
                                         </span>
                                     </span>
-                                </div> 
+                                </div>
                                 <div class="d-flex flex-column flex-grow-1">
-                                    <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Total Earned</a>
-                                    <span class=" font-weight-bold">${{ $totalEarned }}</span>
-                                </div> 
-                                @if($walletSum >= 700)
-                                    <div class="d-flex align-items-center">
-                                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-warning font-weight-bolder font-size-sm">Buy Product </a> 
-                                    </div>  
-                                @endif 
-                            </div> 
-                        </div>  
-                    </div> 
-                </div> 
+                                    <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Total Lifetime Earnings</a>
+                                    <small class="text-muted">Total income from commissions, ROI, rewards, transfers & withdrawals</small>
+                                    <span class="font-weight-bold text-primary">${{ number_format($totalEarned, 2) }}</span>
 
-                <div class="card card-custom card-stretch gutter-b"> 
+                                    <!-- Earnings Breakdown Toggle -->
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-light-primary" type="button" data-toggle="collapse" data-target="#earningsBreakdown" aria-expanded="false">
+                                            <i class="fas fa-chart-pie"></i> View Breakdown
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Earnings Breakdown Collapse -->
+                            <div class="collapse mt-5" id="earningsBreakdown">
+                                <div class="card card-custom">
+                                    <div class="card-header">
+                                        <h5 class="card-title">Earnings Breakdown</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <!-- Current Earnings in Wallets -->
+                                            <div class="col-md-6">
+                                                <h6 class="font-weight-bold mb-3">Current Earnings in Wallets</h6>
+                                                @foreach($earningsBreakdown['wallet_breakdown'] as $walletType => $amount)
+                                                    @if($amount > 0)
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">{{ ucfirst(str_replace('_', ' ', $walletType)) }}:</span>
+                                                        <span class="font-weight-bold">${{ number_format($amount, 2) }}</span>
+                                                    </div>
+                                                    @endif
+                                                @endforeach
+                                                <hr>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="font-weight-bold">Subtotal:</span>
+                                                    <span class="font-weight-bold text-success">${{ number_format($earningsBreakdown['current_earnings'], 2) }}</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Utilized Earnings -->
+                                            <div class="col-md-6">
+                                                <h6 class="font-weight-bold mb-3">Utilized Earnings</h6>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span class="text-muted">Transferred to Online:</span>
+                                                    <span class="font-weight-bold">${{ number_format($earningsBreakdown['transferred_to_online'], 2) }}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span class="text-muted">Withdrawn:</span>
+                                                    <span class="font-weight-bold">${{ number_format($earningsBreakdown['withdrawn'], 2) }}</span>
+                                                </div>
+                                                <hr>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="font-weight-bold">Subtotal:</span>
+                                                    <span class="font-weight-bold text-info">${{ number_format($earningsBreakdown['transferred_to_online'] + $earningsBreakdown['withdrawn'], 2) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Grand Total -->
+                                        <div class="mt-4 p-3 bg-light-primary rounded">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="font-weight-bold text-primary font-size-lg">Total Lifetime Earnings:</span>
+                                                <span class="font-weight-bold text-primary font-size-lg">${{ number_format($totalEarned, 2) }}</span>
+                                            </div>
+                                            <small class="text-muted">This represents all income you've earned from the system since you joined.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2X ROI Progress Card -->
+                <div class="card card-custom card-stretch gutter-b">
+                    <div class="border-0 card-header">
+                        <h3 class="card-title font-weight-bolder text-dark">
+                            2X ROI Progress
+                            @if($roiStats['completion_percentage'] >= 100)
+                                <span class="badge badge-danger ml-2">ROI Permanently Stopped</span>
+                            @else
+                                <span class="badge badge-success ml-2">ROI Active</span>
+                            @endif
+                        </h3>
+                    </div>
+                    <div class="pt-0 card-body">
+                        <div class="mb-5">
+                            <!-- Investment & Earnings Overview -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">Total Investment</span>
+                                        <span class="font-weight-bold font-size-h6 text-primary">${{ number_format($roiStats['invested_amount'], 2) }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">2X Target</span>
+                                        <span class="font-weight-bold font-size-h6 text-info">${{ number_format($roiStats['two_x_limit'], 2) }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">Total Earned</span>
+                                        <span class="font-weight-bold font-size-h6 text-{{ $roiStats['completion_percentage'] >= 100 ? 'success' : 'warning' }}">${{ number_format($roiStats['total_roi_paid'], 2) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="mt-5">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted font-size-sm">Progress to 2X Target</span>
+                                    <span class="font-weight-bold font-size-sm">{{ number_format($roiStats['completion_percentage'], 1) }}%</span>
+                                </div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar {{ $roiStats['completion_percentage'] >= 100 ? 'bg-success' : 'bg-primary' }}"
+                                         role="progressbar"
+                                         style="width: {{ min(100, $roiStats['completion_percentage']) }}%">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status & Remaining -->
+                            <div class="row mt-5">
+                                <div class="col-md-6">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">ROI Status</span>
+                                        @if($roiStats['completion_percentage'] >= 100)
+                                            <span class="badge badge-danger">🛑 Permanently Stopped</span>
+                                            <small class="text-muted mt-1">ROI will never restart once 2X is reached</small>
+                                        @elseif($roiStats['roi_status'] === 'stopped')
+                                            <span class="badge badge-warning">Temporarily Stopped</span>
+                                        @else
+                                            <span class="badge badge-success">✅ Active</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">Remaining to 2X</span>
+                                        <span class="font-weight-bold font-size-h6 text-{{ $roiStats['remaining_amount'] <= 0 ? 'success' : 'primary' }}">
+                                            ${{ number_format(max(0, $roiStats['remaining_amount']), 2) }}
+                                        </span>
+                                        @if($roiStats['remaining_amount'] <= 0)
+                                            <small class="text-success">✅ Target achieved!</small>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Additional Info -->
+                            @if($roiStats['estimated_completion_date'] && $roiStats['remaining_amount'] > 0)
+                            <div class="mt-4 p-3 bg-light-info rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar-alt text-info mr-2"></i>
+                                    <div>
+                                        <span class="font-weight-bold text-info">Estimated 2X Completion:</span>
+                                        <span class="ml-2">{{ \Carbon\Carbon::parse($roiStats['estimated_completion_date'])->format('M j, Y') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- 2X Limit Reached - ROI Permanently Stopped -->
+                            @if($roiStats['completion_percentage'] >= 100)
+                            <div class="mt-4 p-3 bg-light-danger rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-stop-circle text-danger mr-2"></i>
+                                    <div>
+                                        <span class="font-weight-bold text-danger">ROI Permanently Stopped!</span>
+                                        <div class="mt-1">
+                                            <small class="text-muted">You've earned 2X your investment. ROI will never restart, but you can still withdraw funds until 7X limit.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- 7X Limit Warning -->
+                            @if($roiStats['completion_7x_percentage'] >= 100)
+                            <div class="mt-4 p-3 bg-light-danger rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-ban text-danger mr-2"></i>
+                                    <div>
+                                        <span class="font-weight-bold text-danger">7X Limit Reached - Withdrawals Disabled!</span>
+                                        <div class="mt-1">
+                                            <small class="text-muted">You've earned 7X your investment. Withdrawals are disabled. Topup to increase your 7X cap and re-enable withdrawals. ROI remains permanently stopped.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7X ROI Progress Card -->
+                <div class="card card-custom card-stretch gutter-b">
+                    <div class="border-0 card-header">
+                        <h3 class="card-title font-weight-bolder text-dark">
+                            7X ROI Progress
+                            @if(!$roiStats['withdrawal_enabled'])
+                                <span class="badge badge-danger ml-2">Withdrawal Disabled</span>
+                            @else
+                                <span class="badge badge-success ml-2">Withdrawal Enabled</span>
+                            @endif
+                        </h3>
+                    </div>
+                    <div class="pt-0 card-body">
+                        <div class="mb-5">
+                            <!-- Investment & 7X Overview -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">Total Investment</span>
+                                        <span class="font-weight-bold font-size-h6 text-primary">${{ number_format($roiStats['invested_amount'], 2) }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">7X Target</span>
+                                        <span class="font-weight-bold font-size-h6 text-warning">${{ number_format($roiStats['seven_x_limit'], 2) }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">Total Earned</span>
+                                        <span class="font-weight-bold font-size-h6 text-{{ $roiStats['completion_7x_percentage'] >= 100 ? 'danger' : 'success' }}">${{ number_format($roiStats['total_roi_paid'], 2) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 7X Progress Bar -->
+                            <div class="mt-5">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted font-size-sm">Progress to 7X Target</span>
+                                    <span class="font-weight-bold font-size-sm">{{ number_format($roiStats['completion_7x_percentage'], 1) }}%</span>
+                                </div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar {{ $roiStats['completion_7x_percentage'] >= 100 ? 'bg-danger' : 'bg-warning' }}"
+                                         role="progressbar"
+                                         style="width: {{ min(100, $roiStats['completion_7x_percentage']) }}%">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 7X Status & Remaining -->
+                            <div class="row mt-5">
+                                <div class="col-md-6">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">Withdrawal Status</span>
+                                        @if(!$roiStats['withdrawal_enabled'])
+                                            <span class="badge badge-danger">🚫 Disabled (7X Reached)</span>
+                                            <small class="text-muted mt-1">Topup to re-enable withdrawals</small>
+                                        @else
+                                            <span class="badge badge-success">✅ Enabled</span>
+                                            <small class="text-muted mt-1">You can withdraw funds</small>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted font-size-sm">Remaining to 7X</span>
+                                        <span class="font-weight-bold font-size-h6 text-{{ $roiStats['remaining_7x_amount'] <= 0 ? 'danger' : 'warning' }}">
+                                            ${{ number_format(max(0, $roiStats['remaining_7x_amount']), 2) }}
+                                        </span>
+                                        @if($roiStats['remaining_7x_amount'] <= 0)
+                                            <small class="text-danger">🚫 7X limit reached!</small>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 7X Warning -->
+                            @if($roiStats['completion_7x_percentage'] >= 90 && $roiStats['completion_7x_percentage'] < 100)
+                            <div class="mt-4 p-3 bg-light-warning rounded">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-exclamation-triangle text-warning mr-2"></i>
+                                    <div>
+                                        <span class="font-weight-bold text-warning">Approaching 7X Limit!</span>
+                                        <div class="mt-1">
+                                            <small class="text-muted">You're close to reaching the 7X limit. Once reached, withdrawals will be disabled until you topup.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-custom card-stretch gutter-b">
                     <div class="border-0 card-header">
                         <h3 class="card-title font-weight-bolder text-dark">Withdrawal Requests</h3> 
                     </div>

@@ -14,19 +14,19 @@
     <!--begin::Subheader-->
 
     
-    <div class="subheader py-2 py-lg-6 subheader-solid" id="kt_subheader">
-        <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+    <div class="py-2 subheader py-lg-6 subheader-solid" id="kt_subheader">
+        <div class="flex-wrap container-fluid d-flex align-items-center justify-content-between flex-sm-nowrap">
             <!--begin::Info-->
-            <div class="d-flex align-items-center flex-wrap mr-1">
+            <div class="flex-wrap mr-1 d-flex align-items-center">
                 <!--begin::Mobile Toggle-->
-                <button class="burger-icon burger-icon-left mr-4 d-inline-block d-lg-none" id="kt_subheader_mobile_toggle">
+                <button class="mr-4 burger-icon burger-icon-left d-inline-block d-lg-none" id="kt_subheader_mobile_toggle">
                     <span></span>
                 </button> 
-                <div class="d-flex align-items-baseline flex-wrap mr-5"> 
-                    <h5 class="text-dark font-weight-bold my-1 mr-5">Members </h5>
+                <div class="flex-wrap mr-5 d-flex align-items-baseline"> 
+                    <h5 class="my-1 mr-5 text-dark font-weight-bold">Members </h5>
                     <!--end::Page Title-->
                     <!--begin::Breadcrumb-->
-                    <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2 font-size-sm">
+                    <ul class="p-0 my-2 breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold font-size-sm">
                         <li class="breadcrumb-item">
                             <a href="{{  route('dashboard') }}" class="text-muted">Dashboard</a>
                         </li> 
@@ -52,23 +52,23 @@
             <!--begin::Container-->
             <div class="container-fluid">
                 <!--begin::Page Layout-->
-                <div class="d-flex flex-row">
+                <div class="flex-row d-flex">
                     <div class="flex-row-fluid ml-lg-8"> 
                         <div class="card card-custom gutter-b">
-                            <div class="card-body p-0"> 
+                            <div class="p-0 card-body"> 
                                 
-                                <div class="row justify-content-center py-8 px-8 py-md-10 px-md-0"> 
+                                <div class="px-8 py-8 row justify-content-center py-md-10 px-md-0"> 
                                     <div class="col-md-10"> 
 
                                         <div class="btn-group" role="group" aria-label="Basic example">
 
                                             
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-primary">Total Members : {{ $totalMembers }}</button>
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-success">Active Members : {{ $totalActiveMembers }}</button>
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-warning">Inactive Members : {{ $totalInActiveMembers }}</button>
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-danger">Blocked Members : {{ $totalBlockedMembers }}</button>
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-info">Freeze Accounts : {{ $totalfreezeMembers }}</button>
-                                            <button type="button" class="rounded-0 mr-3 mb-3 btn btn-success" data-toggle="modal" data-target="#downloadModal">
+                                            <button type="button" class="mb-3 mr-3 rounded-0 btn btn-primary">Total Members : {{ $totalMembers }}</button>
+                                            <button type="button" class="mb-3 mr-3 rounded-0 btn btn-success">Active Members : {{ $totalActiveMembers }}</button>
+                                            <button type="button" class="mb-3 mr-3 rounded-0 btn btn-warning">Inactive Members : {{ $totalInActiveMembers }}</button>
+                                            <button type="button" class="mb-3 mr-3 rounded-0 btn btn-danger">Blocked Members : {{ $totalBlockedMembers }}</button>
+                                            <button type="button" class="mb-3 mr-3 rounded-0 btn btn-info">Freeze Accounts : {{ $totalfreezeMembers }}</button>
+                                            <button type="button" class="mb-3 mr-3 rounded-0 btn btn-success" data-toggle="modal" data-target="#downloadModal">
                                                 Download Contact Details
                                             </button>
                                             
@@ -84,7 +84,7 @@
                                                     value="{{ old('search', $search ?? '') }}">
                                                 <div class="input-group-append">
                                                     <button type="submit" class="mr-3 btn-sm rounded-0 btn btn-info">Search</button>
-                                                    <a href="{{ route('users.index') }}" class="  rounded-0 btn btn-success">Clear</a>
+                                                    <a href="{{ route('users.index') }}" class=" rounded-0 btn btn-success">Clear</a>
                                                 </div>
                                             </div>
                                         </form>
@@ -108,12 +108,12 @@
                                                     @if($teamMember->can_login) text-success @endif
                                                     @if(!$teamMember->can_login) text-warning @endif
                                                     @if($teamMember->freez_wallet) text-info @endif"> 
-                                                        <td class=" align-middle">{{ $loop->iteration }}</td>
-                                                        <td class=" align-middle">{{ $teamMember->username }}</td>
-                                                        <td class=" align-middle">{{ $teamMember->name }}</td>
-                                                        <td class=" align-middle">{{ $teamMember->email }}</td> 
-                                                        <td class=" align-middle">{{ ucfirst($teamMember->payment_method) }}</td>  
-                                                        <td class="text-primary  align-middle"> 
+                                                        <td class="align-middle ">{{ $loop->iteration }}</td>
+                                                        <td class="align-middle ">{{ $teamMember->username }}</td>
+                                                        <td class="align-middle ">{{ $teamMember->name }}</td>
+                                                        <td class="align-middle ">{{ $teamMember->email }}</td> 
+                                                        <td class="align-middle ">{{ ucfirst($teamMember->payment_method) }}</td>  
+                                                        <td class="align-middle text-primary"> 
                                                         <div class="dropdown">
                                                             <button class="btn btn-sm btn-outline-info rounded-0 dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                More Actions
@@ -139,21 +139,24 @@
                                                             </div>
                                                         </div>   
                                                         </td> 
-                                                        <td class=" align-middle">{{ ucfirst($teamMember->created_at) }}</td> 
+                                                        <td class="align-middle ">{{ ucfirst($teamMember->created_at) }}</td> 
+                                                          <td class="align-middle "> <a href="{{ route('admin.user.team',$teamMember->id) }}"> View Details </a>  </td> 
+
+                                                        
                                                     </tr>
                                                     @endforeach 
                                                 </tbody>
                                             </table>
                                             
                                             <!-- Pagination Controls (no changes needed here) -->
-                                            <div class="d-flex justify-content-center align-items-center flex-wrap mt-5">
-                                                <div class="d-flex flex-wrap py-2 mr-3">
+                                            <div class="flex-wrap mt-5 d-flex justify-content-center align-items-center">
+                                                <div class="flex-wrap py-2 mr-3 d-flex">
                                                     @if ($teamMembers->onFirstPage())
-                                                        <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-double-arrow-back icon-xs"></i></a>
-                                                        <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-arrow-back icon-xs"></i></a>
+                                                        <a href="#" class="my-1 mr-2 btn btn-icon btn-sm btn-light-primary disabled"><i class="ki ki-bold-double-arrow-back icon-xs"></i></a>
+                                                        <a href="#" class="my-1 mr-2 btn btn-icon btn-sm btn-light-primary disabled"><i class="ki ki-bold-arrow-back icon-xs"></i></a>
                                                     @else
-                                                        <a href="{{ $teamMembers->url(1) }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-double-arrow-back icon-xs"></i></a>
-                                                        <a href="{{ $teamMembers->previousPageUrl() }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-arrow-back icon-xs"></i></a>
+                                                        <a href="{{ $teamMembers->url(1) }}" class="my-1 mr-2 btn btn-icon btn-sm btn-light-primary"><i class="ki ki-bold-double-arrow-back icon-xs"></i></a>
+                                                        <a href="{{ $teamMembers->previousPageUrl() }}" class="my-1 mr-2 btn btn-icon btn-sm btn-light-primary"><i class="ki ki-bold-arrow-back icon-xs"></i></a>
                                                     @endif
                                                     
                                                     @foreach ($teamMembers->getUrlRange(max(1, $teamMembers->currentPage() - 2), min($teamMembers->lastPage(), $teamMembers->currentPage() + 2)) as $page => $url)
@@ -162,11 +165,11 @@
                                                         </a>
                                                     @endforeach 
                                                     @if ($teamMembers->hasMorePages())
-                                                        <a href="{{ $teamMembers->nextPageUrl() }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-arrow-next icon-xs"></i></a>
-                                                        <a href="{{ $teamMembers->url($teamMembers->lastPage()) }}" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1"><i class="ki ki-bold-double-arrow-next icon-xs"></i></a>
+                                                        <a href="{{ $teamMembers->nextPageUrl() }}" class="my-1 mr-2 btn btn-icon btn-sm btn-light-primary"><i class="ki ki-bold-arrow-next icon-xs"></i></a>
+                                                        <a href="{{ $teamMembers->url($teamMembers->lastPage()) }}" class="my-1 mr-2 btn btn-icon btn-sm btn-light-primary"><i class="ki ki-bold-double-arrow-next icon-xs"></i></a>
                                                     @else
-                                                        <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-arrow-next icon-xs"></i></a>
-                                                        <a href="#" class="btn btn-icon btn-sm btn-light-primary mr-2 my-1 disabled"><i class="ki ki-bold-double-arrow-next icon-xs"></i></a>
+                                                        <a href="#" class="my-1 mr-2 btn btn-icon btn-sm btn-light-primary disabled"><i class="ki ki-bold-arrow-next icon-xs"></i></a>
+                                                        <a href="#" class="my-1 mr-2 btn btn-icon btn-sm btn-light-primary disabled"><i class="ki ki-bold-double-arrow-next icon-xs"></i></a>
                                                     @endif
                                                 </div>
                                             </div>

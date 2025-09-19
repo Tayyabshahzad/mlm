@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserInvestment;
 use App\Models\Wallet;
 use App\Models\WithDrawalequest;
+use App\Services\AccountManagementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,20 +19,77 @@ class WalletController extends Controller
 {
 
     protected $setting;
-    public function __construct()
+    protected AccountManagementService $accountManagementService;
+
+    public function __construct(AccountManagementService $accountManagementService)
     {
         $this->setting = Setting::first();
+        $this->accountManagementService = $accountManagementService;
         view()->share('setting', $this->setting); // Share with all views
     }
 
 
-    public function online(){ 
-        $onlineWallets = Wallet::where('wallet_type','online')->where('user_id',auth()->user()->id)->get();
-        $withDrawsRequests = WithDrawalequest::where('user_id',auth()->user()->id)->orderby('id','desc')->get();
-        $walletSum = Wallet::where('user_id',auth()->user()->id)->sum('balance');
-        $totalEarned = Wallet::where('user_id',auth()->user()->id)->sum('balance');
+    public function online(){
+        $userId = auth()->user()->id;
+
+        // Available Balance - Current spendable balance in online wallet only
+        $onlineWallets = Wallet::where('wallet_type','online')->where('user_id', $userId)->get();
+        $availableBalance = Wallet::where('wallet_type','online')->where('user_id', $userId)->sum('balance');
+
+        // Total Earned - Lifetime earnings from ALL income sources
+        $earningsBreakdown = $this->calculateTotalLifetimeEarningsWithBreakdown($userId);
+        $totalEarned = $earningsBreakdown['total'];
+
+        // Get 2x ROI progress information
+        $roiStats = $this->accountManagementService->getRoiAccountStats(auth()->user());
+
+        $withDrawsRequests = WithDrawalequest::where('user_id', $userId)->orderby('id','desc')->get();
+        $walletSum = Wallet::where('user_id', $userId)->sum('balance');
         $setting = Setting::first();
-        return view('wallets.online',compact('onlineWallets','withDrawsRequests','walletSum','setting','totalEarned')); 
+
+        return view('wallets.online',compact('availableBalance','onlineWallets','withDrawsRequests','walletSum','setting','totalEarned','earningsBreakdown','roiStats'));
+    }
+
+    /**
+     * Calculate total lifetime earnings from all sources with breakdown
+     */
+    private function calculateTotalLifetimeEarningsWithBreakdown($userId)
+    {
+        // Get all earning wallets (not online wallet which is for spending)
+        $earningWalletTypes = ['direct_indirect', 'reward', 'roi', 'profit_share', 'binary'];
+
+        // Calculate breakdown by wallet type
+        $walletBreakdown = [];
+        foreach ($earningWalletTypes as $walletType) {
+            $walletBreakdown[$walletType] = Wallet::where('user_id', $userId)
+                ->where('wallet_type', $walletType)
+                ->sum('balance');
+        }
+
+        // Calculate total earned from all earning sources
+        $totalFromWallets = array_sum($walletBreakdown);
+
+        // Add total amounts that were transferred to online wallet (from transaction logs)
+        $totalTransferredToOnline = TransactionLog::where('user_id', $userId)
+            ->where('to_wallet_type', 'online')
+            ->whereIn('from_wallet_type', $earningWalletTypes)
+            ->sum('amount'); // Original amount before charges
+
+        // Add withdrawn amounts (money that was withdrawn from system)
+        $totalWithdrawn = WithDrawalequest::where('user_id', $userId)
+            ->where('status', 'approved')
+            ->sum('amount');
+
+        // Total lifetime earnings = Current earnings + Transferred + Withdrawn
+        $total = $totalFromWallets + $totalTransferredToOnline + $totalWithdrawn;
+
+        return [
+            'total' => $total,
+            'current_earnings' => $totalFromWallets,
+            'transferred_to_online' => $totalTransferredToOnline,
+            'withdrawn' => $totalWithdrawn,
+            'wallet_breakdown' => $walletBreakdown
+        ];
     }
 
     public function directIndirect(){ 

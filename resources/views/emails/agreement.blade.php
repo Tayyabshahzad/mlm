@@ -66,6 +66,25 @@
                         <p class="mb-0 small lh-sm">
                             Dear {{ $user->name }},<br><br>
                             You recently requested a copy of our agreement. Please find the document attached to this email.<br><br>
+
+                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                                <strong>Account Balance Information:</strong><br>
+                                Current Agreement Balance: <strong>${{ number_format($user->agreement_balance, 2) }}</strong><br>
+                                <small style="color: #6c757d;">*This balance is automatically calculated and locked for security purposes</small>
+                            </div>
+
+                            @if($user->currentRank)
+                            <div style="background-color: #e7f3ff; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                                <strong>Your Current Rank:</strong> {{ $user->currentRank->rank_name }} (Level {{ $user->current_rank_level }})<br>
+                                @if($user->eligible_for_binary_2x)
+                                ✅ Eligible for 2x Binary System<br>
+                                @endif
+                                @if($user->eligible_for_binary_7x)
+                                ✅ Eligible for 7x Binary System<br>
+                                @endif
+                            </div>
+                            @endif
+
                             If you have any questions or need further assistance, feel free to contact us.<br><br>
                             Best regards,<br><br>
                             <strong>The GVI Support Team</strong>

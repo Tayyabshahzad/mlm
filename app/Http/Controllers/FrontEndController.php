@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\ReferralLink;
 use App\Models\UserInvestment;
 use App\Models\Wallet;
+use App\Services\AccountManagementService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -148,34 +149,36 @@ class FrontEndController extends Controller
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
     }
-    public function dashboard(){ 
-         
+    public function dashboard(AccountManagementService $accountService){
+
+        $user = Auth::user();
+
         $referralCounts = DB::table('referral_trees')
         ->select('referral_trees.level', DB::raw('COUNT(referral_trees.descendant_id) as count'))
         ->join('users', 'referral_trees.descendant_id', '=', 'users.id') // Join with users table
-        ->where('referral_trees.ancestor_id', Auth::user()->id) // Filter for the current user's referrals
+        ->where('referral_trees.ancestor_id', $user->id) // Filter for the current user's referrals
         ->where('users.can_login', true) // Only include active users
         ->where('referral_trees.level', '<=', 7) // Limit to 7 levels
         ->groupBy('referral_trees.level')
         ->orderBy('referral_trees.level')
         ->get();
-    
+
         // Ensure all levels from 1 to 7 are represented
         $levels = range(1, 7);
         $levelCounts = collect($levels)->mapWithKeys(function ($level) use ($referralCounts) {
             $count = $referralCounts->firstWhere('level', $level)->count ?? 0;
             return [$level => $count];
         });
-        
-        // Now $levelCounts will include counts of active users for each level. 
-        $totalCount = $levelCounts->sum(); 
-        $wallets  = Wallet::where('user_id', Auth::user()->id)->get();
-        $authUsers =  User::where('sponsor_id',Auth::user()->id)->where('can_login',true);  
-        $inactiveUsers = $authUsers->where('can_login',false)->count(); 
-        $reward = $authUsers->with('descendants'); 
-        $totalEarning = Wallet::where('user_id', Auth::user()->id)->get()->sum('total_amount');
 
-        $teamSizing = User::where('sponsor_id', Auth::user()->id)
+        // Now $levelCounts will include counts of active users for each level.
+        $totalCount = $levelCounts->sum();
+        $wallets  = Wallet::where('user_id', $user->id)->get();
+        $authUsers =  User::where('sponsor_id',$user->id)->where('can_login',true);
+        $inactiveUsers = $authUsers->where('can_login',false)->count();
+        $reward = $authUsers->with('descendants');
+        $totalEarning = Wallet::where('user_id', $user->id)->get()->sum('total_amount');
+
+        $teamSizing = User::where('sponsor_id', $user->id)
         ->where('can_login',true)
         ->withCount([
             'children as team_count' => function ($query) {
@@ -185,12 +188,13 @@ class FrontEndController extends Controller
         ->orderBy('team_count', 'desc') // Order by team count
         ->limit(10)
         ->get();
-        $totalRewardUsers = $levelCounts->sum(); 
+        $totalRewardUsers = $levelCounts->sum();
         $maxRewardTarget = 7610;
         $totalRewardPercentage = round(($totalRewardUsers / $maxRewardTarget) * 100,2);
 
+        // Get ROI statistics using AccountManagementService
+        $roiStats = $accountService->getRoiAccountStats($user);
 
-         
         $data = [
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
@@ -199,17 +203,15 @@ class FrontEndController extends Controller
             'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
             'rank' => 0,
             'total_earning'=>$totalEarning,
-            'team_size' => $teamSizing, // Customize based on your business logic
-            'total_roi_earned_pv' => $totalEarning, // Assuming this is a user field
-            'initial_investment' => Auth::user()->current_pv_balance, // Assuming this is a user field
-            'total_roi_earned_this_month' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
-            'total_roi_remaining' => Auth::user()->roi_wallet_balance, // Assuming this is a user field
-            'roi_status' => true, // Customize based on your business logic
+            'team_size' => $teamSizing,
+            'initial_investment' => $roiStats['invested_amount'],
             'levelCount' => $levelCounts,
             'totalTeam' => $levelCounts->sum(),
-            'reward' =>$totalRewardPercentage
-        ]; 
-       
+            'reward' =>$totalRewardPercentage,
+            // ROI Statistics
+            'roi_stats' => $roiStats
+        ];
+
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
     }

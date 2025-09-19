@@ -39,6 +39,21 @@ php artisan commissions:process-all --dry-run         # Preview without processi
 php artisan roi:generate-weekly                       # Generate weekly ROI payments
 php artisan roi:schedule                              # Schedule ROI payments
 
+# Binary System Management (2x/7x)
+php artisan binary:fix-online-income                  # Fix online income connection issues
+php artisan binary:fix-online-income --user-id=123   # Fix for specific user
+php artisan binary:fix-online-income --dry-run       # Preview fixes
+
+# Profit Sharing
+php artisan profit:distribute 1000                    # Distribute $1000 using rank-based method
+php artisan profit:distribute 1000 --type=binary_performance  # Use binary performance method
+php artisan profit:distribute 1000 --dry-run         # Preview distribution
+
+# User Rank Management
+php artisan ranks:update                              # Update all user ranks
+php artisan ranks:update --user-id=123               # Update specific user rank
+php artisan ranks:update --dry-run                   # Preview rank updates
+
 # Testing and utilities
 php artisan test:scheduler                            # Test scheduler functionality
 ```
@@ -81,15 +96,22 @@ The application is built around MLM concepts with these key components:
    - ROI monitoring and payment scheduling
 
 4. **Wallet System**
-   - Multiple wallet types: PV, Direct/Indirect commissions, ROI, rewards
-   - USD-PV conversion tracking
+   - Multiple wallet types: USD, Direct/Indirect commissions, ROI, rewards, binary earnings, profit sharing
+   - USD-based transactions (upgraded from PV system)
    - Transaction logging and audit trails
+
+5. **Binary System (2x/7x)**
+   - Auto-progressing binary compensation plans
+   - Rank-based eligibility system (Silver+ for 2x, Gold+ for 7x)
+   - Automatic level progression upon completion
+   - Investment-based level requirements
 
 ### Key Services
 - `CommissionService`: Handles multi-level commission calculations
 - `ROIService` & `ROICommissionService`: Manages ROI distributions
 - `WalletService`: Wallet operations and balance management
-- `PVService`: PV (Point Value) transactions and conversions
+- `BinarySystemService`: 2x/7x binary system management and auto-progression
+- `ProfitSharingService`: Company profit distribution among users
 - `RewardService`: Reward level achievements
 - `InvestmentSlabService`: Investment tier management
 
@@ -100,9 +122,11 @@ The application is built around MLM concepts with these key components:
 - Tailwind CSS for additional styling
 
 ### Database Schema Highlights
-- `users`: Extended with MLM fields (sponsor_id, roi_eligible_investment_amount, etc.)
+- `users`: Extended with MLM fields (sponsor_id, roi_eligible_investment_amount, agreement_balance, rank eligibility)
 - `referral_trees`: Genealogy hierarchy tracking
-- `wallets`: Multi-type wallet system with source tracking
+- `wallets`: Multi-type wallet system with source tracking (supports USD-based transactions)
+- `binary_system`: 2x/7x system tracking with level progression history
+- `user_ranks`: Rank system with binary eligibility flags
 - `commission_logs`: Commission payment history
 - `roi_transactions`: ROI payment records
 - `user_investments`: Investment tracking per user

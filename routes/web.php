@@ -5,6 +5,7 @@ use App\Http\Controllers\{
     ApprovalController,
     Auth\ForgotPasswordController,
     Auth\ResetPasswordController,
+    BinarySystemController,
     BlockedUserController,
     CommissionController,
     FrontEndController,
@@ -100,6 +101,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::post('submit/roi/payments', 'submitRoiPayments')->name('submit.roi.payments');
         Route::get('info/{id}', 'userInfo')->name('user.info');
         Route::put('info/{user}/update', 'userInfoUpdate')->name('user.info.update');
+        Route::get('team/{id}', 'adminUserTeam')->name('admin.user.team');
         Route::post('user/delete', 'userDelete')->name('user.delete');
         Route::get('deleted/user', 'deletedUser')->name('deleted.users');
         Route::get('activation-code','activationCode')->name('user.activation.code');
@@ -120,6 +122,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('index', 'index')->name('product.index');
         Route::get('create', 'create')->name('product.create');
         Route::post('store', 'store')->name('product.store');
+        Route::post('purchase', 'purchase')->name('product.purchase');
         Route::get('update/{id}', 'update')->name('product.update.view');
         Route::post('update/{id}', 'updateProcess')->name('product.update');
         Route::delete('delete', 'delete')->name('product.delete');
@@ -173,6 +176,31 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('/export', 'export')->name('admin.reward-settings.export');
     });
 
+    // Temporary Reward Review Routes (for identifying incorrect reward assignments)
+    Route::prefix('reward-review')->controller(App\Http\Controllers\Admin\RewardReviewController::class)->group(function () {
+        Route::get('/', 'index')->name('admin.reward-review.index');
+        Route::get('/{user}', 'show')->name('admin.reward-review.show');
+        Route::post('/reverse', 'reverseReward')->name('admin.reward-review.reverse');
+        Route::get('/export/csv', 'export')->name('admin.reward-review.export');
+    });
+
+    // Binary System Management Routes (2x/7x)
+    Route::prefix('binary-system')->controller(\BinarySystemController::class)->group(function () {
+        Route::get('/', 'index')->name('binary-system.index');
+        Route::post('/initialize', 'initializeSystem')->name('binary-system.initialize');
+        Route::post('/progress-level', 'progressLevel')->name('binary-system.progress');
+        Route::post('/toggle-auto-progress', 'toggleAutoProgress')->name('binary-system.toggle-auto');
+        Route::get('/history/{systemId}', 'getSystemHistory')->name('binary-system.history');
+        Route::post('/upgrade-rank', 'upgradeRank')->name('binary-system.upgrade-rank');
+        Route::post('/fix-online-income', 'fixOnlineIncome')->name('binary-system.fix-online-income');
+
+        // Admin routes for binary systems
+        Route::prefix('admin')->group(function () {
+            Route::get('/', 'adminIndex')->name('admin.binary-system.index');
+            Route::get('/{system}', 'adminShow')->name('admin.binary-system.show');
+            Route::post('/process-earnings', 'adminProcessEarnings')->name('admin.binary-system.process-earnings');
+        });
+    });
 
 });
 

@@ -486,9 +486,56 @@ class UserController extends Controller
 
     
     public function userInfo(Request $request , $id){
-        
+
         $user = User::with('profile')->find($id);
         return view('users.information',compact('user'));
+    }
+
+    public function adminUserTeam($id){
+        $user = User::with('profile')->find($id);
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found.');
+        }
+
+        $nodeDataArray = [];
+
+        // Alternative approach: Get all team members using a single query with recursive CTE or multiple queries
+        // This ensures we get all levels of the team hierarchy
+        // Start from level 0 for the root user, children will be level 1-7
+        $this->buildTeamHierarchy($user, $nodeDataArray, 0, 8);
+
+        return view('admin.user-team', compact('user', 'nodeDataArray'));
+    }
+
+    private function buildTeamHierarchy($user, &$nodeDataArray, $level = 0, $maxLevel = 7, $parentId = null) {
+        // Add current user to the array
+        $nodeDataArray[] = [
+            'id' => $user->id,
+            'parent' => $parentId, // Use the passed parentId instead of sponsor_id for hierarchy
+            'name' => $user->username,
+            'email' => $user->email,
+            'phone' => $user->phone_number,
+            'level' => $level,
+            'image' => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+            'blocked' => $user->blocked,
+            'can_login' => $user->can_login,
+            'created_at' => $user->created_at->format('Y-m-d'),
+            'sponsor_id' => $user->sponsor_id
+        ];
+
+        // If we haven't reached the maximum level, get children
+        if ($level < $maxLevel) {
+            // Get direct children (users who have this user as sponsor)
+            $children = User::where('sponsor_id', $user->id)
+                           ->where('can_login', true)
+                           ->orderBy('created_at', 'asc')
+                           ->get();
+
+            foreach ($children as $child) {
+                $this->buildTeamHierarchy($child, $nodeDataArray, $level + 1, $maxLevel, $user->id);
+            }
+        }
     }
 
      public function activationCode(){

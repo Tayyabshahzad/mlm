@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f7fa;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            color: #718096;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+        .filter-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Business Analytics Chart Test</h1>
+
+    <div class="chart-container">
+        <div class="chart-header">
+            <h3 class="chart-title">Business Analytics</h3>
+            <div class="chart-filters">
+                <button class="filter-btn active" data-period="7d">7 Days</button>
+                <button class="filter-btn" data-period="30d">30 Days</button>
+                <button class="filter-btn" data-period="90d">90 Days</button>
+                <button class="filter-btn" data-period="1y">1 Year</button>
+            </div>
+        </div>
+        <div id="businessChart" style="height: 400px;"></div>
+    </div>
+
+    <script>
+        // Sample data (mimicking what would come from Laravel)
+        const onlineWallet = 1000;
+        const totalTeam = 25;
+
+        // Initialize Business Analytics Chart
+        const chartData = {
+            '7d': {
+                categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                earnings: [
+                    Math.max(onlineWallet * 0.1, 10),
+                    Math.max(onlineWallet * 0.15, 15),
+                    Math.max(onlineWallet * 0.12, 12),
+                    Math.max(onlineWallet * 0.18, 18),
+                    Math.max(onlineWallet * 0.14, 14),
+                    Math.max(onlineWallet * 0.16, 16),
+                    Math.max(onlineWallet * 0.15, 15)
+                ],
+                team: [
+                    Math.max(totalTeam * 0.85, 5),
+                    Math.max(totalTeam * 0.87, 6),
+                    Math.max(totalTeam * 0.90, 7),
+                    Math.max(totalTeam * 0.92, 8),
+                    Math.max(totalTeam * 0.95, 9),
+                    Math.max(totalTeam * 0.98, 10),
+                    Math.max(totalTeam, 10)
+                ]
+            },
+            '30d': {
+                categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                earnings: [
+                    Math.max(onlineWallet * 0.2, 20),
+                    Math.max(onlineWallet * 0.3, 30),
+                    Math.max(onlineWallet * 0.25, 25),
+                    Math.max(onlineWallet * 0.25, 25)
+                ],
+                team: [
+                    Math.max(totalTeam * 0.70, 7),
+                    Math.max(totalTeam * 0.80, 8),
+                    Math.max(totalTeam * 0.90, 9),
+                    Math.max(totalTeam, 10)
+                ]
+            },
+            '90d': {
+                categories: ['Month 1', 'Month 2', 'Month 3'],
+                earnings: [
+                    Math.max(onlineWallet * 0.4, 40),
+                    Math.max(onlineWallet * 0.3, 30),
+                    Math.max(onlineWallet * 0.3, 30)
+                ],
+                team: [
+                    Math.max(totalTeam * 0.60, 6),
+                    Math.max(totalTeam * 0.80, 8),
+                    Math.max(totalTeam, 10)
+                ]
+            },
+            '1y': {
+                categories: ['Q1', 'Q2', 'Q3', 'Q4'],
+                earnings: [
+                    Math.max(onlineWallet * 0.15, 15),
+                    Math.max(onlineWallet * 0.25, 25),
+                    Math.max(onlineWallet * 0.35, 35),
+                    Math.max(onlineWallet * 0.25, 25)
+                ],
+                team: [
+                    Math.max(totalTeam * 0.40, 4),
+                    Math.max(totalTeam * 0.60, 6),
+                    Math.max(totalTeam * 0.85, 8),
+                    Math.max(totalTeam, 10)
+                ]
+            }
+        };
+
+        let currentChart = null;
+
+        function initializeChart(period = '7d') {
+            const chartContainer = document.querySelector("#businessChart");
+            if (!chartContainer) {
+                console.error('Chart container not found');
+                return;
+            }
+
+            try {
+                const data = chartData[period];
+
+                const options = {
+                    series: [{
+                        name: 'Total Earnings ($)',
+                        type: 'column',
+                        data: data.earnings
+                    }, {
+                        name: 'Team Growth',
+                        type: 'line',
+                        data: data.team
+                    }],
+                    chart: {
+                        height: 400,
+                        type: 'line',
+                        toolbar: {
+                            show: true,
+                            tools: {
+                                download: true,
+                                selection: false,
+                                zoom: true,
+                                zoomin: false,
+                                zoomout: false,
+                                pan: false,
+                                reset: false
+                            }
+                        },
+                        animations: {
+                            enabled: true,
+                            easing: 'easeinout',
+                            speed: 800
+                        }
+                    },
+                    colors: ['#667eea', '#764ba2'],
+                    stroke: {
+                        width: [0, 4],
+                        curve: 'smooth'
+                    },
+                    plotOptions: {
+                        bar: {
+                            columnWidth: '50%',
+                            borderRadius: 8
+                        }
+                    },
+                    fill: {
+                        type: ['gradient', 'solid'],
+                        gradient: {
+                            shade: 'light',
+                            type: "vertical",
+                            shadeIntensity: 0.3,
+                            gradientToColors: ['#764ba2'],
+                            inverseColors: false,
+                            opacityFrom: 0.8,
+                            opacityTo: 0.6,
+                            stops: [0, 100]
+                        }
+                    },
+                    labels: data.categories,
+                    markers: {
+                        size: 6,
+                        strokeWidth: 2,
+                        strokeColors: '#fff',
+                        hover: {
+                            sizeOffset: 3
+                        }
+                    },
+                    xaxis: {
+                        categories: data.categories,
+                        labels: {
+                            style: {
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                colors: '#718096'
+                            }
+                        }
+                    },
+                    yaxis: [{
+                        title: {
+                            text: 'Earnings ($)',
+                            style: {
+                                color: '#667eea',
+                                fontSize: '14px',
+                                fontWeight: 600
+                            }
+                        },
+                        labels: {
+                            formatter: function (val) {
+                                return '$' + (val || 0).toFixed(0);
+                            },
+                            style: {
+                                colors: '#667eea'
+                            }
+                        }
+                    }, {
+                        opposite: true,
+                        title: {
+                            text: 'Team Members',
+                            style: {
+                                color: '#764ba2',
+                                fontSize: '14px',
+                                fontWeight: 600
+                            }
+                        },
+                        labels: {
+                            formatter: function (val) {
+                                return Math.round(val || 0);
+                            },
+                            style: {
+                                colors: '#764ba2'
+                            }
+                        }
+                    }],
+                    tooltip: {
+                        shared: true,
+                        intersect: false,
+                        y: [{
+                            formatter: function (y) {
+                                if (typeof y !== "undefined" && y !== null) {
+                                    return "$" + y.toFixed(2);
+                                }
+                                return y;
+                            }
+                        }, {
+                            formatter: function (y) {
+                                if (typeof y !== "undefined" && y !== null) {
+                                    return Math.round(y) + " members";
+                                }
+                                return y;
+                            }
+                        }]
+                    },
+                    grid: {
+                        borderColor: '#e2e8f0',
+                        strokeDashArray: 3,
+                        padding: {
+                            right: 30,
+                            left: 20
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        horizontalAlign: 'right',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        markers: {
+                            width: 10,
+                            height: 10,
+                            radius: 5
+                        }
+                    }
+                };
+
+                if (currentChart) {
+                    currentChart.destroy();
+                }
+
+                currentChart = new ApexCharts(chartContainer, options);
+                currentChart.render();
+                console.log('Chart rendered successfully for period:', period);
+
+            } catch (error) {
+                console.error('Error initializing chart:', error);
+                chartContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 400px; color: #e53e3e; font-size: 16px;">Error: ' + error.message + '</div>';
+            }
+        }
+
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing chart...');
+
+            // Initialize chart with a small delay
+            setTimeout(function() {
+                initializeChart('7d');
+            }, 100);
+
+            // Filter buttons functionality
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const period = this.dataset.period;
+                    console.log('Switching to period:', period);
+                    initializeChart(period);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

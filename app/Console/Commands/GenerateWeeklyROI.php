@@ -155,7 +155,8 @@ class GenerateWeeklyROI extends Command
     {
         $investedAmount = $user->roi_eligible_investment_amount;
         $proposedAmount = ($investedAmount * $week->percentage) / 100;
-        
+
+        // ROI only respects 2X limit, not 7X. Once 2X reached, ROI stops forever.
         return $this->accountService->calculateSafeRoiAmount($user, $proposedAmount);
     }
 
@@ -189,12 +190,18 @@ class GenerateWeeklyROI extends Command
 
     private function handleFinalAccountCheck(User $user): void
     {
-        if ($this->accountService->checkAndStopAccountAt2X($user)) {
-            $this->logUserAction($user, 'stopped', 'Reached 2X limit after payment');
+        // Only check 2X limit for ROI stopping. 7X is handled separately for withdrawals.
+        $stopped2X = $this->accountService->checkAndStopAccountAt2X($user);
+
+        if ($stopped2X) {
+            $this->logUserAction($user, 'stopped', 'Reached 2X limit after payment - ROI permanently stopped');
             $this->counters['stopped']++;
         } else {
             $this->counters['processed']++;
         }
+
+        // Separately check 7X for withdrawal control (doesn't stop ROI)
+        $this->accountService->checkAndStopAccountAt7X($user);
     }
 
     private function handleUserProcessingError(User $user, \Exception $e): void
