@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class WalletService
 {
-    public function assignCommission(int $userId, float $amount, string $type, User $sourceUser, int $level, float $percentage): void 
+    public function assignCommission(int $userId, float $amount, string $type, User $sourceUser, int $level, float $percentage, string $sourceType = 'investment'): void 
     {
         if ($amount <= 0) {
             Log::warning("Attempted to assign non-positive commission amount: {$amount}");
@@ -27,7 +27,8 @@ class WalletService
                 'level' => $level,
                 'wallet_from' => $sourceUser->id,
                 'commission_type' => $type,
-                'percentage' => $percentage, 
+                'percentage' => $percentage,
+                'source_type' => $sourceType,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

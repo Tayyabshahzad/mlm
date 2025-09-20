@@ -58,15 +58,16 @@
                     <div class="table-responsive">
                         <table class="table table-head-custom table-vertical-center" id="kt_advance_table_widget_4">
                             <thead>
-                                <tr class="text-left"> 
+                                <tr class="text-left">
                                     <th class="pl-0" style="">S#</th>
 
                                     <th style="min-width: 110px">User Name</th>
                                     <th style="min-width: 110px">Commission %</th>
                                     <th style="min-width: 110px">USDT</th>
                                     <th style="min-width: 110px">Commission Type</th>
-                                    <th style="min-width: 110px">Level</th> 
-                                    <th style="min-width: 120px">Date</th> 
+                                    <th style="min-width: 110px">Source Type</th>
+                                    <th style="min-width: 110px">Level</th>
+                                    <th style="min-width: 120px">Date</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -89,6 +90,17 @@
                                          </span> 
                                     </td>
                                     <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> {{ ucfirst($wallet->commission_type) }} </span>    </td>
+                                    <td>
+                                        <span class="text-dark-75 font-weight-bolder d-block font-size-sm">
+                                            @if($wallet->source_type == 'topup')
+                                                <span class="badge badge-primary">{{ ucfirst($wallet->source_type) }}</span>
+                                            @elseif($wallet->source_type == 'investment')
+                                                <span class="badge badge-success">{{ ucfirst($wallet->source_type) }}</span>
+                                            @else
+                                                <span class="badge badge-secondary">{{ $wallet->source_type ? ucfirst($wallet->source_type) : 'N/A' }}</span>
+                                            @endif
+                                        </span>
+                                    </td>
                                     <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ ucfirst($wallet->level) }}</span>    </td>
                                     <td> 
                                         {{ $wallet->created_at }}

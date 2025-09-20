@@ -31,15 +31,15 @@ class CommissionService
         $this->walletService = $walletService;
     }
 
-    public function assignCommissions(User $user,$amountToTopUp): void
+    public function assignCommissions(User $user, $amountToTopUp, string $sourceType = 'investment'): void
     {
         try { 
             if (!$this->hasEligibleInvestment($user)) {
                 Log::info("User {$user->id} | {$user->name} has no eligible investment for commission");
                 return;
             } 
-            $this->procesDirectCommission($user,$amountToTopUp); 
-            $this->processIndirectCommissions($user,$amountToTopUp);
+            $this->procesDirectCommission($user, $amountToTopUp, $sourceType);
+            $this->processIndirectCommissions($user, $amountToTopUp, $sourceType);
             
             Log::info("Successfully processed commissions for user {$user->id}");
             
@@ -49,7 +49,7 @@ class CommissionService
         }
     }
 
-    private function procesDirectCommission(User $user,$amountToTopUp): void
+    private function procesDirectCommission(User $user, $amountToTopUp, string $sourceType): void
     {
         $sponsor = $this->getSponsor($user);
         
@@ -71,13 +71,14 @@ class CommissionService
             type: 'direct',
             sourceUser: $user,
             level: 1,
-            percentage: $commission['percentage']
+            percentage: $commission['percentage'],
+            sourceType: $sourceType
         );
 
         Log::info("Assigned direct commission to user {$sponsor->id}: {$commission['amount']} ({$commission['percentage']}%)");
     }
 
-    private function processIndirectCommissions(User $user,$amountToTopUp): void
+    private function processIndirectCommissions(User $user, $amountToTopUp, string $sourceType): void
     {
         $ancestors = $this->getQualifiedAncestors($user);
 
@@ -96,7 +97,8 @@ class CommissionService
                 type: 'indirect',
                 sourceUser: $user,
                 level: $ancestor->level,
-                percentage: $commission['percentage']
+                percentage: $commission['percentage'],
+                sourceType: $sourceType
             );
 
             Log::info("Assigned Level {$ancestor->level} commission to user {$ancestorUser->id}: {$commission['amount']} ({$commission['percentage']}%)");

@@ -12,6 +12,7 @@ use App\Services\CommissionService;
 use App\Services\InvestmentSlabService;
 use App\Services\WalletService;
 use App\Services\AccountManagementService;
+use App\Services\AutomatedROIService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,16 +28,19 @@ class TopupController extends Controller
     private CommissionService $commissionService;
     private WalletService $walletService;
     private AccountManagementService $accountManagementService;
+    private AutomatedROIService $automatedROIService;
 
     public function __construct(
         CommissionService $commissionService,
         WalletService $walletService,
         private InvestmentSlabService $investmentSlabService,
-        AccountManagementService $accountManagementService
+        AccountManagementService $accountManagementService,
+        AutomatedROIService $automatedROIService
     ) {
         $this->commissionService = $commissionService;
         $this->walletService = $walletService;
         $this->accountManagementService = $accountManagementService;
+        $this->automatedROIService = $automatedROIService;
     }
 
     public function index(Request $request)
@@ -118,9 +122,17 @@ class TopupController extends Controller
             $this->investmentSlabService->createSlabsForUser($user);
             $this->logInvestmentTransaction($user, $amount);
 
+            // Trigger automated ROI if user is below 2X threshold
+            $roiResult = $this->triggerAutomatedROIAfterTopup($user);
+
             DB::commit();
 
-            return back()->with('success', "Your account has been topped up with $$amount");
+            $successMessage = "Your account has been topped up with $$amount";
+            if ($roiResult['success']) {
+                $successMessage .= ". Automated ROI payment of $" . number_format($roiResult['amount'], 2) . " has been processed.";
+            }
+
+            return back()->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -153,7 +165,7 @@ class TopupController extends Controller
         }
 
         // Calculate 5% commission for Level 1
-        $commissionPercentage = 5.0;
+        $commissionPercentage = 7;
         $commissionAmount = ($amount * $commissionPercentage) / 100;
 
         // Assign commission
@@ -163,7 +175,8 @@ class TopupController extends Controller
             type: 'direct',
             sourceUser: $user,
             level: 1,
-            percentage: $commissionPercentage
+            percentage: $commissionPercentage,
+            sourceType: 'topup'
         );
 
         Log::info("Direct commission assigned: User {$sponsor->id}, Amount {$commissionAmount}");
@@ -180,13 +193,22 @@ class TopupController extends Controller
             ->orderBy('level')
             ->get();
 
-        $commissionRates = [
-            2 => 2.00, 3 => 1.50, 4 => 1.25, 
-            5 => 1.00, 6 => 0.75, 7 => 0.50
+        $commissionRates = [ 
+            2 => 2.00,
+            3 => 1.50,
+            4 => 1.25, 
+            5 => 1.00,
+            6 => 0.75,
+            7 => 0.50
         ];
 
         $teamSizeRequirements = [
-            2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 7 => 7
+            2 => 2,
+            3 => 3,
+            4 => 4,
+            5 => 5,
+            6 => 6,
+            7 => 7
         ];
 
         foreach ($ancestors as $ancestor) {
@@ -219,7 +241,8 @@ class TopupController extends Controller
                 type: 'indirect',
                 sourceUser: $user,
                 level: $ancestor->level,
-                percentage: $commissionPercentage
+                percentage: $commissionPercentage,
+                sourceType: 'topup'
             );
 
             Log::info("Indirect commission assigned: User {$ancestorUser->id}, Level {$ancestor->level}, Amount {$commissionAmount}");
@@ -382,11 +405,12 @@ class TopupController extends Controller
     }
 
     /**
-     * Handle investment increase and withdrawal re-enablement on topup
-     * ROI NEVER restarts once 2X is reached, but withdrawals can be re-enabled at 7X
+     * Handle investment increase and ROI re-enablement on topup
+     * ROI should restart if user tops up after reaching 2X and is now below the new 2X limit
      */
     private function handle2XCapReset(User $user, float $previousInvestment, float $topupAmount): void
     {
+        $wasStoppedFor2X = ($user->roi_status === 'stopped' && $user->stop_reason === '2x_limit_reached');
         $wasStoppedFor7X = ($user->roi_status === 'stopped' && $user->stop_reason === '7x_limit_reached');
         $currentStats = $this->accountManagementService->getRoiAccountStats($user);
 
@@ -399,12 +423,39 @@ class TopupController extends Controller
             'new_2x_limit' => $user->roi_eligible_investment_amount * 2,
             'new_7x_limit' => $user->roi_eligible_investment_amount * 7,
             'total_earned_before' => $currentStats['total_roi_paid'],
+            'was_stopped_for_2x' => $wasStoppedFor2X,
             'was_stopped_for_7x' => $wasStoppedFor7X
         ]);
 
+        // Handle ROI reactivation for users who were stopped at 2X
+        if ($wasStoppedFor2X) {
+            $hasReached2X = $this->accountManagementService->hasReached2XLimit($user);
+
+            if (!$hasReached2X) {
+                // User is now below 2X limit due to topup, reactivate ROI
+                $this->accountManagementService->reactivateRoiAccount($user);
+                $user->update([
+                    'stop_reason_description' => 'ROI reactivated due to topup - now below 2X limit again'
+                ]);
+
+                Log::info("ROI reactivated after 2X topup - user now below 2X limit", [
+                    'user_id' => $user->id,
+                    'new_2x_limit' => $user->roi_eligible_investment_amount * 2,
+                    'total_earned' => $currentStats['total_roi_paid'],
+                    'roi_status' => 'active'
+                ]);
+            } else {
+                // Still at or above 2X, keep ROI stopped
+                Log::info("ROI remains stopped - still at 2X limit after topup", [
+                    'user_id' => $user->id,
+                    'new_2x_limit' => $user->roi_eligible_investment_amount * 2,
+                    'total_earned' => $currentStats['total_roi_paid']
+                ]);
+            }
+        }
+
         // Handle 7X withdrawal re-enablement
         if ($wasStoppedFor7X) {
-            // Only reactivate for withdrawal purposes, ROI remains stopped if 2X was reached
             $hasReached2X = $this->accountManagementService->hasReached2XLimit($user);
 
             if ($hasReached2X) {
@@ -458,6 +509,147 @@ class TopupController extends Controller
             $description,
             'debit'
         );
+    }
+
+    /**
+     * Trigger automated ROI payment after topup if user is eligible and ROI was just reactivated
+     */
+    private function triggerAutomatedROIAfterTopup(User $user): array
+    {
+        try {
+            Log::info("Checking automated ROI trigger after topup", [
+                'user_id' => $user->id,
+                'username' => $user->username
+            ]);
+
+            // Check if user can receive ROI and hasn't received today
+            if (!$this->accountManagementService->canReceiveRoi($user)) {
+                return [
+                    'success' => false,
+                    'message' => 'User cannot receive ROI at this time'
+                ];
+            }
+
+            // Check if already received ROI today
+            if ($user->last_roi_payment_date && \Carbon\Carbon::parse($user->last_roi_payment_date)->isToday()) {
+                return [
+                    'success' => false,
+                    'message' => 'ROI already processed today'
+                ];
+            }
+
+            // Use AutomatedROIService if available, otherwise fallback to direct processing
+            if (isset($this->automatedROIService)) {
+                $result = $this->automatedROIService->triggerAutomatedROI($user, 'topup_trigger');
+            } else {
+                // Fallback: trigger ROI manually if AutomatedROIService is not available
+                $result = $this->manualROITrigger($user);
+            }
+
+            if ($result['success']) {
+                Log::info("Automated ROI triggered successfully after topup", [
+                    'user_id' => $user->id,
+                    'username' => $user->username,
+                    'roi_amount' => $result['amount'] ?? 0
+                ]);
+            } else {
+                Log::info("Automated ROI not triggered after topup", [
+                    'user_id' => $user->id,
+                    'username' => $user->username,
+                    'reason' => $result['message'] ?? 'Unknown'
+                ]);
+            }
+
+            return $result;
+
+        } catch (\Exception $e) {
+            Log::error("Error triggering automated ROI after topup", [
+                'user_id' => $user->id,
+                'username' => $user->username,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to trigger automated ROI: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Manual ROI trigger fallback when AutomatedROIService is not available
+     */
+    private function manualROITrigger(User $user): array
+    {
+        try {
+            // Get week configuration
+            $week = \App\Models\Week::first();
+            if (!$week) {
+                return [
+                    'success' => false,
+                    'message' => 'No week configuration found'
+                ];
+            }
+
+            // Calculate ROI amount
+            $investedAmount = $user->roi_eligible_investment_amount;
+            $proposedAmount = ($investedAmount * $week->percentage) / 100;
+            $roiAmount = $this->accountManagementService->calculateSafeRoiAmount($user, $proposedAmount);
+
+            if ($roiAmount <= 0) {
+                return [
+                    'success' => false,
+                    'message' => 'No ROI amount calculated or user at 2X limit'
+                ];
+            }
+
+            // Process ROI payment
+            $user->increment('roi_wallet_balance', $roiAmount);
+            $user->update(['last_roi_payment_date' => now()]);
+
+            // Create wallet entry
+            \App\Models\Wallet::create([
+                'user_id' => $user->id,
+                'wallet_type' => 'roi',
+                'balance' => $roiAmount,
+                'level' => '-',
+                'commission_type' => 'Roi',
+                'total_amount' => $roiAmount,
+                'percentage' => $week->percentage,
+                'source_type' => 'topup_trigger',
+            ]);
+
+            // Create transaction record
+            \App\Models\ROITransaction::create([
+                'user_id' => $user->id,
+                'amount' => $roiAmount,
+                'percentage' => $week->percentage,
+                'description' => 'Automated ROI Generated after Top-up',
+                'trigger_reason' => 'topup_trigger',
+            ]);
+
+            Log::info("Manual ROI trigger successful", [
+                'user_id' => $user->id,
+                'amount' => $roiAmount
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'ROI processed successfully via fallback method',
+                'amount' => $roiAmount
+            ];
+
+        } catch (\Exception $e) {
+            Log::error("Manual ROI trigger failed", [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Manual ROI trigger failed: ' . $e->getMessage()
+            ];
+        }
     }
 
 }
