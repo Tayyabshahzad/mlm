@@ -64,7 +64,35 @@
                         </span>
                         <span class="navi-text font-size-lg">Basic Setting</span>
                     </a>
-                </div> 
+                </div>
+
+                @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('super-admin'))
+                <div class="navi-item mb-2">
+                    <a href="{{ route('admin.impersonation.index') }}" class="navi-link py-4 {{ request()->routeIs('admin.impersonation.*') ? 'active' : '' }} ">
+                        <span class="navi-icon mr-2">
+                            <span class="svg-icon">
+                                <!--begin::Svg Icon | path:assets/media/svg/icons/General/User.svg-->
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <polygon points="0 0 24 0 24 24 0 24"/>
+                                        <path d="M12,11 C9.790861,11 8,9.209139 8,7 C8,4.790861 9.790861,3 12,3 C14.209139,3 16,4.790861 16,7 C16,9.209139 14.209139,11 12,11 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"/>
+                                        <path d="M3.00065168,20.1992055 C3.38825852,15.4265159 7.26191235,13 11.9833413,13 C16.7712164,13 20.7048837,15.2931929 20.9979143,20.2 C21.0095879,20.3954741 20.9979143,21 20.2466999,21 C16.541124,21 11.0347247,21 3.72750223,21 C3.47671215,21 2.97953825,20.45918 3.00065168,20.1992055 Z" fill="#000000" fill-rule="nonzero"/>
+                                        <path d="M18,8 C19.1045695,8 20,8.8954305 20,10 C20,11.1045695 19.1045695,12 18,12 C16.8954305,12 16,11.1045695 16,10 C16,8.8954305 16.8954305,8 18,8 Z M18,9 C17.4477153,9 17,9.44771525 17,10 C17,10.5522847 17.4477153,11 18,11 C18.5522847,11 19,10.5522847 19,10 C19,9.44771525 18.5522847,9 18,9 Z" fill="#000000" opacity="0.3"/>
+                                    </g>
+                                </svg>
+                                <!--end::Svg Icon-->
+                            </span>
+                        </span>
+                        <span class="navi-text font-size-lg">User Impersonation</span>
+                        @if(session()->has('impersonating_user_id'))
+                            <span class="navi-label">
+                                <span class="label label-light-warning label-inline">Active</span>
+                            </span>
+                        @endif
+                    </a>
+                </div>
+                @endif
+
             </div>
             <!--end::Nav-->
         </div>

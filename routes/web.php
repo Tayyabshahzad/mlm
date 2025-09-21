@@ -184,8 +184,15 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('/export/csv', 'export')->name('admin.reward-review.export');
     });
 
+    // Admin User Impersonation Routes
+    Route::prefix('impersonation')->controller(\App\Http\Controllers\Admin\ImpersonationController::class)->group(function () {
+        Route::get('/', 'index')->name('admin.impersonation.index');
+        Route::post('/start/{user}', 'impersonate')->name('admin.impersonation.start');
+        Route::post('/stop', 'stopImpersonation')->name('admin.impersonation.stop');
+    });
+
     // Binary System Management Routes (2x/7x)
-    Route::prefix('binary-system')->controller(\BinarySystemController::class)->group(function () {
+    Route::prefix('binary-system')->controller(BinarySystemController::class)->group(function () {
         Route::get('/', 'index')->name('binary-system.index');
         Route::post('/initialize', 'initializeSystem')->name('binary-system.initialize');
         Route::post('/progress-level', 'progressLevel')->name('binary-system.progress');

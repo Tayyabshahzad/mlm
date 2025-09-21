@@ -61,7 +61,7 @@ class ProductController extends Controller
     }
 
 
-    public function delete(Request $request)
+    public function list(Request $request)
     {
         $products = Product::get();;
         return view('product.create', compact('products'));
