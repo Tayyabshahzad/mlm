@@ -343,4 +343,141 @@ class BinarySystemService
             return false;
         }
     }
+
+    public function reverseRewardBasedBinaryEarnings($userId, $rewardLevel, $reversalReason = 'Reward reversed')
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = User::find($userId);
+            if (!$user) {
+                throw new \Exception('User not found');
+            }
+
+            // Find binary earnings that might be related to this reward level
+            // We'll look for binary earnings created around the same time as reward assignments
+            $rewardBasedEarnings = Wallet::where('user_id', $userId)
+                ->where('wallet_type', 'binary_earning')
+                ->whereIn('source', ['commission', 'reward_based', 'level_progression'])
+                ->where('created_at', '>=', now()->subDays(30)) // Look within last 30 days
+                ->get();
+
+            $totalReversed2x = 0;
+            $totalReversed7x = 0;
+
+            foreach ($rewardBasedEarnings as $earning) {
+                if ($earning->balance > 0) {
+                    // Get the binary system this earning belongs to
+                    $binarySystem = BinarySystem::where('user_id', $userId)
+                        ->where('system_type', $earning->commission_type)
+                        ->first();
+
+                    if ($binarySystem) {
+                        // Reverse the earning from binary system total
+                        $binarySystem->decrement('total_earned', $earning->balance);
+
+                        if ($earning->commission_type === '2x') {
+                            $totalReversed2x += $earning->balance;
+                        } else if ($earning->commission_type === '7x') {
+                            $totalReversed7x += $earning->balance;
+                        }
+
+                        // Mark the earning as reversed
+                        $earning->update([
+                            'balance' => 0,
+                            'description' => $earning->description . " - REVERSED ({$reversalReason} - Level {$rewardLevel})"
+                        ]);
+
+                        Log::info("Reversed binary earning", [
+                            'user_id' => $userId,
+                            'system_type' => $earning->commission_type,
+                            'amount' => $earning->balance,
+                            'reason' => $reversalReason
+                        ]);
+                    }
+                }
+            }
+
+            // Recalculate binary system levels after reversal
+            $this->recalculateBinarySystemLevels($userId);
+
+            // Update user's total binary earnings
+            $totalBinaryEarnings = $user->binarySystems()
+                ->where('is_active', true)
+                ->sum('total_earned');
+
+            $user->update(['total_binary_earnings' => $totalBinaryEarnings]);
+
+            DB::commit();
+
+            Log::info("Reversed reward-based binary earnings", [
+                'user_id' => $userId,
+                'reward_level' => $rewardLevel,
+                'total_2x_reversed' => $totalReversed2x,
+                'total_7x_reversed' => $totalReversed7x,
+                'reason' => $reversalReason
+            ]);
+
+            return [
+                'success' => true,
+                'total_2x_reversed' => $totalReversed2x,
+                'total_7x_reversed' => $totalReversed7x
+            ];
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Failed to reverse reward-based binary earnings for user {$userId}: " . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    private function recalculateBinarySystemLevels($userId)
+    {
+        try {
+            $binarySystems = BinarySystem::where('user_id', $userId)
+                ->where('is_active', true)
+                ->get();
+
+            foreach ($binarySystems as $system) {
+                $levels = BinarySystem::getLevels();
+                $systemLevels = $levels[$system->system_type];
+
+                // Find the correct level based on total_earned
+                $correctLevel = 1;
+                foreach ($systemLevels as $level => $config) {
+                    if ($system->total_earned >= $config['limit']) {
+                        $correctLevel = $level + 1; // Move to next level if limit reached
+                    } else {
+                        break;
+                    }
+                }
+
+                // Ensure we don't exceed max levels
+                $maxLevel = count($systemLevels);
+                $correctLevel = min($correctLevel, $maxLevel);
+
+                // Update system if level changed
+                if ($system->current_level !== $correctLevel) {
+                    $newLevelConfig = $systemLevels[$correctLevel] ?? $systemLevels[$maxLevel];
+
+                    $system->update([
+                        'current_level' => $correctLevel,
+                        'current_limit' => $newLevelConfig['limit'],
+                        'investment_amount' => $newLevelConfig['investment']
+                    ]);
+
+                    Log::info("Recalculated binary system level", [
+                        'user_id' => $userId,
+                        'system_type' => $system->system_type,
+                        'old_level' => $system->current_level,
+                        'new_level' => $correctLevel,
+                        'total_earned' => $system->total_earned
+                    ]);
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error("Failed to recalculate binary system levels for user {$userId}: " . $e->getMessage());
+        }
+    }
 }

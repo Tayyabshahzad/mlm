@@ -9,6 +9,7 @@ use App\Models\PendingReward;
 use App\Models\RewardSetting;
 use App\Models\RewardTransaction;
 use App\Services\RewardService;
+use App\Services\BinarySystemService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,10 +17,12 @@ use Illuminate\Support\Facades\Log;
 class RewardReviewController extends Controller
 {
     protected $rewardService;
+    protected $binarySystemService;
 
-    public function __construct(RewardService $rewardService)
+    public function __construct(RewardService $rewardService, BinarySystemService $binarySystemService)
     {
         $this->rewardService = $rewardService;
+        $this->binarySystemService = $binarySystemService;
     }
 
     /**
@@ -266,8 +269,9 @@ class RewardReviewController extends Controller
                 ], 404);
             }
 
-            // Store original balance before updating
+            // Store original amounts before updating
             $originalBalance = $wallet->balance;
+            $originalTotalAmount = $wallet->total_amount;
 
             // Validate the reward amount is reasonable
             if ($originalBalance <= 0) {
@@ -300,17 +304,27 @@ class RewardReviewController extends Controller
                     'user_details' => [
                         'name' => $user->name,
                         'email' => $user->email
-                    ]
+                    ],
+                    'original_total_amount' => $originalTotalAmount,
+                    'total_earnings_impact' => $originalTotalAmount
                 ]
             ]);
 
-            // Update wallet balance to 0
+            // Update wallet balance and total_amount to 0 (so it affects total earnings calculation)
             $wallet->update([
                 'balance' => 0,
+                'total_amount' => 0,
                 'updated_at' => now()
             ]);
 
-            // Log the reversal action
+            // Reverse any associated binary earnings
+            $binaryReversalResult = $this->binarySystemService->reverseRewardBasedBinaryEarnings(
+                $userId,
+                $level,
+                "Reward level {$level} reversed - {$reason}"
+            );
+
+            // Log the reversal action including binary reversal details
             Log::info('Reward reversed with transaction tracking', [
                 'transaction_id' => $transaction->id,
                 'reference_number' => $referenceNumber,
@@ -320,16 +334,35 @@ class RewardReviewController extends Controller
                 'level' => $level,
                 'original_balance' => $originalBalance,
                 'reason' => $reason,
-                'reversed_by' => auth()->id()
+                'reversed_by' => auth()->id(),
+                'binary_reversal' => $binaryReversalResult
             ]);
 
             DB::commit();
 
+            // Prepare success message with binary reversal info
+            $successMessage = "Level {$level} reward ($" . number_format($originalTotalAmount) . ") successfully reversed for {$user->name}. Total earnings reduced by $" . number_format($originalTotalAmount);
+
+            if ($binaryReversalResult['success']) {
+                $binaryInfo = [];
+                if ($binaryReversalResult['total_2x_reversed'] > 0) {
+                    $binaryInfo[] = "2x: $" . number_format($binaryReversalResult['total_2x_reversed']);
+                }
+                if ($binaryReversalResult['total_7x_reversed'] > 0) {
+                    $binaryInfo[] = "7x: $" . number_format($binaryReversalResult['total_7x_reversed']);
+                }
+
+                if (!empty($binaryInfo)) {
+                    $successMessage .= ". Binary earnings also reversed: " . implode(", ", $binaryInfo);
+                }
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => "Level {$level} reward ($" . number_format($originalBalance) . ") successfully reversed for {$user->name}",
+                'message' => $successMessage,
                 'transaction_reference' => $referenceNumber,
-                'transaction_id' => $transaction->id
+                'transaction_id' => $transaction->id,
+                'binary_reversal_details' => $binaryReversalResult
             ]);
 
         } catch (\Exception $e) {
@@ -405,5 +438,145 @@ class RewardReviewController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Assign a missing reward to a user
+     */
+    public function assignReward(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'level' => 'required|integer|min:1|max:10',
+            'reason' => 'nullable|string|max:500'
+        ]);
+
+        $userId = $request->input('user_id');
+        $level = $request->input('level');
+        $reason = trim($request->input('reason', 'Manual assignment by admin'));
+
+        try {
+            DB::beginTransaction();
+
+            // Verify user exists
+            $user = User::findOrFail($userId);
+
+            // Get reward level settings
+            $rewardLevelSetting = RewardSetting::where('level', $level)
+                ->where('is_active', true)
+                ->first();
+
+            if (!$rewardLevelSetting) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => "No active reward configuration found for level {$level}"
+                ], 404);
+            }
+
+            // Check if user already has this reward
+            $existingReward = Wallet::where('user_id', $userId)
+                ->where('wallet_type', 'reward')
+                ->where('commission_type', 'reward')
+                ->where('level', $level)
+                ->where('balance', '>', 0)
+                ->first();
+
+            if ($existingReward) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => "User {$user->name} already has level {$level} reward"
+                ], 400);
+            }
+
+            // Validate eligibility using the RewardService
+            $validation = $this->rewardService->validateRewardEligibility($userId, $level);
+
+            if (!$validation['eligible']) {
+                // Allow manual override but log the issues
+                Log::warning("Manual reward assignment despite eligibility issues", [
+                    'user_id' => $userId,
+                    'level' => $level,
+                    'issues' => $validation['reasons'],
+                    'assigned_by' => auth()->id(),
+                    'override_reason' => $reason
+                ]);
+            }
+
+            // Generate unique reference number
+            $referenceNumber = RewardTransaction::generateReferenceNumber('reward_assigned');
+
+            // Create wallet entry directly (bypass pending approval since this is manual admin assignment)
+            $wallet = Wallet::create([
+                'user_id' => $userId,
+                'wallet_type' => 'reward',
+                'commission_type' => 'reward',
+                'level' => $level,
+                'balance' => $rewardLevelSetting->reward_amount,
+                'total_amount' => $rewardLevelSetting->reward_amount,
+            ]);
+
+            // Create transaction record
+            $transaction = RewardTransaction::create([
+                'user_id' => $userId,
+                'wallet_id' => $wallet->id,
+                'transaction_type' => 'reward_assigned',
+                'level' => $level,
+                'amount' => $rewardLevelSetting->reward_amount,
+                'previous_balance' => 0,
+                'new_balance' => $rewardLevelSetting->reward_amount,
+                'reason' => $reason,
+                'processed_by' => auth()->id(),
+                'reference_number' => $referenceNumber,
+                'metadata' => [
+                    'assignment_type' => 'manual_admin',
+                    'assignment_date' => now()->toDateTimeString(),
+                    'admin_user' => auth()->user()->name ?? 'System',
+                    'user_details' => [
+                        'name' => $user->name,
+                        'email' => $user->email
+                    ],
+                    'eligibility_check' => $validation,
+                    'team_count_at_assignment' => $validation['current_stats']['team_count'] ?? 0
+                ]
+            ]);
+
+            Log::info('Reward manually assigned', [
+                'transaction_id' => $transaction->id,
+                'reference_number' => $referenceNumber,
+                'wallet_id' => $wallet->id,
+                'user_id' => $userId,
+                'user_name' => $user->name,
+                'level' => $level,
+                'amount' => $rewardLevelSetting->reward_amount,
+                'reason' => $reason,
+                'assigned_by' => auth()->id(),
+                'eligibility_override' => !$validation['eligible']
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Level {$level} reward ($" . number_format($rewardLevelSetting->reward_amount) . ") successfully assigned to {$user->name}",
+                'transaction_reference' => $referenceNumber,
+                'transaction_id' => $transaction->id
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error assigning reward', [
+                'user_id' => $userId,
+                'level' => $level,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error assigning reward. Please try again or contact support.'
+            ], 500);
+        }
     }
 }

@@ -114,6 +114,7 @@
                                     <th>Current Team</th>
                                     <th>Has Reward</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="text-gray-600 fw-semibold">
@@ -144,6 +145,20 @@
                                         <span class="badge badge-success">✓ Correct</span>
                                         @else
                                         <span class="badge badge-light">Not Eligible</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(!$analysis['has_reward'] && $analysis['meets_requirement'])
+                                        @php
+                                        $rewardSetting = \App\Models\RewardSetting::where('level', $analysis['level'])->where('is_active', true)->first();
+                                        $rewardAmount = $rewardSetting ? $rewardSetting->reward_amount : 0;
+                                        @endphp
+                                        <button type="button" class="btn btn-success btn-sm"
+                                                onclick="showAssignRewardModal({{ $user->id }}, {{ $analysis['level'] }}, {{ $analysis['current_count'] }}, {{ $analysis['required_count'] }}, {{ $rewardAmount }})">
+                                            Assign Reward
+                                        </button>
+                                        @else
+                                        <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -419,7 +434,101 @@
     </div>
 </div>
 
+<!-- Assign Reward Modal -->
+<div class="modal fade" id="assignRewardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="fw-bold">Assign Missing Reward</h2>
+                <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                </div>
+            </div>
+            <form id="assignRewardForm">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-success">
+                        <strong>Note:</strong> This will assign the reward directly to the user's wallet.
+                    </div>
+
+                    <input type="hidden" id="assign_user_id" name="user_id">
+                    <input type="hidden" id="assign_level" name="level">
+
+                    <div class="mb-3">
+                        <label class="form-label">User:</label>
+                        <div class="fw-bold">{{ $user->name }} (ID: {{ $user->id }})</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Reward Details:</label>
+                        <div id="assign_reward_details" class="fw-bold text-success"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Team Requirements:</label>
+                        <div id="assign_team_details" class="text-muted"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Assignment:</label>
+                        <textarea class="form-control" name="reason" rows="3" placeholder="Explain why this reward is being assigned manually..." required minlength="10" maxlength="500"></textarea>
+                        <div class="form-text">Optional explanation for manual assignment.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Assign Reward</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+function showAssignRewardModal(userId, level, currentCount, requiredCount, rewardAmount) {
+    // Clear previous form data
+    document.getElementById('assignRewardForm').reset();
+
+    // Set form values
+    document.getElementById('assign_user_id').value = userId;
+    document.getElementById('assign_level').value = level;
+
+    // Set reward details
+    document.getElementById('assign_reward_details').innerHTML =
+        `Level ${level} - $${new Intl.NumberFormat().format(rewardAmount)}`;
+
+    document.getElementById('assign_team_details').innerHTML =
+        `Current Team: ${currentCount} | Required: ${requiredCount} ✓`;
+
+    // Reset submit button state
+    const submitBtn = document.querySelector('#assignRewardForm button[type="submit"]');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Assign Reward';
+
+    // Show modal using multiple approaches for compatibility
+    try {
+        if (typeof $ !== 'undefined') {
+            $('#assignRewardModal').modal('show');
+        } else {
+            const modalElement = document.getElementById('assignRewardModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+        }
+    } catch (e) {
+        const modalElement = document.getElementById('assignRewardModal');
+        modalElement.style.display = 'block';
+        modalElement.classList.add('show');
+        document.body.classList.add('modal-open');
+
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+}
+
 function showReverseModal(userId, level, amount) {
     // Clear previous form data
     document.getElementById('reverseRewardForm').reset();
@@ -504,6 +613,72 @@ document.getElementById('reverseRewardForm').addEventListener('submit', function
             }
 
             // Show success message with transaction reference
+            let message = data.message;
+            if (data.transaction_reference) {
+                message += '\nTransaction Reference: ' + data.transaction_reference;
+            }
+            alert(message);
+
+            // Small delay before reload to ensure modal closes
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        } else {
+            alert('Error: ' + data.message);
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    });
+});
+
+document.getElementById('assignRewardForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+
+    // Disable submit button and show loading
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Processing...';
+
+    fetch('{{ route("admin.reward-review.assign") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close modal using multiple approaches for compatibility
+            try {
+                if (typeof $ !== 'undefined') {
+                    $('#assignRewardModal').modal('hide');
+                } else {
+                    const modalElement = document.getElementById('assignRewardModal');
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    modal.hide();
+                }
+            } catch (e) {
+                const modalElement = document.getElementById('assignRewardModal');
+                modalElement.style.display = 'none';
+                modalElement.classList.remove('show');
+                document.body.classList.remove('modal-open');
+
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) backdrop.remove();
+            }
+
+            // Show success message
             let message = data.message;
             if (data.transaction_reference) {
                 message += '\nTransaction Reference: ' + data.transaction_reference;

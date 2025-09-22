@@ -181,6 +181,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('/', 'index')->name('admin.reward-review.index');
         Route::get('/{user}', 'show')->name('admin.reward-review.show');
         Route::post('/reverse', 'reverseReward')->name('admin.reward-review.reverse');
+        Route::post('/assign', 'assignReward')->name('admin.reward-review.assign');
         Route::get('/export/csv', 'export')->name('admin.reward-review.export');
     });
 
