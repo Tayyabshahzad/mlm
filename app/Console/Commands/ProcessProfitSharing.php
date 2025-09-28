@@ -81,7 +81,7 @@ class ProcessProfitSharing extends Command
                 ['Method', 'Count', 'Total Amount'],
                 $stats['distribution_methods']->map(function ($method) {
                     return [
-                        ucwords(str_replace('_', ' ', $method->source)),
+                        ucwords(str_replace('_', ' ', $method->wallet_src ?? $method->source ?? 'Unknown')),
                         $method->count,
                         '$' . number_format($method->total, 2)
                     ];

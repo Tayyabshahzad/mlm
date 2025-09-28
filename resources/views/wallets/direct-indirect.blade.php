@@ -37,19 +37,49 @@
         <div class="container"> 
             <div class="card card-custom gutter-b">
                 <!--begin::Header-->
-                <div class="card-header border-0 py-5">
-                    <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label font-weight-bolder text-dark">Total Balance : ${{ $wallets->sum('balance') }}</span> 
-                    </h3>
-                    <div class="card-toolbar">
-                        @php
-                            $blockedWallets = json_decode($setting->blocked_wallets ?? '{}', true); 
-                        @endphp
-                        @if (!($blockedWallets['direct_indirect'] ?? false))
-                            <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Transfer to Online Wallet</a>
-                        @endif
-                        <a href="{{ route('show.transaction.history') }}"   class="rounded-0 btn btn-primary font-weight-bolder font-size-sm">Show Transaction History</a>
+                <div class="row">
+                    <!-- Total Earning Card -->
+                    <div class="mb-4 col-md-6">
+                        <div class="border-0 shadow-lg card rounded-3 h-100">
+                            <div class="text-center card-body d-flex flex-column align-items-center justify-content-center">
+                                <div class="p-3 mb-3 bg-primary bg-opacity-10 rounded-circle">
+                                    <i class="fas fa-chart-line fa-2x text-primary"></i>
+                                </div>
+                                <h6 class="text-muted text-uppercase fw-bold">Total Earning</h6>
+                                <h2 class="mt-2 fw-bold text-primary">
+                                    ${{ number_format($totalEarning, 2) }}
+                                </h2>
+                                <p class="mb-0 small text-muted">All-time direct/indirect earnings</p>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Current Balance Card -->
+                    <div class="mb-4 col-md-6">
+                        <div class="border-0 shadow-lg card rounded-3 h-100">
+                            <div class="text-center card-body d-flex flex-column align-items-center justify-content-center">
+                                <div class="p-3 mb-3 bg-success bg-opacity-10 rounded-circle">
+                                    <i class="fas fa-wallet fa-2x text-success"></i>
+                                </div>
+                                <h6 class="text-muted text-uppercase fw-bold">Current Balance</h6>
+                                <h2 class="mt-2 fw-bold text-success">
+                                    ${{ number_format($currentBalance, 2) }}
+                                </h2>
+                                <p class="mb-0 small text-muted">Available balance in wallet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="px-6 mt-3 mb-3 d-flex justify-content-between align-items-center">
+                    @php
+                        $blockedWallets = json_decode($setting->blocked_wallets ?? '{}', true);
+                    @endphp
+                    @if (!($blockedWallets['direct_indirect'] ?? false))
+                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="px-4 btn btn-info rounded-sm-pill">Transfer to Online Wallet</a>
+                    @endif
+                    <a href="{{ route('show.transaction.history') }}" class="px-4 btn btn-outline-primary rounded-sm-pill">Show Transaction History</a>
                 </div>
                 <!--end::Header-->
                 <!--begin::Body-->

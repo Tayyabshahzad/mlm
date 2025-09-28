@@ -205,7 +205,7 @@ class ProfitSharingService
             'commission_type' => 'profit_share',
             'balance' => $amount,
             'total_amount' => $amount,
-            'source' => $source,
+            'wallet_src' => $source,
             'description' => "Company profit sharing: " . ucwords(str_replace('_', ' ', $source)),
             'metadata' => json_encode($metadata)
         ]);
@@ -233,8 +233,8 @@ class ProfitSharingService
                 ->distinct('user_id')
                 ->count('user_id'),
             'distribution_methods' => Wallet::where('wallet_type', 'profit_sharing')
-                ->select('source', DB::raw('count(*) as count'), DB::raw('sum(balance) as total'))
-                ->groupBy('source')
+                ->select('wallet_src as source', DB::raw('count(*) as count'), DB::raw('sum(balance) as total'))
+                ->groupBy('wallet_src')
                 ->get(),
             'recent_distributions' => Wallet::where('wallet_type', 'profit_sharing')
                 ->with('user:id,name,username')
@@ -256,7 +256,7 @@ class ProfitSharingService
             ->map(function($wallet) {
                 return [
                     'amount' => $wallet->balance,
-                    'source' => $wallet->source,
+                    'source' => $wallet->wallet_src,
                     'description' => $wallet->description,
                     'date' => $wallet->created_at,
                     'metadata' => json_decode($wallet->metadata, true)

@@ -142,11 +142,15 @@
                         $userRewards = $user->wallets()
                             ->where('wallet_type', 'reward')
                             ->where('commission_type', 'reward')
-                            ->where('balance', '>', 0)
+                            ->where(function($q) {
+                                $q->where('balance', '>', 0)
+                                  ->orWhere('total_amount', '>', 0);
+                            })
                             ->orderBy('level')
                             ->get();
                         
-                        $totalRewards = $userRewards->sum('balance');
+                        $totalBalance = $userRewards->sum('balance');
+                        $totalEarned = $userRewards->sum('total_amount');
                         $maxLevel = $userRewards->max('level');
                         
                         // Quick team count check for highest level
@@ -179,13 +183,43 @@
                         </td>
                         <td>
                             @foreach($userRewards as $reward)
-                            <span class="badge badge-light-primary me-1">
-                                L{{ $reward->level }}: ${{ number_format($reward->balance) }}
+                            @php
+                            // Check transaction status for this reward level
+                            $reversalTransaction = \App\Models\RewardTransaction::where('user_id', $user->id)
+                                ->where('level', $reward->level)
+                                ->where('transaction_type', 'reward_reversed')->first();
+                            $recordOnlyTransaction = \App\Models\RewardTransaction::where('user_id', $user->id)
+                                ->where('level', $reward->level)
+                                ->where('transaction_type', 'reward_recorded_only')->first();
+
+                            $badgeClass = $reward->balance > 0 ? 'badge-light-primary' : 'badge-light-secondary';
+                            $statusText = '';
+
+                            if ($reward->balance == 0 && $reward->total_amount > 0) {
+                                if ($reversalTransaction) {
+                                    $statusText = ' (REVERSED)';
+                                    $badgeClass = 'badge-light-danger';
+                                } elseif ($recordOnlyTransaction) {
+                                    $statusText = ' (HIST)';
+                                    $badgeClass = 'badge-light-info';
+                                } else {
+                                    $statusText = ' (WITHDRAWN)';
+                                    $badgeClass = 'badge-light-warning';
+                                }
+                            }
+                            @endphp
+                            <span class="badge {{ $badgeClass }} me-1">
+                                L{{ $reward->level }}: ${{ number_format($reward->balance > 0 ? $reward->balance : $reward->total_amount) }}{{ $statusText }}
                             </span>
                             @endforeach
                         </td>
                         <td>
-                            <span class="fw-bold text-success">${{ number_format($totalRewards) }}</span>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold text-success">Balance: ${{ number_format($totalBalance) }}</span>
+                                @if($totalEarned > $totalBalance)
+                                <small class="text-muted">Total Earned: ${{ number_format($totalEarned) }}</small>
+                                @endif
+                            </div>
                         </td>
                         <td>
                             @if($maxLevel)

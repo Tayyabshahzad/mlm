@@ -223,7 +223,18 @@ class AccountManagementService
 
     private function isRoiDisabled(User $user): bool
     {
-        return in_array($user->roi_status, ['stopped', 'disabled']);
+        // FIXED: ROI should only be disabled if user has reached 2X limit
+        // Not because of binary system completion or other reasons
+        if (in_array($user->roi_status, ['disabled'])) {
+            return true;
+        }
+
+        // Only stop ROI if specifically stopped for 2X limit reached
+        if ($user->roi_status === 'stopped' && $user->stop_reason === '2x_limit_reached') {
+            return true;
+        }
+
+        return false;
     }
 
     public function isRoiPeriodExpired(User $user): bool

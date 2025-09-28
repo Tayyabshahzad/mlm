@@ -88,11 +88,45 @@
                
                
                
-                <div class="card card-custom card-stretch gutter-b"> 
-                    <div class="border-0 card-header"> 
-                        <h3 class="card-title font-weight-bolder text-dark">Account Balance Details</h3> 
-                    </div> 
+                <div class="card card-custom card-stretch gutter-b">
+                    <!-- Total Earning and Current Balance Row -->
+                    <div class="row p-6">
+                        <!-- Total Earning Card -->
+                        <div class="mb-4 col-md-6">
+                            <div class="border-0 shadow-lg card rounded-3 h-100">
+                                <div class="text-center card-body d-flex flex-column align-items-center justify-content-center">
+                                    <div class="p-3 mb-3 bg-primary bg-opacity-10 rounded-circle">
+                                        <i class="fas fa-chart-line fa-2x text-primary"></i>
+                                    </div>
+                                    <h6 class="text-muted text-uppercase fw-bold">Total Earning</h6>
+                                    <h2 class="mt-2 fw-bold text-primary">
+                                        ${{ number_format($totalEarning, 2) }}
+                                    </h2>
+                                    <p class="mb-0 small text-muted">All-time online wallet earnings</p>
+                                </div>
+                            </div>
+                        </div>
 
+                        <!-- Current Balance Card -->
+                        <div class="mb-4 col-md-6">
+                            <div class="border-0 shadow-lg card rounded-3 h-100">
+                                <div class="text-center card-body d-flex flex-column align-items-center justify-content-center">
+                                    <div class="p-3 mb-3 bg-success bg-opacity-10 rounded-circle">
+                                        <i class="fas fa-wallet fa-2x text-success"></i>
+                                    </div>
+                                    <h6 class="text-muted text-uppercase fw-bold">Current Balance</h6>
+                                    <h2 class="mt-2 fw-bold text-success">
+                                        ${{ number_format($currentBalance, 2) }}
+                                    </h2>
+                                    <p class="mb-0 small text-muted">Available balance in wallet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-0 card-header">
+                        <h3 class="card-title font-weight-bolder text-dark">Account Balance Details</h3>
+                    </div>
 
                     <div class="pt-0 card-body"> 
                         <div class="mb-10">

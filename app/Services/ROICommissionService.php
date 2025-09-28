@@ -156,7 +156,14 @@ class ROICommissionService
      */
     private function isAncestorEligibleForCommission(User $ancestor, int $level): bool
     {
-        if (!$this->accountService->canReceiveRoi($ancestor)) {
+        // FIXED: Profit sharing should be independent of ROI status
+        // Basic account checks only - NOT tied to 2x/7x limits
+        if ($ancestor->blocked || !$ancestor->can_login || $ancestor->freez_wallet) {
+            return false;
+        }
+
+        // Must have investment to participate in profit sharing
+        if (!$ancestor->roi_eligible_investment_amount || $ancestor->roi_eligible_investment_amount <= 0) {
             return false;
         }
 
@@ -164,18 +171,24 @@ class ROICommissionService
         $usersAtLevel = $this->countUsersAtExactLevel($ancestor->id, $level);
         $requiredUsers = self::REQUIRED_USERS_BY_LEVEL[$level] ?? 0;
 
-        Log::info("Commission eligibility check for ancestor {$ancestor->id} at level {$level}: {$usersAtLevel}/{$requiredUsers} users");
+        Log::info("Profit share eligibility check for ancestor {$ancestor->id} at level {$level}: {$usersAtLevel}/{$requiredUsers} users (Independent of ROI/2x status)");
 
         return $usersAtLevel >= $requiredUsers;
     }
 
     /**
-     * Calculate safe commission amount that doesn't exceed 2X limit
+     * Calculate commission amount for profit sharing
+     * FIXED: Profit sharing should NOT be limited by 2X cap
      */
     private function calculateCommissionAmount(User $ancestor, float $roiAmount, float $percentage): float
     {
         $baseCommission = ($roiAmount * $percentage) / 100;
-        return $this->accountService->calculateSafeRoiAmount($ancestor, $baseCommission);
+
+        // FIXED: Profit sharing is independent of 2X limits
+        // Users should get full profit share regardless of their 2X status
+        Log::info("Calculating profit share commission for ancestor {$ancestor->id}: {$baseCommission} (Full amount, not limited by 2X)");
+
+        return $baseCommission;
     }
 
     /**

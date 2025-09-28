@@ -113,12 +113,47 @@
                                     <th>Required Team</th>
                                     <th>Current Team</th>
                                     <th>Has Reward</th>
-                                    <th>Status</th>
+                                    <th>Eligibility Status</th>
+                                    <th>Reward Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="text-gray-600 fw-semibold">
                                 @foreach($teamAnalysis as $level => $analysis)
+                                @php
+                                // Find the actual wallet for this level
+                                $wallet = $rewardWallets->firstWhere('level', $analysis['level']);
+
+                                // Check transaction status for this reward level
+                                $reversalTransaction = $rewardTransactions->where('level', $analysis['level'])
+                                    ->where('transaction_type', 'reward_reversed')->first();
+                                $recordOnlyTransaction = $rewardTransactions->where('level', $analysis['level'])
+                                    ->where('transaction_type', 'reward_recorded_only')->first();
+                                $assignTransaction = $rewardTransactions->where('level', $analysis['level'])
+                                    ->where('transaction_type', 'reward_assigned')->first();
+
+                                // Determine reward status
+                                $rewardStatus = 'No Reward';
+                                $rewardStatusClass = 'badge-light-secondary';
+
+                                if ($wallet) {
+                                    if ($wallet->balance > 0) {
+                                        $rewardStatus = 'Active ($' . number_format($wallet->balance) . ')';
+                                        $rewardStatusClass = 'badge-success';
+                                    } elseif ($wallet->total_amount > 0) {
+                                        if ($reversalTransaction) {
+                                            $rewardStatus = 'Reversed ($' . number_format($wallet->total_amount) . ')';
+                                            $rewardStatusClass = 'badge-danger';
+                                        } elseif ($recordOnlyTransaction) {
+                                            $rewardStatus = 'History Only ($' . number_format($wallet->total_amount) . ')';
+                                            $rewardStatusClass = 'badge-info';
+                                        } else {
+                                            $rewardStatus = 'Withdrawn ($' . number_format($wallet->total_amount) . ')';
+                                            $rewardStatusClass = 'badge-warning';
+                                        }
+                                    }
+                                }
+                                @endphp
                                 <tr class="{{ !$analysis['meets_requirement'] && $analysis['has_reward'] ? 'bg-light-danger' : '' }}">
                                     <td>
                                         <span class="fw-bold">Level {{ $analysis['level'] }}</span>
@@ -148,14 +183,24 @@
                                         @endif
                                     </td>
                                     <td>
+                                        <span class="badge {{ $rewardStatusClass }}">{{ $rewardStatus }}</span>
+                                        @if($wallet && $wallet->created_at)
+                                        <br><small class="text-muted">{{ $wallet->created_at->format('M j, Y') }}</small>
+                                        @endif
+                                    </td>
+                                    <td>
                                         @if(!$analysis['has_reward'] && $analysis['meets_requirement'])
                                         @php
                                         $rewardSetting = \App\Models\RewardSetting::where('level', $analysis['level'])->where('is_active', true)->first();
                                         $rewardAmount = $rewardSetting ? $rewardSetting->reward_amount : 0;
                                         @endphp
-                                        <button type="button" class="btn btn-success btn-sm"
+                                        <button type="button" class="btn btn-success btn-sm me-2"
                                                 onclick="showAssignRewardModal({{ $user->id }}, {{ $analysis['level'] }}, {{ $analysis['current_count'] }}, {{ $analysis['required_count'] }}, {{ $rewardAmount }})">
                                             Assign Reward
+                                        </button>
+                                        <button type="button" class="btn btn-info btn-sm"
+                                                onclick="showRecordOnlyModal({{ $user->id }}, {{ $analysis['level'] }}, {{ $rewardAmount }})">
+                                            Record Only
                                         </button>
                                         @else
                                         <span class="text-muted">-</span>
@@ -199,14 +244,44 @@
                                 <span class="fw-bold">Level {{ $wallet->level }}</span>
                             </td>
                             <td>
-                                <span class="text-success fw-bold">${{ number_format($wallet->balance) }}</span>
+                                <div class="d-flex flex-column">
+                                    @if($wallet->balance > 0)
+                                    <span class="text-success fw-bold">Balance: ${{ number_format($wallet->balance) }}</span>
+                                    @else
+                                    <span class="text-muted fw-bold">Balance: ${{ number_format($wallet->balance) }}</span>
+                                    @endif
+
+                                    @if($wallet->total_amount > 0)
+                                    <small class="text-muted">Total Earned: ${{ number_format($wallet->total_amount) }}</small>
+                                    @endif
+
+                                    @if($wallet->balance == 0 && $wallet->total_amount > 0)
+                                    @php
+                                    $reversalTransaction = $rewardTransactions->where('level', $wallet->level)
+                                        ->where('transaction_type', 'reward_reversed')->first();
+                                    $recordOnlyTransaction = $rewardTransactions->where('level', $wallet->level)
+                                        ->where('transaction_type', 'reward_recorded_only')->first();
+                                    @endphp
+                                    @if($reversalTransaction)
+                                    <span class="badge badge-danger badge-sm">REVERSED</span>
+                                    @elseif($recordOnlyTransaction)
+                                    <span class="badge badge-info badge-sm">HISTORY ONLY</span>
+                                    @else
+                                    <span class="badge badge-warning badge-sm">WITHDRAWN/TRANSFERRED</span>
+                                    @endif
+                                    @endif
+                                </div>
                             </td>
                             <td>{{ $wallet->created_at->format('M j, Y g:i A') }}</td>
                             <td>
-                                <button type="button" class="btn btn-danger btn-sm" 
+                                @if($wallet->balance > 0)
+                                <button type="button" class="btn btn-danger btn-sm"
                                         onclick="showReverseModal({{ $user->id }}, {{ $wallet->level }}, {{ $wallet->balance }})">
                                     Reverse Reward
                                 </button>
+                                @else
+                                <span class="text-muted">Already Reversed/Withdrawn</span>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
@@ -487,6 +562,54 @@
     </div>
 </div>
 
+<!-- Record Only Modal -->
+<div class="modal fade" id="recordOnlyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="fw-bold">Record Reward (History Only)</h2>
+                <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                </div>
+            </div>
+            <form id="recordOnlyForm">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> This will add the reward to the user's income history without affecting their wallet balance. Use this when the user already received the amount but you need to show the transaction in their records.
+                    </div>
+
+                    <input type="hidden" id="record_user_id" name="user_id">
+                    <input type="hidden" id="record_level" name="level">
+
+                    <div class="mb-3">
+                        <label class="form-label">User:</label>
+                        <div class="fw-bold">{{ $user->name }} (ID: {{ $user->id }})</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Reward Details:</label>
+                        <div id="record_reward_details" class="fw-bold text-info"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label required">Reason for Recording:</label>
+                        <textarea class="form-control" name="reason" rows="3" placeholder="Explain why this reward is being recorded in history only (e.g., user already received this amount previously)..." required minlength="10" maxlength="500"></textarea>
+                        <div class="form-text">Minimum 10 characters required. Explain why the user already received this amount.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info">Record in History</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function showAssignRewardModal(userId, level, currentCount, requiredCount, rewardAmount) {
     // Clear previous form data
@@ -670,6 +793,115 @@ document.getElementById('assignRewardForm').addEventListener('submit', function(
                 }
             } catch (e) {
                 const modalElement = document.getElementById('assignRewardModal');
+                modalElement.style.display = 'none';
+                modalElement.classList.remove('show');
+                document.body.classList.remove('modal-open');
+
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) backdrop.remove();
+            }
+
+            // Show success message
+            let message = data.message;
+            if (data.transaction_reference) {
+                message += '\nTransaction Reference: ' + data.transaction_reference;
+            }
+            alert(message);
+
+            // Small delay before reload to ensure modal closes
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        } else {
+            alert('Error: ' + data.message);
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    });
+});
+
+// Function to show record only modal
+function showRecordOnlyModal(userId, level, rewardAmount) {
+    // Clear previous form data
+    document.getElementById('recordOnlyForm').reset();
+
+    // Set form values
+    document.getElementById('record_user_id').value = userId;
+    document.getElementById('record_level').value = level;
+
+    // Set reward details
+    document.getElementById('record_reward_details').innerHTML = `Level ${level} - $${new Intl.NumberFormat().format(rewardAmount)}`;
+
+    // Reset submit button state
+    const submitBtn = document.querySelector('#recordOnlyForm button[type="submit"]');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Record in History';
+
+    // Show modal using multiple approaches for compatibility
+    try {
+        // Try jQuery first (most common in Laravel projects)
+        if (typeof $ !== 'undefined') {
+            $('#recordOnlyModal').modal('show');
+        } else {
+            // Fallback to Bootstrap 5 method
+            const modalElement = document.getElementById('recordOnlyModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+        }
+    } catch (e) {
+        // Final fallback - show modal manually
+        const modalElement = document.getElementById('recordOnlyModal');
+        modalElement.style.display = 'block';
+        modalElement.classList.add('show');
+        document.body.classList.add('modal-open');
+
+        // Add backdrop
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+}
+
+// Handle record only form submission
+document.getElementById('recordOnlyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+
+    // Disable submit button and show loading
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Recording...';
+
+    fetch('{{ route("admin.reward-review.record-only") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close modal using multiple approaches for compatibility
+            try {
+                if (typeof $ !== 'undefined') {
+                    $('#recordOnlyModal').modal('hide');
+                } else {
+                    const modalElement = document.getElementById('recordOnlyModal');
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    modal.hide();
+                }
+            } catch (e) {
+                const modalElement = document.getElementById('recordOnlyModal');
                 modalElement.style.display = 'none';
                 modalElement.classList.remove('show');
                 document.body.classList.remove('modal-open');

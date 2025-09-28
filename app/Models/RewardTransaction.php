@@ -87,6 +87,7 @@ class RewardTransaction extends Model
         return match($this->transaction_type) {
             'reward_assigned' => 'Reward Assigned',
             'reward_reversed' => 'Reward Reversed',
+            'reward_recorded_only' => 'Reward Recorded (No Balance Change)',
             default => ucfirst(str_replace('_', ' ', $this->transaction_type))
         };
     }
@@ -99,6 +100,7 @@ class RewardTransaction extends Model
         return match($this->transaction_type) {
             'reward_assigned' => 'success',
             'reward_reversed' => 'danger',
+            'reward_recorded_only' => 'info',
             default => 'secondary'
         };
     }

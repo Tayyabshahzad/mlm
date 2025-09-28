@@ -34,6 +34,121 @@ class FrontEndController extends Controller
         $endDate = Carbon::now()->addMonth()->startOfMonth()->addDays(4)->setTime(12, 0, 0); 
         return view('frontEnd.index',compact('endDate'));
     }
+
+    private function getAccessToken(): ?string
+    {
+        $response = Http::asForm()->post(env('PAYBOTIC_TOKEN_URL'), [
+            'grant_type' => 'client_credentials',
+            'client_id' => env('PAYBOTIC_CLIENT_ID'),
+            'client_secret' => env('PAYBOTIC_CLIENT_SECRET'),
+            'audience' => env('PAYBOTIC_AUDIENCE'),
+        ]);
+
+        if ($response->ok() && isset($response['access_token'])) {
+            return $response['access_token'];
+        }
+
+        return null;
+    }
+
+
+     public function apiTest(){
+        $token = $this->getAccessToken();
+
+        if (!$token) {
+            return [
+                'success' => false,
+                'error' => 'Unable to retrieve access token',
+            ];
+        }
+
+        // Static payload you provided
+        $payload = [
+            "merchant_id" => 660,
+            "amount" => 100,
+            "order_id" => "ORDER786",
+            "memo" => "Test Payment Link"
+        ];
+
+        $results = [];
+
+        // Test multiple endpoint variations
+        $endpoints = [
+            '/api/payment-link',
+            '/api/payment-links',
+            '/api/payments',
+            '/api/purchases',
+            '/api/links',
+            '/api/transactions'
+        ];
+
+        foreach ($endpoints as $endpoint) {
+            $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $token,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ])
+                ->post(env('PAYBOTIC_API_BASE') . $endpoint, $payload);
+
+            $results[] = [
+                'endpoint' => $endpoint,
+                'status' => $response->status(),
+                'response' => $response->status() !== 404 ? $response->body() : 'Not Found'
+            ];
+        }
+
+        return [
+            'token_preview' => substr($token, 0, 50) . '...',
+            'api_base' => env('PAYBOTIC_API_BASE'),
+            'results' => $results
+        ];
+    }
+
+    public function apiTestGet(){
+        $token = $this->getAccessToken();
+
+        if (!$token) {
+            return [
+                'success' => false,
+                'error' => 'Unable to retrieve access token',
+            ];
+        }
+
+        $results = [];
+
+        // Test GET requests to see what's available
+        $endpoints = [
+            '/api/merchants',
+            '/api/businesses',
+            '/api/users',
+            '/api/dashboard',
+            '/api/profile',
+            '/api/purchases'
+        ];
+
+        foreach ($endpoints as $endpoint) {
+            $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $token,
+                    'Accept' => 'application/json',
+                ])
+                ->get(env('PAYBOTIC_API_BASE') . $endpoint);
+
+            $results[] = [
+                'endpoint' => $endpoint,
+                'status' => $response->status(),
+                'response' => $response->status() !== 404 ? substr($response->body(), 0, 200) . '...' : 'Not Found'
+            ];
+        }
+
+        return [
+            'token_preview' => substr($token, 0, 50) . '...',
+            'api_base' => env('PAYBOTIC_API_BASE'),
+            'results' => $results
+        ];
+    }
+
+
+
     public function emailSubmit(Request $request){
         $request->validate([
             'email' => 'required|email|unique:subscriptions,email',

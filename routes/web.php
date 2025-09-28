@@ -30,6 +30,10 @@ use App\Http\Middleware\{CheckUserStatus, CheckBlockedUser};
 Route::get('log-viewer', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index')->middleware('auth');
 
 Route::get('/', [FrontEndController::class, 'index'])->name('index');
+Route::get('api-test', [FrontEndController::class, 'apiTest'])->name('api-test');
+Route::get('api-test-get', [FrontEndController::class, 'apiTestGet'])->name('api-test-get');
+
+
 Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
 Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
@@ -182,6 +186,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('/{user}', 'show')->name('admin.reward-review.show');
         Route::post('/reverse', 'reverseReward')->name('admin.reward-review.reverse');
         Route::post('/assign', 'assignReward')->name('admin.reward-review.assign');
+        Route::post('/record-only', 'recordRewardOnly')->name('admin.reward-review.record-only');
         Route::get('/export/csv', 'export')->name('admin.reward-review.export');
     });
 

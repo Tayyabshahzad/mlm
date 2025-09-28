@@ -30,12 +30,15 @@ class RewardReviewController extends Controller
      */
     public function index(Request $request)
     {
-        // Get all users who have received rewards
+        // Get all users who have received rewards (including those with zero balance but have history)
         $query = User::query()
             ->whereHas('wallets', function($q) {
                 $q->where('wallet_type', 'reward')
                   ->where('commission_type', 'reward')
-                  ->where('balance', '>', 0);
+                  ->where(function($subQ) {
+                      $subQ->where('balance', '>', 0)
+                           ->orWhere('total_amount', '>', 0);
+                  });
             });
 
         // Add search functionality
@@ -55,7 +58,10 @@ class RewardReviewController extends Controller
                 $q->where('wallet_type', 'reward')
                   ->where('commission_type', 'reward')
                   ->where('level', $level)
-                  ->where('balance', '>', 0);
+                  ->where(function($subQ) {
+                      $subQ->where('balance', '>', 0)
+                           ->orWhere('total_amount', '>', 0);
+                  });
             });
         }
 
@@ -75,10 +81,14 @@ class RewardReviewController extends Controller
      */
     public function show(User $user)
     {
-        // Get user's reward wallet entries
+        // Get user's reward wallet entries (including zero balance with history)
         $rewardWallets = Wallet::where('user_id', $user->id)
             ->where('wallet_type', 'reward')
             ->where('commission_type', 'reward')
+            ->where(function($q) {
+                $q->where('balance', '>', 0)
+                  ->orWhere('total_amount', '>', 0);
+            })
             ->orderBy('level')
             ->get();
 
@@ -119,11 +129,14 @@ class RewardReviewController extends Controller
         $stats = [];
 
         foreach ($rewardLevels as $level) {
-            // Count users who received this level reward
+            // Count users who received this level reward (including zero balance with history)
             $usersWithReward = Wallet::where('wallet_type', 'reward')
                 ->where('commission_type', 'reward')
                 ->where('level', $level->level)
-                ->where('balance', '>', 0)
+                ->where(function($q) {
+                    $q->where('balance', '>', 0)
+                      ->orWhere('total_amount', '>', 0);
+                })
                 ->distinct('user_id')
                 ->count('user_id');
 
@@ -163,7 +176,10 @@ class RewardReviewController extends Controller
                     ->where('wallet_type', 'reward')
                     ->where('commission_type', 'reward')
                     ->where('level', $level->level)
-                    ->where('balance', '>', 0)
+                    ->where(function($q) {
+                        $q->where('balance', '>', 0)
+                          ->orWhere('total_amount', '>', 0);
+                    })
                     ->exists()
             ];
         }
@@ -208,7 +224,10 @@ class RewardReviewController extends Controller
                     ->where('wallet_type', 'reward')
                     ->where('commission_type', 'reward')
                     ->where('level', $previousLevel)
-                    ->where('balance', '>', 0)
+                    ->where(function($q) {
+                        $q->where('balance', '>', 0)
+                          ->orWhere('total_amount', '>', 0);
+                    })
                     ->exists();
 
                 if (!$hasPreviousReward) {
@@ -474,12 +493,15 @@ class RewardReviewController extends Controller
                 ], 404);
             }
 
-            // Check if user already has this reward
+            // Check if user already has this reward (including zero balance with history)
             $existingReward = Wallet::where('user_id', $userId)
                 ->where('wallet_type', 'reward')
                 ->where('commission_type', 'reward')
                 ->where('level', $level)
-                ->where('balance', '>', 0)
+                ->where(function($q) {
+                    $q->where('balance', '>', 0)
+                      ->orWhere('total_amount', '>', 0);
+                })
                 ->first();
 
             if ($existingReward) {
@@ -576,6 +598,151 @@ class RewardReviewController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error assigning reward. Please try again or contact support.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Record a reward in transaction history without affecting user balance
+     * This is useful for situations where users already received the amount
+     * but need to show the reward in their income history
+     */
+    public function recordRewardOnly(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'level' => 'required|integer|min:1|max:10',
+            'reason' => 'required|string|min:10|max:500'
+        ]);
+
+        $userId = $request->input('user_id');
+        $level = $request->input('level');
+        $reason = trim($request->input('reason'));
+
+        try {
+            DB::beginTransaction();
+
+            // Verify user exists
+            $user = User::findOrFail($userId);
+
+            // Get reward level settings
+            $rewardLevelSetting = RewardSetting::where('level', $level)
+                ->where('is_active', true)
+                ->first();
+
+            if (!$rewardLevelSetting) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => "No active reward configuration found for level {$level}"
+                ], 404);
+            }
+
+            // Check if user already has this reward (including zero balance with history)
+            $existingReward = Wallet::where('user_id', $userId)
+                ->where('wallet_type', 'reward')
+                ->where('commission_type', 'reward')
+                ->where('level', $level)
+                ->where(function($q) {
+                    $q->where('balance', '>', 0)
+                      ->orWhere('total_amount', '>', 0);
+                })
+                ->first();
+
+            if ($existingReward) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => "User {$user->name} already has level {$level} reward in their wallet"
+                ], 400);
+            }
+
+            // Check if there's already a record-only transaction for this level
+            $existingRecordOnlyTransaction = RewardTransaction::where('user_id', $userId)
+                ->where('level', $level)
+                ->where('transaction_type', 'reward_recorded_only')
+                ->first();
+
+            if ($existingRecordOnlyTransaction) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => "A record-only entry already exists for user {$user->name} at level {$level}"
+                ], 400);
+            }
+
+            // Create a dummy wallet entry with zero balance (for transaction reference)
+            $wallet = Wallet::create([
+                'user_id' => $userId,
+                'wallet_type' => 'reward',
+                'commission_type' => 'reward',
+                'level' => $level,
+                'balance' => 0, // No actual balance change
+                'total_amount' => 0, // No actual amount added
+            ]);
+
+            // Generate unique reference number
+            $referenceNumber = RewardTransaction::generateReferenceNumber('reward_recorded');
+
+            // Create transaction record for record-keeping only
+            $transaction = RewardTransaction::create([
+                'user_id' => $userId,
+                'wallet_id' => $wallet->id,
+                'transaction_type' => 'reward_recorded_only',
+                'level' => $level,
+                'amount' => $rewardLevelSetting->reward_amount, // Show the amount but don't credit it
+                'previous_balance' => 0,
+                'new_balance' => 0, // Balance remains 0
+                'reason' => $reason,
+                'processed_by' => auth()->id(),
+                'reference_number' => $referenceNumber,
+                'metadata' => [
+                    'record_type' => 'history_only_no_balance_change',
+                    'recorded_date' => now()->toDateTimeString(),
+                    'admin_user' => auth()->user()->name ?? 'System',
+                    'user_details' => [
+                        'name' => $user->name,
+                        'email' => $user->email
+                    ],
+                    'note' => 'This transaction is for record-keeping only. User balance was not affected.',
+                    'actual_reward_amount' => $rewardLevelSetting->reward_amount
+                ]
+            ]);
+
+            Log::info('Reward recorded for history only (no balance change)', [
+                'transaction_id' => $transaction->id,
+                'reference_number' => $referenceNumber,
+                'wallet_id' => $wallet->id,
+                'user_id' => $userId,
+                'user_name' => $user->name,
+                'level' => $level,
+                'amount_shown' => $rewardLevelSetting->reward_amount,
+                'actual_balance_change' => 0,
+                'reason' => $reason,
+                'recorded_by' => auth()->id()
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Level {$level} reward ($" . number_format($rewardLevelSetting->reward_amount) . ") recorded in income history for {$user->name}. No balance change was made.",
+                'transaction_reference' => $referenceNumber,
+                'transaction_id' => $transaction->id
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error recording reward for history only', [
+                'user_id' => $userId,
+                'level' => $level,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error recording reward. Please try again or contact support.'
             ], 500);
         }
     }

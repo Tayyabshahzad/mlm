@@ -36,6 +36,11 @@ class WalletController extends Controller
         $onlineWallets = Wallet::where('wallet_type','online')->where('user_id', $userId)->get();
         $availableBalance = Wallet::where('wallet_type','online')->where('user_id', $userId)->sum('balance');
 
+        // Calculate Total Earning and Current Balance for online wallet specifically
+        $walletQuery = Wallet::where('wallet_type','online')->where('user_id', $userId);
+        $totalEarning = $walletQuery->sum('total_amount');
+        $currentBalance = $walletQuery->sum('balance');
+
         // Total Earned - Lifetime earnings from ALL income sources
         $earningsBreakdown = $this->calculateTotalLifetimeEarningsWithBreakdown($userId);
         $totalEarned = $earningsBreakdown['total'];
@@ -47,7 +52,7 @@ class WalletController extends Controller
         $walletSum = Wallet::where('user_id', $userId)->sum('balance');
         $setting = Setting::first();
 
-        return view('wallets.online',compact('availableBalance','onlineWallets','withDrawsRequests','walletSum','setting','totalEarned','earningsBreakdown','roiStats'));
+        return view('wallets.online',compact('availableBalance','onlineWallets','withDrawsRequests','walletSum','setting','totalEarned','earningsBreakdown','roiStats','totalEarning','currentBalance'));
     }
 
     /**
@@ -92,17 +97,22 @@ class WalletController extends Controller
         ];
     }
 
-    public function directIndirect(){ 
-        $wallets = Wallet::where('wallet_type','direct_indirect')->where('user_id',auth()->user()->id)
-        ->orderBy('id', 'desc')
+    public function directIndirect(){
+        $walletQuery = Wallet::where('wallet_type','direct_indirect')->where('user_id',auth()->user()->id);
+        $totalEarning   = $walletQuery->sum('total_amount');
+        $currentBalance = $walletQuery->sum('balance');
+        $wallets = $walletQuery->orderBy('id', 'desc')
         ->orderBy('level','asc')
         ->get();
-        return view('wallets.direct-indirect',compact('wallets')); 
+        return view('wallets.direct-indirect',compact('wallets', 'totalEarning', 'currentBalance'));
     }
 
-    public function rewards(){ 
-        $wallets = Wallet::where('wallet_type','reward')->where('user_id',auth()->user()->id)->get();
-        return view('wallets.reward',compact('wallets')); 
+    public function rewards(){
+        $walletQuery = Wallet::where('wallet_type','reward')->where('user_id',auth()->user()->id);
+        $totalEarning   = $walletQuery->sum('total_amount');
+        $currentBalance = $walletQuery->sum('balance');
+        $wallets = $walletQuery->get();
+        return view('wallets.reward',compact('wallets', 'totalEarning', 'currentBalance'));
     }
 
     public function ROI()
@@ -116,8 +126,14 @@ class WalletController extends Controller
     }
 
 
-    public function profitShare(Request $request){ 
-        $query = Wallet::where('wallet_type','profit_share')->where('user_id', auth()->user()->id);
+    public function profitShare(Request $request){
+        $baseQuery = Wallet::where('wallet_type','profit_share')->where('user_id', auth()->user()->id);
+
+        // Calculate totals without filters for the summary boxes
+        $totalEarning   = (clone $baseQuery)->sum('total_amount');
+        $currentBalance = (clone $baseQuery)->sum('balance');
+
+        $query = clone $baseQuery;
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
@@ -138,7 +154,7 @@ class WalletController extends Controller
         if ($request->filled('min_percentage')) {
             $query->where('percentage', '>=', $request->min_percentage);
         }
-        
+
         if ($request->filled('max_percentage')) {
             $query->where('percentage', '<=', $request->max_percentage);
         }
@@ -150,26 +166,26 @@ class WalletController extends Controller
         if ($request->filled('max_balance')) {
             $query->where('balance', '<=', $request->max_balance);
         }
-        
+
         // Sorting
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
-        
+
         $allowedSortFields = ['created_at', 'level', 'percentage', 'balance'];
         if (in_array($sortBy, $allowedSortFields)) {
             $query->orderBy($sortBy, $sortOrder);
         }
-        
+
         $wallets = $query->get();
-        
+
         // Get unique levels for filter dropdown
         $levels = Wallet::where('wallet_type','profit_share')
                     ->where('user_id', auth()->user()->id)
                     ->distinct()
                     ->pluck('level')
                     ->sort();
-    
-    return view('wallets.profit-share', compact('wallets', 'levels')); 
+
+    return view('wallets.profit-share', compact('wallets', 'levels', 'totalEarning', 'currentBalance'));
 }
 
     public function rank(){ 
