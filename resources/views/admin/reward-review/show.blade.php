@@ -189,20 +189,42 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if(!$analysis['has_reward'] && $analysis['meets_requirement'])
                                         @php
                                         $rewardSetting = \App\Models\RewardSetting::where('level', $analysis['level'])->where('is_active', true)->first();
                                         $rewardAmount = $rewardSetting ? $rewardSetting->reward_amount : 0;
+
+                                        // Check if user has active reward (balance > 0)
+                                        $hasActiveReward = $wallet && $wallet->balance > 0;
+
+                                        // Show assign button if:
+                                        // 1. No reward at all, OR
+                                        // 2. Has reward but balance = 0 (reversed/withdrawn) and meets requirements
+                                        $canAssign = (!$analysis['has_reward'] && $analysis['meets_requirement']) ||
+                                                    ($analysis['has_reward'] && !$hasActiveReward && $analysis['meets_requirement']);
+
+                                        // Show record only if no active reward
+                                        $canRecord = !$hasActiveReward;
                                         @endphp
+
+                                        @if($canAssign)
                                         <button type="button" class="btn btn-success btn-sm me-2"
                                                 onclick="showAssignRewardModal({{ $user->id }}, {{ $analysis['level'] }}, {{ $analysis['current_count'] }}, {{ $analysis['required_count'] }}, {{ $rewardAmount }})">
+                                            @if($analysis['has_reward'] && !$hasActiveReward)
+                                            Re-assign Reward
+                                            @else
                                             Assign Reward
+                                            @endif
                                         </button>
+                                        @endif
+
+                                        @if($canRecord)
                                         <button type="button" class="btn btn-info btn-sm"
                                                 onclick="showRecordOnlyModal({{ $user->id }}, {{ $analysis['level'] }}, {{ $rewardAmount }})">
                                             Record Only
                                         </button>
-                                        @else
+                                        @endif
+
+                                        @if(!$canAssign && !$canRecord)
                                         <span class="text-muted">-</span>
                                         @endif
                                     </td>
