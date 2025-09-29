@@ -129,8 +129,18 @@ class ROIMonitoringController extends Controller
      */
     public function reactivateAccount(User $user)
     {
+        // Check if user has reached 2X limit
+        if ($this->accountService->hasReached2XLimit($user)) {
+            return redirect()->back()->with('error', "Cannot reactivate ROI: User has already reached 2X limit ($" . number_format($user->roi_eligible_investment_amount * 2, 2) . "). User must top-up to increase the limit.");
+        }
+
+        // Check if user has reached 7X limit
+        if ($this->accountService->hasReached7XLimit($user)) {
+            return redirect()->back()->with('error', "Cannot reactivate ROI: User has already reached 7X limit ($" . number_format($user->roi_eligible_investment_amount * 7, 2) . "). User must top-up to increase the limit.");
+        }
+
         $this->accountService->reactivateRoiAccount($user);
-        
+
         return redirect()->back()->with('success', "ROI account reactivated for user: {$user->name}");
     }
 

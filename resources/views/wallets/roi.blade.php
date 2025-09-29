@@ -140,6 +140,13 @@
                         </table>
                     </div>
                     <!--end::Table-->
+
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-center mt-4 px-3">
+                        <div style="max-width: fit-content;">
+                            {{ $wallets->links('pagination::bootstrap-4') }}
+                        </div>
+                    </div>
                 </div>
                 <!--end::Body-->
             </div>

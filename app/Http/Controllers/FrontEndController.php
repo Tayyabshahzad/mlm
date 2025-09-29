@@ -310,6 +310,24 @@ class FrontEndController extends Controller
         // Get ROI statistics using AccountManagementService
         $roiStats = $accountService->getRoiAccountStats($user);
 
+        // Admin-only: Count users who didn't receive ROI today
+        $missedRoiCount = 0;
+        if ($user->hasRole('admin')) {
+            $missedRoiCount = User::where('roi_eligible_investment_amount', '>', 0)
+                ->where('blocked', false)
+                ->where('can_login', true)
+                ->where('freez_wallet', false)
+                ->where(function ($query) {
+                    $query->whereNull('roi_status')
+                        ->orWhere('roi_status', 'active');
+                })
+                ->where(function ($query) {
+                    $query->whereNull('last_roi_payment_date')
+                        ->orWhereDate('last_roi_payment_date', '<', now()->toDateString());
+                })
+                ->count();
+        }
+
         $data = [
             'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
@@ -324,7 +342,9 @@ class FrontEndController extends Controller
             'totalTeam' => $levelCounts->sum(),
             'reward' =>$totalRewardPercentage,
             // ROI Statistics
-            'roi_stats' => $roiStats
+            'roi_stats' => $roiStats,
+            // Admin Statistics
+            'missed_roi_count' => $missedRoiCount
         ];
 
         return view('demo.dashboard',compact('data','reward'));

@@ -19,7 +19,8 @@ use App\Http\Controllers\{
     UserController,
     WalletController,
     WithdrawalRequestController,
-    ROIMonitoringController
+    ROIMonitoringController,
+    ROISubmissionMonitoringController
 }; 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\{Route, Auth, Artisan};
@@ -152,9 +153,16 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     });
 
     Route::controller(ROIMonitoringController::class)->group(function () {
-        Route::get('/roi-monitoring', 'index')->name('users.roi.monitoring'); 
-        Route::post('/users/roi/stop/{user}', 'stopAccount')->name('users.roi.stop'); 
-        Route::get('/roi-reactivate', 'reactivate')->name('users.roi.reactivate');
+        Route::get('/roi-monitoring', 'index')->name('users.roi.monitoring');
+        Route::post('/users/roi/stop/{user}', 'stopAccount')->name('users.roi.stop');
+        Route::post('/users/roi/reactivate/{user}', 'reactivateAccount')->name('users.roi.reactivate');
+    });
+
+    // ROI Submission Monitoring Routes
+    Route::controller(ROISubmissionMonitoringController::class)->group(function () {
+        Route::get('/roi-submission-monitoring', 'index')->name('roi.submission.monitoring');
+        Route::post('/roi-submission/generate/{user}', 'generateManualROI')->name('roi.submission.generate');
+        Route::post('/roi-submission/bulk-generate', 'bulkGenerateROI')->name('roi.submission.bulk.generate');
     });
 
     // Pending Rewards Management Routes

@@ -117,11 +117,11 @@ class WalletController extends Controller
 
     public function ROI()
     {
-        $walletQuery = Wallet::where('wallet_type', 'roi')
-            ->where('user_id', auth()->id()); 
-        $totalEarning   = $walletQuery->sum('total_amount');
-        $currentBalance = $walletQuery->sum('balance'); 
-        $wallets = $walletQuery->get(); 
+        $baseQuery = Wallet::where('wallet_type', 'roi')
+            ->where('user_id', auth()->id());
+        $totalEarning   = (clone $baseQuery)->sum('total_amount');
+        $currentBalance = (clone $baseQuery)->sum('balance');
+        $wallets = (clone $baseQuery)->orderBy('id', 'desc')->paginate(20);
         return view('wallets.roi', compact('wallets', 'totalEarning', 'currentBalance'));
     }
 

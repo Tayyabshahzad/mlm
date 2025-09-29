@@ -472,7 +472,11 @@
                                             </thead>
                                             <tbody>
                                                 @forelse($paginatedUsers as $user)
-                                                    <tr> 
+                                                    <tr data-user-id="{{ $user->id }}"
+                                                        data-investment="{{ number_format($user->roi_stats['invested_amount'], 2) }}"
+                                                        data-two-x-limit="{{ number_format($user->roi_stats['two_x_limit'], 2) }}"
+                                                        data-total-earned="{{ number_format($user->roi_stats['total_roi_paid'], 2) }}"
+                                                        data-remaining="{{ number_format($user->roi_stats['remaining_amount'], 2) }}"> 
                                                         <td>
                                                             <div>
                                                                 <strong>{{ $user->name }}</strong>
@@ -630,7 +634,7 @@
                         <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
                         You are about to stop ROI for user: <strong id="stopUserName"></strong>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="stopReason" class="form-label">Reason for stopping ROI:<span class="text-danger">*</span></label>
                         <select class="form-select form-control" id="stopReason" name="reason" required>
@@ -643,17 +647,17 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
-                    
+
                     <div class="mb-3" id="customReasonDiv" style="display: none;">
                         <label for="customReason" class="form-label">Custom Reason:</label>
                         <textarea class="form-control" id="customReason" name="custom_reason" rows="3" placeholder="Please specify the reason..."></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="stopMessage" class="form-label">Additional Message (Optional):</label>
                         <textarea class="form-control" id="stopMessage" name="message" rows="3" placeholder="Add any additional notes or message for this action..."></textarea>
                     </div>
-                    
+
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="confirmStop" required>
                         <label class="form-check-label" for="confirmStop">
@@ -673,6 +677,59 @@
         </div>
     </div>
 </div>
+
+<!-- Reactivate ROI Modal -->
+<div class="modal fade" id="reactivateRoiModal" tabindex="-1" aria-labelledby="reactivateRoiModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="reactivateRoiForm" method="POST">
+                @csrf
+                <div class="modal-header bg-light-success text-dark">
+                    <h5 class="modal-title" id="reactivateRoiModalLabel">
+                        <i class="fas fa-play me-2 text-success"></i> Reactivate ROI Account
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You are about to reactivate ROI for user: <strong id="reactivateUserName"></strong>
+                    </div>
+
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> ROI can only be reactivated if the user has not reached their 2X limit. The system will automatically validate this before reactivation.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Current Status:</label>
+                        <ul class="list-unstyled">
+                            <li><strong>Investment:</strong> $<span id="reactivateInvestment">0.00</span></li>
+                            <li><strong>2X Limit:</strong> $<span id="reactivate2XLimit">0.00</span></li>
+                            <li><strong>Total Earned:</strong> $<span id="reactivateTotalEarned">0.00</span></li>
+                            <li><strong>Remaining:</strong> $<span id="reactivateRemaining">0.00</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="confirmReactivate" required>
+                        <label class="form-check-label" for="confirmReactivate">
+                            I confirm that I want to reactivate ROI for this user
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-play me-2"></i>Reactivate ROI
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
  
 
 
@@ -681,10 +738,33 @@
 @section('page_js')
     <script>
     function showStopModal(userId, userName) {
-        document.getElementById('stopUserName').textContent = userName; 
+        document.getElementById('stopUserName').textContent = userName;
         const form = document.getElementById('stopRoiForm');
-        form.action = `/users/roi/stop/${userId}`; 
+        form.action = `/users/roi/stop/${userId}`;
         const modal = new bootstrap.Modal(document.getElementById('stopRoiModal'));
+        modal.show();
+    }
+
+    function showReactivateModal(userId, userName) {
+        document.getElementById('reactivateUserName').textContent = userName;
+        const form = document.getElementById('reactivateRoiForm');
+        form.action = `/users/roi/reactivate/${userId}`;
+
+        // Find user data from the table
+        const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+        if (userRow) {
+            const investment = userRow.dataset.investment || '0.00';
+            const twoXLimit = userRow.dataset.twoXLimit || '0.00';
+            const totalEarned = userRow.dataset.totalEarned || '0.00';
+            const remaining = userRow.dataset.remaining || '0.00';
+
+            document.getElementById('reactivateInvestment').textContent = investment;
+            document.getElementById('reactivate2XLimit').textContent = twoXLimit;
+            document.getElementById('reactivateTotalEarned').textContent = totalEarned;
+            document.getElementById('reactivateRemaining').textContent = remaining;
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('reactivateRoiModal'));
         modal.show();
     }
 

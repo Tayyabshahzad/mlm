@@ -159,6 +159,16 @@
     .stat-change.positive { color: var(--success-color); }
     .stat-change.negative { color: var(--danger-color); }
 
+    /* Pulse Animation for Danger Box */
+    @keyframes pulse-danger {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(245, 101, 101, 0.7);
+        }
+        50% {
+            box-shadow: 0 0 0 15px rgba(245, 101, 101, 0);
+        }
+    }
+
     /* Chart Section */
     .chart-container {
         background: white;
@@ -949,8 +959,27 @@
                 </div>
             </div>
 
+            <!-- Admin Only: ROI Missing Alert Box -->
+            @role('admin')
+            @if($data['missed_roi_count'] > 0)
+            <a href="{{ route('roi.submission.monitoring') }}" class="text-decoration-none">
+                <div class="stat-card danger" style="cursor: pointer; animation: pulse-danger 2s infinite; mb-10">
+                    <div class="stat-icon danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-label">⚠️ ROI NOT SUBMITTED</div>
+                    <div class="stat-value">{{ $data['missed_roi_count'] }} Users</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-users-slash"></i>
+                        <span>Users missing today's ROI - Click to review</span>
+                    </div>
+                </div>
+            </a>
+            @endif
+            @endrole
+
             <!-- Business Analytics Chart -->
-            <div class="chart-container slide-up">
+            <div class="chart-container slide-up mt-7">
                 <div class="chart-header">
                     <h3 class="chart-title">Business Analytics</h3>
                     <div class="chart-filters">
