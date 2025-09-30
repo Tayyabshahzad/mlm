@@ -14,18 +14,18 @@
                 <p class="text-center text-danger">
                     5% Will charge on every transaction 
                 </p>
-                    <div class="form-group row"> 
+                    <div class="form-group row">
                         <div class="col-lg-12 col-xl-12">
                             <label for="" class="mr-2 font-weight-bold">
                                 Transfer Amount
                             </label>
-                            <input type="number" class="mb-2 form-control form-control-sm form-control-solid" 
+                            <input type="number" class="mb-2 form-control form-control-sm form-control-solid"
                              name="amount" min="5.27" step="0.01"
                              required
-                             max="{{ $wallets->sum('balance') }}"
-                             placeholder="Enter Amount">  
-                             <strong class="text-danger">Available Balance : {{ $wallets->sum('balance') }}</strong>
-                        </div>  
+                             max="{{ $currentBalance ?? $wallets->sum('balance') }}"
+                             placeholder="Enter Amount">
+                             <strong class="text-danger">Available Balance : {{ $currentBalance ?? $wallets->sum('balance') }}</strong>
+                        </div>
                     </div>  
                 </div>
                 <div class="modal-footer">

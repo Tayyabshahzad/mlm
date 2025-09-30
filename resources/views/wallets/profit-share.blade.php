@@ -249,7 +249,7 @@
  
 
 @if (!($blockedWallets['profit_share'] ?? false)) 
-    @include("wallets.transfer_modal", ['wallet' => 'profit_share'])
+    @include("wallets.transfer_modal", ['wallet' => 'profit_share', 'currentBalance' => $currentBalance])
 @endif  
   
 @endsection

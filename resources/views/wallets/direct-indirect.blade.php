@@ -151,7 +151,7 @@
     <!--end::Entry-->
 </div>
 @if (!($blockedWallets['direct_indirect'] ?? false))
-    @include("wallets.transfer_modal", ['wallet' => 'direct_indirect'])
+    @include("wallets.transfer_modal", ['wallet' => 'direct_indirect', 'currentBalance' => $currentBalance])
 @endif  
 
 @endsection 

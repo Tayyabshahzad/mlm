@@ -158,7 +158,7 @@
 </div>
 
 @if (!($blockedWallets['roi'] ?? false))
-@include("wallets.transfer_modal", ['wallet' => 'roi'])
+@include("wallets.transfer_modal", ['wallet' => 'roi', 'currentBalance' => $currentBalance])
 @endif
 
 @endsection
