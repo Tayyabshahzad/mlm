@@ -24,22 +24,28 @@ class SettingController extends Controller
             'withdraw_block' => 'required|boolean',
             'registration_fee' => 'required|numeric',
             'block_wallet' => 'nullable|array',
+            'standard_package_min' => 'required|numeric|min:0',
+            'standard_package_max' => 'required|numeric|min:0|gt:standard_package_min',
+            'vip_package_min' => 'required|numeric|min:0|gte:standard_package_max',
         ]);
 
         $setting = Setting::find($request->id);
         if (!$setting) {
             return redirect()->back()->with('error', 'Setting not found.');
-        }   
-        $blockWallets = $request->input('block_wallet', []); 
+        }
+        $blockWallets = $request->input('block_wallet', []);
         $setting->update([
             'site_name' => $request->site_name,
             'pv_amount' => $request->pv_amount,
-            'description' => $request->description, 
+            'description' => $request->description,
             'activation_code' =>$request->activation_code,
             'withdraw_block' =>$request->withdraw_block,
             'registration_fee' =>$request->registration_fee,
-            'blocked_wallets' => json_encode($blockWallets), 
-        ]);  
+            'blocked_wallets' => json_encode($blockWallets),
+            'standard_package_min' => $request->standard_package_min,
+            'standard_package_max' => $request->standard_package_max,
+            'vip_package_min' => $request->vip_package_min,
+        ]);
 
         return redirect()->back()->with('success', 'Settings updated successfully.');
     }

@@ -91,28 +91,36 @@
                                         <div class="table-responsive-sm">
                                             <table class="table" style="padding:0!important">
                                                 <thead>
-                                                    <tr> 
+                                                    <tr>
                                                         <th class=" text-uppercase">S#</th>
                                                         <th class=" text-uppercase">Username</th>
                                                         <th class=" text-uppercase">Name</th>
-                                                        <th class=" text-uppercase">Email Address</th>  
+                                                        <th class=" text-uppercase">Email Address</th>
                                                         <th class=" text-uppercase">Payment Method</th>
-                                                        <th class=" text-uppercase">Actions</th> 
-                                                        <th class=" text-uppercase">Created At</th> 
+                                                        <th class=" text-uppercase">User Plan</th>
+                                                        <th class=" text-uppercase">Actions</th>
+                                                        <th class=" text-uppercase">Created At</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @foreach($teamMembers as $teamMember)
-                                                    <tr class="pa-0 
+                                                    <tr class="pa-0
                                                     @if($teamMember->blocked) text-danger @endif
                                                     @if($teamMember->can_login) text-success @endif
                                                     @if(!$teamMember->can_login) text-warning @endif
-                                                    @if($teamMember->freez_wallet) text-info @endif"> 
+                                                    @if($teamMember->freez_wallet) text-info @endif">
                                                         <td class="align-middle ">{{ $loop->iteration }}</td>
                                                         <td class="align-middle ">{{ $teamMember->username }}</td>
                                                         <td class="align-middle ">{{ $teamMember->name }}</td>
-                                                        <td class="align-middle ">{{ $teamMember->email }}</td> 
-                                                        <td class="align-middle ">{{ ucfirst($teamMember->payment_method) }}</td>  
+                                                        <td class="align-middle ">{{ $teamMember->email }}</td>
+                                                        <td class="align-middle ">{{ ucfirst($teamMember->payment_method) }}</td>
+                                                        <td class="align-middle">
+                                                            @if(($teamMember->user_plan ?? 'standard') === 'vip')
+                                                                <span class="badge badge-success">VIP</span>
+                                                            @else
+                                                                <span class="badge badge-secondary">Standard</span>
+                                                            @endif
+                                                        </td>
                                                         <td class="align-middle text-primary"> 
                                                         <div class="dropdown">
                                                             <button class="btn btn-sm btn-outline-info rounded-0 dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

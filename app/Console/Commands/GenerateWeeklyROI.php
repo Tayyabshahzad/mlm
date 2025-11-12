@@ -94,7 +94,8 @@ class GenerateWeeklyROI extends Command
             }
          
             // Process the ROI payment
-            $this->processRoiPayment($user, $roiPayment, $week->percentage,$todayDate);
+            $percentage = $week->getPercentageForUser($user);
+            $this->processRoiPayment($user, $roiPayment, $percentage,$todayDate);
                
             // Generate commissions for upline
             $this->ROICommissionService->generateCommissions($user, $roiPayment); 
@@ -153,11 +154,42 @@ class GenerateWeeklyROI extends Command
 
     private function calculateRoiPayment(User $user, Week $week): float
     {
-        $investedAmount = $user->roi_eligible_investment_amount;
-        $proposedAmount = ($investedAmount * $week->percentage) / 100;
+        // Get user's plan-specific percentage (VIP or Standard)
+        $percentage = $week->getPercentageForUser($user);
 
-        // ROI only respects 2X limit, not 7X. Once 2X reached, ROI stops forever.
-        return $this->accountService->calculateSafeRoiAmount($user, $proposedAmount);
+        // Calculate ROI for each active investment separately (Case 4 support)
+        $totalRoi = 0;
+        $activeInvestments = \App\Models\UserInvestment::where('user_id', $user->id)
+            ->where('roi_status', 'active')
+            ->get();
+
+        foreach ($activeInvestments as $investment) {
+            // Calculate ROI for this specific investment
+            $investmentRoi = ($investment->amount * $percentage) / 100;
+
+            // Check if adding this ROI would exceed this investment's 2X limit
+            $remainingTo2X = $investment->getRemainingTo2X();
+
+            if ($remainingTo2X > 0) {
+                // Add only what's allowed for this investment
+                $allowedRoi = min($investmentRoi, $remainingTo2X);
+                $totalRoi += $allowedRoi;
+
+                // Update investment's total_earnings
+                $investment->increment('total_earnings', $allowedRoi);
+
+                // Mark as completed if reached 2X
+                if ($investment->hasReached2X()) {
+                    $investment->update([
+                        'roi_status' => 'completed',
+                        'completed_at' => now()
+                    ]);
+                    Log::info("Investment {$investment->id} completed 2X for user {$user->id}");
+                }
+            }
+        }
+
+        return $totalRoi;
     }
 
     private function processRoiPayment(User $user, float $amount, float $percentage, $todayDate): void

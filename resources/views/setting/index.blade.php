@@ -123,6 +123,82 @@
                                         </div>
                                     </div>
 
+                                    <div class="row">
+                                        <label class="col-xl-3"></label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <h5 class="font-weight-bold mb-6 mt-6">Package Range Settings</h5>
+                                            <p class="text-muted mb-4">Configure investment amount ranges for package reference (Note: Package assignment is manual only)</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">Standard Package Min ($)</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="standard_package_min"
+                                                value="{{ old('standard_package_min', $setting->standard_package_min ?? 50) }}"
+                                                required />
+                                            <span class="form-text text-muted">Minimum investment amount for Standard package</span>
+                                            @error('standard_package_min')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">Standard Package Max ($)</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="standard_package_max"
+                                                value="{{ old('standard_package_max', $setting->standard_package_max ?? 344) }}"
+                                                required />
+                                            <span class="form-text text-muted">Maximum investment amount for Standard package</span>
+                                            @error('standard_package_max')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">VIP Package Min ($)</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="vip_package_min"
+                                                value="{{ old('vip_package_min', $setting->vip_package_min ?? 345) }}"
+                                                required />
+                                            <span class="form-text text-muted">Minimum investment amount for VIP package (amounts equal or greater get VIP)</span>
+                                            @error('vip_package_min')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3"></label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <div class="alert alert-custom alert-light-warning">
+                                                <div class="alert-icon"><i class="flaticon-warning"></i></div>
+                                                <div class="alert-text">
+                                                    <strong>Important:</strong> These ranges are for reference only. Package assignment (Standard/VIP) is done <strong>manually by Admin</strong> through the User Plans page.
+                                                    All new users get Standard plan by default. Use "Auto-Migrate" feature to bulk assign based on these ranges.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="col-xl-3"></label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <h5 class="font-weight-bold mb-6 mt-6">Company Information</h5>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group row">
                                         <label class="col-xl-3 col-lg-3 col-form-label">About Company</label>
                                         <div class="col-lg-9 col-xl-6  ">

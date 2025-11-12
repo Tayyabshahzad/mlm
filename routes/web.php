@@ -223,6 +223,17 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         });
     });
 
+    // ROI Settings Management Routes (VIP/Standard Plans)
+    Route::prefix('roi-settings')->controller(App\Http\Controllers\Admin\ROISettingsController::class)->group(function () {
+        Route::get('/', 'index')->name('admin.roi-settings.index');
+        Route::post('/update', 'update')->name('admin.roi-settings.update');
+        Route::get('/user-plans', 'userPlans')->name('admin.roi-settings.user-plans');
+        Route::post('/user-plans/update', 'updateUserPlan')->name('admin.roi-settings.update-user-plan');
+        Route::post('/user-plans/bulk-migrate', 'bulkMigrateUsers')->name('admin.roi-settings.bulk-migrate-users');
+        Route::post('/user-plans/assign-all', 'assignAllUsers')->name('admin.roi-settings.assign-all-users');
+        Route::post('/user-plans/bulk-assign-selected', 'bulkAssignSelected')->name('admin.roi-settings.bulk-assign-selected');
+    });
+
 });
 
 Route::prefix('account')->controller(TopupController::class)->middleware(['auth', 'verified'])->group(function () {

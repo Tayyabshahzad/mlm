@@ -387,11 +387,16 @@ class TopupController extends Controller
 
     private function createUserInvestment(User $user, float $amount, string $description): void
     {
+        // Create investment with per-investment 2X tracking (Case 3 & 4 support)
         UserInvestment::create([
             'user_id' => $user->id,
             'amount' => $amount,
             'type' => 'topup',
-            'description' => $description
+            'description' => $description,
+            'committed_amount' => $amount * 2, // 2X commitment
+            'total_earnings' => 0,
+            'roi_status' => 'active',
+            'user_plan_at_time' => $user->user_plan ?? 'standard' // Save plan at time of investment
         ]);
 
         // Get current investment amount before updating

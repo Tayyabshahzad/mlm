@@ -95,6 +95,9 @@ class RegisteredUserController extends Controller
                 $count++;
             }
 
+            $setting = Setting::first();
+            $netAmount = $request->usdt_amount - $setting->registration_fee;
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -106,12 +109,13 @@ class RegisteredUserController extends Controller
                 'transaction_id' => $request->transaction_id,
                 'phone_number' => $request->cc . $request->phone_number,
                 'payment_method' => $request->payment_method,
-                'usdt_rate' => Setting::first()->usd,  
+                'usdt_rate' => $setting->usd,
                 'transferred_amount' => $request->transferred_amount,
                 'converted_usdt_amount' => $request->usdt_amount,
-                'fee_deducted' => Setting::first()->registration_fee, 
-                'net_invested_usdt_amount' =>  ($request->usdt_amount - Setting::first()->registration_fee),  
-                'roi_eligible_investment_amount' =>  ($request->usdt_amount - Setting::first()->registration_fee),  
+                'fee_deducted' => $setting->registration_fee,
+                'net_invested_usdt_amount' => $netAmount,
+                'roi_eligible_investment_amount' => $netAmount,
+                'user_plan' => 'standard', // Always assign Standard on registration
             ]);
 
             if ($request->payment_method === 'activation_code') {
@@ -271,7 +275,11 @@ class RegisteredUserController extends Controller
             'user_id' => $user->id,
             'amount' => $user->net_invested_usdt_amount,
             'type' => 'join',
-            'description' => 'Initial payment during account creation'
+            'description' => 'Initial payment during account creation',
+            'committed_amount' => $user->net_invested_usdt_amount * 2, // 2X commitment
+            'total_earnings' => 0,
+            'roi_status' => 'active',
+            'user_plan_at_time' => $user->user_plan ?? 'standard' // Save plan at time of investment
         ]);
     }
  
@@ -299,9 +307,5 @@ class RegisteredUserController extends Controller
             $availableInvestment -= 100;
         }
     }
-
-
-
-    
 
 }

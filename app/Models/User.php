@@ -40,7 +40,7 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         'eligible_for_binary_2x',
         'eligible_for_binary_7x',
         'total_binary_earnings',
-        'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id','freez_wallet','blocked','usdt_rate','transferred_amount','converted_usdt_amount','fee_deducted','net_invested_usdt_amount','negative_pv','roi_eligible_investment_amount', 'roi_status', 'roi_stopped_at','stop_reason','stop_reason_description'
+        'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id','freez_wallet','blocked','usdt_rate','transferred_amount','converted_usdt_amount','fee_deducted','net_invested_usdt_amount','negative_pv','roi_eligible_investment_amount', 'roi_status', 'roi_stopped_at','stop_reason','stop_reason_description','user_plan'
 
     ]; 
     /**
