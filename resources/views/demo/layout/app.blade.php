@@ -1012,6 +1012,26 @@
                                             </a>
                                         </li>
 
+                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('admin.roi-settings.user-plans') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot">
+                                                    <span></span>
+                                                </i>
+                                                <span class="menu-text">User Plans (VIP/Standard)</span>
+                                            </a>
+                                        </li>
+
+                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('admin.roi-settings.commission-bonuses') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot">
+                                                    <span></span>
+                                                </i>
+                                                <span class="menu-text">Commission & Bonuses</span>
+                                            </a>
+                                        </li>
+
 
                                     </ul>
                                     

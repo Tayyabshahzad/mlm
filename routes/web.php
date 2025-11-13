@@ -232,6 +232,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::post('/user-plans/bulk-migrate', 'bulkMigrateUsers')->name('admin.roi-settings.bulk-migrate-users');
         Route::post('/user-plans/assign-all', 'assignAllUsers')->name('admin.roi-settings.assign-all-users');
         Route::post('/user-plans/bulk-assign-selected', 'bulkAssignSelected')->name('admin.roi-settings.bulk-assign-selected');
+        Route::get('/commission-bonuses', 'commissionBonuses')->name('admin.roi-settings.commission-bonuses');
+        Route::post('/commission-bonuses/update', 'updateCommissionBonuses')->name('admin.roi-settings.update-commission-bonuses');
     });
 
 });

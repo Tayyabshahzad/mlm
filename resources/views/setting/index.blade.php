@@ -179,14 +179,129 @@
                                         </div>
                                     </div>
 
+                                    <div class="row">
+                                        <label class="col-xl-3"></label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <h5 class="font-weight-bold mt-10 mb-6">Profit Sharing Bonus Multipliers</h5>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">Standard Plan Multiplier</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="standard_profit_multiplier"
+                                                value="{{ old('standard_profit_multiplier', $setting->standard_profit_multiplier ?? 1.00) }}"
+                                                required min="0.01" max="10" />
+                                            <span class="form-text text-muted">Profit sharing multiplier for Standard users (e.g., 1.00 = 100%, 1.25 = 125%)</span>
+                                            @error('standard_profit_multiplier')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">VIP Plan Multiplier</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="vip_profit_multiplier"
+                                                value="{{ old('vip_profit_multiplier', $setting->vip_profit_multiplier ?? 1.50) }}"
+                                                required min="0.01" max="10" />
+                                            <span class="form-text text-muted">Profit sharing multiplier for VIP users (e.g., 1.50 = 150%, 2.0 = 200%)</span>
+                                            @error('vip_profit_multiplier')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3"></label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <div class="alert alert-custom alert-light-info">
+                                                <div class="alert-icon"><i class="flaticon-information"></i></div>
+                                                <div class="alert-text">
+                                                    <strong>Example:</strong> If you distribute $1000 profit and a user's share is $10:
+                                                    <ul class="mt-2 mb-0">
+                                                        <li>Standard user (1.0x): Gets $10</li>
+                                                        <li>VIP user (1.5x): Gets $15 (50% bonus)</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group row">
                                         <label class="col-xl-3"></label>
                                         <div class="col-lg-9 col-xl-6">
                                             <div class="alert alert-custom alert-light-warning">
                                                 <div class="alert-icon"><i class="flaticon-warning"></i></div>
                                                 <div class="alert-text">
-                                                    <strong>Important:</strong> These ranges are for reference only. Package assignment (Standard/VIP) is done <strong>manually by Admin</strong> through the User Plans page.
-                                                    All new users get Standard plan by default. Use "Auto-Migrate" feature to bulk assign based on these ranges.
+                                                    <strong>Important:</strong> Package ranges are for reference. Package assignment (Standard/VIP) is done automatically at registration or manually through User Plans page.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 7-Level Commission Bonuses Section -->
+                                    <div class="row">
+                                        <label class="col-xl-3"></label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <h5 class="font-weight-bold mt-10 mb-6">7-Level Commission Bonuses (%)</h5>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-primary">Standard Package</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <div class="row">
+                                                @for($i = 1; $i <= 7; $i++)
+                                                    <div class="col-md-4 mb-3">
+                                                        <label class="font-weight-bold">Level {{$i}}</label>
+                                                        <input class="form-control form-control-lg form-control-solid" type="number"
+                                                            step="0.01" name="standard_commission_l{{$i}}"
+                                                            value="{{ old('standard_commission_l'.$i, $setting->{'standard_commission_l'.$i} ?? [7,6,5,4,3,2,1][$i-1]) }}"
+                                                            required min="0" max="100" />
+                                                    </div>
+                                                @endfor
+                                            </div>
+                                            <span class="form-text text-muted">Commission percentage for each level (Standard users)</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label font-weight-bold text-warning">VIP Package</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <div class="row">
+                                                @for($i = 1; $i <= 7; $i++)
+                                                    <div class="col-md-4 mb-3">
+                                                        <label class="font-weight-bold">Level {{$i}}</label>
+                                                        <input class="form-control form-control-lg form-control-solid" type="number"
+                                                            step="0.01" name="vip_commission_l{{$i}}"
+                                                            value="{{ old('vip_commission_l'.$i, $setting->{'vip_commission_l'.$i} ?? [3.5,3,2.5,2,1.5,1,0.5][$i-1]) }}"
+                                                            required min="0" max="100" />
+                                                    </div>
+                                                @endfor
+                                            </div>
+                                            <span class="form-text text-muted">Commission percentage for each level (VIP users)</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3"></label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <div class="alert alert-custom alert-light-success">
+                                                <div class="alert-icon"><i class="flaticon-information"></i></div>
+                                                <div class="alert-text">
+                                                    <strong>How it works:</strong> When a user makes an investment/topup, their upline receives commissions based on their user plan:
+                                                    <ul class="mt-2 mb-0">
+                                                        <li><strong>Standard User</strong> (Level 1 sponsor): Gets 7% commission</li>
+                                                        <li><strong>VIP User</strong> (Level 1 sponsor): Gets 3.5% commission</li>
+                                                    </ul>
+                                                    Each user receives commission based on their own plan, not the investor's plan.
                                                 </div>
                                             </div>
                                         </div>

@@ -46,13 +46,30 @@ class ROISettingsController extends Controller
     /**
      * Show user plan assignment page
      */
-    public function userPlans()
+    public function userPlans(Request $request)
     {
-        $users = User::select('id', 'name', 'username', 'email', 'user_plan', 'roi_eligible_investment_amount')
+        $search = $request->input('search');
+        $planFilter = $request->input('plan_filter');
+
+        $query = User::select('id', 'name', 'username', 'email', 'user_plan', 'roi_eligible_investment_amount')
             ->whereNotNull('roi_eligible_investment_amount')
-            ->where('roi_eligible_investment_amount', '>', 0)
-            ->orderBy('created_at', 'desc')
-            ->paginate(50);
+            ->where('roi_eligible_investment_amount', '>', 0);
+
+        // Apply search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply plan filter
+        if ($planFilter) {
+            $query->where('user_plan', $planFilter);
+        }
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(50)->appends($request->query());
 
         // Get accurate statistics for all users (not just paginated)
         $totalUsers = User::whereNotNull('roi_eligible_investment_amount')
@@ -228,5 +245,44 @@ class ROISettingsController extends Controller
         $message = "Successfully assigned {$planLabel} plan to {$updatedCount} selected user(s)!";
 
         return back()->with('success', $message);
+    }
+
+    /**
+     * Show Commission & Profit Sharing Bonuses settings page
+     */
+    public function commissionBonuses()
+    {
+        $setting = \App\Models\Setting::first();
+
+        return view('admin.roi-settings.commission-bonuses', compact('setting'));
+    }
+
+    /**
+     * Update Commission & Profit Sharing Bonuses
+     */
+    public function updateCommissionBonuses(Request $request)
+    {
+        $rules = [
+            'standard_profit_multiplier' => 'required|numeric|min:0|max:10',
+            'vip_profit_multiplier' => 'required|numeric|min:0|max:10',
+        ];
+
+        // Add validation for all 14 commission levels
+        for ($i = 1; $i <= 7; $i++) {
+            $rules["standard_commission_l{$i}"] = 'required|numeric|min:0|max:100';
+            $rules["vip_commission_l{$i}"] = 'required|numeric|min:0|max:100';
+        }
+
+        $validated = $request->validate($rules);
+
+        $setting = \App\Models\Setting::first();
+
+        if (!$setting) {
+            return back()->with('error', 'Settings not found!');
+        }
+
+        $setting->update($validated);
+
+        return back()->with('success', 'Commission and Profit Sharing bonuses updated successfully!');
     }
 }

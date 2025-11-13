@@ -98,6 +98,10 @@ class RegisteredUserController extends Controller
             $setting = Setting::first();
             $netAmount = $request->usdt_amount - $setting->registration_fee;
 
+            // Auto-assign plan based on net investment amount and package ranges
+            $vipMinAmount = $setting->vip_package_min ?? 345;
+            $userPlan = ($netAmount >= $vipMinAmount) ? 'vip' : 'standard';
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -115,7 +119,7 @@ class RegisteredUserController extends Controller
                 'fee_deducted' => $setting->registration_fee,
                 'net_invested_usdt_amount' => $netAmount,
                 'roi_eligible_investment_amount' => $netAmount,
-                'user_plan' => 'standard', // Always assign Standard on registration
+                'user_plan' => $userPlan, // Auto-assigned based on net investment amount
             ]);
 
             if ($request->payment_method === 'activation_code') {

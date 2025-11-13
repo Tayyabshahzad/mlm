@@ -51,12 +51,12 @@
                 </div>
             </div>
             <div class="d-flex align-items-center">
-                <button type="button" class="mr-2 btn btn-success font-weight-bolder" data-toggle="modal" data-target="#bulkMigrateModal">
+                {{-- <button type="button" class="mr-2 btn btn-success font-weight-bolder" data-toggle="modal" data-target="#bulkMigrateModal">
                     <i class="la la-sync"></i> Auto-Migrate All Users
                 </button>
                 <button type="button" class="mr-2 btn btn-primary font-weight-bolder" data-toggle="modal" data-target="#assignAllUsersModal">
                     <i class="la la-users"></i> Assign Plan to All Users
-                </button>
+                </button> --}}
                 <a href="{{ route('admin.roi-settings.index') }}" class="btn btn-light font-weight-bolder">
                     <i class="la la-arrow-left"></i> Back to ROI Settings
                 </a>
@@ -149,6 +149,46 @@
                     </div>
                 </div>
                 <div class="pt-0 pb-3 card-body">
+                    <!-- Search Form -->
+                    <div class="mb-7">
+                        <form method="GET" action="{{ route('admin.roi-settings.user-plans') }}" class="mb-0">
+                            <div class="row align-items-center">
+                                <div class="col-lg-9 col-xl-8">
+                                    <div class="row align-items-center">
+                                        <div class="my-2 col-md-6 my-md-0">
+                                            <div class="input-icon">
+                                                <input type="text"
+                                                       class="form-control"
+                                                       name="search"
+                                                       placeholder="Search by name, username, or email..."
+                                                       value="{{ request('search') }}"/>
+                                                <span>
+                                                    <i class="flaticon2-search-1 text-muted"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="my-2 col-md-3 my-md-0">
+                                            <select name="plan_filter" class="form-control">
+                                                <option value="">All Plans</option>
+                                                <option value="standard" {{ request('plan_filter') == 'standard' ? 'selected' : '' }}>Standard</option>
+                                                <option value="vip" {{ request('plan_filter') == 'vip' ? 'selected' : '' }}>VIP</option>
+                                            </select>
+                                        </div>
+                                        <div class="my-2 col-md-3 my-md-0">
+                                            <div class="d-flex align-items-center">
+                                                <button type="submit" class="mr-2 btn btn-light-primary px-6 font-weight-bold">
+                                                    <i class="la la-search"></i> Search
+                                                </button>
+                                                <a href="{{ route('admin.roi-settings.user-plans') }}" class="btn btn-secondary px-6 font-weight-bold">
+                                                    <i class="la la-close"></i> Clear
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-head-custom table-vertical-center table-head-bg table-borderless">
                             <thead>
@@ -253,13 +293,13 @@
 
                     <!-- Pagination -->
                     @if($users->hasPages())
-                        <div class="d-flex justify-content-between align-items-center flex-wrap pt-5">
-                            <div class="d-flex flex-wrap py-2 mr-3">
+                        <div class="flex-wrap pt-5 d-flex justify-content-between align-items-center">
+                            <div class="flex-wrap py-2 mr-3 d-flex">
                                 <span class="text-muted font-weight-bold">
                                     Showing {{ $users->firstItem() }} to {{ $users->lastItem() }} of {{ $users->total() }} entries
                                 </span>
                             </div>
-                            <div class="d-flex flex-wrap">
+                            <div class="flex-wrap d-flex">
                                 {{ $users->links('pagination::bootstrap-4') }}
                             </div>
                         </div>

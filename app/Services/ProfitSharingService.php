@@ -199,29 +199,42 @@ class ProfitSharingService
             return;
         }
 
+        // Apply VIP/Standard multiplier
+        $user = User::find($userId);
+        if (!$user) {
+            return;
+        }
+
+        $setting = \App\Models\Setting::first();
+        $multiplier = 1.0; // Default multiplier
+
+        if ($user->user_plan === 'vip') {
+            $multiplier = $setting->vip_profit_multiplier ?? 1.5;
+        } else {
+            $multiplier = $setting->standard_profit_multiplier ?? 1.0;
+        }
+
+        // Apply multiplier to the profit share amount
+        $finalAmount = $amount * $multiplier;
+
+        // Add multiplier info to metadata
+        $metadata['base_amount'] = $amount;
+        $metadata['multiplier'] = $multiplier;
+        $metadata['user_plan'] = $user->user_plan ?? 'standard';
+        $metadata['final_amount'] = $finalAmount;
+
         Wallet::create([
             'user_id' => $userId,
             'wallet_type' => 'profit_sharing',
             'commission_type' => 'profit_share',
-            'balance' => $amount,
-            'total_amount' => $amount,
+            'balance' => $finalAmount,
+            'total_amount' => $finalAmount,
             'wallet_src' => $source,
-            'description' => "Company profit sharing: " . ucwords(str_replace('_', ' ', $source)),
+            'description' => "Company profit sharing (" . strtoupper($user->user_plan ?? 'standard') . " {$multiplier}x): " . ucwords(str_replace('_', ' ', $source)),
             'metadata' => json_encode($metadata)
         ]);
 
-        // Update user's total profit sharing earnings
-        $user = User::find($userId);
-        if ($user) {
-            $totalProfitSharing = $user->wallets()
-                ->where('wallet_type', 'profit_sharing')
-                ->sum('balance');
-
-            // You might want to add a field to track this in users table
-            // $user->update(['total_profit_sharing' => $totalProfitSharing]);
-        }
-
-        Log::info("Credited ${amount} profit share to user {$userId} via {$source}");
+        Log::info("Credited ${finalAmount} (base: ${amount} × {$multiplier}) profit share to user {$userId} ({$user->user_plan}) via {$source}");
     }
 
     public function getProfitSharingStats()

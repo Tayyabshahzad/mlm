@@ -63,8 +63,8 @@ class CommissionService
             return;
         }
 
-        $commission = $this->calculateCommission(1, $amountToTopUp);
-        
+        $commission = $this->calculateCommission(1, $amountToTopUp, $sponsor);
+
         $this->walletService->assignCommission(
             userId: $sponsor->id,
             amount: $commission['amount'],
@@ -89,8 +89,8 @@ class CommissionService
                 continue;
             }
 
-            $commission = $this->calculateCommission($ancestor->level, $amountToTopUp);
-            
+            $commission = $this->calculateCommission($ancestor->level, $amountToTopUp, $ancestorUser);
+
             $this->walletService->assignCommission(
                 userId: $ancestorUser->id,
                 amount: $commission['amount'],
@@ -144,13 +144,27 @@ class CommissionService
             ->count();
     }
 
-    private function calculateCommission(int $level, float $investmentAmount): array
-    {  
-        $percentage = self::COMMISSION_RATES[$level] ?? 0;
-        $amount = ($investmentAmount * $percentage) / 100; 
+    private function calculateCommission(int $level, float $investmentAmount, User $receivingUser = null): array
+    {
+        // Get dynamic commission rate from settings based on user plan
+        $setting = \App\Models\Setting::first();
+        $userPlan = $receivingUser?->user_plan ?? 'standard';
+
+        // Get commission percentage based on plan and level
+        if ($userPlan === 'vip') {
+            $fieldName = "vip_commission_l{$level}";
+            $percentage = $setting->$fieldName ?? self::COMMISSION_RATES[$level] ?? 0;
+        } else {
+            $fieldName = "standard_commission_l{$level}";
+            $percentage = $setting->$fieldName ?? self::COMMISSION_RATES[$level] ?? 0;
+        }
+
+        $amount = ($investmentAmount * $percentage) / 100;
+
         return [
             'percentage' => $percentage,
-            'amount' => round($amount, 2)
+            'amount' => round($amount, 2),
+            'user_plan' => $userPlan
         ];
     }
 
