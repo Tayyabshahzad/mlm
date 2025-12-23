@@ -19,6 +19,12 @@
                 </div>
             </div>
             <div class="d-flex align-items-center">
+                <a href="{{ route('admin.roi-settings.profit-share-settings') }}" class="btn btn-light-success font-weight-bolder mr-3">
+                    <i class="la la-percentage"></i> Profit Share Settings
+                </a>
+                <a href="{{ route('admin.roi-settings.commission-bonuses') }}" class="btn btn-light-warning font-weight-bolder mr-3">
+                    <i class="la la-money-bill-wave"></i> Commission Settings
+                </a>
                 <a href="{{ route('admin.roi-settings.user-plans') }}" class="btn btn-light-primary font-weight-bolder">
                     <i class="la la-users"></i> Manage User Plans
                 </a>

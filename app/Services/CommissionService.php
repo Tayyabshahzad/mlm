@@ -146,18 +146,14 @@ class CommissionService
 
     private function calculateCommission(int $level, float $investmentAmount, User $receivingUser = null): array
     {
-        // Get dynamic commission rate from settings based on user plan
+        // Get dynamic commission rate from settings
+        // Commission is SAME for both VIP and Standard users (direct investment commission)
         $setting = \App\Models\Setting::first();
         $userPlan = $receivingUser?->user_plan ?? 'standard';
 
-        // Get commission percentage based on plan and level
-        if ($userPlan === 'vip') {
-            $fieldName = "vip_commission_l{$level}";
-            $percentage = $setting->$fieldName ?? self::COMMISSION_RATES[$level] ?? 0;
-        } else {
-            $fieldName = "standard_commission_l{$level}";
-            $percentage = $setting->$fieldName ?? self::COMMISSION_RATES[$level] ?? 0;
-        }
+        // Use standard commission rates for BOTH plans (client requirement)
+        $fieldName = "standard_commission_l{$level}";
+        $percentage = $setting->$fieldName ?? self::COMMISSION_RATES[$level] ?? 0;
 
         $amount = ($investmentAmount * $percentage) / 100;
 

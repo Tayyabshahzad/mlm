@@ -89,8 +89,8 @@ class ROICommissionService
         foreach ($allUsersAtLevel as $userAtLevel) {
             // Only process if this is the user who just generated ROI
             if ($userAtLevel->id === $currentUser->id) {
-                $commissionAmount = $this->calculateCommissionAmount($ancestor, $roiAmount, $percentage);
-                
+                $commissionAmount = $this->calculateCommissionAmount($ancestor, $roiAmount, $percentage, $level);
+
                 if ($commissionAmount > 0) {
                     $this->createCommissionRecords($ancestor, $currentUser, $commissionAmount, $percentage, $level);
                     Log::info("Commission processed: Ancestor {$ancestor->id} got {$commissionAmount} from user {$currentUser->id} at level {$level}");
@@ -124,10 +124,10 @@ class ROICommissionService
         foreach ($allUsersAtLevel as $userAtLevel) {
             // Get recent ROI amount for this user
             $roiAmount = $this->getRecentRoiAmount($userAtLevel);
-            
+
             if ($roiAmount > 0) {
-                $commissionAmount = $this->calculateCommissionAmount($ancestor, $roiAmount, $percentage);
-                
+                $commissionAmount = $this->calculateCommissionAmount($ancestor, $roiAmount, $percentage, $level);
+
                 if ($commissionAmount > 0) {
                     $this->createCommissionRecords($ancestor, $userAtLevel, $commissionAmount, $percentage, $level);
                 }
@@ -179,14 +179,28 @@ class ROICommissionService
     /**
      * Calculate commission amount for profit sharing
      * FIXED: Profit sharing should NOT be limited by 2X cap
+     * Updated to use database settings for VIP/Standard differentiation
      */
-    private function calculateCommissionAmount(User $ancestor, float $roiAmount, float $percentage): float
+    private function calculateCommissionAmount(User $ancestor, float $roiAmount, float $percentage, int $level): float
     {
-        $baseCommission = ($roiAmount * $percentage) / 100;
+        // Get dynamic profit share percentage from settings based on user plan
+        $setting = \App\Models\Setting::first();
+        $userPlan = $ancestor->user_plan ?? 'standard';
+
+        // Get profit share percentage based on plan and level
+        if ($userPlan === 'vip') {
+            $fieldName = "vip_profit_l{$level}";
+            $actualPercentage = $setting->$fieldName ?? ($percentage / 2); // VIP gets half
+        } else {
+            $fieldName = "standard_profit_l{$level}";
+            $actualPercentage = $setting->$fieldName ?? $percentage; // Standard gets full
+        }
+
+        $baseCommission = ($roiAmount * $actualPercentage) / 100;
 
         // FIXED: Profit sharing is independent of 2X limits
         // Users should get full profit share regardless of their 2X status
-        Log::info("Calculating profit share commission for ancestor {$ancestor->id}: {$baseCommission} (Full amount, not limited by 2X)");
+        Log::info("Calculating profit share commission for ancestor {$ancestor->id} ({$userPlan}): {$baseCommission} at {$actualPercentage}% (Level {$level}, Full amount, not limited by 2X)");
 
         return $baseCommission;
     }

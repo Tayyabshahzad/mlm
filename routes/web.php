@@ -234,6 +234,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::post('/user-plans/bulk-assign-selected', 'bulkAssignSelected')->name('admin.roi-settings.bulk-assign-selected');
         Route::get('/commission-bonuses', 'commissionBonuses')->name('admin.roi-settings.commission-bonuses');
         Route::post('/commission-bonuses/update', 'updateCommissionBonuses')->name('admin.roi-settings.update-commission-bonuses');
+        Route::get('/profit-share-settings', 'profitShareSettings')->name('admin.roi-settings.profit-share-settings');
+        Route::post('/profit-share-settings/update', 'updateProfitShare')->name('admin.roi-settings.update-profit-share');
     });
 
 });

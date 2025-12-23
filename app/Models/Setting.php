@@ -18,6 +18,10 @@ class Setting extends Model
         'standard_commission_l1','standard_commission_l2','standard_commission_l3','standard_commission_l4',
         'standard_commission_l5','standard_commission_l6','standard_commission_l7',
         'vip_commission_l1','vip_commission_l2','vip_commission_l3','vip_commission_l4',
-        'vip_commission_l5','vip_commission_l6','vip_commission_l7'
+        'vip_commission_l5','vip_commission_l6','vip_commission_l7',
+        'standard_profit_l1','standard_profit_l2','standard_profit_l3','standard_profit_l4',
+        'standard_profit_l5','standard_profit_l6','standard_profit_l7',
+        'vip_profit_l1','vip_profit_l2','vip_profit_l3','vip_profit_l4',
+        'vip_profit_l5','vip_profit_l6','vip_profit_l7'
     ]; 
 }

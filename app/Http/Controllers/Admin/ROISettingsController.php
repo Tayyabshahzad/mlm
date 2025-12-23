@@ -285,4 +285,44 @@ class ROISettingsController extends Controller
 
         return back()->with('success', 'Commission and Profit Sharing bonuses updated successfully!');
     }
+
+    /**
+     * Show profit share settings page
+     */
+    public function profitShareSettings()
+    {
+        $setting = \App\Models\Setting::first();
+
+        if (!$setting) {
+            return back()->with('error', 'Settings not found!');
+        }
+
+        return view('admin.roi-settings.profit-share-settings', compact('setting'));
+    }
+
+    /**
+     * Update profit share settings
+     */
+    public function updateProfitShare(Request $request)
+    {
+        $rules = [];
+
+        // Add validation for all 14 profit share levels
+        for ($i = 1; $i <= 7; $i++) {
+            $rules["standard_profit_l{$i}"] = 'required|numeric|min:0|max:100';
+            $rules["vip_profit_l{$i}"] = 'required|numeric|min:0|max:100';
+        }
+
+        $validated = $request->validate($rules);
+
+        $setting = \App\Models\Setting::first();
+
+        if (!$setting) {
+            return back()->with('error', 'Settings not found!');
+        }
+
+        $setting->update($validated);
+
+        return back()->with('success', 'Profit share settings updated successfully!');
+    }
 }
