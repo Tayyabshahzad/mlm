@@ -238,6 +238,13 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::post('/profit-share-settings/update', 'updateProfitShare')->name('admin.roi-settings.update-profit-share');
     });
 
+    // ROI Reversal Management Routes
+    Route::prefix('roi-reversal')->controller(App\Http\Controllers\Admin\ROIReversalController::class)->group(function () {
+        Route::get('/', 'index')->name('admin.roi-reversal.index');
+        Route::post('/preview', 'preview')->name('admin.roi-reversal.preview');
+        Route::post('/execute', 'execute')->name('admin.roi-reversal.execute');
+    });
+
 });
 
 Route::prefix('account')->controller(TopupController::class)->middleware(['auth', 'verified'])->group(function () {
