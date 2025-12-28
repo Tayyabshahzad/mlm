@@ -4,15 +4,19 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use App\Models\Wallet;
+use App\Models\BinarySystem;
+use App\Models\TransactionLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class CompleteROIFix extends Command
 {
     protected $signature = 'roi:complete-fix
+                            {--date= : Specific date to reverse (YYYY-MM-DD format). If not provided, uses --days}
                             {--percentage=83.16 : Percentage of ROI to reverse}
-                            {--days=2 : Number of days to look back}
+                            {--days=2 : Number of days to look back (ignored if --date is provided)}
                             {--dry-run : Preview changes without executing}';
 
     protected $description = 'Complete ROI fix - handles 2X accounts, ROI reversal, and profit share reversal all in one';
@@ -25,20 +29,46 @@ class CompleteROIFix extends Command
         'regular_roi_reversed' => 0,
         'regular_profit_reversed' => 0,
         'total_amount_reversed' => 0,
+        'binary_2x_reversed' => 0,
+        'binary_earnings_reversed' => 0,
     ];
 
     public function handle()
     {
         $percentage = (float) $this->option('percentage');
         $days = (int) $this->option('days');
+        $dateOption = $this->option('date');
         $dryRun = $this->option('dry-run');
+
+        // Parse date if provided
+        $targetDate = null;
+        $dateStart = null;
+        $dateEnd = null;
+
+        if ($dateOption) {
+            try {
+                $targetDate = Carbon::parse($dateOption);
+                $dateStart = $targetDate->copy()->startOfDay();
+                $dateEnd = $targetDate->copy()->endOfDay();
+            } catch (\Exception $e) {
+                $this->error("Invalid date format. Please use YYYY-MM-DD format.");
+                return 1;
+            }
+        }
 
         $this->info("╔════════════════════════════════════════════════════════════╗");
         $this->info("║        COMPLETE ROI FIX - All-in-One Solution            ║");
         $this->info("╚════════════════════════════════════════════════════════════╝");
         $this->newLine();
         $this->info("Reversal Percentage: {$percentage}%");
-        $this->info("Days to look back: {$days}");
+
+        if ($targetDate) {
+            $this->info("Target Date: {$targetDate->format('Y-m-d')}");
+            $this->warn("Will reverse only transactions from this specific date");
+        } else {
+            $this->info("Days to look back: {$days}");
+        }
+
         $this->info("Mode: " . ($dryRun ? '🔍 DRY RUN (Preview only)' : '⚡ LIVE (Will make changes)'));
         $this->newLine();
 
@@ -59,7 +89,7 @@ class CompleteROIFix extends Command
             $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             $this->newLine();
 
-            $this->fix2XAccounts($days, $percentage, $dryRun);
+            $this->fix2XAccounts($days, $percentage, $dryRun, $dateStart, $dateEnd);
 
             // PHASE 2: Reverse Excess ROI for Regular Users
             $this->newLine();
@@ -68,7 +98,7 @@ class CompleteROIFix extends Command
             $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             $this->newLine();
 
-            $this->reverseExcessROI($percentage, $days, $dryRun);
+            $this->reverseExcessROI($percentage, $days, $dryRun, $dateStart, $dateEnd);
 
             // PHASE 3: Reverse Excess Profit Share
             $this->newLine();
@@ -77,7 +107,16 @@ class CompleteROIFix extends Command
             $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             $this->newLine();
 
-            $this->reverseExcessProfitShare($percentage, $days, $dryRun);
+            $this->reverseExcessProfitShare($percentage, $days, $dryRun, $dateStart, $dateEnd);
+
+            // PHASE 4: Check and Reverse Binary 2X Completions
+            $this->newLine();
+            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->info("PHASE 4: Checking Binary 2X Completions Impact");
+            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->newLine();
+
+            $this->checkAndReverseBinary2X($percentage, $dryRun, $dateStart, $dateEnd);
 
             // Display Final Summary
             $this->displayFinalSummary();
@@ -111,13 +150,19 @@ class CompleteROIFix extends Command
         }
     }
 
-    private function fix2XAccounts(int $days, float $percentage, bool $dryRun)
+    private function fix2XAccounts(int $days, float $percentage, bool $dryRun, $dateStart = null, $dateEnd = null)
     {
-        // Find users stopped in last N days
-        $stoppedUsers = User::where('roi_stopped_at', '>=', now()->subDays($days))
-            ->where('stop_reason', '2x_limit_reached')
-            ->where('user_plan', 'standard')
-            ->get();
+        // Find users stopped in last N days or on specific date
+        $query = User::where('stop_reason', '2x_limit_reached')
+            ->where('user_plan', 'standard');
+
+        if ($dateStart && $dateEnd) {
+            $query->whereBetween('roi_stopped_at', [$dateStart, $dateEnd]);
+        } else {
+            $query->where('roi_stopped_at', '>=', now()->subDays($days));
+        }
+
+        $stoppedUsers = $query->get();
 
         if ($stoppedUsers->isEmpty()) {
             $this->info('No 2X stopped accounts found in last ' . $days . ' days.');
@@ -237,6 +282,7 @@ class CompleteROIFix extends Command
 
             foreach ($roiEntries as $entry) {
                 if (!$dryRun) {
+                    $originalAmount = $entry->balance;
                     $entry->balance = 0;
                     $entry->total_amount = 0;
                     $entry->save();
@@ -244,13 +290,25 @@ class CompleteROIFix extends Command
                     Wallet::create([
                         'user_id' => $user->id,
                         'wallet_type' => 'roi_reversal',
-                        'balance' => -$entry->balance,
-                        'total_amount' => -$entry->balance,
+                        'balance' => -$originalAmount,
+                        'total_amount' => -$originalAmount,
                         'commission_type' => 'roi_reversal',
                         'level' => 0,
                         'description' => "2X Fix: ROI reversed - given after account stopped (Entry #{$entry->id})",
                         'transaction_type' => 'debit',
                         'wallet_src' => '2x_complete_fix',
+                    ]);
+
+                    // Log transaction history
+                    TransactionLog::create([
+                        'user_id' => $user->id,
+                        'from_wallet_type' => 'roi',
+                        'to_wallet_type' => 'roi_reversal',
+                        'amount' => $originalAmount,
+                        'charge' => 0,
+                        'final_amount' => $originalAmount,
+                        'description' => "2X Fix: ROI reversed - incorrectly given after account stopped at 2X",
+                        'status' => 'debit',
                     ]);
                 }
             }
@@ -283,6 +341,18 @@ class CompleteROIFix extends Command
                         'transaction_type' => 'debit',
                         'wallet_src' => '2x_complete_fix',
                     ]);
+
+                    // Log transaction history
+                    TransactionLog::create([
+                        'user_id' => $user->id,
+                        'from_wallet_type' => 'profit_share',
+                        'to_wallet_type' => 'profit_share_reversal',
+                        'amount' => $originalAmount,
+                        'charge' => 0,
+                        'final_amount' => $originalAmount,
+                        'description' => "2X Fix: Profit share reversed - incorrectly given after account stopped at 2X",
+                        'status' => 'debit',
+                    ]);
                 }
             }
 
@@ -303,14 +373,20 @@ class CompleteROIFix extends Command
         $this->stats['total_amount_reversed'] += ($data['roi_after_stop'] + $data['profit_after_stop']);
     }
 
-    private function reverseExcessROI(float $percentage, int $days, bool $dryRun)
+    private function reverseExcessROI(float $percentage, int $days, bool $dryRun, $dateStart = null, $dateEnd = null)
     {
-        $roiEntries = Wallet::where('wallet_type', 'roi')
-            ->where('created_at', '>=', now()->subDays($days))
+        $query = Wallet::where('wallet_type', 'roi')
             ->whereIn('user_id', function ($q) {
                 $q->select('id')->from('users')->where('user_plan', 'standard');
-            })
-            ->get();
+            });
+
+        if ($dateStart && $dateEnd) {
+            $query->whereBetween('created_at', [$dateStart, $dateEnd]);
+        } else {
+            $query->where('created_at', '>=', now()->subDays($days));
+        }
+
+        $roiEntries = $query->get();
 
         if ($roiEntries->isEmpty()) {
             $this->info('No ROI entries found.');
@@ -356,6 +432,18 @@ class CompleteROIFix extends Command
                     'transaction_type' => 'debit',
                     'wallet_src' => 'complete_roi_fix',
                 ]);
+
+                // Log transaction history
+                TransactionLog::create([
+                    'user_id' => $entry->user_id,
+                    'from_wallet_type' => 'roi',
+                    'to_wallet_type' => 'roi_reversal',
+                    'amount' => $reversalAmount,
+                    'charge' => 0,
+                    'final_amount' => $reversalAmount,
+                    'description' => "ROI Reversal: {$percentage}% reversed due to 42% error correction",
+                    'status' => 'debit',
+                ]);
             }
 
             $this->stats['regular_roi_reversed'] += $reversalAmount;
@@ -363,14 +451,20 @@ class CompleteROIFix extends Command
         }
     }
 
-    private function reverseExcessProfitShare(float $percentage, int $days, bool $dryRun)
+    private function reverseExcessProfitShare(float $percentage, int $days, bool $dryRun, $dateStart = null, $dateEnd = null)
     {
-        $profitEntries = Wallet::where('wallet_type', 'profit_share')
-            ->where('created_at', '>=', now()->subDays($days))
+        $query = Wallet::where('wallet_type', 'profit_share')
             ->whereIn('user_id', function ($q) {
                 $q->select('id')->from('users')->where('user_plan', 'standard');
-            })
-            ->get();
+            });
+
+        if ($dateStart && $dateEnd) {
+            $query->whereBetween('created_at', [$dateStart, $dateEnd]);
+        } else {
+            $query->where('created_at', '>=', now()->subDays($days));
+        }
+
+        $profitEntries = $query->get();
 
         if ($profitEntries->isEmpty()) {
             $this->info('No profit share entries found.');
@@ -414,10 +508,163 @@ class CompleteROIFix extends Command
                     'transaction_type' => 'debit',
                     'wallet_src' => 'complete_roi_fix',
                 ]);
+
+                // Log transaction history
+                TransactionLog::create([
+                    'user_id' => $entry->user_id,
+                    'from_wallet_type' => 'profit_share',
+                    'to_wallet_type' => 'profit_share_reversal',
+                    'amount' => $reversalAmount,
+                    'charge' => 0,
+                    'final_amount' => $reversalAmount,
+                    'description' => "Profit Share Reversal: {$percentage}% reversed due to 42% error correction",
+                    'status' => 'debit',
+                ]);
             }
 
             $this->stats['regular_profit_reversed'] += $reversalAmount;
             $this->stats['total_amount_reversed'] += $reversalAmount;
+        }
+    }
+
+    private function checkAndReverseBinary2X(float $percentage, bool $dryRun, $dateStart = null, $dateEnd = null)
+    {
+        // Get all users with active 2x binary systems
+        $binarySystems = BinarySystem::where('system_type', '2x')
+            ->where('is_active', true)
+            ->with('user')
+            ->get();
+
+        if ($binarySystems->isEmpty()) {
+            $this->info('No active 2X binary systems found.');
+            return;
+        }
+
+        $this->info("Checking {$binarySystems->count()} active 2X binary systems...");
+        $this->newLine();
+
+        $affectedUsers = collect();
+
+        foreach ($binarySystems as $binarySystem) {
+            $user = $binarySystem->user;
+
+            // Get ROI + Profit Share from the target date
+            $dateQuery = function($query) use ($dateStart, $dateEnd) {
+                if ($dateStart && $dateEnd) {
+                    $query->whereBetween('created_at', [$dateStart, $dateEnd]);
+                }
+            };
+
+            $roiFromDate = Wallet::where('user_id', $user->id)
+                ->where('wallet_type', 'roi')
+                ->when($dateStart && $dateEnd, $dateQuery)
+                ->sum('balance');
+
+            $profitFromDate = Wallet::where('user_id', $user->id)
+                ->where('wallet_type', 'profit_share')
+                ->when($dateStart && $dateEnd, $dateQuery)
+                ->sum('balance');
+
+            $totalFromDate = $roiFromDate + $profitFromDate;
+
+            if ($totalFromDate == 0) {
+                continue; // No transactions on this date for this user
+            }
+
+            // Calculate the amount that will be reversed
+            $reversalAmount = $totalFromDate * ($percentage / 100);
+
+            // Current earnings in binary system
+            $currentEarnings = $binarySystem->total_earned;
+
+            // What earnings would be after reversal
+            $earningsAfterReversal = $currentEarnings - $reversalAmount;
+
+            // Get the 2X limit for current level
+            $currentLimit = $binarySystem->current_limit;
+
+            // Check if user crossed the limit due to this date's transactions
+            $crossedLimitDueToDate = ($earningsAfterReversal < $currentLimit) && ($currentEarnings >= $currentLimit);
+
+            if ($crossedLimitDueToDate) {
+                $affectedUsers->push([
+                    'user' => $user,
+                    'binary_system' => $binarySystem,
+                    'current_earnings' => $currentEarnings,
+                    'earnings_after_reversal' => $earningsAfterReversal,
+                    'current_limit' => $currentLimit,
+                    'reversal_amount' => $reversalAmount,
+                    'roi_from_date' => $roiFromDate,
+                    'profit_from_date' => $profitFromDate,
+                ]);
+            }
+        }
+
+        if ($affectedUsers->isEmpty()) {
+            $this->info('✓ No binary 2X systems were incorrectly completed due to reversed transactions.');
+            return;
+        }
+
+        $this->warn("Found {$affectedUsers->count()} binary 2X completions that need to be reversed:");
+        $this->newLine();
+
+        $this->table(
+            ['User ID', 'Name', 'Current Level', 'Current Earnings', 'After Reversal', '2X Limit', 'Reversal Amount'],
+            $affectedUsers->map(function ($data) {
+                return [
+                    $data['user']->id,
+                    $data['user']->name,
+                    $data['binary_system']->current_level,
+                    '$' . number_format($data['current_earnings'], 2),
+                    '$' . number_format($data['earnings_after_reversal'], 2),
+                    '$' . number_format($data['current_limit'], 2),
+                    '$' . number_format($data['reversal_amount'], 2),
+                ];
+            })->toArray()
+        );
+
+        // Process reversals
+        foreach ($affectedUsers as $data) {
+            if (!$dryRun) {
+                $binarySystem = $data['binary_system'];
+
+                // Reverse the earnings
+                $binarySystem->total_earned = $data['earnings_after_reversal'];
+                $binarySystem->save();
+
+                // Create a reversal entry in wallet for tracking
+                Wallet::create([
+                    'user_id' => $data['user']->id,
+                    'wallet_type' => 'binary_2x_reversal',
+                    'balance' => -$data['reversal_amount'],
+                    'total_amount' => -$data['reversal_amount'],
+                    'commission_type' => 'binary_2x_reversal',
+                    'level' => 0,
+                    'description' => "Binary 2X Reversal: Earnings reduced from {$data['current_earnings']} to {$data['earnings_after_reversal']} due to ROI/Profit reversal",
+                    'transaction_type' => 'debit',
+                    'wallet_src' => 'complete_roi_fix_binary',
+                ]);
+
+                // Log transaction history
+                TransactionLog::create([
+                    'user_id' => $data['user']->id,
+                    'from_wallet_type' => 'binary_2x',
+                    'to_wallet_type' => 'binary_2x_reversal',
+                    'amount' => $data['reversal_amount'],
+                    'charge' => 0,
+                    'final_amount' => $data['reversal_amount'],
+                    'description' => "Binary 2X Reversal: Level {$data['binary_system']->current_level} earnings reduced due to ROI/Profit reversal",
+                    'status' => 'debit',
+                ]);
+
+                $this->stats['binary_2x_reversed']++;
+                $this->stats['binary_earnings_reversed'] += $data['reversal_amount'];
+                $this->stats['total_amount_reversed'] += $data['reversal_amount'];
+            }
+        }
+
+        if (!$dryRun) {
+            $this->info("✓ Reversed {$affectedUsers->count()} binary 2X completions");
         }
     }
 
@@ -441,6 +688,10 @@ class CompleteROIFix extends Command
                 ['━━━ REGULAR USERS ━━━', ''],
                 ['ROI Reversed', '$' . number_format($this->stats['regular_roi_reversed'], 2)],
                 ['Profit Share Reversed', '$' . number_format($this->stats['regular_profit_reversed'], 2)],
+                ['', ''],
+                ['━━━ BINARY 2X SYSTEMS ━━━', ''],
+                ['Binary 2X Reversed', $this->stats['binary_2x_reversed']],
+                ['Binary Earnings Reversed', '$' . number_format($this->stats['binary_earnings_reversed'], 2)],
                 ['', ''],
                 ['━━━ GRAND TOTAL ━━━', ''],
                 ['Total Amount Reversed', '$' . number_format($this->stats['total_amount_reversed'], 2)],
