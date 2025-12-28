@@ -15,7 +15,8 @@ class CompleteROIFix extends Command
 {
     protected $signature = 'roi:complete-fix
                             {--date= : Specific date to reverse (YYYY-MM-DD format). If not provided, uses --days}
-                            {--percentage=83.16 : Percentage of ROI to reverse}
+                            {--set-percentage=0.42 : Target ROI percentage to set (e.g., 0.42 to change 42% to 0.42%)}
+                            {--user-plan=standard : User plan to target (standard, premium, all)}
                             {--days=2 : Number of days to look back (ignored if --date is provided)}
                             {--dry-run : Preview changes without executing}';
 
@@ -35,9 +36,10 @@ class CompleteROIFix extends Command
 
     public function handle()
     {
-        $percentage = (float) $this->option('percentage');
+        $setPercentage = (float) $this->option('set-percentage');
         $days = (int) $this->option('days');
         $dateOption = $this->option('date');
+        $userPlan = $this->option('user-plan');
         $dryRun = $this->option('dry-run');
 
         // Parse date if provided
@@ -60,7 +62,8 @@ class CompleteROIFix extends Command
         $this->info("║        COMPLETE ROI FIX - All-in-One Solution            ║");
         $this->info("╚════════════════════════════════════════════════════════════╝");
         $this->newLine();
-        $this->info("Reversal Percentage: {$percentage}%");
+        $this->info("Target ROI Percentage: {$setPercentage}%");
+        $this->info("Target User Plan: " . strtoupper($userPlan));
 
         if ($targetDate) {
             $this->info("Target Date: {$targetDate->format('Y-m-d')}");
@@ -89,25 +92,25 @@ class CompleteROIFix extends Command
             $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             $this->newLine();
 
-            $this->fix2XAccounts($days, $percentage, $dryRun, $dateStart, $dateEnd);
+            $this->fix2XAccounts($days, $setPercentage, $dryRun, $dateStart, $dateEnd, $userPlan);
 
-            // PHASE 2: Reverse Excess ROI for Regular Users
+            // PHASE 2: Set ROI to Target Percentage for Regular Users
             $this->newLine();
             $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            $this->info("PHASE 2: Reversing Excess ROI for All Standard Users");
-            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            $this->newLine();
-
-            $this->reverseExcessROI($percentage, $days, $dryRun, $dateStart, $dateEnd);
-
-            // PHASE 3: Reverse Excess Profit Share
-            $this->newLine();
-            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            $this->info("PHASE 3: Reversing Excess Profit Share");
+            $this->info("PHASE 2: Setting ROI to {$setPercentage}% for " . strtoupper($userPlan) . " Users");
             $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             $this->newLine();
 
-            $this->reverseExcessProfitShare($percentage, $days, $dryRun, $dateStart, $dateEnd);
+            $this->setROIToPercentage($setPercentage, $days, $dryRun, $dateStart, $dateEnd, $userPlan);
+
+            // PHASE 3: Set Profit Share to Target Percentage
+            $this->newLine();
+            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->info("PHASE 3: Setting Profit Share to {$setPercentage}%");
+            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->newLine();
+
+            $this->setProfitShareToPercentage($setPercentage, $days, $dryRun, $dateStart, $dateEnd, $userPlan);
 
             // PHASE 4: Check and Reverse Binary 2X Completions
             $this->newLine();
@@ -116,7 +119,7 @@ class CompleteROIFix extends Command
             $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             $this->newLine();
 
-            $this->checkAndReverseBinary2X($percentage, $dryRun, $dateStart, $dateEnd);
+            $this->checkAndReverseBinary2X($setPercentage, $dryRun, $dateStart, $dateEnd);
 
             // Display Final Summary
             $this->displayFinalSummary();
@@ -150,11 +153,14 @@ class CompleteROIFix extends Command
         }
     }
 
-    private function fix2XAccounts(int $days, float $percentage, bool $dryRun, $dateStart = null, $dateEnd = null)
+    private function fix2XAccounts(int $days, float $percentage, bool $dryRun, $dateStart = null, $dateEnd = null, string $userPlan = 'standard')
     {
         // Find users stopped in last N days or on specific date
-        $query = User::where('stop_reason', '2x_limit_reached')
-            ->where('user_plan', 'standard');
+        $query = User::where('stop_reason', '2x_limit_reached');
+
+        if ($userPlan !== 'all') {
+            $query->where('user_plan', $userPlan);
+        }
 
         if ($dateStart && $dateEnd) {
             $query->whereBetween('roi_stopped_at', [$dateStart, $dateEnd]);
@@ -373,11 +379,14 @@ class CompleteROIFix extends Command
         $this->stats['total_amount_reversed'] += ($data['roi_after_stop'] + $data['profit_after_stop']);
     }
 
-    private function reverseExcessROI(float $percentage, int $days, bool $dryRun, $dateStart = null, $dateEnd = null)
+    private function setROIToPercentage(float $targetPercentage, int $days, bool $dryRun, $dateStart = null, $dateEnd = null, string $userPlan = 'standard')
     {
         $query = Wallet::where('wallet_type', 'roi')
-            ->whereIn('user_id', function ($q) {
-                $q->select('id')->from('users')->where('user_plan', 'standard');
+            ->whereIn('user_id', function ($q) use ($userPlan) {
+                $q->select('id')->from('users');
+                if ($userPlan !== 'all') {
+                    $q->where('user_plan', $userPlan);
+                }
             });
 
         if ($dateStart && $dateEnd) {
@@ -396,16 +405,19 @@ class CompleteROIFix extends Command
         $this->info("Found {$roiEntries->count()} ROI entries");
 
         $totalOriginal = $roiEntries->sum('balance');
-        $totalToReverse = $totalOriginal * ($percentage / 100);
-        $totalRemaining = $totalOriginal - $totalToReverse;
+
+        // Calculate what the new total should be based on target percentage
+        // Assume original was given at 42%, we want it at targetPercentage
+        $totalNew = $totalOriginal * ($targetPercentage / 42.0);
+        $totalToReverse = $totalOriginal - $totalNew;
 
         $this->table(
             ['Metric', 'Value'],
             [
                 ['Total ROI Entries', number_format($roiEntries->count())],
-                ['Original Total', '$' . number_format($totalOriginal, 2)],
-                ['To Reverse (' . $percentage . '%)', '$' . number_format($totalToReverse, 2)],
-                ['Will Remain', '$' . number_format($totalRemaining, 2)],
+                ['Original Total (42%)', '$' . number_format($totalOriginal, 2)],
+                ['Target Total (' . $targetPercentage . '%)', '$' . number_format($totalNew, 2)],
+                ['To Reverse', '$' . number_format($totalToReverse, 2)],
             ]
         );
 
@@ -413,12 +425,15 @@ class CompleteROIFix extends Command
             if ($entry->balance == 0) continue; // Skip already reversed
 
             $originalAmount = $entry->balance;
-            $reversalAmount = $originalAmount * ($percentage / 100);
-            $newAmount = $originalAmount - $reversalAmount;
+
+            // Calculate new amount: original * (targetPercentage / 42)
+            $newAmount = $originalAmount * ($targetPercentage / 42.0);
+            $reversalAmount = $originalAmount - $newAmount;
 
             if (!$dryRun) {
                 $entry->balance = $newAmount;
                 $entry->total_amount = $newAmount;
+                $entry->percentage = $targetPercentage;
                 $entry->save();
 
                 Wallet::create([
@@ -428,7 +443,7 @@ class CompleteROIFix extends Command
                     'total_amount' => -$reversalAmount,
                     'commission_type' => 'roi_reversal',
                     'level' => 0,
-                    'description' => "ROI Reversal: {$percentage}% reversed - 42% error correction (Entry #{$entry->id})",
+                    'description' => "ROI Adjusted: Changed from 42% to {$targetPercentage}% (Entry #{$entry->id})",
                     'transaction_type' => 'debit',
                     'wallet_src' => 'complete_roi_fix',
                 ]);
@@ -441,7 +456,7 @@ class CompleteROIFix extends Command
                     'amount' => $reversalAmount,
                     'charge' => 0,
                     'final_amount' => $reversalAmount,
-                    'description' => "ROI Reversal: {$percentage}% reversed due to 42% error correction",
+                    'description' => "ROI Adjusted: 42% → {$targetPercentage}%",
                     'status' => 'debit',
                 ]);
             }
@@ -451,11 +466,14 @@ class CompleteROIFix extends Command
         }
     }
 
-    private function reverseExcessProfitShare(float $percentage, int $days, bool $dryRun, $dateStart = null, $dateEnd = null)
+    private function setProfitShareToPercentage(float $targetPercentage, int $days, bool $dryRun, $dateStart = null, $dateEnd = null, string $userPlan = 'standard')
     {
         $query = Wallet::where('wallet_type', 'profit_share')
-            ->whereIn('user_id', function ($q) {
-                $q->select('id')->from('users')->where('user_plan', 'standard');
+            ->whereIn('user_id', function ($q) use ($userPlan) {
+                $q->select('id')->from('users');
+                if ($userPlan !== 'all') {
+                    $q->where('user_plan', $userPlan);
+                }
             });
 
         if ($dateStart && $dateEnd) {
@@ -474,14 +492,18 @@ class CompleteROIFix extends Command
         $this->info("Found {$profitEntries->count()} profit share entries");
 
         $totalOriginal = $profitEntries->sum('balance');
-        $totalToReverse = $totalOriginal * ($percentage / 100);
+
+        // Calculate what the new total should be based on target percentage
+        $totalNew = $totalOriginal * ($targetPercentage / 42.0);
+        $totalToReverse = $totalOriginal - $totalNew;
 
         $this->table(
             ['Metric', 'Value'],
             [
                 ['Total Entries', number_format($profitEntries->count())],
-                ['Original Total', '$' . number_format($totalOriginal, 2)],
-                ['To Reverse (' . $percentage . '%)', '$' . number_format($totalToReverse, 2)],
+                ['Original Total (42%)', '$' . number_format($totalOriginal, 2)],
+                ['Target Total (' . $targetPercentage . '%)', '$' . number_format($totalNew, 2)],
+                ['To Reverse', '$' . number_format($totalToReverse, 2)],
             ]
         );
 
@@ -489,12 +511,15 @@ class CompleteROIFix extends Command
             if ($entry->balance == 0) continue; // Skip already reversed
 
             $originalAmount = $entry->balance;
-            $reversalAmount = $originalAmount * ($percentage / 100);
-            $newAmount = $originalAmount - $reversalAmount;
+
+            // Calculate new amount: original * (targetPercentage / 42)
+            $newAmount = $originalAmount * ($targetPercentage / 42.0);
+            $reversalAmount = $originalAmount - $newAmount;
 
             if (!$dryRun) {
                 $entry->balance = $newAmount;
                 $entry->total_amount = $newAmount;
+                $entry->percentage = $targetPercentage;
                 $entry->save();
 
                 Wallet::create([
@@ -504,7 +529,7 @@ class CompleteROIFix extends Command
                     'total_amount' => -$reversalAmount,
                     'commission_type' => 'profit_share_reversal',
                     'level' => 0,
-                    'description' => "Profit Share Reversal: {$percentage}% reversed - 42% error correction",
+                    'description' => "Profit Share Adjusted: Changed from 42% to {$targetPercentage}%",
                     'transaction_type' => 'debit',
                     'wallet_src' => 'complete_roi_fix',
                 ]);
@@ -517,7 +542,7 @@ class CompleteROIFix extends Command
                     'amount' => $reversalAmount,
                     'charge' => 0,
                     'final_amount' => $reversalAmount,
-                    'description' => "Profit Share Reversal: {$percentage}% reversed due to 42% error correction",
+                    'description' => "Profit Share Adjusted: 42% → {$targetPercentage}%",
                     'status' => 'debit',
                 ]);
             }
