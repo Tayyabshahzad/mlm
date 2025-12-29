@@ -431,32 +431,22 @@ class CompleteROIFix extends Command
             $reversalAmount = $originalAmount - $newAmount;
 
             if (!$dryRun) {
+                // Simply update the ROI entry - DON'T create reversal entries
+                // This ensures total_earning stays correct for 2X calculations
                 $entry->balance = $newAmount;
                 $entry->total_amount = $newAmount;
                 $entry->percentage = $targetPercentage;
                 $entry->save();
 
-                Wallet::create([
-                    'user_id' => $entry->user_id,
-                    'wallet_type' => 'roi_reversal',
-                    'balance' => -$reversalAmount,
-                    'total_amount' => -$reversalAmount,
-                    'commission_type' => 'roi_reversal',
-                    'level' => 0,
-                    'description' => "ROI Adjusted: Changed from 42% to {$targetPercentage}% (Entry #{$entry->id})",
-                    'transaction_type' => 'debit',
-                    'wallet_src' => 'complete_roi_fix',
-                ]);
-
-                // Log transaction history
+                // Log transaction history for audit trail only
                 TransactionLog::create([
                     'user_id' => $entry->user_id,
                     'from_wallet_type' => 'roi',
-                    'to_wallet_type' => 'roi_reversal',
+                    'to_wallet_type' => 'roi_adjusted',
                     'amount' => $reversalAmount,
                     'charge' => 0,
                     'final_amount' => $reversalAmount,
-                    'description' => "ROI Adjusted: 42% → {$targetPercentage}%",
+                    'description' => "ROI Adjusted: 42% → {$targetPercentage}% (Amount reduced by $" . number_format($reversalAmount, 2) . ")",
                     'status' => 'debit',
                 ]);
             }
@@ -517,32 +507,22 @@ class CompleteROIFix extends Command
             $reversalAmount = $originalAmount - $newAmount;
 
             if (!$dryRun) {
+                // Simply update the profit share entry - DON'T create reversal entries
+                // This ensures total_earning stays correct for 2X calculations
                 $entry->balance = $newAmount;
                 $entry->total_amount = $newAmount;
                 $entry->percentage = $targetPercentage;
                 $entry->save();
 
-                Wallet::create([
-                    'user_id' => $entry->user_id,
-                    'wallet_type' => 'profit_share_reversal',
-                    'balance' => -$reversalAmount,
-                    'total_amount' => -$reversalAmount,
-                    'commission_type' => 'profit_share_reversal',
-                    'level' => 0,
-                    'description' => "Profit Share Adjusted: Changed from 42% to {$targetPercentage}%",
-                    'transaction_type' => 'debit',
-                    'wallet_src' => 'complete_roi_fix',
-                ]);
-
-                // Log transaction history
+                // Log transaction history for audit trail only
                 TransactionLog::create([
                     'user_id' => $entry->user_id,
                     'from_wallet_type' => 'profit_share',
-                    'to_wallet_type' => 'profit_share_reversal',
+                    'to_wallet_type' => 'profit_share_adjusted',
                     'amount' => $reversalAmount,
                     'charge' => 0,
                     'final_amount' => $reversalAmount,
-                    'description' => "Profit Share Adjusted: 42% → {$targetPercentage}%",
+                    'description' => "Profit Share Adjusted: 42% → {$targetPercentage}% (Amount reduced by $" . number_format($reversalAmount, 2) . ")",
                     'status' => 'debit',
                 ]);
             }
