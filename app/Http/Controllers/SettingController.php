@@ -27,6 +27,11 @@ class SettingController extends Controller
             'standard_package_min' => 'required|numeric|min:0',
             'standard_package_max' => 'required|numeric|min:0|gt:standard_package_min',
             'vip_package_min' => 'required|numeric|min:0|gte:standard_package_max',
+            'min_withdrawal_limit' => 'required|numeric|min:0',
+            'min_member_transfer' => 'required|numeric|min:0',
+            'bank_withdrawal_fee_percent' => 'required|numeric|min:0|max:100',
+            'cash_withdrawal_fee_percent' => 'required|numeric|min:0|max:100',
+            'usdt_withdrawal_discount_percent' => 'required|numeric|min:0|max:100',
         ]);
 
         $setting = Setting::find($request->id);
@@ -45,6 +50,11 @@ class SettingController extends Controller
             'standard_package_min' => $request->standard_package_min,
             'standard_package_max' => $request->standard_package_max,
             'vip_package_min' => $request->vip_package_min,
+            'min_withdrawal_limit' => $request->min_withdrawal_limit,
+            'min_member_transfer' => $request->min_member_transfer,
+            'bank_withdrawal_fee_percent' => $request->bank_withdrawal_fee_percent,
+            'cash_withdrawal_fee_percent' => $request->cash_withdrawal_fee_percent,
+            'usdt_withdrawal_discount_percent' => $request->usdt_withdrawal_discount_percent,
         ]);
 
         return redirect()->back()->with('success', 'Settings updated successfully.');

@@ -379,6 +379,93 @@
                                         </div>
                                     </div>
 
+                                    <div class="row">
+                                        <label class="col-xl-3"></label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <h5 class="font-weight-bold mb-6 mt-6">Withdrawal & Transfer Settings</h5>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">Minimum Withdrawal Limit ($)</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="min_withdrawal_limit"
+                                                value="{{ old('min_withdrawal_limit', $setting->min_withdrawal_limit ?? 25) }}"
+                                                required />
+                                            <span class="form-text text-muted">Minimum amount a user can withdraw</span>
+                                            @error('min_withdrawal_limit')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">Minimum Member Transfer ($)</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="min_member_transfer"
+                                                value="{{ old('min_member_transfer', $setting->min_member_transfer ?? 7) }}"
+                                                required />
+                                            <span class="form-text text-muted">Minimum amount for member-to-member transfers</span>
+                                            @error('min_member_transfer')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">Bank Withdrawal Fee (%)</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="bank_withdrawal_fee_percent"
+                                                value="{{ old('bank_withdrawal_fee_percent', $setting->bank_withdrawal_fee_percent ?? 2) }}"
+                                                required min="0" max="100" />
+                                            <span class="form-text text-muted">Additional fee percentage for bank withdrawals</span>
+                                            @error('bank_withdrawal_fee_percent')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">Cash Withdrawal Fee (%)</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="cash_withdrawal_fee_percent"
+                                                value="{{ old('cash_withdrawal_fee_percent', $setting->cash_withdrawal_fee_percent ?? 0) }}"
+                                                required min="0" max="100" />
+                                            <span class="form-text text-muted">Fee percentage for cash withdrawals</span>
+                                            @error('cash_withdrawal_fee_percent')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">USDT Withdrawal Discount (%)</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="usdt_withdrawal_discount_percent"
+                                                value="{{ old('usdt_withdrawal_discount_percent', $setting->usdt_withdrawal_discount_percent ?? 2) }}"
+                                                required min="0" max="100" />
+                                            <span class="form-text text-muted">Discount percentage (incentive) for USDT withdrawals</span>
+                                            @error('usdt_withdrawal_discount_percent')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
                                     <div class="form-group row">
                                         <label class="col-xl-3 col-lg-3 col-form-label">Block Wallet</label>
                                         <div class="col-lg-9 col-xl-6">

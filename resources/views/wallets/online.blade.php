@@ -581,12 +581,12 @@
                             <label for="" class="mr-2 font-weight-bold">
                                 Amount <span class="text-danger">*</span>
                             </label>
-                            <input type="number" class="mb-2 form-control form-control-sm form-control-solid" 
-                             name="amount" min="15" step="0.01"
-                             required 
+                            <input type="number" class="mb-2 form-control form-control-sm form-control-solid"
+                             name="amount" min="{{ $setting->min_withdrawal_limit ?? 25 }}" step="0.01"
+                             required
                              placeholder="Enter Amount"
-                             >  
-                             <small class="text-danger">Minimum Transfer Amount: $15</small> 
+                             >
+                             <small class="text-danger">Minimum Withdrawal Amount: ${{ $setting->min_withdrawal_limit ?? 25 }}</small> 
                         </div>  
                         
                         <div class="col-lg-12 col-xl-12">
@@ -600,11 +600,22 @@
                                 Choose Withdraw Option <span class="text-danger"> *</span>
                             </label>
                             <div>
-                                <input type="radio" value="bank" class="" name="withdrawal_option"> Bank
-                                <input type="radio" value="usdt" name="withdrawal_option"> USDT
-                                <input type="radio" value="cash" name="withdrawal_option"> Cash
+                                <input type="radio" value="bank" class="" name="withdrawal_option">
+                                <span>Bank <small class="text-warning">({{ $setting->bank_withdrawal_fee_percent ?? 2 }}% fee applies)</small></span>
+                                <br>
+                                <input type="radio" value="usdt" name="withdrawal_option">
+                                <span>USDT <small class="text-success">({{ $setting->usdt_withdrawal_discount_percent ?? 2 }}% discount!)</small></span>
+                                <br>
+                                <input type="radio" value="cash" name="withdrawal_option">
+                                <span>Cash
+                                    @if(($setting->cash_withdrawal_fee_percent ?? 0) > 0)
+                                        <small class="text-warning">({{ $setting->cash_withdrawal_fee_percent }}% fee applies)</small>
+                                    @else
+                                        <small class="text-muted">(No fees)</small>
+                                    @endif
+                                </span>
                             </div>
-                            
+
                         </div>  
                     </div>  
                 </div>
@@ -646,13 +657,13 @@
                             <label for="" class="mr-2 font-weight-bold">
                                 Amount <span class="text-danger">*</span>
                             </label>
-                            <input type="number" class="mb-2 form-control form-control-sm form-control-solid" 
-                             name="amount" min="5" step="0.01"
-                             required 
+                            <input type="number" class="mb-2 form-control form-control-sm form-control-solid"
+                             name="amount" min="{{ $setting->min_member_transfer ?? 7 }}" step="0.01"
+                             required
                              max="{{ $onlineWallets->sum('balance') }}"
                              placeholder="Enter Amount"
-                             > 
-                             <small class="text-danger">Minimum Transfer Amount: 5PV</small> 
+                             >
+                             <small class="text-danger">Minimum Transfer Amount: ${{ $setting->min_member_transfer ?? 7 }}</small> 
                         </div>  
 
                         <div class="col-lg-12 col-xl-12">

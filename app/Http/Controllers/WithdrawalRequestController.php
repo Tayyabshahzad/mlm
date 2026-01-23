@@ -78,8 +78,11 @@ class WithdrawalRequestController extends Controller
 
     public function store(Request $request)
     {
+        $settings = Setting::first();
+        $minWithdrawalLimit = $settings->min_withdrawal_limit ?? 25;
+
         $request->validate([
-            'amount' => 'required|numeric|min:15',
+            'amount' => 'required|numeric|min:' . $minWithdrawalLimit,
             'review_notes' => 'string',
             'withdrawal_option' => 'required|in:usdt,bank,cash',
         ]);
@@ -96,11 +99,30 @@ class WithdrawalRequestController extends Controller
         }
         if ($request->withdrawal_option == 'usdt' && !auth::user()->profile->account_number) {
             return redirect()->back()->with('error', 'Please add your USDT Address Details');
-        } 
+        }
+
         $actualAmount = $request->amount;
-        //$calculatedFee = ($request->withdrawal_option == 'bank') ? ($actualAmount * 0.02) : 0; 
+
+        // Calculate fee/discount based on withdrawal option
         $calculatedFee = 0;
-        $withdrawableAmount = $actualAmount - $calculatedFee;  
+        $withdrawableAmount = $actualAmount;
+
+        if ($request->withdrawal_option == 'bank') {
+            // Apply bank withdrawal fee
+            $feePercent = $settings->bank_withdrawal_fee_percent ?? 2;
+            $calculatedFee = $actualAmount * ($feePercent / 100);
+            $withdrawableAmount = $actualAmount - $calculatedFee;
+        } elseif ($request->withdrawal_option == 'cash') {
+            // Apply cash withdrawal fee
+            $feePercent = $settings->cash_withdrawal_fee_percent ?? 0;
+            $calculatedFee = $actualAmount * ($feePercent / 100);
+            $withdrawableAmount = $actualAmount - $calculatedFee;
+        } elseif ($request->withdrawal_option == 'usdt') {
+            // Apply USDT discount (negative fee means bonus)
+            $discountPercent = $settings->usdt_withdrawal_discount_percent ?? 2;
+            $calculatedFee = -($actualAmount * ($discountPercent / 100)); // Negative for discount
+            $withdrawableAmount = $actualAmount + abs($calculatedFee); // Add discount
+        }  
         $onlineWalletSum = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id())
         ->sum('balance');
@@ -138,8 +160,11 @@ class WithdrawalRequestController extends Controller
 
     public function memberTransfer(Request $request)
     {
-        $request->validate([ 
-            'amount' => 'required|numeric|min:5',
+        $settings = Setting::first();
+        $minMemberTransfer = $settings->min_member_transfer ?? 7;
+
+        $request->validate([
+            'amount' => 'required|numeric|min:' . $minMemberTransfer,
             'description' => 'required|string',
             'member_account'=> 'required',
             'wallet_type' =>'required|in:member_transfer'
