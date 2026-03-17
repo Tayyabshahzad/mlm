@@ -39,14 +39,35 @@
                 <!--begin::Header-->
                 <div class="card-header border-0 py-5">
                     <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label font-weight-bolder text-dark">Total Requests : {{ $withDrawsRequests->count() }}</span> 
+                        <span class="card-label font-weight-bolder text-dark">Total Requests : {{ $withDrawsRequests->count() }}</span>
                     </h3>
                     <div class="card-toolbar">
-                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Total Approved: {{ $withDrawsRequests->where('status','approved')->count() }}</a> 
+                        <a href="#" data-toggle="modal" data-target="#WithdrawModel" class="mr-3 rounded-0 btn btn-info font-weight-bolder font-size-sm">Total Approved: {{ $withDrawsRequests->where('status','approved')->count() }}</a>
                         <a href="{{ route('show.transaction.history') }}"   class="mr-3 rounded-0 btn btn-warning font-weight-bolder font-size-sm">Total Pending: {{ $withDrawsRequests->where('status','pending')->count() }}</a>
                         <a href="{{ route('show.transaction.history') }}"   class="rounded-0 btn btn-danger font-weight-bolder font-size-sm">Total Rejected: {{ $withDrawsRequests->where('status','rejected')->count() }}</a>
                     </div>
                 </div>
+                <!--begin::Search-->
+                <div class="card-body pt-0 pb-3">
+                    <form method="GET" action="{{ request()->url() }}" class="d-flex align-items-center">
+                        <div class="input-group" style="max-width: 350px;">
+                            <input type="text" name="search" class="form-control form-control-sm rounded-0"
+                                placeholder="Search by username..."
+                                value="{{ $search ?? '' }}">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-primary btn-sm rounded-0">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                @if(!empty($search))
+                                    <a href="{{ request()->url() }}" class="btn btn-secondary btn-sm rounded-0">
+                                        <i class="fas fa-times"></i> Clear
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!--end::Search-->
                 <!--end::Header-->
                 <!--begin::Body-->
                 <div class="card-body py-0">

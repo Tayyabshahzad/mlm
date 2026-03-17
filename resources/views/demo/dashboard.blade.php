@@ -837,6 +837,19 @@
                     <div class="col-lg-8">
                         <h1 class="dashboard-title">Welcome back, {{ Auth::user()->name }}!</h1>
                         <p class="dashboard-subtitle">Here's what's happening with your Global Visioners account today.</p>
+                        <div class="mt-3">
+                            @if($data['user_plan'] === 'vip')
+                                <span style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:8px 20px;border-radius:50px;font-weight:700;font-size:0.95rem;box-shadow:0 4px 15px rgba(245,158,11,0.4);letter-spacing:0.5px;">
+                                    <i class="fas fa-crown" style="font-size:1rem;"></i>
+                                    VIP Gold Package
+                                </span>
+                            @else
+                                <span style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;padding:8px 20px;border-radius:50px;font-weight:700;font-size:0.95rem;box-shadow:0 4px 15px rgba(99,102,241,0.4);letter-spacing:0.5px;">
+                                    <i class="fas fa-gem" style="font-size:1rem;"></i>
+                                    VIP Silver Package
+                                </span>
+                            @endif
+                        </div>
                     </div>
                     <div class="col-lg-4 text-lg-right">
                         <div class="d-flex align-items-center justify-content-lg-end">
@@ -957,6 +970,21 @@
                         <span>Achievement bonuses</span>
                     </div>
                 </div>
+
+                <!-- Designation Incentive -->
+                <a href="{{ route('wallets.incentive') }}" class="text-decoration-none">
+                    <div class="stat-card warning">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-label">Designation Incentive</div>
+                        <div class="stat-value">${{ number_format($data['designation_incentive'], 2) }}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Incentive earnings</span>
+                        </div>
+                    </div>
+                </a>
             </div>
 
             <!-- Admin Only: ROI Missing Alert Box -->

@@ -37,12 +37,17 @@
         <div class="flex-column-fluid">
             <div class="container">
                 <div class="card card-custom gutter-b"> 
-                    <div class="py-5 border-0 card-header justify-content-right">
-                        <h3 class="card-title "> 
-                            <button type="button" 
+                    <div class="py-5 border-0 card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">
+                            <button type="button"
                             data-toggle="modal" data-target="#account-top-up"
-                            class="btn btn-danger btn-sm font-weight-bold rounded-0">Account TopUp</button>  
-                        </h3> 
+                            class="btn btn-danger btn-sm font-weight-bold rounded-0">Account TopUp</button>
+                        </h3>
+                        <div class="card-toolbar">
+                            <a href="{{ route('account.topups.analytics') }}" class="btn btn-primary btn-sm font-weight-bold rounded-0">
+                                <i class="la la-chart-bar"></i> View Analytics
+                            </a>
+                        </div>
                     </div> 
                     <div class="py-0 card-body"> 
                         <div class="table-responsive">

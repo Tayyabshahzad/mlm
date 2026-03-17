@@ -1,5 +1,5 @@
 @extends('demo.layout.app')
-@section('title', 'User Plan Assignment - VIP & Standard')
+@section('title', 'User Plan Assignment - VIP Gold & VIP Silver')
 
 @push('styles')
 <style>
@@ -104,7 +104,7 @@
                             <div class="mt-2 text-primary font-weight-bold font-size-h2">
                                 {{ $standardCount }}
                             </div>
-                            <div class="mt-2 font-weight-bold text-muted">Standard Plan Users</div>
+                            <div class="mt-2 font-weight-bold text-muted">VIP Silver Users</div>
                         </div>
                     </div>
                 </div>
@@ -114,7 +114,7 @@
                             <div class="mt-2 text-warning font-weight-bold font-size-h2">
                                 {{ $vipCount }}
                             </div>
-                            <div class="mt-2 font-weight-bold text-muted">VIP Plan Users</div>
+                            <div class="mt-2 font-weight-bold text-muted">VIP Gold Users</div>
                         </div>
                     </div>
                 </div>
@@ -134,16 +134,16 @@
                 <div class="py-5 border-0 card-header">
                     <h3 class="card-title align-items-start flex-column">
                         <span class="card-label font-weight-bolder text-dark">User Plans</span>
-                        <span class="mt-3 text-muted font-weight-bold font-size-sm">Assign VIP or Standard plan to users</span>
+                        <span class="mt-3 text-muted font-weight-bold font-size-sm">Assign VIP Gold or VIP Silver plan to users</span>
                     </h3>
                     <div class="card-toolbar">
                         <div id="bulkActions" style="display:none;">
                             <span class="mr-3 text-muted"><span id="selectedCount">0</span> users selected</span>
                             <button type="button" class="mr-2 btn btn-sm btn-light-primary font-weight-bold" onclick="assignSelectedUsers('standard')">
-                                <i class="la la-user"></i> Set Standard
+                                <i class="la la-user"></i> Set VIP Silver
                             </button>
                             <button type="button" class="btn btn-sm btn-light-warning font-weight-bold" onclick="assignSelectedUsers('vip')">
-                                <i class="la la-star"></i> Set VIP
+                                <i class="la la-star"></i> Set VIP Gold
                             </button>
                         </div>
                     </div>
@@ -170,8 +170,8 @@
                                         <div class="my-2 col-md-3 my-md-0">
                                             <select name="plan_filter" class="form-control">
                                                 <option value="">All Plans</option>
-                                                <option value="standard" {{ request('plan_filter') == 'standard' ? 'selected' : '' }}>Standard</option>
-                                                <option value="vip" {{ request('plan_filter') == 'vip' ? 'selected' : '' }}>VIP</option>
+                                                <option value="standard" {{ request('plan_filter') == 'standard' ? 'selected' : '' }}>VIP Silver</option>
+                                                <option value="vip" {{ request('plan_filter') == 'vip' ? 'selected' : '' }}>VIP Gold</option>
                                             </select>
                                         </div>
                                         <div class="my-2 col-md-3 my-md-0">
@@ -251,11 +251,11 @@
                                     <td class="text-center">
                                         @if($user->user_plan === 'vip')
                                             <span class="label label-lg label-light-warning label-inline font-weight-bold">
-                                                <i class="la la-star"></i> VIP
+                                                <i class="la la-star"></i> VIP Gold
                                             </span>
                                         @else
                                             <span class="label label-lg label-light-primary label-inline font-weight-bold">
-                                                <i class="la la-user"></i> Standard
+                                                <i class="la la-user"></i> VIP Silver
                                             </span>
                                         @endif
                                     </td>
@@ -265,14 +265,14 @@
                                                 <button type="button"
                                                         class="btn btn-sm btn-light-primary font-weight-bold"
                                                         onclick="updateUserPlan({{ $user->id }}, 'standard', '{{ $user->name }}')">
-                                                    <i class="la la-user"></i> Set Standard
+                                                    <i class="la la-user"></i> Set VIP Silver
                                                 </button>
                                             @endif
                                             @if($user->user_plan !== 'vip')
                                                 <button type="button"
                                                         class="btn btn-sm btn-light-warning font-weight-bold"
                                                         onclick="updateUserPlan({{ $user->id }}, 'vip', '{{ $user->name }}')">
-                                                    <i class="la la-star"></i> Set VIP
+                                                    <i class="la la-star"></i> Set VIP Gold
                                                 </button>
                                             @endif
                                         </div>
@@ -352,14 +352,14 @@
                                 <input type="radio" name="plan" value="standard" checked/>
                                 <span></span>
                                 <span class="ml-2">
-                                    <i class="la la-user text-primary"></i> Standard Plan
+                                    <i class="la la-user text-primary"></i> VIP Silver
                                 </span>
                             </label>
                             <label class="radio radio-lg">
                                 <input type="radio" name="plan" value="vip"/>
                                 <span></span>
                                 <span class="ml-2">
-                                    <i class="la la-star text-warning"></i> VIP Plan
+                                    <i class="la la-star text-warning"></i> VIP Gold
                                 </span>
                             </label>
                         </div>
@@ -415,11 +415,11 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="label label-primary">Standard</span></td>
+                                <td><span class="label label-primary">VIP Silver</span></td>
                                 <td>${{ number_format(\App\Models\Setting::first()->standard_package_min ?? 50, 2) }} - ${{ number_format(\App\Models\Setting::first()->standard_package_max ?? 344, 2) }}</td>
                             </tr>
                             <tr>
-                                <td><span class="label label-warning">VIP</span></td>
+                                <td><span class="label label-warning">VIP Gold</span></td>
                                 <td>${{ number_format(\App\Models\Setting::first()->vip_package_min ?? 345, 2) }} and above</td>
                             </tr>
                         </tbody>
@@ -457,7 +457,7 @@
 @section('page_js')
 <script>
 function updateUserPlan(userId, plan, userName) {
-    const planLabel = plan === 'vip' ? 'VIP' : 'Standard';
+    const planLabel = plan === 'vip' ? 'VIP Gold' : 'VIP Silver';
     const confirmMessage = `Are you sure you want to assign ${planLabel} plan to ${userName}?`;
 
     if (confirm(confirmMessage)) {
@@ -502,7 +502,7 @@ function assignSelectedUsers(plan) {
         return;
     }
 
-    const planLabel = plan === 'vip' ? 'VIP' : 'Standard';
+    const planLabel = plan === 'vip' ? 'VIP Gold' : 'VIP Silver';
     const confirmMessage = `Are you sure you want to assign ${planLabel} plan to ${userIds.length} selected user(s)?`;
 
     if (confirm(confirmMessage)) {

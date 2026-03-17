@@ -80,8 +80,9 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::get('return-on-investment', 'ROI')->name('wallets.roi');
         Route::get('profit-share', 'profitShare')->name('wallets.profit.share');
         Route::get('rank', 'rank')->name('wallets.rank');
+        Route::get('incentive-wallets', 'incentiveWallets')->name('wallets.incentive');
         Route::post('transfer-to-online', 'transferToOnline')->name('wallet.transfer.to.online');
-        Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history'); 
+        Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history');
         Route::post('clear-negative-points', 'clearNegativePoints')->name('clear.negative.points');
     });
 
@@ -112,7 +113,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('activation-code','activationCode')->name('user.activation.code');
         Route::post('/admin/activation-code/update-status','updateActivationCode')->name('admin.activation-code.update-status');
         Route::get('download/contacts', 'downloadContacts')->name('download.contacts');
-        
+        Route::get('incentive-wallet', 'incentiveWallet')->name('admin.incentive.wallet');
+        Route::post('incentive-wallet/send', 'sendIncentive')->name('admin.incentive.send');
+        Route::get('change-parent', 'changeParent')->name('admin.change.parent');
+        Route::post('change-parent/process', 'processChangeParent')->name('admin.change.parent.process');
       // Route::post('admin/topup','storeTopup')->name('user.topup.store');
 
     });
@@ -142,6 +146,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     });
     Route::controller(WithdrawalRequestController::class)->group(function () {
         Route::get('/withdrawals/requests', 'requests')->name('withdrawals.requests');
+        Route::get('/withdrawals/analytics', 'analytics')->name('withdrawals.analytics');
+        Route::get('/withdrawals/export', 'exportWithdrawals')->name('withdrawals.export');
         Route::get('/withdraw-request/{id}', 'getWithdrawalRequest')->name('withdraw.request.details');
         Route::post('/withdraw-request/update', 'updateWithdrawalRequest')->name('withdraw.request.update');
     });
@@ -251,6 +257,8 @@ Route::prefix('account')->controller(TopupController::class)->middleware(['auth'
     Route::get('top-ups', 'index')->name('account.topups.index');
     Route::post('top-ups', 'store')->name('account.topups.store');
     Route::post('top-ups/process', 'topUp')->name('account.topups.process');
+    Route::get('top-ups/analytics', 'analytics')->name('account.topups.analytics');
+    Route::get('top-ups/export', 'exportTopups')->name('account.topups.export');
 });
 
 

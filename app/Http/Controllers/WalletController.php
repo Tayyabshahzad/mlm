@@ -192,11 +192,26 @@ class WalletController extends Controller
         return view('wallets.rank'); 
     }
 
+    public function incentiveWallets()
+    {
+        $userId = auth()->id();
+
+        $wallets = Wallet::where('user_id', $userId)
+            ->where('wallet_type', 'designation_incentive')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $totalEarning   = Wallet::where('user_id', $userId)->where('wallet_type', 'designation_incentive')->sum('total_amount');
+        $currentBalance = Wallet::where('user_id', $userId)->where('wallet_type', 'designation_incentive')->sum('balance');
+
+        return view('wallets.incentive-wallets', compact('wallets', 'totalEarning', 'currentBalance'));
+    }
+
     public function transferToOnline(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:5.27',
-            'wallet_type' => 'required|in:direct_indirect,reward,roi,profit_share',
+            'amount' => 'required|numeric|min:5',
+            'wallet_type' => 'required|in:direct_indirect,reward,roi,profit_share,designation_incentive',
         ]);  
         $userId = auth()->id();  
         $amountToTransfer = $request->input('amount');  

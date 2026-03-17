@@ -116,9 +116,9 @@
                                                         <td class="align-middle ">{{ ucfirst($teamMember->payment_method) }}</td>
                                                         <td class="align-middle">
                                                             @if(($teamMember->user_plan ?? 'standard') === 'vip')
-                                                                <span class="badge badge-success">VIP</span>
+                                                                <span class="badge badge-warning">VIP Gold</span>
                                                             @else
-                                                                <span class="badge badge-secondary">Standard</span>
+                                                                <span class="badge badge-primary">VIP Silver</span>
                                                             @endif
                                                         </td>
                                                         <td class="align-middle text-primary"> 

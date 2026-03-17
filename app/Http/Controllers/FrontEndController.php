@@ -334,6 +334,8 @@ class FrontEndController extends Controller
             'rewardWallet' => $wallets->where('wallet_type', 'reward')->sum('balance'),
             'roi' => $wallets->where('wallet_type', 'roi')->sum('balance'),
             'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
+            'designation_incentive' => $wallets->where('wallet_type', 'designation_incentive')->sum('balance'),
+            'user_plan' => $user->user_plan ?? 'standard',
             'rank' => 0,
             'total_earning'=>$totalEarning,
             'team_size' => $teamSizing,

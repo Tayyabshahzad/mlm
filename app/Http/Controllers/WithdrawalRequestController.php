@@ -7,9 +7,12 @@ use App\Models\TransactionLog;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WithDrawalequest;
+use App\Exports\WithdrawalReportExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Carbon\Carbon;
 
 class WithdrawalRequestController extends Controller
 {
@@ -224,8 +227,19 @@ class WithdrawalRequestController extends Controller
 
     public function requests(Request $request)
     {
-        $withDrawsRequests = WithDrawalequest::orderby('created_at','desc')->get();
-        return view('users.widthdrawls-request',compact('withDrawsRequests')); 
+        $search = $request->get('search');
+
+        $query = WithDrawalequest::with('user')
+            ->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('username', 'like', '%' . $search . '%');
+            });
+        }
+
+        $withDrawsRequests = $query->get();
+        return view('users.widthdrawls-request', compact('withDrawsRequests', 'search'));
     }
 
     public function getWithdrawalRequest($id)
@@ -323,17 +337,212 @@ class WithdrawalRequestController extends Controller
             'user_id' => $userId,
             'from_wallet_type' => $toAddress,
             'to_wallet_type' => $fromAddress,
-            'charge' =>0, 
-            'amount' => $amount, 
+            'charge' =>0,
+            'amount' => $amount,
             'final_amount' => $finalAmount,
             'description' => $description,
         ]);
     }
 
+    public function analytics(Request $request)
+    {
+        $selectedMonth = $request->get('month', Carbon::now()->month);
+        $selectedYear = $request->get('year', Carbon::now()->year);
+        $selectedStatus = $request->get('status', 'all');
 
-    
+        // Get monthly statistics
+        $monthlyStats = $this->getWithdrawalMonthlyStats($selectedMonth, $selectedYear);
 
+        // Get daily breakdown
+        $dailyData = $this->getWithdrawalDailyBreakdown($selectedMonth, $selectedYear);
 
+        // Get monthly trend (12 months)
+        $monthlyTrend = $this->getWithdrawalMonthlyTrend();
 
-    
+        // Get status breakdown for pie chart
+        $statusBreakdown = $this->getStatusBreakdown($selectedMonth, $selectedYear);
+
+        // Get request type breakdown
+        $typeBreakdown = $this->getTypeBreakdown($selectedMonth, $selectedYear);
+
+        // Get recent withdrawals with user details
+        $query = WithDrawalequest::with(['user', 'user.profile'])
+            ->whereMonth('created_at', $selectedMonth)
+            ->whereYear('created_at', $selectedYear);
+
+        if ($selectedStatus !== 'all') {
+            $query->where('status', $selectedStatus);
+        }
+
+        $recentWithdrawals = $query->orderBy('created_at', 'desc')->paginate(15);
+
+        // Get available years
+        $availableYears = WithDrawalequest::selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        if ($availableYears->isEmpty()) {
+            $availableYears = collect([Carbon::now()->year]);
+        }
+
+        return view('users.withdrawal-analytics', compact(
+            'monthlyStats',
+            'dailyData',
+            'monthlyTrend',
+            'statusBreakdown',
+            'typeBreakdown',
+            'recentWithdrawals',
+            'selectedMonth',
+            'selectedYear',
+            'selectedStatus',
+            'availableYears'
+        ));
+    }
+
+    public function exportWithdrawals(Request $request)
+    {
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $month = $request->get('month');
+        $year = $request->get('year');
+        $status = $request->get('status');
+
+        $filename = 'withdrawal_report_';
+
+        if ($startDate && $endDate) {
+            $filename .= Carbon::parse($startDate)->format('Ymd') . '_to_' . Carbon::parse($endDate)->format('Ymd');
+        } elseif ($month && $year) {
+            $filename .= Carbon::createFromDate($year, $month, 1)->format('F_Y');
+        } else {
+            $filename .= Carbon::now()->format('Ymd_His');
+        }
+
+        $filename .= '.xlsx';
+
+        return Excel::download(new WithdrawalReportExport($startDate, $endDate, $month, $year, $status), $filename);
+    }
+
+    private function getWithdrawalMonthlyStats($month, $year)
+    {
+        $withdrawals = WithDrawalequest::whereMonth('created_at', $month)
+            ->whereYear('created_at', $year);
+
+        $totalAmount = (clone $withdrawals)->sum('amount');
+        $totalRequests = (clone $withdrawals)->count();
+        $approvedAmount = (clone $withdrawals)->where('status', 'approved')->sum('amount');
+        $pendingCount = (clone $withdrawals)->where('status', 'pending')->count();
+        $approvedCount = (clone $withdrawals)->where('status', 'approved')->count();
+        $rejectedCount = (clone $withdrawals)->where('status', 'rejected')->count();
+
+        // Previous month comparison
+        $prevMonth = Carbon::createFromDate($year, $month, 1)->subMonth();
+        $prevWithdrawals = WithDrawalequest::whereMonth('created_at', $prevMonth->month)
+            ->whereYear('created_at', $prevMonth->year);
+
+        $prevTotalAmount = $prevWithdrawals->sum('amount');
+        $percentageChange = $prevTotalAmount > 0
+            ? round((($totalAmount - $prevTotalAmount) / $prevTotalAmount) * 100, 1)
+            : 0;
+
+        return [
+            'total_amount' => $totalAmount,
+            'total_requests' => $totalRequests,
+            'approved_amount' => $approvedAmount,
+            'pending_count' => $pendingCount,
+            'approved_count' => $approvedCount,
+            'rejected_count' => $rejectedCount,
+            'percentage_change' => $percentageChange,
+        ];
+    }
+
+    private function getWithdrawalDailyBreakdown($month, $year)
+    {
+        $dailyData = WithDrawalequest::whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->selectRaw('DATE(created_at) as date, SUM(amount) as total, COUNT(*) as count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $daysInMonth = Carbon::createFromDate($year, $month, 1)->daysInMonth;
+        $labels = [];
+        $amounts = [];
+        $counts = [];
+
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $date = Carbon::createFromDate($year, $month, $day)->format('Y-m-d');
+            $labels[] = $day;
+
+            $dayData = $dailyData->firstWhere('date', $date);
+            $amounts[] = $dayData ? round($dayData->total, 2) : 0;
+            $counts[] = $dayData ? $dayData->count : 0;
+        }
+
+        return [
+            'labels' => $labels,
+            'amounts' => $amounts,
+            'counts' => $counts,
+        ];
+    }
+
+    private function getWithdrawalMonthlyTrend()
+    {
+        $months = [];
+        $amounts = [];
+        $counts = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $months[] = $date->format('M Y');
+
+            $monthData = WithDrawalequest::whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year)
+                ->selectRaw('SUM(amount) as total, COUNT(*) as count')
+                ->first();
+
+            $amounts[] = $monthData ? round($monthData->total ?? 0, 2) : 0;
+            $counts[] = $monthData ? ($monthData->count ?? 0) : 0;
+        }
+
+        return [
+            'labels' => $months,
+            'amounts' => $amounts,
+            'counts' => $counts,
+        ];
+    }
+
+    private function getStatusBreakdown($month, $year)
+    {
+        $data = WithDrawalequest::whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->selectRaw('status, COUNT(*) as count, SUM(amount) as total')
+            ->groupBy('status')
+            ->get()
+            ->keyBy('status');
+
+        return [
+            'pending' => [
+                'count' => $data->get('pending')->count ?? 0,
+                'amount' => $data->get('pending')->total ?? 0,
+            ],
+            'approved' => [
+                'count' => $data->get('approved')->count ?? 0,
+                'amount' => $data->get('approved')->total ?? 0,
+            ],
+            'rejected' => [
+                'count' => $data->get('rejected')->count ?? 0,
+                'amount' => $data->get('rejected')->total ?? 0,
+            ],
+        ];
+    }
+
+    private function getTypeBreakdown($month, $year)
+    {
+        return WithDrawalequest::whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->selectRaw('request_type, COUNT(*) as count, SUM(amount) as total')
+            ->groupBy('request_type')
+            ->get();
+    }
 }

@@ -499,6 +499,15 @@
                                             </a>
                                         </li>
 
+                                        <li class="menu-item @if(request()->is('wallets/incentive-wallets*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.incentive') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot">
+                                                    <span></span>
+                                                </i>
+                                                <span class="menu-text">Incentive Wallets</span>
+                                            </a>
+                                        </li>
+
                                         <li class="menu-item" aria-haspopup="true">
                                             <a href="{{ route('show.transaction.history') }}" class="menu-link">
                                                 <i class="menu-bullet menu-bullet-dot">
@@ -730,6 +739,22 @@
                                     <div class="menu-submenu">
                                         <i class="menu-arrow"></i>
                                         <ul class="menu-subnav">
+                                            <li class="menu-item menu-item-submenu @if (request()->is('withdrawals/analytics*')) menu-item-active @endif" aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a href="{{ route('withdrawals.analytics') }}"
+                                                    class="menu-link menu-toggle">
+                                                    <i class="menu-bullet menu-bullet-dot">
+                                                        <span></span>
+                                                    </i>
+                                                    <span class="menu-text">Withdrawal Analytics</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="menu-submenu">
+                                        <i class="menu-arrow"></i>
+                                        <ul class="menu-subnav">
                                             <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                                 data-menu-toggle="hover">
                                                 <a href="{{ route('account.topups.index') }}"
@@ -743,6 +768,21 @@
                                         </ul>
                                     </div>
 
+                                    <div class="menu-submenu">
+                                        <i class="menu-arrow"></i>
+                                        <ul class="menu-subnav">
+                                            <li class="menu-item menu-item-submenu @if (request()->is('account/top-ups/analytics*')) menu-item-active @endif" aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a href="{{ route('account.topups.analytics') }}"
+                                                    class="menu-link menu-toggle">
+                                                    <i class="menu-bullet menu-bullet-dot">
+                                                        <span></span>
+                                                    </i>
+                                                    <span class="menu-text">TopUp Analytics</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
 
                                     <div class="menu-submenu">
                                         <i class="menu-arrow"></i>
@@ -760,7 +800,33 @@
                                         </ul>
                                     </div>
 
-                                   
+                                    <div class="menu-submenu">
+                                        <i class="menu-arrow"></i>
+                                        <ul class="menu-subnav">
+                                            <li class="menu-item menu-item-submenu @if(request()->is('users/incentive-wallet*')) menu-item-active @endif" aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a href="{{ route('admin.incentive.wallet') }}"
+                                                    class="menu-link menu-toggle">
+                                                    <i class="menu-bullet menu-bullet-dot">
+                                                        <span></span>
+                                                    </i>
+                                                    <span class="menu-text">Incentive Wallet</span>
+                                                </a>
+                                            </li>
+                                            <li class="menu-item menu-item-submenu @if(request()->is('users/change-parent*')) menu-item-active @endif" aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a href="{{ route('admin.change.parent') }}"
+                                                    class="menu-link menu-toggle">
+                                                    <i class="menu-bullet menu-bullet-dot">
+                                                        <span></span>
+                                                    </i>
+                                                    <span class="menu-text">Change Parent</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+
                                 </li>
 
                                 <li class="menu-section">
@@ -1018,7 +1084,7 @@
                                                 <i class="menu-bullet menu-bullet-dot">
                                                     <span></span>
                                                 </i>
-                                                <span class="menu-text">User Plans (VIP/Standard)</span>
+                                                <span class="menu-text">User Plans (Gold/Silver)</span>
                                             </a>
                                         </li>
 

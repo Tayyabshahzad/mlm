@@ -1,5 +1,5 @@
 @extends('demo.layout.app')
-@section('title', 'ROI Settings - VIP & Standard Plans')
+@section('title', 'ROI Settings - VIP Gold & VIP Silver Plans')
 @section('content')
 <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
     <div class="subheader py-2 py-lg-6 subheader-solid" id="kt_subheader">
@@ -61,7 +61,7 @@
                         <div class="card-body d-flex align-items-center py-5 py-lg-10">
                             <div class="d-flex flex-column flex-grow-1 py-2 py-lg-5">
                                 <span class="card-title font-weight-bolder text-dark-75 font-size-h5 mb-2 text-hover-primary">
-                                    Standard Plan
+                                    VIP Silver
                                 </span>
                                 <span class="font-weight-bold text-muted font-size-lg">
                                     Daily ROI Percentage for Regular Users
@@ -84,7 +84,7 @@
                         <div class="card-body d-flex align-items-center py-5 py-lg-10">
                             <div class="d-flex flex-column flex-grow-1 py-2 py-lg-5">
                                 <span class="card-title font-weight-bolder text-dark-75 font-size-h5 mb-2 text-hover-primary">
-                                    VIP Plan
+                                    VIP Gold
                                 </span>
                                 <span class="font-weight-bold text-muted font-size-lg">
                                     Daily ROI Percentage for Premium Users
@@ -124,7 +124,7 @@
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-3 col-form-label font-weight-bold">Standard Plan Percentage</label>
+                            <label class="col-3 col-form-label font-weight-bold">VIP Silver Percentage</label>
                             <div class="col-9">
                                 <div class="input-group">
                                     <input type="number"
@@ -142,12 +142,12 @@
                                 @error('standard_percentage')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
-                                <span class="form-text text-muted">Daily ROI percentage for users on the Standard plan</span>
+                                <span class="form-text text-muted">Daily ROI percentage for users on the VIP Silver plan</span>
                             </div>
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-3 col-form-label font-weight-bold">VIP Plan Percentage</label>
+                            <label class="col-3 col-form-label font-weight-bold">VIP Gold Percentage</label>
                             <div class="col-9">
                                 <div class="input-group">
                                     <input type="number"
@@ -165,7 +165,7 @@
                                 @error('vip_percentage')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
-                                <span class="form-text text-muted">Daily ROI percentage for users on the VIP plan</span>
+                                <span class="form-text text-muted">Daily ROI percentage for users on the VIP Gold plan</span>
                             </div>
                         </div>
 
@@ -176,7 +176,7 @@
                                 <div class="card card-custom bg-light-primary">
                                     <div class="card-body p-5">
                                         <h5 class="font-weight-bolder text-primary mb-3">
-                                            <i class="la la-lightbulb"></i> Standard Plan Example
+                                            <i class="la la-lightbulb"></i> VIP Silver Example
                                         </h5>
                                         <p class="text-dark-75 mb-2">
                                             If a user invests <strong>$1,000</strong> with <strong>{{ number_format($week->standard_percentage ?? 0, 2) }}%</strong> daily ROI:
@@ -194,7 +194,7 @@
                                 <div class="card card-custom bg-light-warning">
                                     <div class="card-body p-5">
                                         <h5 class="font-weight-bolder text-warning mb-3">
-                                            <i class="la la-star"></i> VIP Plan Example
+                                            <i class="la la-star"></i> VIP Gold Example
                                         </h5>
                                         <p class="text-dark-75 mb-2">
                                             If a user invests <strong>$1,000</strong> with <strong>{{ number_format($week->vip_percentage ?? 0, 2) }}%</strong> daily ROI:

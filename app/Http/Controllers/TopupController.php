@@ -13,11 +13,14 @@ use App\Services\InvestmentSlabService;
 use App\Services\WalletService;
 use App\Services\AccountManagementService;
 use App\Services\AutomatedROIService;
+use App\Exports\TopupReportExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
+use Carbon\Carbon;
 
 class TopupController extends Controller
 {
@@ -45,10 +48,175 @@ class TopupController extends Controller
 
     public function index(Request $request)
     {
-         
+
         $users = User::all();
         $wallets = Wallet::where('wallet_src','top_up')->orderBy('id','desc')->get();
         return view('users.account-topup', compact('users','wallets'));
+    }
+
+    public function analytics(Request $request)
+    {
+        $selectedMonth = $request->get('month', Carbon::now()->month);
+        $selectedYear = $request->get('year', Carbon::now()->year);
+
+        // Get monthly statistics for the selected month
+        $monthlyStats = $this->getMonthlyStats($selectedMonth, $selectedYear);
+
+        // Get daily breakdown for the selected month
+        $dailyData = $this->getDailyBreakdown($selectedMonth, $selectedYear);
+
+        // Get monthly trend data for the past 12 months
+        $monthlyTrend = $this->getMonthlyTrend();
+
+        // Get top users by topup amount for selected month
+        $topUsers = $this->getTopUsersByTopup($selectedMonth, $selectedYear);
+
+        // Get recent investments for the table
+        $recentTopups = UserInvestment::with('investor')
+            ->whereMonth('created_at', $selectedMonth)
+            ->whereYear('created_at', $selectedYear)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        // Get available years for filter
+        $availableYears = UserInvestment::selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        if ($availableYears->isEmpty()) {
+            $availableYears = collect([Carbon::now()->year]);
+        }
+
+        return view('users.topup-analytics', compact(
+            'monthlyStats',
+            'dailyData',
+            'monthlyTrend',
+            'topUsers',
+            'recentTopups',
+            'selectedMonth',
+            'selectedYear',
+            'availableYears'
+        ));
+    }
+
+    public function exportTopups(Request $request)
+    {
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $month = $request->get('month');
+        $year = $request->get('year');
+
+        $filename = 'topup_report_';
+
+        if ($startDate && $endDate) {
+            $filename .= Carbon::parse($startDate)->format('Ymd') . '_to_' . Carbon::parse($endDate)->format('Ymd');
+        } elseif ($month && $year) {
+            $filename .= Carbon::createFromDate($year, $month, 1)->format('F_Y');
+        } else {
+            $filename .= Carbon::now()->format('Ymd_His');
+        }
+
+        $filename .= '.xlsx';
+
+        return Excel::download(new TopupReportExport($startDate, $endDate, $month, $year), $filename);
+    }
+
+    private function getMonthlyStats($month, $year)
+    {
+        $investments = UserInvestment::whereMonth('created_at', $month)
+            ->whereYear('created_at', $year);
+
+        $totalAmount = (clone $investments)->sum('amount');
+        $totalTransactions = (clone $investments)->count();
+        $uniqueUsers = (clone $investments)->distinct('user_id')->count('user_id');
+        $averageTopup = $totalTransactions > 0 ? $totalAmount / $totalTransactions : 0;
+
+        // Get previous month stats for comparison
+        $prevMonth = Carbon::createFromDate($year, $month, 1)->subMonth();
+        $prevInvestments = UserInvestment::whereMonth('created_at', $prevMonth->month)
+            ->whereYear('created_at', $prevMonth->year);
+
+        $prevTotalAmount = $prevInvestments->sum('amount');
+        $percentageChange = $prevTotalAmount > 0
+            ? round((($totalAmount - $prevTotalAmount) / $prevTotalAmount) * 100, 1)
+            : 0;
+
+        return [
+            'total_amount' => $totalAmount,
+            'total_transactions' => $totalTransactions,
+            'unique_users' => $uniqueUsers,
+            'average_topup' => $averageTopup,
+            'percentage_change' => $percentageChange,
+        ];
+    }
+
+    private function getDailyBreakdown($month, $year)
+    {
+        $dailyData = UserInvestment::whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->selectRaw('DATE(created_at) as date, SUM(amount) as total, COUNT(*) as count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $daysInMonth = Carbon::createFromDate($year, $month, 1)->daysInMonth;
+        $labels = [];
+        $amounts = [];
+        $counts = [];
+
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $date = Carbon::createFromDate($year, $month, $day)->format('Y-m-d');
+            $labels[] = $day;
+
+            $dayData = $dailyData->firstWhere('date', $date);
+            $amounts[] = $dayData ? round($dayData->total, 2) : 0;
+            $counts[] = $dayData ? $dayData->count : 0;
+        }
+
+        return [
+            'labels' => $labels,
+            'amounts' => $amounts,
+            'counts' => $counts,
+        ];
+    }
+
+    private function getMonthlyTrend()
+    {
+        $months = [];
+        $amounts = [];
+        $counts = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $months[] = $date->format('M Y');
+
+            $monthData = UserInvestment::whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year)
+                ->selectRaw('SUM(amount) as total, COUNT(*) as count')
+                ->first();
+
+            $amounts[] = $monthData ? round($monthData->total ?? 0, 2) : 0;
+            $counts[] = $monthData ? ($monthData->count ?? 0) : 0;
+        }
+
+        return [
+            'labels' => $months,
+            'amounts' => $amounts,
+            'counts' => $counts,
+        ];
+    }
+
+    private function getTopUsersByTopup($month, $year, $limit = 10)
+    {
+        return UserInvestment::with('investor')
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->selectRaw('user_id, SUM(amount) as total_topup, COUNT(*) as topup_count')
+            ->groupBy('user_id')
+            ->orderBy('total_topup', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
 

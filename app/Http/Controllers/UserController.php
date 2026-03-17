@@ -611,5 +611,193 @@ class UserController extends Controller
         return view('users.deleted-users', compact('teamMembers', 'search'));
     }
 
- 
+    public function incentiveWallet(Request $request)
+    {
+        $users = User::where('can_login', true)->where('blocked', false)->orderBy('username')->get();
+
+        $search = $request->input('search');
+
+        $query = Wallet::where('wallet_type', 'designation_incentive')
+            ->with('user')
+            ->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->whereHas('user', fn($q) => $q->where('username', 'like', "%{$search}%"));
+        }
+
+        $incentives = $query->paginate(20);
+
+        return view('users.incentive-wallet', compact('users', 'incentives', 'search'));
+    }
+
+    public function sendIncentive(Request $request)
+    {
+        $request->validate([
+            'user_id'     => 'required|exists:users,id',
+            'wallet_type' => 'required|in:designation_incentive',
+            'amount'      => 'required|numeric|min:5',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+        $walletLabel = ucwords(str_replace('_', ' ', $request->wallet_type));
+
+        Wallet::create([
+            'user_id'         => $user->id,
+            'wallet_type'     => $request->wallet_type,
+            'balance'         => $request->amount,
+            'transaction_type'=> 'credit',
+            'direct_balance'  => 0,
+            'indirect_balance'=> 0,
+            'level'           => '-',
+            'wallet_from'     => auth()->id(),
+            'commission_type' => $walletLabel,
+            'description'     => $request->description ?? "Incentive sent by admin",
+            'total_earning'   => $request->amount,
+            'total_amount'    => $request->amount,
+        ]);
+
+        TransactionLog::create([
+            'user_id'          => $user->id,
+            'from_wallet_type' => 'admin',
+            'to_wallet_type'   => $request->wallet_type,
+            'charge'           => 0,
+            'amount'           => $request->amount,
+            'final_amount'     => $request->amount,
+            'description'      => "Admin sent \${$request->amount} to {$walletLabel} wallet. " . ($request->description ?? ''),
+        ]);
+
+        return redirect()->back()->with('success', "\${$request->amount} sent to {$user->username}'s {$walletLabel} wallet successfully.");
+    }
+
+    /**
+     * Show the change parent form.
+     */
+    public function changeParent(Request $request)
+    {
+        $search = $request->input('search');
+        $users  = User::where('can_login', true)
+            ->where('blocked', false)
+            ->when($search, fn($q) => $q->where('username', 'like', "%{$search}%")
+                ->orWhere('name', 'like', "%{$search}%"))
+            ->orderBy('username')
+            ->get();
+
+        return view('users.change-parent', compact('users', 'search'));
+    }
+
+    /**
+     * Process the parent change for a user.
+     */
+    public function processChangeParent(Request $request)
+    {
+        $request->validate([
+            'user_id'       => 'required|exists:users,id',
+            'new_parent_id' => 'required|exists:users,id',
+        ]);
+
+        if ($request->user_id === $request->new_parent_id) {
+            return redirect()->back()->with('error', 'A user cannot be their own parent.');
+        }
+
+        $movedUser = User::findOrFail($request->user_id);
+        $newParent = User::findOrFail($request->new_parent_id);
+
+        // Prevent circular reference: new parent cannot be a descendant of the moved user
+        $isDescendant = DB::table('referral_trees')
+            ->where('ancestor_id', $movedUser->id)
+            ->where('descendant_id', $newParent->id)
+            ->exists();
+
+        if ($isDescendant) {
+            return redirect()->back()->with('error', "Cannot move {$movedUser->username} under {$newParent->username} because {$newParent->username} is already a descendant of {$movedUser->username}. This would create a circular reference.");
+        }
+
+        $oldParentName = optional(User::find($movedUser->sponsor_id))->username ?? 'None';
+
+        DB::beginTransaction();
+        try {
+            // 1. Collect entire subtree: the moved user + all their descendants
+            $subtreeIds = $this->getAllSubtreeIds($movedUser->id);
+
+            // 2. Delete old upline connections for the whole subtree
+            //    (keep internal connections within the subtree)
+            DB::table('referral_trees')
+                ->whereIn('descendant_id', $subtreeIds)
+                ->whereNotIn('ancestor_id', $subtreeIds)
+                ->delete();
+
+            // 3. Update sponsor_id for the moved user
+            $movedUser->update(['sponsor_id' => $newParent->id]);
+
+            // 4. Rebuild referral_tree rows for each user in the subtree
+            $insertData = [];
+            foreach ($subtreeIds as $descId) {
+                $ancestors = $this->buildAncestorPath($descId);
+                foreach ($ancestors as $level => $ancestorId) {
+                    $insertData[] = [
+                        'ancestor_id'   => $ancestorId,
+                        'descendant_id' => $descId,
+                        'level'         => $level,
+                        'created_at'    => now(),
+                        'updated_at'    => now(),
+                    ];
+                }
+            }
+
+            if (!empty($insertData)) {
+                foreach (array_chunk($insertData, 500) as $chunk) {
+                    DB::table('referral_trees')->insert($chunk);
+                }
+            }
+
+            DB::commit();
+
+            Log::info("Admin changed parent of user {$movedUser->id} ({$movedUser->username}) from {$oldParentName} to {$newParent->username}");
+
+            return redirect()->back()->with('success', "Successfully moved {$movedUser->username} from under {$oldParentName} to under {$newParent->username}. Referral tree has been rebuilt.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Failed to change parent for user {$movedUser->id}: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to change parent: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get all IDs in a user's subtree (the user + all descendants recursively).
+     */
+    private function getAllSubtreeIds(int $userId): array
+    {
+        // Use referral_trees to get all descendants at any level
+        $descendants = DB::table('referral_trees')
+            ->where('ancestor_id', $userId)
+            ->pluck('descendant_id')
+            ->toArray();
+
+        return array_unique(array_merge([$userId], $descendants));
+    }
+
+    /**
+     * Build the ancestor path for a user by walking up sponsor_id chain.
+     * Returns [level => ancestor_id, ...]
+     */
+    private function buildAncestorPath(int $userId, int $maxDepth = 20): array
+    {
+        $ancestors  = [];
+        $currentId  = $userId;
+        $level      = 1;
+
+        while ($level <= $maxDepth) {
+            $row = DB::table('users')->select('sponsor_id')->where('id', $currentId)->first();
+            if (!$row || !$row->sponsor_id) break;
+
+            $ancestors[$level] = $row->sponsor_id;
+            $currentId = $row->sponsor_id;
+            $level++;
+        }
+
+        return $ancestors;
+    }
+
 }

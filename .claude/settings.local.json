@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(php artisan migrate:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(php -l:*)"
     ],
     "deny": [],
     "ask": []
