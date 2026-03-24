@@ -128,7 +128,6 @@ class GenerateWeeklyROI extends Command
 
         // Skip if already paid today
         if ($this->wasRoiPaidToday($user)) {
-            info($this->wasRoiPaidToday($user));
             $this->logUserAction($user, 'skipped', 'ROI already generated today');
             $this->counters['skipped']++;
             return true;

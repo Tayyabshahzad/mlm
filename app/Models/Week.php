@@ -13,7 +13,7 @@ class Week extends Model
      */
     public function getPercentageForPlan(string $plan): float
     {
-        return $plan === 'vip' ? $this->vip_percentage : $this->standard_percentage;
+        return $plan === 'vip' ? (float)($this->vip_percentage ?? 0) : (float)($this->standard_percentage ?? 0);
     }
 
     /**

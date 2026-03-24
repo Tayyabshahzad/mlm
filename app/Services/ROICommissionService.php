@@ -60,7 +60,7 @@ class ROICommissionService
     {
         // Find the ancestor at this level (the person who will receive commission)
         $ancestor = $this->getAncestorByLevel($user, $level);
-        
+
         if (!$ancestor || !$this->isAncestorEligibleForCommission($ancestor, $level)) {
             return;
         }
@@ -70,30 +70,51 @@ class ROICommissionService
     }
 
     /**
+     * Get the actual profit share percentage for an ancestor based on their user plan and level.
+     * Reads from settings table: standard_profit_l{n} for standard plan, vip_profit_l{n} for vip plan.
+     */
+    private function getActualProfitSharePercentage(User $ancestor, float $defaultPercentage, int $level): float
+    {
+        $setting = \App\Models\Setting::first();
+        $userPlan = $ancestor->user_plan ?? 'standard';
+
+        if ($userPlan === 'vip') {
+            $fieldName = "vip_profit_l{$level}";
+            return $setting ? (float)($setting->$fieldName ?? $defaultPercentage / 2) : $defaultPercentage / 2;
+        }
+
+        $fieldName = "standard_profit_l{$level}";
+        return $setting ? (float)($setting->$fieldName ?? $defaultPercentage) : $defaultPercentage;
+    }
+
+    /**
      * NEW METHOD: Process commission for all users at a specific level under an ancestor
      * This ensures commission is given for ALL users, not just the minimum required
      */
     private function processCommissionForAllUsersAtLevel(
-        User $ancestor, 
-        User $currentUser, 
-        float $roiAmount, 
-        float $percentage, 
+        User $ancestor,
+        User $currentUser,
+        float $roiAmount,
+        float $percentage,
         int $level
     ): void {
         // Get all users at this exact level under the ancestor
         $allUsersAtLevel = $this->getAllUsersAtLevel($ancestor->id, $level);
-        
+
         Log::info("Processing commission for ancestor {$ancestor->id} at level {$level}: Found {$allUsersAtLevel->count()} users");
 
         // Process commission for each user at this level who generated ROI
         foreach ($allUsersAtLevel as $userAtLevel) {
             // Only process if this is the user who just generated ROI
             if ($userAtLevel->id === $currentUser->id) {
-                $commissionAmount = $this->calculateCommissionAmount($ancestor, $roiAmount, $percentage, $level);
+                // Resolve the actual plan-based percentage for this ancestor
+                $actualPercentage = $this->getActualProfitSharePercentage($ancestor, $percentage, $level);
+                $commissionAmount = ($roiAmount * $actualPercentage) / 100;
 
                 if ($commissionAmount > 0) {
-                    $this->createCommissionRecords($ancestor, $currentUser, $commissionAmount, $percentage, $level);
-                    Log::info("Commission processed: Ancestor {$ancestor->id} got {$commissionAmount} from user {$currentUser->id} at level {$level}");
+                    $this->createCommissionRecords($ancestor, $currentUser, $commissionAmount, $actualPercentage, $level);
+                    $ancestorPlan = $ancestor->user_plan ?? 'standard';
+                    Log::info("Commission processed: Ancestor {$ancestor->id} ({$ancestorPlan}) got {$commissionAmount} at {$actualPercentage}% from user {$currentUser->id} at level {$level}");
                 }
                 break;
             }
@@ -107,8 +128,8 @@ class ROICommissionService
      * Call this method if you want to process commission for ALL users at once
      */
     public function processCommissionForAllEligibleUsersAtLevel(
-        User $ancestor, 
-        int $level, 
+        User $ancestor,
+        int $level,
         float $percentage
     ): void {
         // Check if ancestor is eligible for this level
@@ -118,18 +139,19 @@ class ROICommissionService
 
         // Get all users at this level
         $allUsersAtLevel = $this->getAllUsersAtLevel($ancestor->id, $level);
-        
         Log::info("Bulk processing commission for ancestor {$ancestor->id} at level {$level}: Processing {$allUsersAtLevel->count()} users");
+
+        $actualPercentage = $this->getActualProfitSharePercentage($ancestor, $percentage, $level);
 
         foreach ($allUsersAtLevel as $userAtLevel) {
             // Get recent ROI amount for this user
             $roiAmount = $this->getRecentRoiAmount($userAtLevel);
 
             if ($roiAmount > 0) {
-                $commissionAmount = $this->calculateCommissionAmount($ancestor, $roiAmount, $percentage, $level);
+                $commissionAmount = ($roiAmount * $actualPercentage) / 100;
 
                 if ($commissionAmount > 0) {
-                    $this->createCommissionRecords($ancestor, $userAtLevel, $commissionAmount, $percentage, $level);
+                    $this->createCommissionRecords($ancestor, $userAtLevel, $commissionAmount, $actualPercentage, $level);
                 }
             }
         }
@@ -177,42 +199,13 @@ class ROICommissionService
     }
 
     /**
-     * Calculate commission amount for profit sharing
-     * FIXED: Profit sharing should NOT be limited by 2X cap
-     * Updated to use database settings for VIP/Standard differentiation
-     */
-    private function calculateCommissionAmount(User $ancestor, float $roiAmount, float $percentage, int $level): float
-    {
-        // Get dynamic profit share percentage from settings based on user plan
-        $setting = \App\Models\Setting::first();
-        $userPlan = $ancestor->user_plan ?? 'standard';
-
-        // Get profit share percentage based on plan and level
-        if ($userPlan === 'vip') {
-            $fieldName = "vip_profit_l{$level}";
-            $actualPercentage = $setting->$fieldName ?? ($percentage / 2); // VIP gets half
-        } else {
-            $fieldName = "standard_profit_l{$level}";
-            $actualPercentage = $setting->$fieldName ?? $percentage; // Standard gets full
-        }
-
-        $baseCommission = ($roiAmount * $actualPercentage) / 100;
-
-        // FIXED: Profit sharing is independent of 2X limits
-        // Users should get full profit share regardless of their 2X status
-        Log::info("Calculating profit share commission for ancestor {$ancestor->id} ({$userPlan}): {$baseCommission} at {$actualPercentage}% (Level {$level}, Full amount, not limited by 2X)");
-
-        return $baseCommission;
-    }
-
-    /**
      * Create commission transaction and wallet records
      */
     private function createCommissionRecords(
-        User $ancestor, 
-        User $user, 
-        float $amount, 
-        float $percentage, 
+        User $ancestor,
+        User $user,
+        float $amount,
+        float $percentage,
         int $level
     ): void {
         ROITransaction::create([
@@ -328,22 +321,23 @@ class ROICommissionService
     private function getEligibleLevelsForUser(User $user): array
     {
         $eligibleLevels = [];
-        
-        foreach (self::COMMISSION_LEVELS as $level => $percentage) {
+
+        foreach (self::COMMISSION_LEVELS as $level => $defaultPercentage) {
             $usersAtLevel = $this->countUsersAtExactLevel($user->id, $level);
             $required = self::REQUIRED_USERS_BY_LEVEL[$level] ?? 0;
-            
+            $actualPercentage = $this->getActualProfitSharePercentage($user, $defaultPercentage, $level);
+
             $eligibleLevels[$level] = [
-                'percentage' => $percentage,
+                'percentage' => $actualPercentage,
                 'required_users' => $required,
                 'current_users_at_level' => $usersAtLevel,
                 'is_eligible' => $usersAtLevel >= $required,
-                'commission_sources' => $usersAtLevel, // ALL users at this level will generate commission
-                'excess_users' => max(0, $usersAtLevel - $required), // Additional users above requirement
-                'potential_daily_commission' => $usersAtLevel >= $required ? $usersAtLevel : 0, // How many users can generate commission
+                'commission_sources' => $usersAtLevel,
+                'excess_users' => max(0, $usersAtLevel - $required),
+                'potential_daily_commission' => $usersAtLevel >= $required ? $usersAtLevel : 0,
             ];
         }
-        
+
         return $eligibleLevels;
     }
 
@@ -353,23 +347,25 @@ class ROICommissionService
     public function getDownlineStructure(User $user): array
     {
         $structure = [];
-        
+
         for ($level = 1; $level <= 7; $level++) {
             $usersAtLevel = $this->countUsersAtExactLevel($user->id, $level);
             $required = self::REQUIRED_USERS_BY_LEVEL[$level] ?? 0;
-            
+            $defaultPercentage = self::COMMISSION_LEVELS[$level] ?? 0;
+            $actualPercentage = $this->getActualProfitSharePercentage($user, $defaultPercentage, $level);
+
             $structure[$level] = [
                 'level' => $level,
                 'users_count' => $usersAtLevel,
                 'required_for_commission' => $required,
-                'commission_percentage' => self::COMMISSION_LEVELS[$level] ?? 0,
+                'commission_percentage' => $actualPercentage,
                 'is_eligible' => $usersAtLevel >= $required,
-                'total_commission_sources' => $usersAtLevel >= $required ? $usersAtLevel : 0, // ALL users generate commission if eligible
+                'total_commission_sources' => $usersAtLevel >= $required ? $usersAtLevel : 0,
                 'users_above_requirement' => max(0, $usersAtLevel - $required),
-                'commission_multiplier' => $usersAtLevel >= $required ? $usersAtLevel : 0, // How many times commission can be earned
+                'commission_multiplier' => $usersAtLevel >= $required ? $usersAtLevel : 0,
             ];
         }
-        
+
         return $structure;
     }
 
@@ -384,15 +380,16 @@ class ROICommissionService
             'levels' => []
         ];
 
-        foreach (self::COMMISSION_LEVELS as $level => $percentage) {
+        foreach (self::COMMISSION_LEVELS as $level => $defaultPercentage) {
             $usersAtLevel = $this->countUsersAtExactLevel($user->id, $level);
             $required = self::REQUIRED_USERS_BY_LEVEL[$level] ?? 0;
-            
+            $actualPercentage = $this->getActualProfitSharePercentage($user, $defaultPercentage, $level);
+
             $debug['levels'][$level] = [
                 'users_at_exact_level' => $usersAtLevel,
                 'required_users' => $required,
                 'is_eligible' => $usersAtLevel >= $required,
-                'commission_percentage' => $percentage,
+                'commission_percentage' => $actualPercentage,
                 'total_commission_sources' => $usersAtLevel >= $required ? $usersAtLevel : 0,
                 'commission_earning_potential' => $usersAtLevel >= $required ? "Can earn from ALL {$usersAtLevel} users" : "Not eligible - need " . ($required - $usersAtLevel) . " more users",
             ];
