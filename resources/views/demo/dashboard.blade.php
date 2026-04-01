@@ -316,111 +316,159 @@
 /* ═══════════════════════════════════════════════════════════
    EID BANNER  (dark gold glass version)
 ═══════════════════════════════════════════════════════════ */
-.eid-banner {
+/* ═══════════════════════════════════════════════════════════
+   GOOD NEWS BANNER
+═══════════════════════════════════════════════════════════ */
+.gn-banner {
     position: relative; overflow: hidden;
-    border-radius: var(--r3);
-    margin-bottom: 1.8rem;
-    background: #040d08;
-    border: 1px solid rgba(212,175,55,.15);
-    box-shadow: 0 0 0 1px rgba(212,175,55,.05),
-                0 24px 64px rgba(0,0,0,.65);
+    border-radius: var(--r3); margin-bottom: 1.8rem;
+    background: #06010f;
+    border: 1px solid rgba(0,210,255,.18);
+    box-shadow: 0 0 0 1px rgba(0,210,255,.05), 0 24px 64px rgba(0,0,0,.65);
 }
-.eid-banner::before {
+/* layered glow */
+.gn-banner::before {
     content: '';
     position: absolute; inset: 0;
     background:
-        radial-gradient(ellipse 700px 400px at 15% 55%, rgba(4,70,28,.95) 0%, transparent 65%),
-        radial-gradient(ellipse 450px 300px at 90% 0%,  rgba(2,50,20,.85) 0%, transparent 60%);
+        radial-gradient(ellipse 700px 420px at 10% 60%, rgba(79,0,180,.72) 0%, transparent 62%),
+        radial-gradient(ellipse 500px 320px at 95% 5%,  rgba(0,140,200,.55) 0%, transparent 58%),
+        radial-gradient(ellipse 350px 280px at 50% 100%,rgba(0,210,150,.18) 0%, transparent 55%);
     pointer-events: none;
 }
-.eid-banner::after {
+/* subtle diagonal lines */
+.gn-banner::after {
     content: '';
     position: absolute; inset: 0;
     background-image:
-        repeating-linear-gradient( 55deg, rgba(212,175,55,.028) 0, rgba(212,175,55,.028) 1px, transparent 1px, transparent 28px),
-        repeating-linear-gradient(-55deg, rgba(212,175,55,.028) 0, rgba(212,175,55,.028) 1px, transparent 1px, transparent 28px);
+        repeating-linear-gradient(60deg, rgba(255,255,255,.018) 0, rgba(255,255,255,.018) 1px, transparent 1px, transparent 30px),
+        repeating-linear-gradient(-60deg, rgba(255,255,255,.018) 0, rgba(255,255,255,.018) 1px, transparent 1px, transparent 30px);
     pointer-events: none;
 }
-.eid-inner-wrap {
+
+/* floating confetti dots */
+.gn-confetti { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.gn-dot {
+    position: absolute; border-radius: 50%; opacity: 0;
+    animation: gn-float var(--dur, 4s) ease-in-out var(--del, 0s) infinite;
+}
+@keyframes gn-float {
+    0%   { opacity: 0; transform: translateY(8px) scale(.8); }
+    30%  { opacity: .75; }
+    100% { opacity: 0; transform: translateY(-55px) scale(.3); }
+}
+
+.gn-inner {
     position: relative; z-index: 2;
     display: grid; grid-template-columns: 1fr auto;
     gap: 2rem; align-items: center;
-    padding: 2rem 2.5rem;
+    padding: 2.2rem 2.5rem;
 }
-.eid-toprow {
-    display: flex; align-items: center; gap: .6rem; margin-bottom: .9rem;
+
+/* tag pill */
+.gn-tag {
+    display: inline-flex; align-items: center; gap: .45rem;
+    font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--cyan);
+    background: rgba(0,210,255,.1); border: 1px solid rgba(0,210,255,.22);
+    border-radius: 50px; padding: .3rem .9rem;
+    margin-bottom: .85rem;
 }
-.eid-line { height: 1px; width: 44px; background: linear-gradient(90deg, rgba(212,175,55,.6), transparent); }
-.eid-line.rev { background: linear-gradient(270deg, rgba(212,175,55,.6), transparent); }
-.eid-dot { width: 5px; height: 5px; border-radius: 50%; background: #d4af37; box-shadow: 0 0 7px rgba(212,175,55,.8); }
-.eid-org { font-size: .6rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: rgba(212,175,55,.8); }
-.eid-arabic {
-    font-size: 2.8rem; font-weight: 900; color: #d4af37;
-    letter-spacing: .05em; line-height: 1; margin-bottom: .3rem;
-    text-shadow: 0 0 40px rgba(212,175,55,.5);
+.gn-tag-pulse {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+    animation: gn-pulse 1.6s ease infinite;
 }
-.eid-title {
-    font-size: .9rem; font-weight: 700; color: rgba(255,255,255,.85);
-    letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1rem;
+@keyframes gn-pulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.5); opacity: .55; }
 }
-.eid-msg {
-    font-size: .8rem; color: rgba(255,255,255,.5);
-    line-height: 1.75; max-width: 450px; margin-bottom: 1.2rem;
-    border-left: 2px solid rgba(212,175,55,.28); padding-left: .9rem;
+
+/* headline */
+.gn-headline {
+    font-size: 2.4rem; font-weight: 900;
+    letter-spacing: -.04em; line-height: 1.1;
+    color: var(--t1); margin-bottom: .75rem;
 }
-.eid-dua {
-    display: inline-flex; align-items: flex-start; gap: .4rem;
-    font-size: .75rem; font-weight: 600; font-style: italic;
-    color: rgba(212,175,55,.8);
-    background: rgba(212,175,55,.06);
-    border: 1px solid rgba(212,175,55,.18);
-    border-radius: var(--r1); padding: .45rem .95rem; line-height: 1.5;
+.gn-headline .gn-hl-accent {
+    background: linear-gradient(135deg, var(--cyan), var(--purple), var(--pink));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
-/* Moon art */
-.eid-art { display: flex; flex-direction: column; align-items: center; gap: .7rem; flex-shrink: 0; }
-.eid-moon-svg {
-    width: 120px; height: 120px; overflow: visible;
-    animation: moon-glow 4s ease-in-out infinite;
+
+/* body text */
+.gn-body {
+    font-size: .85rem; color: rgba(255,255,255,.55);
+    line-height: 1.8; max-width: 500px; margin-bottom: 1.25rem;
+    border-left: 2px solid rgba(0,210,255,.28); padding-left: 1rem;
 }
-@keyframes moon-glow {
-    0%,100% { filter: drop-shadow(0 0 14px rgba(212,175,55,.4)) drop-shadow(0 0 40px rgba(212,175,55,.15)); }
-    50%      { filter: drop-shadow(0 0 24px rgba(212,175,55,.65)) drop-shadow(0 0 65px rgba(212,175,55,.28)); }
+.gn-body strong { color: rgba(255,255,255,.82); font-weight: 600; }
+
+/* quote pill */
+.gn-quote {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-size: .78rem; font-weight: 600; font-style: italic;
+    color: rgba(0,210,255,.85);
+    background: rgba(0,210,255,.07);
+    border: 1px solid rgba(0,210,255,.18);
+    border-radius: var(--r1); padding: .5rem 1rem; line-height: 1.5;
 }
-.eid-stars { display: flex; gap: .45rem; align-items: center; justify-content: center; }
-.eid-star {
-    background: #d4af37;
-    clip-path: polygon(50% 0%,61.8% 38.2%,100% 38.2%,69.1% 61.8%,80.9% 100%,50% 76.4%,19.1% 100%,30.9% 61.8%,0% 38.2%,38.2% 38.2%);
-    animation: star-twinkle 2.4s ease-in-out infinite;
+
+/* right art — piggy bank emoji art */
+.gn-art {
+    flex-shrink: 0;
+    display: flex; flex-direction: column;
+    align-items: center; gap: .8rem;
+    position: relative;
 }
-.eid-star:nth-child(2) { animation-delay: -.9s; }
-.eid-star:nth-child(3) { animation-delay: -1.7s; }
-@keyframes star-twinkle {
-    0%,100% { opacity: .85; transform: scale(1); }
-    50%      { opacity: .3;  transform: scale(.6); }
+.gn-emoji-stack {
+    position: relative; width: 120px; height: 120px;
 }
-.eid-star-lg { width:22px; height:22px; }
-.eid-star-md { width:14px; height:14px; opacity:.78; }
-.eid-star-sm { width: 9px; height: 9px;  opacity:.55; }
-.eid-gold-line {
-    width:100%; height: 2px; position: relative; z-index: 2;
-    background: linear-gradient(90deg, transparent, rgba(212,175,55,.42) 28%, rgba(212,175,55,.88) 50%, rgba(212,175,55,.42) 72%, transparent);
+.gn-emoji-main {
+    font-size: 5.5rem; line-height: 1;
+    display: block; text-align: center;
+    animation: gn-bounce 2.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 24px rgba(0,210,255,.35));
 }
-/* Sparkles */
-.eid-sparkles { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
-.eid-sparkle {
-    position: absolute; border-radius: 50%;
-    background: #d4af37; opacity: 0;
-    animation: sparkle-rise var(--dur,3s) ease-in-out var(--del,0s) infinite;
+@keyframes gn-bounce {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    40%      { transform: translateY(-12px) rotate(4deg); }
+    70%      { transform: translateY(-5px) rotate(-2deg); }
 }
-@keyframes sparkle-rise {
-    0%   { opacity: 0; transform: translateY(0) scale(1); }
-    35%  { opacity: .65; }
-    100% { opacity: 0; transform: translateY(-50px) scale(.3); }
+.gn-emoji-ring {
+    position: absolute; inset: -10px;
+    border-radius: 50%;
+    border: 2px dashed rgba(0,210,255,.22);
+    animation: gn-spin 9s linear infinite;
 }
+@keyframes gn-spin { to { transform: rotate(360deg); } }
+
+.gn-badge-row { display: flex; gap: .5rem; }
+.gn-badge {
+    font-size: .62rem; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; padding: .25rem .7rem; border-radius: 50px;
+    border: 1px solid rgba(255,255,255,.12);
+    color: rgba(255,255,255,.65); background: rgba(255,255,255,.06);
+}
+
+/* bottom shimmer line */
+.gn-shimmer-line {
+    width: 100%; height: 2px; position: relative; z-index: 2;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0,210,255,.35) 25%,
+        rgba(155,89,255,.9) 50%,
+        rgba(0,210,255,.35) 75%,
+        transparent 100%);
+    background-size: 200% 100%;
+    animation: gn-shimmer 2.8s linear infinite;
+}
+@keyframes gn-shimmer { to { background-position: -200% 0; } }
+
 @media (max-width: 700px) {
-    .eid-inner-wrap { grid-template-columns: 1fr; padding: 1.5rem; }
-    .eid-art { display: none; }
-    .eid-arabic { font-size: 2rem; }
+    .gn-inner  { grid-template-columns: 1fr; padding: 1.6rem; }
+    .gn-art    { display: none; }
+    .gn-headline { font-size: 1.7rem; }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -950,67 +998,62 @@
             </div>
         </div>
 
-        {{-- EID MUBARAK BANNER --}}
-        <div class="eid-banner">
-            <div class="eid-sparkles">
-                <div class="eid-sparkle" style="left:6%;top:52%;width:3px;height:3px;--dur:3.2s;--del:.0s"></div>
-                <div class="eid-sparkle" style="left:14%;top:30%;width:2px;height:2px;--dur:2.6s;--del:.7s"></div>
-                <div class="eid-sparkle" style="left:23%;top:65%;width:4px;height:4px;--dur:3.8s;--del:1.2s"></div>
-                <div class="eid-sparkle" style="left:36%;top:22%;width:2px;height:2px;--dur:2.9s;--del:.4s"></div>
-                <div class="eid-sparkle" style="left:48%;top:72%;width:3px;height:3px;--dur:3.5s;--del:.9s"></div>
-                <div class="eid-sparkle" style="left:60%;top:38%;width:2px;height:2px;--dur:4.1s;--del:.2s"></div>
-                <div class="eid-sparkle" style="left:72%;top:55%;width:3px;height:3px;--dur:3.0s;--del:1.5s"></div>
-                <div class="eid-sparkle" style="left:82%;top:28%;width:4px;height:4px;--dur:2.7s;--del:.6s"></div>
-                <div class="eid-sparkle" style="left:91%;top:62%;width:2px;height:2px;--dur:3.6s;--del:1.0s"></div>
+        {{-- GOOD NEWS BANNER --}}
+        <div class="gn-banner">
+
+            {{-- floating confetti dots --}}
+            <div class="gn-confetti">
+                <div class="gn-dot" style="left:5%;  top:55%; width:5px; height:5px; background:var(--cyan);   --dur:3.4s; --del:.0s"></div>
+                <div class="gn-dot" style="left:12%; top:30%; width:3px; height:3px; background:var(--purple); --dur:2.8s; --del:.6s"></div>
+                <div class="gn-dot" style="left:22%; top:68%; width:5px; height:5px; background:var(--pink);   --dur:3.9s; --del:1.1s"></div>
+                <div class="gn-dot" style="left:35%; top:20%; width:3px; height:3px; background:var(--green);  --dur:3.0s; --del:.3s"></div>
+                <div class="gn-dot" style="left:50%; top:75%; width:4px; height:4px; background:var(--cyan);   --dur:3.6s; --del:.9s"></div>
+                <div class="gn-dot" style="left:63%; top:40%; width:3px; height:3px; background:var(--amber);  --dur:4.2s; --del:.2s"></div>
+                <div class="gn-dot" style="left:74%; top:58%; width:5px; height:5px; background:var(--purple); --dur:3.1s; --del:1.4s"></div>
+                <div class="gn-dot" style="left:84%; top:25%; width:4px; height:4px; background:var(--pink);   --dur:2.7s; --del:.5s"></div>
+                <div class="gn-dot" style="left:92%; top:65%; width:3px; height:3px; background:var(--green);  --dur:3.7s; --del:1.0s"></div>
             </div>
-            <div class="eid-inner-wrap">
+
+            <div class="gn-inner">
+
+                {{-- Left: Text --}}
                 <div>
-                    <div class="eid-toprow">
-                        <div class="eid-line"></div>
-                        <div class="eid-dot"></div>
-                        <div class="eid-org">Global Visioners International</div>
-                        <div class="eid-dot"></div>
-                        <div class="eid-line rev"></div>
+                    <div class="gn-tag">
+                        <span class="gn-tag-pulse"></span>
+                        Coming Soon &nbsp;·&nbsp; GVI Smart Finance
                     </div>
-                    <div class="eid-arabic">عيد مبارك</div>
-                    <div class="eid-title">Eid Mubarak &mdash; Happy Eid al-Fitr 1446 AH</div>
-                    <div class="eid-msg">
-                        May the blessings of Allah fill your life with happiness, your heart with love, and your soul with peace. Global Visioners International extends its warmest greetings to you and your entire family.
+
+                    <div class="gn-headline">
+                        Great News! 🎉<br>
+                        <span class="gn-hl-accent">A Smart Saving Plan<br>Is on Its Way!</span>
                     </div>
-                    <div class="eid-dua">
-                        <span>&#x275D;</span>
-                        Taqabbal Allahu minna wa minkum &mdash; May Allah accept from us and from you
-                        <span>&#x275E;</span>
+
+                    <div class="gn-body">
+                        We're launching a <strong>Smart Saving Plan with Appreciation</strong> — because your money works too hard to just sit around doing nothing all day. 😄<br><br>
+                        Think of it as hiring a personal trainer for your wallet. It gets stronger every single day — while you sip chai, spend time with family, and let <strong>your savings quietly become the smartest person in the room.</strong> 📈 No tricks, no headaches, just real growth — Insha'Allah. 🌱
                     </div>
-                </div>
-                <div class="eid-art">
-                    <svg class="eid-moon-svg" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <radialGradient id="moonGv4" cx="36%" cy="33%" r="66%">
-                                <stop offset="0%"   stop-color="#f9f0a0"/>
-                                <stop offset="28%"  stop-color="#e8c84a"/>
-                                <stop offset="58%"  stop-color="#d4af37"/>
-                                <stop offset="84%"  stop-color="#b8860b"/>
-                                <stop offset="100%" stop-color="#7a5800"/>
-                            </radialGradient>
-                            <mask id="moonMv4">
-                                <circle cx="65" cy="65" r="52" fill="white"/>
-                                <circle cx="86" cy="55" r="46" fill="black"/>
-                            </mask>
-                        </defs>
-                        <circle cx="65" cy="65" r="62" fill="rgba(212,175,55,.04)"/>
-                        <circle cx="65" cy="65" r="56" fill="rgba(212,175,55,.07)"/>
-                        <circle cx="65" cy="65" r="52" fill="url(#moonGv4)" mask="url(#moonMv4)"/>
-                        <path d="M 36,38 Q 24,65 36,92" stroke="rgba(255,252,200,.22)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-                    </svg>
-                    <div class="eid-stars">
-                        <div class="eid-star eid-star-lg"></div>
-                        <div class="eid-star eid-star-md"></div>
-                        <div class="eid-star eid-star-sm"></div>
+
+                    <div class="gn-quote">
+                        🚀 &nbsp;"Work smart, save smarter, retire legendary." &nbsp;— Your Future Self, from a beach somewhere ☀️
                     </div>
                 </div>
+
+                {{-- Right: Art --}}
+                <div class="gn-art">
+                    <div class="gn-emoji-stack">
+                        <div class="gn-emoji-ring"></div>
+                        <span class="gn-emoji-main">🚀</span>
+                    </div>
+                    <div class="gn-badge-row">
+                        <span class="gn-badge">💎 Save</span>
+                        <span class="gn-badge">📈 Grow</span>
+                        <span class="gn-badge">🏆 Win</span>
+                    </div>
+                </div>
+
             </div>
-            <div class="eid-gold-line"></div>
+
+            <div class="gn-shimmer-line"></div>
         </div>
 
         {{-- ─── SECTION: Wallets ─────────────────────── --}}
