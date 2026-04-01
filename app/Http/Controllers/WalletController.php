@@ -209,8 +209,9 @@ class WalletController extends Controller
 
     public function transferToOnline(Request $request)
     {
+        $minWalletTransfer = $this->setting->min_wallet_transfer ?? 7.35;
         $request->validate([
-            'amount' => 'required|numeric|min:5',
+            'amount' => 'required|numeric|min:' . $minWalletTransfer,
             'wallet_type' => 'required|in:direct_indirect,reward,roi,profit_share,designation_incentive',
         ]);  
         $userId = auth()->id();  

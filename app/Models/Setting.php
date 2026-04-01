@@ -23,7 +23,7 @@ class Setting extends Model
         'standard_profit_l5','standard_profit_l6','standard_profit_l7',
         'vip_profit_l1','vip_profit_l2','vip_profit_l3','vip_profit_l4',
         'vip_profit_l5','vip_profit_l6','vip_profit_l7',
-        'min_withdrawal_limit','min_member_transfer',
+        'min_withdrawal_limit','min_member_transfer','min_wallet_transfer',
         'bank_withdrawal_fee_percent','cash_withdrawal_fee_percent','usdt_withdrawal_discount_percent'
     ]; 
 }

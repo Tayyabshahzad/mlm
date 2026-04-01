@@ -48,6 +48,9 @@ class RegisteredUserController extends Controller
      
     public function store(Request $request): RedirectResponse
     {
+        $setting = Setting::first();
+        $minUsdt = ($setting->standard_package_min ?? 1) + ($setting->registration_fee ?? 0);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:' . User::class,
@@ -68,14 +71,13 @@ class RegisteredUserController extends Controller
                 new ValidActivationCode($request->payment_method),
             ],
             'transferred_amount' => 'required|numeric',
-            'usdt_amount' => 'required|numeric|min:60',
+            'usdt_amount' => 'required|numeric|min:' . $minUsdt,
         ]);
 
-        $fee = Setting::first()->registration_fee;
-        $netAmount = $request->usdt_amount - $fee;
-        if ($netAmount <= 0) {  
+        $netAmount = $request->usdt_amount - $setting->registration_fee;
+        if ($netAmount <= 0) {
             return redirect()->back()->withInput()->with('error', 'Insufficient USDT amount after fee deduction.');
-        } 
+        }
         DB::beginTransaction();
 
         try {
@@ -95,12 +97,16 @@ class RegisteredUserController extends Controller
                 $count++;
             }
 
-            $setting = Setting::first();
             $netAmount = $request->usdt_amount - $setting->registration_fee;
 
-            // Auto-assign plan based on net investment amount and package ranges
-            $vipMinAmount = $setting->vip_package_min ?? 345;
-            $userPlan = ($netAmount >= $vipMinAmount) ? 'vip' : 'standard';
+            // Auto-assign plan based on net investment amount and package ranges from settings
+            $vipMin = $setting->vip_package_min ?? 35;
+
+            if ($netAmount >= $vipMin) {
+                $userPlan = 'vip';
+            } else {
+                $userPlan = 'standard';
+            }
 
             $user = User::create([
                 'name' => $request->name,

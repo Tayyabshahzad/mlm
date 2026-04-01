@@ -20,11 +20,12 @@
                                 Transfer Amount
                             </label>
                             <input type="number" class="mb-2 form-control form-control-sm form-control-solid"
-                             name="amount" min="5.27" step="0.01"
+                             name="amount" min="{{ $setting->min_wallet_transfer ?? 7.35 }}" step="0.01"
                              required
                              max="{{ $currentBalance ?? $wallets->sum('balance') }}"
                              placeholder="Enter Amount">
                              <strong class="text-danger">Available Balance : {{ $currentBalance ?? $wallets->sum('balance') }}</strong>
+                             <small class="text-muted d-block">Minimum Transfer: ${{ $setting->min_wallet_transfer ?? 7.35 }}</small>
                         </div>
                     </div>  
                 </div>

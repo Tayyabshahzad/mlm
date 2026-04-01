@@ -419,6 +419,22 @@
                                     </div>
 
                                     <div class="form-group row">
+                                        <label class="col-xl-3 col-lg-3 col-form-label">Minimum Wallet to Online Transfer ($)</label>
+                                        <div class="col-lg-9 col-xl-6">
+                                            <input class="form-control form-control-lg form-control-solid" type="number"
+                                                step="0.01" name="min_wallet_transfer"
+                                                value="{{ old('min_wallet_transfer', $setting->min_wallet_transfer ?? 7.35) }}"
+                                                required />
+                                            <span class="form-text text-muted">Minimum amount to transfer from any wallet to the online wallet</span>
+                                            @error('min_wallet_transfer')
+                                                <div class="text-danger mt-2">
+                                                    <small>{{ $message }}</small>
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
                                         <label class="col-xl-3 col-lg-3 col-form-label">Bank Withdrawal Fee (%)</label>
                                         <div class="col-lg-9 col-xl-6">
                                             <input class="form-control form-control-lg form-control-solid" type="number"

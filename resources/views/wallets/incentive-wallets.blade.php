@@ -151,9 +151,9 @@
                     <div class="form-group">
                         <label class="font-weight-bold">Transfer Amount ($)</label>
                         <input type="number" name="amount" class="form-control rounded-0"
-                            id="transferAmount" min="5" step="0.01"
+                            id="transferAmount" min="{{ $setting->min_wallet_transfer ?? 7.35 }}" step="0.01"
                             max="{{ $currentBalance }}"
-                            placeholder="Minimum $5" required>
+                            placeholder="Minimum ${{ $setting->min_wallet_transfer ?? 7.35 }}" required>
                         <small class="text-muted">Available Balance: <strong class="text-success">${{ number_format($currentBalance, 2) }}</strong></small>
                     </div>
                     <div class="alert alert-light rounded-0 p-2">
