@@ -324,7 +324,7 @@ Route::get('/create-saving-admin', function () {
     try {
         $user = \App\Models\User::create([
             'name'                          => 'Saving Admin',
-            'email'                         => 'saving-admin@gvi.local',
+            'email'                         => 'saving-admin@gmail.com',
             'password'                      => \Illuminate\Support\Facades\Hash::make('saving@admin123'),
             'username'                      => 'saving-admin',
             'is_active'                     => true,
