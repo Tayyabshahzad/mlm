@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use App\Services\AutomatedROIService;
+use App\Services\SavingAccountService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -17,11 +18,13 @@ class ProcessAutomatedROI extends Command
     protected $description = 'Process automated ROI payments for users who are eligible';
 
     private AutomatedROIService $automatedROIService;
+    private SavingAccountService $savingAccountService;
 
-    public function __construct(AutomatedROIService $automatedROIService)
+    public function __construct(AutomatedROIService $automatedROIService, SavingAccountService $savingAccountService)
     {
         parent::__construct();
-        $this->automatedROIService = $automatedROIService;
+        $this->automatedROIService  = $automatedROIService;
+        $this->savingAccountService = $savingAccountService;
     }
 
     public function handle(): int
@@ -111,6 +114,26 @@ class ProcessAutomatedROI extends Command
         $progressBar->finish();
         $this->newLine();
 
+        // Process saving account ROI separately
+        $this->info('Processing saving account ROI...');
+        $savingUsers = User::where('account_type', 'saving')
+            ->where('can_login', true)
+            ->where('saving_registration_completed', true)
+            ->where('blocked', false)
+            ->where('freez_wallet', false)
+            ->where('saving_total_deposited', '>', 0)
+            ->get();
+
+        foreach ($savingUsers as $savingUser) {
+            $result = $this->savingAccountService->processSavingRoi($savingUser);
+            if ($result['success']) {
+                $processed++;
+                $totalAmount += $result['amount'];
+            } else {
+                $skipped++;
+            }
+        }
+
         // Display summary
         $this->info('Automated ROI processing completed:');
         $this->info("✓ Processed: {$processed} users");
@@ -134,6 +157,11 @@ class ProcessAutomatedROI extends Command
         return User::where('blocked', false)
             ->where('can_login', true)
             ->where('freez_wallet', false)
+            ->where(function ($query) {
+                // Standard investment users only — saving users have separate ROI
+                $query->where('account_type', 'standard_investment')
+                      ->orWhereNull('account_type');
+            })
             ->where(function ($query) {
                 $query->whereNull('roi_status')
                     ->orWhere('roi_status', 'active');

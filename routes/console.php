@@ -10,9 +10,18 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
  
+// Standard investment ROI — daily at 23:40, skip Fridays
 Schedule::command('roi:generate-weekly')
-->dailyAt('23:40')
-->timezone('Asia/Karachi')
-->when(function () {
-    return Carbon::now('Asia/Karachi')->dayOfWeek !== Carbon::FRIDAY;
-});
+    ->dailyAt('23:40')
+    ->timezone('Asia/Karachi')
+    ->when(function () {
+        return Carbon::now('Asia/Karachi')->dayOfWeek !== Carbon::FRIDAY;
+    });
+
+// Saving account ROI — daily at 23:59, skip Fridays
+Schedule::command('roi:process-automated')
+    ->dailyAt('23:59')
+    ->timezone('Asia/Karachi')
+    ->when(function () {
+        return Carbon::now('Asia/Karachi')->dayOfWeek !== Carbon::FRIDAY;
+    });

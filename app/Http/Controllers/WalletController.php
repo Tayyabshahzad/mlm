@@ -311,8 +311,35 @@ class WalletController extends Controller
     public function showTransactionHistory()
     {
         $userId = auth()->id();
-        $transactions = TransactionLog::where('user_id', $userId)->orderBy('created_at','desc')->latest()->paginate(10); 
+        $transactions = TransactionLog::where('user_id', $userId)->orderBy('created_at','desc')->latest()->paginate(10);
         return view('wallets.transaction-history', compact('transactions'));
+    }
+
+    public function savingAccount()
+    {
+        $user = auth()->user();
+
+        abort_unless($user->account_type === 'saving', 403);
+
+        $roiEntries = \App\Models\Wallet::where('user_id', $user->id)
+            ->where('wallet_type', 'saving_roi')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15, ['*'], 'roi_page');
+
+        $commissionEntries = \App\Models\Wallet::where('user_id', $user->id)
+            ->where('wallet_type', 'direct_indirect')
+            ->where('source_type', 'saving_instalment')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15, ['*'], 'comm_page');
+
+        $totalRoi         = \App\Models\Wallet::where('user_id', $user->id)->where('wallet_type', 'saving_roi')->sum('balance');
+        $totalDirect      = \App\Models\Wallet::where('user_id', $user->id)->where('wallet_type', 'direct_indirect')->where('source_type', 'saving_instalment')->sum('direct_balance');
+        $totalIndirect    = \App\Models\Wallet::where('user_id', $user->id)->where('wallet_type', 'direct_indirect')->where('source_type', 'saving_instalment')->sum('indirect_balance');
+
+        return view('wallets.saving-account', compact(
+            'user', 'roiEntries', 'commissionEntries',
+            'totalRoi', 'totalDirect', 'totalIndirect'
+        ));
     }
 
     private function logTransaction($userId,$toAddress,$fromAddress,$amount, $finalAmount,$description,$status,$chargeAmount)

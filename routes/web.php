@@ -13,6 +13,7 @@ use App\Http\Controllers\{
     ProductController,
     ProfileController,
     ReportController,
+    SavingInstalmentController,
     ScheduleRoiController,
     SettingController,
     TopupController,
@@ -70,6 +71,7 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
     Route::prefix('genealogy')->controller(GenealogyController::class)->group(function () {
         Route::get('team', 'team')->name('genealogy.team');
         Route::get('team/members', 'teamMembers')->name('genealogy.team.members');
+        Route::get('saving-tree', 'savingTree')->name('genealogy.saving.tree');
     });
 
     Route::prefix('wallets')->controller(WalletController::class)->group(function () {
@@ -81,6 +83,7 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::get('profit-share', 'profitShare')->name('wallets.profit.share');
         Route::get('rank', 'rank')->name('wallets.rank');
         Route::get('incentive-wallets', 'incentiveWallets')->name('wallets.incentive');
+        Route::get('saving-account', 'savingAccount')->name('wallets.saving.account');
         Route::post('transfer-to-online', 'transferToOnline')->name('wallet.transfer.to.online');
         Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history');
         Route::post('clear-negative-points', 'clearNegativePoints')->name('clear.negative.points');
@@ -95,6 +98,12 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
     });
 
     Route::get('recalculateCommissions', [UserController::class, 'recalculateCommissions'])->name('recalculateCommissions');
+
+    // Saving Account — user-facing
+    Route::prefix('saving')->controller(SavingInstalmentController::class)->group(function () {
+        Route::get('instalments', 'userIndex')->name('saving.user.instalments');
+        Route::post('instalments/submit', 'userSubmit')->name('saving.user.submit');
+    });
 });
 
 // Admin Routes
@@ -153,9 +162,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     });
 
     Route::prefix('setting')->controller(SettingController::class)->group(function () {
-        Route::get('/basic', 'index')->name('setting.basic'); 
-        Route::post('/update', 'update')->name('setting.update'); 
+        Route::get('/basic', 'index')->name('setting.basic');
+        Route::post('/update', 'update')->name('setting.update');
         Route::get('update.usdt', 'updateUSDT')->name('rate.manual.update');
+        Route::get('/saving-account', 'savingSettings')->name('setting.saving');
+        Route::post('/saving-account/update', 'updateSavingSettings')->name('setting.saving.update');
     });
 
     Route::controller(ROIMonitoringController::class)->group(function () {
@@ -251,6 +262,19 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::post('/execute', 'execute')->name('admin.roi-reversal.execute');
     });
 
+    // Saving Account — admin management (specific routes before wildcard)
+    Route::prefix('saving-accounts')->controller(SavingInstalmentController::class)->group(function () {
+        Route::get('/', 'adminIndex')->name('admin.saving.index');
+        Route::get('/pending', 'adminPendingSubmissions')->name('admin.saving.pending');
+        Route::get('/create-user', 'adminCreateUserForm')->name('admin.saving.create-user');
+        Route::post('/create-user', 'adminCreateUser')->name('admin.saving.create-user.store');
+        Route::post('/set-parent', 'setSavingParent')->name('admin.saving.set-parent');
+        Route::post('/instalment/{instalment}/confirm', 'adminConfirm')->name('admin.saving.confirm');
+        Route::post('/instalment/{instalment}/reject', 'adminReject')->name('admin.saving.reject');
+        Route::post('/{user}/activate', 'adminActivate')->name('admin.saving.activate');
+        Route::get('/{user}', 'adminShow')->name('admin.saving.show');
+    });
+
 });
 
 Route::prefix('account')->controller(TopupController::class)->middleware(['auth', 'verified'])->group(function () {
@@ -271,6 +295,80 @@ Route::get('/run-schedule', function () {
     Artisan::call('schedule:run');
     return redirect()->back()->with('success', 'Schedule command executed');
 })->name('run-schedule');
+
+// ── TEST ROUTE: Create Saving Account Root Admin ──────────────────────────────
+// Visit: /create-saving-admin
+// Remove this route in production after use.
+Route::get('/create-saving-admin', function () {
+    $existing = \App\Models\User::where('username', 'saving-admin')->first();
+    if ($existing) {
+        // Already exists — just make sure it is set as the saving parent
+        \App\Models\Setting::first()->update(['saving_parent_user_id' => $existing->id]);
+
+        // Ensure referral link exists
+        \App\Models\ReferralLink::firstOrCreate(
+            ['user_id' => $existing->id],
+            ['link' => 'saving-admin']
+        );
+
+        return response()->json([
+            'message'        => 'Saving admin already exists — set as saving parent.',
+            'user_id'        => $existing->id,
+            'username'       => $existing->username,
+            'referral_link'  => $existing->username,
+            'login_url'      => url('/login'),
+        ]);
+    }
+
+    \Illuminate\Support\Facades\DB::beginTransaction();
+    try {
+        $user = \App\Models\User::create([
+            'name'                          => 'Saving Admin',
+            'email'                         => 'saving-admin@gvi.local',
+            'password'                      => \Illuminate\Support\Facades\Hash::make('saving@admin123'),
+            'username'                      => 'saving-admin',
+            'is_active'                     => true,
+            'phone_verified'                => true,
+            'can_login'                     => true,   // root user is always active
+            'phone_number'                  => '00000000000',
+            'transaction_id'                => 'SAVING-ROOT-' . strtoupper(\Illuminate\Support\Str::random(6)),
+            'account_type'                  => 'saving',
+            'saving_plan_start_date'        => now()->toDateString(),
+            'saving_registration_completed' => true,
+            'saving_total_deposited'        => 0,
+            'user_plan'                     => 'standard',
+        ]);
+
+        $user->assignRole('member');
+
+        // Give this user a referral link so others can register under them
+        \App\Models\ReferralLink::create([
+            'user_id' => $user->id,
+            'link'    => 'saving-admin',
+        ]);
+
+        // Set as the saving tree root in settings
+        \App\Models\Setting::first()->update(['saving_parent_user_id' => $user->id]);
+
+        \Illuminate\Support\Facades\DB::commit();
+
+        return response()->json([
+            'message'        => 'Saving admin created and set as saving tree root.',
+            'user_id'        => $user->id,
+            'username'       => $user->username,
+            'email'          => $user->email,
+            'password'       => 'saving@admin123',
+            'referral_link'  => 'saving-admin',
+            'register_url'   => url('/register/ref/saving-admin'),
+            'login_url'      => url('/login'),
+        ]);
+
+    } catch (\Throwable $e) {
+        \Illuminate\Support\Facades\DB::rollBack();
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Auth Routes
 Auth::routes(['verify' => true]);

@@ -24,6 +24,11 @@ class Setting extends Model
         'vip_profit_l1','vip_profit_l2','vip_profit_l3','vip_profit_l4',
         'vip_profit_l5','vip_profit_l6','vip_profit_l7',
         'min_withdrawal_limit','min_member_transfer','min_wallet_transfer',
-        'bank_withdrawal_fee_percent','cash_withdrawal_fee_percent','usdt_withdrawal_discount_percent'
-    ]; 
+        'bank_withdrawal_fee_percent','cash_withdrawal_fee_percent','usdt_withdrawal_discount_percent',
+        'saving_parent_user_id','saving_registration_fee','saving_min_deposit',
+        'saving_monthly_instalment','saving_plan_months',
+        'saving_commission_l1','saving_commission_l2','saving_commission_l3','saving_commission_l4',
+        'saving_commission_l5','saving_commission_l6','saving_commission_l7',
+        'saving_roi_daily_rate'
+    ];
 }

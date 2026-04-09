@@ -68,6 +68,24 @@
 
                 @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('super-admin'))
                 <div class="navi-item mb-2">
+                    <a href="{{ route('setting.saving') }}" class="navi-link py-4 {{ request()->routeIs('setting.saving') ? 'active' : '' }}">
+                        <span class="navi-icon mr-2">
+                            <span class="svg-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24"/>
+                                        <path d="M5,3 L19,3 C19.5522847,3 20,3.44771525 20,4 L20,20 C20,20.5522847 19.5522847,21 19,21 L5,21 C4.44771525,21 4,20.5522847 4,20 L4,4 C4,3.44771525 4.44771525,3 5,3 Z" fill="#000000" opacity="0.3"/>
+                                        <rect fill="#000000" x="7" y="8" width="10" height="2" rx="1"/>
+                                        <rect fill="#000000" x="7" y="12" width="7" height="2" rx="1"/>
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="navi-text font-size-lg">Saving Account</span>
+                    </a>
+                </div>
+
+                <div class="navi-item mb-2">
                     <a href="{{ route('admin.impersonation.index') }}" class="navi-link py-4 {{ request()->routeIs('admin.impersonation.*') ? 'active' : '' }} ">
                         <span class="navi-icon mr-2">
                             <span class="svg-icon">

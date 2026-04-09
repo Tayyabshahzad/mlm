@@ -33,11 +33,17 @@ class CommissionService
 
     public function assignCommissions(User $user, $amountToTopUp, string $sourceType = 'investment'): void
     {
-        try { 
+        try {
+            // Saving account users have their own commission system — skip standard flow
+            if ($user->account_type === 'saving') {
+                Log::info("User {$user->id} is a saving account — skipping standard commissions");
+                return;
+            }
+
             if (!$this->hasEligibleInvestment($user)) {
                 Log::info("User {$user->id} | {$user->name} has no eligible investment for commission");
                 return;
-            } 
+            }
             $this->procesDirectCommission($user, $amountToTopUp, $sourceType);
             $this->processIndirectCommissions($user, $amountToTopUp, $sourceType);
             
@@ -117,7 +123,8 @@ class CommissionService
         return DB::table('referral_trees')
             ->select('ancestor_id', 'level')
             ->where('descendant_id', $user->id)
-            ->where('level', '>', 1) // Exclude Level 1 (direct sponsor)
+            ->where('tree_type', 'standard')
+            ->where('level', '>', 1)
             ->where('level', '<=', self::MAX_COMMISSION_LEVELS)
             ->orderBy('level')
             ->get();

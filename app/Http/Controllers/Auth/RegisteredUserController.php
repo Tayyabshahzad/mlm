@@ -5,207 +5,335 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\ActivationCode;
 use App\Models\InvestmentSlab;
-use App\Models\PVTransaction;
 use App\Models\ReferralLink;
-use App\Models\ReferralTree;
 use App\Models\Setting;
 use App\Models\TransactionLog;
 use App\Models\User;
 use App\Models\UserInvestment;
-use App\Models\UserWallet;
-use Illuminate\Auth\Events\Registered;
+use App\Services\SavingAccountService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
-use Inertia\Inertia;
-use Inertia\Response;
 use Illuminate\Support\Str;
 use App\Rules\ValidActivationCode;
-use Carbon\Carbon; 
+use Carbon\Carbon;
+
 class RegisteredUserController extends Controller
 {
+    public function __construct(private SavingAccountService $savingAccountService) {}
+
     /**
      * Display the registration view.
      */
     public function create(Request $request, $ref = null)
     {
-          
-        // return Inertia::render('Auth/Register', [
-        //     'refLink' => $ref,  
-        // ]);
-        $setting= Setting::first();
-        return view('auth.register',compact('ref','setting'));
+        $setting = Setting::first();
+        return view('auth.register', compact('ref', 'setting'));
     }
 
     /**
      * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
-     
     public function store(Request $request): RedirectResponse
     {
-        $setting = Setting::first();
+        $setting     = Setting::first();
+        $accountType = $request->input('account_type', 'standard_investment');
+
+        if ($accountType === 'saving') {
+            return $this->storeSavingAccount($request, $setting);
+        }
+
+        return $this->storeStandardAccount($request, $setting);
+    }
+
+    // -------------------------------------------------------------------------
+    // Standard investment registration (existing logic)
+    // -------------------------------------------------------------------------
+
+    private function storeStandardAccount(Request $request, $setting): RedirectResponse
+    {
         $minUsdt = ($setting->standard_package_min ?? 1) + ($setting->registration_fee ?? 0);
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:' . User::class,
-            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'transaction_id' => 'required|max:50|string|unique:' . User::class,
-            'phone_number' => 'required|unique:' . User::class,
-            'cc' => 'required',
-            'payment_method' => 'required|in:usdt,bank,cash_slip,activation_code',
-            'referral_link' => [
-                'required',
-                'string',
-                'exists:referral_links,link',
-            ],
-            'amount_src' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-            'activation_code' => [
-                'nullable',
-                new ValidActivationCode($request->payment_method),
-            ],
+            'name'             => 'required|string|max:255',
+            'username'         => 'required|string|max:255|unique:' . User::class,
+            'email'            => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'password'         => ['required', 'confirmed', Rules\Password::defaults()],
+            'transaction_id'   => 'required|max:50|string|unique:' . User::class,
+            'phone_number'     => 'required|unique:' . User::class,
+            'cc'               => 'required',
+            'payment_method'   => 'required|in:usdt,bank,cash_slip,activation_code',
+            'referral_link'    => ['required', 'string', 'exists:referral_links,link'],
+            'amount_src'       => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'activation_code'  => ['nullable', new ValidActivationCode($request->payment_method)],
             'transferred_amount' => 'required|numeric',
-            'usdt_amount' => 'required|numeric|min:' . $minUsdt,
+            'usdt_amount'      => 'required|numeric|min:' . $minUsdt,
         ]);
 
         $netAmount = $request->usdt_amount - $setting->registration_fee;
         if ($netAmount <= 0) {
             return redirect()->back()->withInput()->with('error', 'Insufficient USDT amount after fee deduction.');
         }
-        DB::beginTransaction();
 
+        DB::beginTransaction();
         try {
             $referralLink = ReferralLink::where('link', $request->referral_link)
                 ->where('is_active', true)
                 ->firstOrFail();
 
-            $baseUsername = Str::slug($request->username);
-            if (!$baseUsername) {
-                return redirect()->back()->with('error', 'Invalid Username format');
-            }
-
-            $username = $baseUsername;
-            $count = 1;
-            while (User::where('username', $username)->exists()) {
-                $username = $baseUsername . '-' . $count;
-                $count++;
-            }
-
-            $netAmount = $request->usdt_amount - $setting->registration_fee;
-
-            // Auto-assign plan based on net investment amount and package ranges from settings
-            $vipMin = $setting->vip_package_min ?? 35;
-
-            if ($netAmount >= $vipMin) {
-                $userPlan = 'vip';
-            } else {
-                $userPlan = 'standard';
-            }
+            $username = $this->generateUsername($request->username);
+            $vipMin   = $setting->vip_package_min ?? 35;
+            $userPlan = $netAmount >= $vipMin ? 'vip' : 'standard';
 
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'username' => $username,
-                'is_active' => true,
-                'phone_verified' => true,
-                'sponsor_id' => $referralLink->user->id,
-                'transaction_id' => $request->transaction_id,
-                'phone_number' => $request->cc . $request->phone_number,
-                'payment_method' => $request->payment_method,
-                'usdt_rate' => $setting->usd,
-                'transferred_amount' => $request->transferred_amount,
-                'converted_usdt_amount' => $request->usdt_amount,
-                'fee_deducted' => $setting->registration_fee,
-                'net_invested_usdt_amount' => $netAmount,
+                'name'                      => $request->name,
+                'email'                     => $request->email,
+                'password'                  => Hash::make($request->password),
+                'username'                  => $username,
+                'is_active'                 => true,
+                'phone_verified'            => true,
+                'sponsor_id'               => $referralLink->user->id,
+                'transaction_id'            => $request->transaction_id,
+                'phone_number'              => $request->cc . $request->phone_number,
+                'payment_method'            => $request->payment_method,
+                'usdt_rate'                 => $setting->usd,
+                'transferred_amount'        => $request->transferred_amount,
+                'converted_usdt_amount'     => $request->usdt_amount,
+                'fee_deducted'              => $setting->registration_fee,
+                'net_invested_usdt_amount'  => $netAmount,
                 'roi_eligible_investment_amount' => $netAmount,
-                'user_plan' => $userPlan, // Auto-assigned based on net investment amount
+                'user_plan'                 => $userPlan,
+                'account_type'              => 'standard_investment',
             ]);
 
-            if ($request->payment_method === 'activation_code') {
-                $activationCode = ActivationCode::where('code', $request->activation_code)
-                    ->where('admin_approval', 'approved')
-                    ->where('status', 'unused')
-                    ->firstOrFail();
-
-                $activationCode->update([
-                    'status' => 'used',
-                    'used_by' => $user->id,
-                    'updated_at' => now()
-                ]);
-
-                $user->activation_code_id = $activationCode->id;
-                $user->save();
-
-                $this->logTransaction(
-                    $activationCode->generated_by,
-                    'activation_code',
-                    'activation_code',
-                    0, 0,
-                    "New user '{$user->name}' was created using an activation code.",
-                    'debit'
-                );
-            }
+            $this->handleActivationCode($request, $user);
             $this->createInitialInvestment($user);
             $this->checkAndCreateSlabs($user);
             $user->assignRole('member');
-            ReferralLink::create([
-                'user_id' => $user->id,
-                'link' => $username,
-            ]);
 
+            ReferralLink::create(['user_id' => $user->id, 'link' => $username]);
             $this->registerUser($referralLink->user_id, $user->id);
 
             if ($request->hasFile('amount_src')) {
-                $user->addMedia($request->file('amount_src'))
-                    ->toMediaCollection('user_amount_source');
+                $user->addMedia($request->file('amount_src'))->toMediaCollection('user_amount_source');
             }
 
             DB::commit();
-
             Auth::login($user);
-
             return redirect(route('dashboard', absolute: false));
 
-        } catch (\Throwable $e) { 
+        } catch (\Throwable $e) {
             DB::rollBack();
-            \Log::error('User registration failed: ' . $e->getMessage());
+            Log::error('Standard registration failed: ' . $e->getMessage());
             return redirect()->back()->withInput()->with('error', 'Something went wrong! ' . $e->getMessage());
         }
     }
 
-     
+    // -------------------------------------------------------------------------
+    // Saving account registration
+    // -------------------------------------------------------------------------
 
-    function registerUser($parentId, $newUserId) {
+    private function storeSavingAccount(Request $request, $setting): RedirectResponse
+    {
+        $savingFee     = $setting->saving_registration_fee ?? 5;
+        $savingDeposit = $setting->saving_min_deposit ?? 19;
+        $minTotal      = $savingFee; // minimum = $5 only
+        $fullTotal     = $savingFee + $savingDeposit; // $24
+
+        // Determine if paying full $24 or $5 only
+        $isFullPayment = $request->usdt_amount >= $fullTotal;
+
+        $request->validate([
+            'name'             => 'required|string|max:255',
+            'username'         => 'required|string|max:255|unique:' . User::class,
+            'email'            => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'password'         => ['required', 'confirmed', Rules\Password::defaults()],
+            'transaction_id'   => 'required|max:50|string|unique:' . User::class,
+            'phone_number'     => 'required|unique:' . User::class,
+            'cc'               => 'required',
+            'payment_method'   => 'required|in:usdt,bank,cash_slip,activation_code',
+            'referral_link'    => ['required', 'string', 'exists:referral_links,link'],
+            'amount_src'       => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'activation_code'  => ['nullable', new ValidActivationCode($request->payment_method)],
+            'transferred_amount' => 'required|numeric',
+            'usdt_amount'      => 'required|numeric|min:' . $minTotal . '|max:' . $fullTotal,
+        ]);
+
+        // Validate referral link belongs to the saving tree
+        $referralLink = ReferralLink::where('link', $request->referral_link)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$referralLink) {
+            return redirect()->back()->withInput()->with('error', 'Invalid referral code.');
+        }
+
+        // Referral link must belong to saving account user OR the saving parent user
+        $referralOwner = $referralLink->user;
+        if (
+            $referralOwner->account_type !== 'saving'
+            && $referralOwner->id !== ($setting->saving_parent_user_id ?? null)
+        ) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Saving accounts must use a referral code from within the Saving Account network.');
+        }
+
         DB::beginTransaction();
-    
         try {
-            // Step 1: Insert direct relationship (level = 1)
-            DB::table('referral_trees')->insertOrIgnore([
-                'ancestor_id' => $parentId,
-                'descendant_id' => $newUserId,
-                'level' => 1,
+            $username         = $this->generateUsername($request->username);
+            $netDeposit       = $isFullPayment ? ($request->usdt_amount - $savingFee) : 0;
+            $registrationComplete = $isFullPayment;
+
+            $user = User::create([
+                'name'                           => $request->name,
+                'email'                          => $request->email,
+                'password'                       => Hash::make($request->password),
+                'username'                       => $username,
+                'is_active'                      => true,
+                'phone_verified'                 => true,
+                'can_login'                      => false, // requires admin activation
+                'sponsor_id'                     => $referralLink->user->id,
+                'transaction_id'                 => $request->transaction_id,
+                'phone_number'                   => $request->cc . $request->phone_number,
+                'payment_method'                 => $request->payment_method,
+                'usdt_rate'                      => $setting->usd,
+                'transferred_amount'             => $request->transferred_amount,
+                'converted_usdt_amount'          => $request->usdt_amount,
+                'fee_deducted'                   => $savingFee,
+                'net_invested_usdt_amount'       => $netDeposit,
+                'roi_eligible_investment_amount' => $netDeposit,
+                'user_plan'                      => 'standard',
+                'account_type'                   => 'saving',
+                'saving_plan_start_date'         => Carbon::today()->toDateString(),
+                'saving_registration_completed'  => $registrationComplete,
+                'saving_total_deposited'         => $netDeposit,
             ]);
-    
-            // Step 2: Propagate ancestor relationships
+
+            $this->handleActivationCode($request, $user);
+            $user->assignRole('member');
+
+            ReferralLink::create(['user_id' => $user->id, 'link' => $username]);
+            // Register into the SAVING tree — completely separate from standard tree
+            $this->registerUser($referralLink->user_id, $user->id, 'saving');
+
+            if ($request->hasFile('amount_src')) {
+                $user->addMedia($request->file('amount_src'))->toMediaCollection('user_amount_source');
+            }
+
+            // Build 25-month instalment schedule
+            $monthlyAmount = $setting->saving_monthly_instalment ?? 19;
+            $this->savingAccountService->createInstalmentSchedule($user, $netDeposit, $monthlyAmount);
+
+            // If full payment at registration, mark instalment #1 confirmed immediately
+            if ($isFullPayment && $netDeposit > 0) {
+                $this->savingAccountService->markFirstInstalmentConfirmed($user, $request->transaction_id, 1);
+
+                // Credit to saving wallet
+                \App\Models\Wallet::create([
+                    'user_id'         => $user->id,
+                    'wallet_type'     => 'saving',
+                    'balance'         => $netDeposit,
+                    'commission_type' => 'saving_deposit',
+                    'level'           => '-',
+                    'total_amount'    => $netDeposit,
+                    'wallet_src'      => 'saving_instalment',
+                    'source_type'     => 'saving',
+                    'description'     => 'Initial saving deposit on registration',
+                    'transaction_type'=> 'credit',
+                ]);
+
+                // Commissions are NOT distributed at registration — admin must activate first
+            }
+
+            DB::commit();
+            Auth::login($user);
+            return redirect(route('dashboard', absolute: false));
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Saving account registration failed: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Something went wrong! ' . $e->getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Shared helpers
+    // -------------------------------------------------------------------------
+
+    private function generateUsername(string $rawUsername): string
+    {
+        $base  = Str::slug($rawUsername);
+        if (!$base) {
+            abort(422, 'Invalid Username format');
+        }
+        $name  = $base;
+        $count = 1;
+        while (User::where('username', $name)->exists()) {
+            $name = $base . '-' . $count++;
+        }
+        return $name;
+    }
+
+    private function handleActivationCode(Request $request, User $user): void
+    {
+        if ($request->payment_method !== 'activation_code') {
+            return;
+        }
+
+        $activationCode = ActivationCode::where('code', $request->activation_code)
+            ->where('admin_approval', 'approved')
+            ->where('status', 'unused')
+            ->firstOrFail();
+
+        $activationCode->update([
+            'status'     => 'used',
+            'used_by'    => $user->id,
+            'updated_at' => now(),
+        ]);
+
+        $user->activation_code_id = $activationCode->id;
+        $user->save();
+
+        $this->logTransaction(
+            $activationCode->generated_by,
+            'activation_code',
+            'activation_code',
+            0, 0,
+            "New user '{$user->name}' was created using an activation code.",
+            'debit'
+        );
+    }
+
+    public function registerUser($parentId, $newUserId, string $treeType = 'standard'): void
+    {
+        DB::beginTransaction();
+        try {
+            DB::table('referral_trees')->insertOrIgnore([
+                'ancestor_id'   => $parentId,
+                'descendant_id' => $newUserId,
+                'level'         => 1,
+                'tree_type'     => $treeType,
+            ]);
+
+            // Only walk ancestors of the same tree type
             $ancestors = DB::table('referral_trees')
                 ->where('descendant_id', $parentId)
+                ->where('tree_type', $treeType)
                 ->get();
-    
+
             foreach ($ancestors as $ancestor) {
                 DB::table('referral_trees')->insertOrIgnore([
-                    'ancestor_id' => $ancestor->ancestor_id,
+                    'ancestor_id'   => $ancestor->ancestor_id,
                     'descendant_id' => $newUserId,
-                    'level' => $ancestor->level + 1,
+                    'level'         => $ancestor->level + 1,
+                    'tree_type'     => $treeType,
                 ]);
             }
-    
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -213,109 +341,65 @@ class RegisteredUserController extends Controller
         }
     }
 
-
-    protected function generateReferralCode()
+    protected function generateReferralCode(): string
     {
-        // Generate a code with mix of letters and numbers
-        $letters = Str::random(5); // 5 random letters
-        $numbers = rand(10000, 99999); // 5 random numbers
-        $code = strtoupper($letters . $numbers); // Combine and make uppercase
-        
-        // Check if code already exists and regenerate if needed
-        while (ReferralLink::where('link', $code)->exists()) {
-            $letters = Str::random(5);
-            $numbers = rand(10000, 99999);
-            $code = strtoupper($letters . $numbers);
-        }
-        
+        do {
+            $code = strtoupper(Str::random(5) . rand(10000, 99999));
+        } while (ReferralLink::where('link', $code)->exists());
+
         return $code;
     }
 
-    public function createUserWallet($userId)
+    private function logTransaction($userId, $toAddress, $fromAddress, $amount, $finalAmount, $description, $status): void
     {
-        UserWallet::create([
-            'user_id' => $userId,
-            'wallet_type' => 'INVESTMENT', // Assuming the default wallet type is 'ONLINE'
-            'balance' => 0, // Initial balance
+        TransactionLog::create([
+            'user_id'          => $userId,
+            'from_wallet_type' => $toAddress,
+            'to_wallet_type'   => $fromAddress,
+            'charge'           => 0,
+            'amount'           => $amount,
+            'final_amount'     => $finalAmount,
+            'description'      => $description,
+            'status'           => $status,
         ]);
     }
-
-    public function assignPvToUser($userId, $amountPaid)
-    {
-        // Find the user and their wallet
-        $user = User::findOrFail($userId);
-        $userWallet = UserWallet::where('user_id', $userId)->first();
-        $pvAssigned = 100;  // This can be dynamic based on amount paid, as per your business rules
-        // Update the user's wallet with the credited PV
-        $userWallet->balance += $pvAssigned;
-        $userWallet->total_credited += $pvAssigned;
-        $userWallet->last_transaction = now();
-        $userWallet->save();
-        // Create a transaction log for this PV credit
-        PVTransaction::create([
-            'user_id' => $userId,
-            'transaction_type' => 'INVESTMENT',
-            'pv_amount' => $pvAssigned,
-            'previous_balance' => $userWallet->balance - $pvAssigned, // Balance before transaction
-            'new_balance' => $userWallet->balance, // Balance after transaction
-            'created_at' => now(),
-            'remarks' => 'PV credited for registration payment',
-        ]);
-        // Optionally update the user’s overall PV balance in the `users` table
-        $user->current_pv_balance += $pvAssigned;
-        $user->save();
-    }
-    private function logTransaction($userId,$toAddress,$fromAddress,$amount, $finalAmount,$description,$status)
-            {
-                TransactionLog::create([
-                    'user_id' => $userId,
-                    'from_wallet_type' => $toAddress,
-                    'to_wallet_type' => $fromAddress,
-                    'charge' =>0, 
-                    'amount' => $amount, 
-                    'final_amount' => $finalAmount,
-                    'description' => $description,
-                    'status' =>$status
-                ]);
-            } 
 
     protected function createInitialInvestment(User $user): void
     {
         UserInvestment::create([
-            'user_id' => $user->id,
-            'amount' => $user->net_invested_usdt_amount,
-            'type' => 'join',
-            'description' => 'Initial payment during account creation',
-            'committed_amount' => $user->net_invested_usdt_amount * 2, // 2X commitment
-            'total_earnings' => 0,
-            'roi_status' => 'active',
-            'user_plan_at_time' => $user->user_plan ?? 'standard' // Save plan at time of investment
+            'user_id'            => $user->id,
+            'amount'             => $user->net_invested_usdt_amount,
+            'type'               => 'join',
+            'description'        => 'Initial payment during account creation',
+            'committed_amount'   => $user->net_invested_usdt_amount * 2,
+            'total_earnings'     => 0,
+            'roi_status'         => 'active',
+            'user_plan_at_time'  => $user->user_plan ?? 'standard',
         ]);
     }
- 
 
-    private function checkAndCreateSlabs($user)
+    private function checkAndCreateSlabs(User $user): void
     {
         $totalInvestment = UserInvestment::where('user_id', $user->id)->sum('amount');
-        $totalSlabs = InvestmentSlab::where('user_id', $user->id)->count(); 
-        $availableInvestment = $totalInvestment - ($totalSlabs * 100);
-        while ($availableInvestment >= 100) {
-            $achievedAt = now();
-            $willPayAt = $achievedAt->copy()->addMonths(24)->startOfMonth()->addMonth();
+        $totalSlabs      = InvestmentSlab::where('user_id', $user->id)->count();
+        $available       = $totalInvestment - ($totalSlabs * 100);
 
-            $newSlab = new InvestmentSlab();
-            $newSlab->user_id = $user->id;
-            $newSlab->slab_count = $totalSlabs + 1;
-            $newSlab->amount = 100;
-            $newSlab->achived_at = now();
-            $newSlab->current_balance = $user->roi_eligible_investment_amount;
-            $newSlab->maturity_date = now()->addMonths(24);
-            $newSlab->will_pay_at = $willPayAt;
-            $newSlab->status = 'No';
-            $newSlab->save();
-            $totalSlabs++;
-            $availableInvestment -= 100;
+        while ($available >= 100) {
+            $achievedAt = now();
+            $willPayAt  = $achievedAt->copy()->addMonths(24)->startOfMonth()->addMonth();
+
+            InvestmentSlab::create([
+                'user_id'        => $user->id,
+                'slab_count'     => ++$totalSlabs,
+                'amount'         => 100,
+                'achived_at'     => $achievedAt,
+                'current_balance'=> $user->roi_eligible_investment_amount,
+                'maturity_date'  => now()->addMonths(24),
+                'will_pay_at'    => $willPayAt,
+                'status'         => 'No',
+            ]);
+
+            $available -= 100;
         }
     }
-
 }

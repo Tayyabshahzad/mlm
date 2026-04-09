@@ -51,15 +51,19 @@ class UserController extends Controller
  
     public function updateStatus(Request $request)
     {
-        $request->validate(['member_id' => ['required',  'integer', 'exists:users,id']]);
+        $request->validate(['member_id' => ['required', 'integer', 'exists:users,id']]);
         $user = User::find($request->member_id);
+
         if ($user->can_login) {
             return redirect()->back()->with('error', 'This User is Already Activated');
         }
 
-        //  $info = $this->rewardService->repairMissingRewards(8);
-        //  dd($info);
+        // ── Saving account activation (separate flow) ──────────────────────
+        if ($user->account_type === 'saving') {
+            return $this->activateSavingUser($user);
+        }
 
+        // ── Standard investment activation (existing flow) ─────────────────
         try {
             DB::beginTransaction();
 
@@ -73,13 +77,55 @@ class UserController extends Controller
             $user->save();
             $this->rewardService->processRewardsForUserActivation($user);
             DB::commit();
-            Log::info("User {$user->id} activated successfully");
+            Log::info("Standard user {$user->id} activated successfully");
             return redirect()->back()->with('success', 'Member Status has been Updated');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Failed to activate user {$user->id}: " . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to update member status');
-        } 
+        }
+    }
+
+    /**
+     * Activate a saving account user.
+     * Sets can_login = true, then distributes saving commissions for any already-deposited amount.
+     * No PV, no reward, no profit-share, no investment slabs.
+     */
+    private function activateSavingUser(User $user)
+    {
+        try {
+            DB::beginTransaction();
+
+            $user->can_login = true;
+            $user->saving_registration_completed = true;
+            $user->save();
+
+            // Fire saving commissions only if:
+            // 1. Instalment #1 has already been deposited (deposited_at not null)
+            // 2. Commission has NOT already been fired (no direct_indirect saving_instalment wallet entry)
+            $inst1Deposited = $user->savingInstalments()
+                ->where('instalment_number', 1)
+                ->whereNotNull('deposited_at')
+                ->exists();
+
+            $alreadyFired = \App\Models\Wallet::where('user_id', $user->id)
+                ->where('wallet_type', 'direct_indirect')
+                ->where('source_type', 'saving_instalment')
+                ->exists();
+
+            if ($inst1Deposited && !$alreadyFired) {
+                $savingService = app(\App\Services\SavingAccountService::class);
+                $savingService->assignSavingCommissions($user, $user->saving_total_deposited);
+            }
+
+            DB::commit();
+            Log::info("Saving account user {$user->id} activated successfully");
+            return redirect()->back()->with('success', 'Saving Account Member Activated Successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Failed to activate saving user {$user->id}: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to activate saving account: ' . $e->getMessage());
+        }
     }
 
  
@@ -571,26 +617,49 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $search = $request->input('search');
-        $teamMembers = User::with('team','activationCode')
-            ->where('id', '!=', auth()->user()->id)
-            ->when($search, function ($query, $search) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('username', 'like', "%{$search}%")
-                          ->orWhere('name', 'like', "%{$search}%")
-                          ->orWhere('email', 'like', "%{$search}%");
-                });
-            })
-            ->orderBy('can_login', 'asc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-        $totalMembers = User::count();
-        $totalActiveMembers = User::where('can_login',true)->count();
-        $totalInActiveMembers = User::where('can_login',false)->count();
-        $totalBlockedMembers = User::where('blocked',true)->count();
-        $totalfreezeMembers = User::where('freez_wallet',true)->count();
+        $search  = $request->input('search');
+        $tab     = $request->input('tab', 'standard'); // 'standard' or 'saving'
 
-        return view('users.index', compact('teamMembers', 'search' ,'totalMembers','totalActiveMembers','totalInActiveMembers','totalBlockedMembers','totalfreezeMembers'));
+        $baseQuery = function ($accountType) use ($request, $search) {
+            $eagerLoads = $accountType === 'saving'
+                ? ['team', 'activationCode', 'savingInstalments', 'parent']
+                : ['team', 'activationCode'];
+
+            return User::with($eagerLoads)
+                ->where('id', '!=', auth()->user()->id)
+                ->where('account_type', $accountType)
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($query) use ($search) {
+                        $query->where('username', 'like', "%{$search}%")
+                              ->orWhere('name', 'like', "%{$search}%")
+                              ->orWhere('email', 'like', "%{$search}%");
+                    });
+                })
+                ->orderBy('can_login', 'asc')
+                ->orderBy('created_at', 'desc');
+        };
+
+        $teamMembers   = $baseQuery('standard_investment')->paginate(20)->withQueryString();
+        $savingMembers = $baseQuery('saving')->paginate(20, ['*'], 'saving_page')->withQueryString();
+
+        // Stats for standard users
+        $totalMembers        = User::where('account_type', 'standard_investment')->count();
+        $totalActiveMembers  = User::where('account_type', 'standard_investment')->where('can_login', true)->count();
+        $totalInActiveMembers= User::where('account_type', 'standard_investment')->where('can_login', false)->count();
+        $totalBlockedMembers = User::where('account_type', 'standard_investment')->where('blocked', true)->count();
+        $totalfreezeMembers  = User::where('account_type', 'standard_investment')->where('freez_wallet', true)->count();
+
+        // Stats for saving users
+        $totalSavingMembers       = User::where('account_type', 'saving')->count();
+        $totalActiveSaving        = User::where('account_type', 'saving')->where('can_login', true)->count();
+        $totalInactiveSaving      = User::where('account_type', 'saving')->where('can_login', false)->count();
+        $totalActivatedSaving     = User::where('account_type', 'saving')->where('saving_registration_completed', true)->count();
+
+        return view('users.index', compact(
+            'teamMembers', 'savingMembers', 'search', 'tab',
+            'totalMembers', 'totalActiveMembers', 'totalInActiveMembers', 'totalBlockedMembers', 'totalfreezeMembers',
+            'totalSavingMembers', 'totalActiveSaving', 'totalInactiveSaving', 'totalActivatedSaving'
+        ));
     }
     public function deletedUser(Request $request)
     {

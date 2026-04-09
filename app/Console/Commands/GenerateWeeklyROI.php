@@ -64,6 +64,11 @@ class GenerateWeeklyROI extends Command
                 ->where('can_login', true)
                 ->where('freez_wallet', false)
                 ->where(function ($query) {
+                    // Standard investment users only — saving users have separate ROI
+                    $query->where('account_type', 'standard_investment')
+                          ->orWhereNull('account_type');
+                })
+                ->where(function ($query) {
                     $query->whereNull('roi_status')
                       ->orWhere('roi_status', 'active');
                 })

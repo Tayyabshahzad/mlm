@@ -68,5 +68,45 @@ class SettingController extends Controller
         return back()->with('status', $output);
     }
 
-    
+    public function savingSettings()
+    {
+        $setting = Setting::first();
+        return view('setting.saving', compact('setting'));
+    }
+
+    public function updateSavingSettings(Request $request)
+    {
+        $request->validate([
+            'saving_registration_fee'    => 'required|numeric|min:0',
+            'saving_min_deposit'         => 'required|numeric|min:0',
+            'saving_monthly_instalment'  => 'required|numeric|min:0',
+            'saving_plan_months'         => 'required|integer|min:1',
+            'saving_roi_daily_rate'      => 'required|numeric|min:0|max:100',
+            'saving_commission_l1'       => 'required|numeric|min:0|max:100',
+            'saving_commission_l2'       => 'required|numeric|min:0|max:100',
+            'saving_commission_l3'       => 'required|numeric|min:0|max:100',
+            'saving_commission_l4'       => 'required|numeric|min:0|max:100',
+            'saving_commission_l5'       => 'required|numeric|min:0|max:100',
+            'saving_commission_l6'       => 'required|numeric|min:0|max:100',
+            'saving_commission_l7'       => 'required|numeric|min:0|max:100',
+        ]);
+
+        $setting = Setting::first();
+        $setting->update([
+            'saving_registration_fee'   => $request->saving_registration_fee,
+            'saving_min_deposit'        => $request->saving_min_deposit,
+            'saving_monthly_instalment' => $request->saving_monthly_instalment,
+            'saving_plan_months'        => $request->saving_plan_months,
+            'saving_roi_daily_rate'     => $request->saving_roi_daily_rate,
+            'saving_commission_l1'      => $request->saving_commission_l1,
+            'saving_commission_l2'      => $request->saving_commission_l2,
+            'saving_commission_l3'      => $request->saving_commission_l3,
+            'saving_commission_l4'      => $request->saving_commission_l4,
+            'saving_commission_l5'      => $request->saving_commission_l5,
+            'saving_commission_l6'      => $request->saving_commission_l6,
+            'saving_commission_l7'      => $request->saving_commission_l7,
+        ]);
+
+        return back()->with('success', 'Saving account settings updated successfully.');
+    }
 }

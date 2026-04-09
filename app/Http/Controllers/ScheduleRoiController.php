@@ -12,7 +12,13 @@ use Illuminate\Http\Request;
 class ScheduleRoiController extends Controller
 {
     public function schedule(){
-        $users = User::where('can_login', true)->get(); // Fetch all users  
+        // Only process standard investment users — saving accounts have a separate ROI path
+        $users = User::where('can_login', true)
+            ->where(function ($q) {
+                $q->where('account_type', 'standard_investment')
+                  ->orWhereNull('account_type');
+            })
+            ->get();
         foreach ($users as $user) {
             $walletTotal = Wallet::where('user_id', $user->id)->sum('balance');
             if ($walletTotal >= 200 ) {

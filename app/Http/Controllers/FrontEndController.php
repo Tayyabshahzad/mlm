@@ -268,24 +268,29 @@ class FrontEndController extends Controller
 
         $user = Auth::user();
 
+        // ── Saving account users get their own dashboard data ─────────────
+        if ($user->account_type === 'saving') {
+            return $this->savingDashboard($user, $accountService);
+        }
+
+        // ── Standard investment dashboard ─────────────────────────────────
         $referralCounts = DB::table('referral_trees')
         ->select('referral_trees.level', DB::raw('COUNT(referral_trees.descendant_id) as count'))
-        ->join('users', 'referral_trees.descendant_id', '=', 'users.id') // Join with users table
-        ->where('referral_trees.ancestor_id', $user->id) // Filter for the current user's referrals
-        ->where('users.can_login', true) // Only include active users
-        ->where('referral_trees.level', '<=', 7) // Limit to 7 levels
+        ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
+        ->where('referral_trees.ancestor_id', $user->id)
+        ->where('referral_trees.tree_type', 'standard')
+        ->where('users.can_login', true)
+        ->where('referral_trees.level', '<=', 7)
         ->groupBy('referral_trees.level')
         ->orderBy('referral_trees.level')
         ->get();
 
-        // Ensure all levels from 1 to 7 are represented
         $levels = range(1, 7);
         $levelCounts = collect($levels)->mapWithKeys(function ($level) use ($referralCounts) {
             $count = $referralCounts->firstWhere('level', $level)->count ?? 0;
             return [$level => $count];
         });
 
-        // Now $levelCounts will include counts of active users for each level.
         $totalCount = $levelCounts->sum();
         $wallets  = Wallet::where('user_id', $user->id)->get();
         $authUsers =  User::where('sponsor_id',$user->id)->where('can_login',true);
@@ -297,25 +302,24 @@ class FrontEndController extends Controller
         ->where('can_login',true)
         ->withCount([
             'children as team_count' => function ($query) {
-                $query->select(DB::raw('COUNT(*)')); // Count direct descendants
+                $query->select(DB::raw('COUNT(*)'));
             },
         ])
-        ->orderBy('team_count', 'desc') // Order by team count
+        ->orderBy('team_count', 'desc')
         ->limit(10)
         ->get();
         $totalRewardUsers = $levelCounts->sum();
         $maxRewardTarget = 7610;
         $totalRewardPercentage = round(($totalRewardUsers / $maxRewardTarget) * 100,2);
 
-        // Get ROI statistics using AccountManagementService
         $roiStats = $accountService->getRoiAccountStats($user);
 
-        // Admin-only: Count users who didn't receive ROI today
         $missedRoiCount = 0;
         if ($user->hasRole('admin')) {
             $missedRoiCount = User::where('roi_eligible_investment_amount', '>', 0)
                 ->where('blocked', false)
                 ->where('can_login', true)
+                ->where('account_type', 'standard_investment')
                 ->where('freez_wallet', false)
                 ->where(function ($query) {
                     $query->whereNull('roi_status')
@@ -329,28 +333,86 @@ class FrontEndController extends Controller
         }
 
         $data = [
-            'online_wallet' => $wallets->where('wallet_type', 'online')->sum('balance'),
-            'direct_indirect' => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
-            'rewardWallet' => $wallets->where('wallet_type', 'reward')->sum('balance'),
-            'roi' => $wallets->where('wallet_type', 'roi')->sum('balance'),
-            'profit_share' => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
-            'designation_incentive' => $wallets->where('wallet_type', 'designation_incentive')->sum('balance'),
-            'user_plan' => $user->user_plan ?? 'standard',
-            'rank' => 0,
-            'total_earning'=>$totalEarning,
-            'team_size' => $teamSizing,
-            'initial_investment' => $roiStats['invested_amount'],
-            'levelCount' => $levelCounts,
-            'totalTeam' => $levelCounts->sum(),
-            'reward' =>$totalRewardPercentage,
-            // ROI Statistics
-            'roi_stats' => $roiStats,
-            // Admin Statistics
-            'missed_roi_count' => $missedRoiCount
+            'online_wallet'          => $wallets->where('wallet_type', 'online')->sum('balance'),
+            'direct_indirect'        => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
+            'rewardWallet'           => $wallets->where('wallet_type', 'reward')->sum('balance'),
+            'roi'                    => $wallets->where('wallet_type', 'roi')->sum('balance'),
+            'profit_share'           => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
+            'designation_incentive'  => $wallets->where('wallet_type', 'designation_incentive')->sum('balance'),
+            'user_plan'              => $user->user_plan ?? 'standard',
+            'rank'                   => 0,
+            'total_earning'          => $totalEarning,
+            'team_size'              => $teamSizing,
+            'initial_investment'     => $roiStats['invested_amount'],
+            'levelCount'             => $levelCounts,
+            'totalTeam'              => $levelCounts->sum(),
+            'reward'                 => $totalRewardPercentage,
+            'roi_stats'              => $roiStats,
+            'missed_roi_count'       => $missedRoiCount,
         ];
 
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
+    }
+
+    // ── Saving account dashboard ──────────────────────────────────────────
+    private function savingDashboard(User $user, AccountManagementService $accountService)
+    {
+        // Referral counts within the SAVING tree only
+        $referralCounts = DB::table('referral_trees')
+            ->select('referral_trees.level', DB::raw('COUNT(referral_trees.descendant_id) as count'))
+            ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
+            ->where('referral_trees.ancestor_id', $user->id)
+            ->where('referral_trees.tree_type', 'saving')
+            ->where('users.can_login', true)
+            ->where('referral_trees.level', '<=', 7)
+            ->groupBy('referral_trees.level')
+            ->orderBy('referral_trees.level')
+            ->get();
+
+        $levels     = range(1, 7);
+        $levelCounts = collect($levels)->mapWithKeys(function ($level) use ($referralCounts) {
+            return [$level => $referralCounts->firstWhere('level', $level)->count ?? 0];
+        });
+
+        $wallets     = Wallet::where('user_id', $user->id)->get();
+        $totalEarning = $wallets->sum('total_amount');
+
+        // Instalment summary
+        $savingService  = app(\App\Services\SavingAccountService::class);
+        $instalmentSummary = $savingService->getInstalmentSummary($user);
+
+        $savingBalance  = $wallets->where('wallet_type', 'saving')->sum('balance');
+        $roiStats       = $accountService->getRoiAccountStats($user);
+
+        $data = [
+            'account_type'          => 'saving',
+            // Map saving_wallet → online_wallet so the blade template works without changes
+            'online_wallet'         => $savingBalance,
+            'saving_wallet'         => $savingBalance,
+            'direct_indirect'       => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
+            'roi'                   => $wallets->where('wallet_type', 'roi')->sum('balance'),
+            'total_earning'         => $totalEarning,
+            'levelCount'            => $levelCounts,
+            'totalTeam'             => $levelCounts->sum(),
+            'initial_investment'    => $user->saving_total_deposited,
+            'user_plan'             => 'saving',
+            'rewardWallet'          => 0,
+            'profit_share'          => 0,
+            'designation_incentive' => 0,
+            'rank'                  => 0,
+            'reward'                => 0,
+            'team_size'             => collect(),
+            'roi_stats'             => $roiStats,
+            'missed_roi_count'      => 0,
+            // Saving-specific extras
+            'instalment_summary'    => $instalmentSummary,
+            'registration_complete' => $user->saving_registration_completed,
+            'plan_activated'        => $user->can_login,
+        ];
+
+        $reward = collect(); // saving users have no reward tree
+        return view('demo.dashboard', compact('data', 'reward'));
     }
 
     public function profile(){

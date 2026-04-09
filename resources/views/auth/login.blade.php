@@ -1,54 +1,92 @@
 @extends('demo.layout.guest')
-@section('title','Login')
+@section('title', 'Login')
+
+@section('nav_bar')
+    <span>Don't have an account?</span>
+    <a href="{{ route('register') }}" class="auth-nav-link">Sign Up</a>
+@endsection
+
 @section('content')
-<div class="login-form login-signin">
-	<!--begin::Form-->
+<div class="auth-card">
 
-	<div class="pb-13 pt-lg-0 pt-5 text-center">
-		<img src="{{ asset('assets/custom-images/gvi-text.png') }}" class="max-h-80px" style="width: 90%" alt="" />
-	</div>
+    <!-- Header -->
+    <div class="auth-card-header">
+        <div class="auth-brand-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h2 class="auth-card-title">Welcome Back</h2>
+        <p class="auth-card-subtitle">Sign in to your GVI account</p>
+    </div>
 
+    <!-- Form -->
+    <form method="POST" action="{{ route('login') }}">
+        @csrf
 
-	
-	<form class="form"  method="post" action="{{ route('login') }}" id=" "> 
-		@csrf
-		<div class="pb-13 pt-lg-0 pt-5">
-			<h3 class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg">Welcome to GV International</h3> 
-		</div>
-		<!--begin::Title-->
-		<!--begin::Form group-->
-		<div class="form-group">
-			<label class="font-size-h6 font-weight-bolder text-dark">Email / Username</label>
-			<input class="form-control form-control-solid h-auto py-5 px-6 rounded-md" type="text" name="login" autocomplete="off"  required/>
-			@error('login')
-            	<div class="text-danger">{{ $message }}</div>
+        <!-- Email / Username -->
+        <div class="field-group">
+            <label class="auth-label">Email / Username</label>
+            <div class="auth-input-wrap">
+                <div class="auth-input-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+                        <polyline points="22,6 12,13 2,6" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <input
+                    class="auth-input"
+                    type="text"
+                    name="login"
+                    placeholder="Enter email or username"
+                    autocomplete="off"
+                    value="{{ old('login') }}"
+                    required
+                />
+            </div>
+            @error('login')
+                <div class="text-danger">{{ $message }}</div>
             @enderror
-		</div>
-		<!--end::Form group-->
-		<!--begin::Form group-->
-		<div class="form-group">
-			<div class="d-flex justify-content-between mt-n5">
-				<label class="font-size-h6 font-weight-bolder text-dark pt-5">Password</label> 
-			</div>
-			<input class="form-control form-control-solid h-auto py-5 px-6 rounded-md" type="password" name="password" autocomplete="off"  required/>
-			@error('password')
-            	<div class="text-danger">{{ $message }}</div>
+        </div>
+
+        <!-- Password -->
+        <div class="field-group">
+            <label class="auth-label">Password</label>
+            <div class="auth-input-wrap">
+                <div class="auth-input-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="11" width="18" height="11" rx="2" stroke="#94a3b8" stroke-width="1.8"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <input
+                    class="auth-input"
+                    type="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    autocomplete="off"
+                    required
+                />
+            </div>
+            @error('password')
+                <div class="text-danger">{{ $message }}</div>
             @enderror
-		</div>
-		<!--end::Form group-->
-		<!--begin::Action-->
-		<div class="pb-lg-0 pb-5">
-			<button type="submit" id="kt_login_signin_submit" class="rounded-0 btn btn-primary  py-4 px-8   btn-sm">Sign In</button> 
-			<a href="{{ route('register') }}" class="rounded-0 t-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3 btn-sm">   Register </a>
-		</div>
-		<!--end::Action-->
-	</form>
-	<!--end::Form-->
+        </div>
+
+        <!-- Submit -->
+        <div style="margin-top: 1.5rem;">
+            <button type="submit" class="auth-btn">Sign In</button>
+        </div>
+
+    </form>
+
+    <p style="text-align:center; margin-top:1.25rem; margin-bottom:0; font-size:0.85rem; color:#94a3b8;">
+        New to GVI?
+        <a href="{{ route('register') }}" style="color:#4f46e5; font-weight:600; text-decoration:none;">Create an account</a>
+    </p>
+
 </div>
 @endsection
-@section('page_js')
-    <script> 
 
-    </script>
-    
+@section('page_js')
 @endsection
