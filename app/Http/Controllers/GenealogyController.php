@@ -52,8 +52,15 @@ class GenealogyController extends Controller
         $setting = Setting::first();
         $rootId  = $setting?->saving_parent_user_id;
 
+        // Fall back to the logged-in user if no root is configured (admin viewing their own tree)
         if (!$rootId || !($root = User::find($rootId))) {
-            return back()->with('error', 'Saving tree root has not been configured.');
+            $root   = Auth::user();
+            $rootId = $root->id;
+
+            // Auto-save so future visits don't fall back again
+            if ($setting) {
+                $setting->update(['saving_parent_user_id' => $rootId]);
+            }
         }
 
         $nodeDataArray = [];
