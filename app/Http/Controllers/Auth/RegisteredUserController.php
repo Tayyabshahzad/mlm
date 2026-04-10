@@ -68,7 +68,7 @@ class RegisteredUserController extends Controller
             'cc'               => 'required',
             'payment_method'   => 'required|in:usdt,bank,cash_slip,activation_code',
             'referral_link'    => ['required', 'string', 'exists:referral_links,link'],
-            'amount_src'       => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'amount_src'       => $request->payment_method === 'activation_code' ? 'nullable|image|mimes:jpg,jpeg,png|max:2048' : 'required|image|mimes:jpg,jpeg,png|max:2048',
             'activation_code'  => ['nullable', new ValidActivationCode($request->payment_method)],
             'transferred_amount' => 'required|numeric',
             'usdt_amount'      => 'required|numeric|min:' . $minUsdt,
@@ -157,11 +157,12 @@ class RegisteredUserController extends Controller
             'cc'               => 'required',
             'payment_method'   => 'required|in:usdt,bank,cash_slip,activation_code',
             'referral_link'    => ['required', 'string', 'exists:referral_links,link'],
-            'amount_src'       => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'amount_src'       => $request->payment_method === 'activation_code' ? 'nullable|image|mimes:jpg,jpeg,png|max:2048' : 'required|image|mimes:jpg,jpeg,png|max:2048',
             'activation_code'  => ['nullable', new ValidActivationCode($request->payment_method)],
             'transferred_amount' => 'required|numeric',
             'usdt_amount'      => 'required|numeric|min:' . $minTotal . '|max:' . $fullTotal,
         ]);
+        
 
         // Validate referral link belongs to the saving tree
         $referralLink = ReferralLink::where('link', $request->referral_link)
@@ -173,14 +174,14 @@ class RegisteredUserController extends Controller
         }
 
         // Referral link must belong to saving account user OR the saving parent user
-        $referralOwner = $referralLink->user;
-        if (
-            $referralOwner->account_type !== 'saving'
-            && $referralOwner->id !== ($setting->saving_parent_user_id ?? null)
-        ) {
-            return redirect()->back()->withInput()
-                ->with('error', 'Saving accounts must use a referral code from within the Saving Account network.');
-        }
+        // $referralOwner = $referralLink->user;
+        // if (
+        //     $referralOwner->account_type !== 'saving'
+        //     && $referralOwner->id !== ($setting->saving_parent_user_id ?? null)
+        // ) {
+        //     return redirect()->back()->withInput()
+        //         ->with('error', 'Saving accounts must use a referral code from within the Saving Account network.');
+        // }
 
         DB::beginTransaction();
         try {
@@ -218,7 +219,7 @@ class RegisteredUserController extends Controller
 
             ReferralLink::create(['user_id' => $user->id, 'link' => $username]);
             // Register into the SAVING tree — completely separate from standard tree
-            $this->registerUser($referralLink->user_id, $user->id, 'saving');
+            $this->registerUser($referralLink->user_id, $user->id, 'saving', $setting->saving_parent_user_id);
 
             if ($request->hasFile('amount_src')) {
                 $user->addMedia($request->file('amount_src'))->toMediaCollection('user_amount_source');
@@ -308,7 +309,7 @@ class RegisteredUserController extends Controller
         );
     }
 
-    public function registerUser($parentId, $newUserId, string $treeType = 'standard'): void
+    public function registerUser($parentId, $newUserId, string $treeType = 'standard', ?int $savingRootId = null): void
     {
         DB::beginTransaction();
         try {
@@ -319,7 +320,7 @@ class RegisteredUserController extends Controller
                 'tree_type'     => $treeType,
             ]);
 
-            // Only walk ancestors of the same tree type
+            // Walk ancestors of the same tree type
             $ancestors = DB::table('referral_trees')
                 ->where('descendant_id', $parentId)
                 ->where('tree_type', $treeType)
@@ -331,6 +332,24 @@ class RegisteredUserController extends Controller
                     'descendant_id' => $newUserId,
                     'level'         => $ancestor->level + 1,
                     'tree_type'     => $treeType,
+                ]);
+            }
+
+            // If this is a saving tree and the direct sponsor has no saving-tree ancestry,
+            // anchor the sponsor and new user directly under the saving root so the
+            // global saving tree stays connected even when a standard user is the sponsor.
+            if ($treeType === 'saving' && $savingRootId && $ancestors->isEmpty() && $parentId !== $savingRootId) {
+                DB::table('referral_trees')->insertOrIgnore([
+                    'ancestor_id'   => $savingRootId,
+                    'descendant_id' => $parentId,
+                    'level'         => 1,
+                    'tree_type'     => 'saving',
+                ]);
+                DB::table('referral_trees')->insertOrIgnore([
+                    'ancestor_id'   => $savingRootId,
+                    'descendant_id' => $newUserId,
+                    'level'         => 2,
+                    'tree_type'     => 'saving',
                 ]);
             }
 

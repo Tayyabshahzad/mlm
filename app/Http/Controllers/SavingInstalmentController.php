@@ -289,6 +289,22 @@ class SavingInstalmentController extends Controller
                         'tree_type'     => 'saving',
                     ]);
                 }
+                // If sponsor has no saving-tree ancestry, anchor through the saving root
+                $savingRootId = $setting->saving_parent_user_id ?? null;
+                if ($savingRootId && $ancestors->isEmpty() && $parentId !== $savingRootId) {
+                    DB::table('referral_trees')->insertOrIgnore([
+                        'ancestor_id'   => $savingRootId,
+                        'descendant_id' => $parentId,
+                        'level'         => 1,
+                        'tree_type'     => 'saving',
+                    ]);
+                    DB::table('referral_trees')->insertOrIgnore([
+                        'ancestor_id'   => $savingRootId,
+                        'descendant_id' => $user->id,
+                        'level'         => 2,
+                        'tree_type'     => 'saving',
+                    ]);
+                }
             }
 
             // If this is being set as the saving parent user

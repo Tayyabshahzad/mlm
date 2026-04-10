@@ -147,6 +147,7 @@
                                                                     {{ $teamMember->can_login ? 'Activated' : 'Activate' }}
                                                                 </a>
                                                                 <a class="dropdown-item text-primary" href="{{ route('user.info', $teamMember->id) }}">Details</a>
+                                                                <a class="dropdown-item text-success" href="{{ route('admin.user.wallets', $teamMember->id) }}">Wallet Overview</a>
                                                                 <a class="dropdown-item text-danger" data-toggle="modal" data-target="#deleteUser" data-id="{{ $teamMember->id }}" href="#">Delete</a>
                                                             </div>
                                                         </div>
@@ -254,6 +255,10 @@
                                                                 @else
                                                                     <span class="dropdown-item text-muted">Already Activated</span>
                                                                 @endif
+                                                                <a class="dropdown-item text-warning user-details-btn"
+                                                                   data-toggle="modal" data-target="#userDetails"
+                                                                   data-id="{{ $member->id }}" href="#">Signup Details</a>
+                                                                <a class="dropdown-item text-success" href="{{ route('admin.user.wallets', $member->id) }}">Wallet Overview</a>
                                                                 <a class="dropdown-item text-primary" href="{{ route('admin.saving.show', $member) }}">Instalment Details</a>
                                                                 <a class="dropdown-item text-info" href="{{ route('user.info', $member->id) }}">User Info</a>
                                                                 <a class="dropdown-item text-danger" data-toggle="modal" data-target="#deleteUser" data-id="{{ $member->id }}" href="#">Delete</a>
@@ -306,7 +311,7 @@
 </div>
 
 <div class="modal fade" id="userDetails" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Member Details</h5>
@@ -403,38 +408,57 @@ $(document).ready(function () {
                 $('#loading-spinner').hide();
                 if (response.success) {
                     var d = response.data;
-                    var html = `<table class='table table-bordered'>
-                        <tr><td>Name</td><td>${d.name}</td></tr>
+                    var isSaving = d.account_type === 'saving';
+
+                    var html = `<table class='table table-bordered table-sm'>
+                        <tr class="bg-light-primary"><td colspan="2" class="text-center font-weight-bold">Personal Information</td></tr>
+                        <tr><td width="40%">Name</td><td>${d.name}</td></tr>
+                        <tr><td>Username</td><td>${d.username}</td></tr>
                         <tr><td>Email</td><td>${d.email}</td></tr>
+                        <tr><td>Phone</td><td>${d.phone_number ?? '—'}</td></tr>
+                        <tr><td>Referred By</td><td>${d.referBy.id ? '<a href="/users/info/'+d.referBy.id+'">'+d.referBy.username+'</a>' : '—'}</td></tr>
                         <tr><td>Joined</td><td>${d.created_at}</td></tr>
-                        <tr><td>Status</td><td>${d.status}</td></tr>
-                        <tr><td>Transaction ID</td><td>${d.transaction_id}</td></tr>
+                        <tr><td>Account Type</td><td>${isSaving ? '<span class="badge badge-info">Saving Account</span>' : '<span class="badge badge-primary">Standard Investment</span>'}</td></tr>
+                        <tr><td>Login Status</td><td>${d.status === 'Active' ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Not Activated</span>'}</td></tr>`;
+
+                    if (isSaving) {
+                        var regBadge = d.saving_registration_completed
+                            ? '<span class="badge badge-success">Full Payment ($24)</span>'
+                            : '<span class="badge badge-warning">Fee Only ($5) — Deposit Pending</span>';
+                        html += `<tr><td>Registration Status</td><td>${regBadge}</td></tr>`;
+                        html += `<tr><td>Plan Start Date</td><td>${d.saving_plan_start_date ?? '—'}</td></tr>`;
+                        html += `<tr><td>Total Deposited</td><td>$${d.saving_total_deposited ?? '0.00'}</td></tr>`;
+                    }
+
+                    html += `<tr class="bg-light-danger"><td colspan="2" class="text-center font-weight-bold">Payment Information</td></tr>
                         <tr><td>Payment Method</td><td>${d.payment_method}</td></tr>
+                        <tr><td>Transaction ID</td><td>${d.transaction_id}</td></tr>
                         <tr><td>Activation Code</td><td>${d.activationCode.code}</td></tr>
                         <tr><td>Code Generated By</td><td>${d.activationCode.generated_by}</td></tr>
-                        <tr><td>Referred By</td><td><a href="/users/info/${d.referBy.id}">${d.referBy.username}</a></td></tr>
-                        <tr class="bg-light-danger"><td colspan="2" align="center">Payment Information</td></tr>
                         <tr><td>Transferred (PKR)</td><td>${d.transferred_amount}</td></tr>
-                        <tr><td>Total USDT Paid</td><td>${d.converted_usdt_amount}</td></tr>
-                        <tr><td>Fee Deducted</td><td>${d.fee_deducted}</td></tr>
-                        <tr><td>Net Invested USDT</td><td>${d.net_invested_usdt_amount}</td></tr>
+                        <tr><td>Total USDT Paid</td><td>$${d.converted_usdt_amount}</td></tr>
+                        <tr><td>Fee Deducted</td><td>$${d.fee_deducted}</td></tr>
+                        <tr><td>Net Invested USDT</td><td>$${d.net_invested_usdt_amount}</td></tr>
                         <tr><td>USDT Rate</td><td>${d.usdt_rate}</td></tr>
-                        <tr><td>Created At</td><td>${d.created_at}</td></tr>
                     </table>`;
+
                     if (d.amount_proof) {
-                        html += `<table class='table table-bordered'>
-                            <tr><td>Amount Proof</td></tr>
-                            <tr><td><img src="${d.amount_proof}" class="img img-thumbnail" style="max-width:100%;height:auto;"/></td></tr>
+                        html += `<table class='table table-bordered table-sm'>
+                            <tr class="bg-light-warning"><td class="text-center font-weight-bold">Transaction Proof</td></tr>
+                            <tr><td><a href="${d.amount_proof}" target="_blank"><img src="${d.amount_proof}" class="img img-thumbnail" style="max-width:100%;height:auto;"/></a></td></tr>
                         </table>`;
+                    } else {
+                        html += `<div class="alert alert-warning mt-2">No transaction proof uploaded.</div>`;
                     }
+
                     $('#user-details-content').html(html);
                 } else {
-                    $('#user-details-content').html('<p>Error fetching user details.</p>');
+                    $('#user-details-content').html('<p class="text-danger">Error fetching user details.</p>');
                 }
             },
             error: function () {
                 $('#loading-spinner').hide();
-                $('#user-details-content').html('<p>Unable to fetch user details.</p>');
+                $('#user-details-content').html('<p class="text-danger">Unable to fetch user details.</p>');
             }
         });
     });

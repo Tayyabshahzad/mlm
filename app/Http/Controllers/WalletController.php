@@ -212,7 +212,7 @@ class WalletController extends Controller
         $minWalletTransfer = $this->setting->min_wallet_transfer ?? 7.35;
         $request->validate([
             'amount' => 'required|numeric|min:' . $minWalletTransfer,
-            'wallet_type' => 'required|in:direct_indirect,reward,roi,profit_share,designation_incentive',
+            'wallet_type' => 'required|in:direct_indirect,reward,roi,profit_share,designation_incentive,saving_roi',
         ]);  
         $userId = auth()->id();  
         $amountToTransfer = $request->input('amount');  
@@ -319,7 +319,11 @@ class WalletController extends Controller
     {
         $user = auth()->user();
 
-        abort_unless($user->account_type === 'saving', 403);
+        $savingRootId = \App\Models\Setting::first()?->saving_parent_user_id;
+        abort_unless(
+            $user->account_type === 'saving' || $user->id == $savingRootId,
+            403
+        );
 
         $roiEntries = \App\Models\Wallet::where('user_id', $user->id)
             ->where('wallet_type', 'saving_roi')

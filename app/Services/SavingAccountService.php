@@ -320,13 +320,8 @@ class SavingAccountService
                 continue;
             }
 
-            // Only saving account ancestors participate in the saving commission tree
-            if ($ancestorUser->account_type !== 'saving') {
-                continue;
-            }
-
-            // No commission to ancestors unless their own registration deposit is complete
-            if (!$ancestorUser->saving_registration_completed) {
+            // Saving account ancestors must have completed their own registration deposit
+            if ($ancestorUser->account_type === 'saving' && !$ancestorUser->saving_registration_completed) {
                 continue;
             }
 

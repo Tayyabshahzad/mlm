@@ -428,10 +428,10 @@
         </div>
 
         <!-- Transaction Proof -->
-        <div class="field-group">
+        <div class="field-group" id="transaction-proof-container">
             <label class="auth-label">Transaction Proof <span style="color:#ef4444;">*</span></label>
             <label class="auth-file-label" id="file-label">
-                <input type="file" name="amount_src" class="d-none" accept="image/*" onchange="updateFileLabel(this)" required />
+                <input type="file" name="amount_src" id="amount_src" class="d-none" accept="image/*" onchange="updateFileLabel(this)" />
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                     <polyline points="17,8 12,3 7,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -491,16 +491,22 @@
         const qrPanel = document.getElementById('referral-link-container');
         const codePanel = document.getElementById('activation-code-container');
         const codeInput = document.getElementById('activation_code');
+        const proofContainer = document.getElementById('transaction-proof-container');
+        const proofInput = document.getElementById('amount_src');
 
         qrPanel.classList.add('d-none');
         codePanel.classList.add('d-none');
         codeInput.removeAttribute('required');
 
-        if (method === 'usdt') {
-            qrPanel.classList.remove('d-none');
-        } else if (method === 'activation_code') {
+        if (method === 'activation_code') {
             codePanel.classList.remove('d-none');
             codeInput.setAttribute('required', 'required');
+            proofContainer.classList.add('d-none');
+        } else {
+            proofContainer.classList.remove('d-none');
+            if (method === 'usdt') {
+                qrPanel.classList.remove('d-none');
+            }
         }
     }
 

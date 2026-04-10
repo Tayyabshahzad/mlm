@@ -354,32 +354,42 @@ class UserController extends Controller
         $userId = $request->get('id');
         $user = User::with('activationCode')->find($userId);
         if ($user) {
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'created_at' => $user->created_at->format('Y-m-d H:i:s'),
-                    'status' => $user->can_login ? 'Active' : 'Inactive',
-                    'amount_proof' => $user->getFirstMediaUrl('user_amount_source'),
-                    'transaction_id' => $user->transaction_id,
-                    'payment_method'=>$user->payment_method,
-                    'transferred_amount'=>$user->transferred_amount,
-                    'converted_usdt_amount'=>$user->converted_usdt_amount,
-                    'fee_deducted'=>$user->fee_deducted,
-                    'net_invested_usdt_amount'=>$user->net_invested_usdt_amount,
-                    'usdt_rate'=>$user->usdt_rate,
-                    'referBy'=> [
-                        'username'=>ucfirst($user->parent->username),
-                        'id'=>$user->parent->id,
-                    ],
-                    'activationCode' =>[
-                        'code' => $user->activationCode->code ?? 'NA' ,
-                        'generated_by' => $user->activationCode->generatedBy->name ?? 'NA'
-                    ],
-                    'created_at'=>$user->created_at,
+            $data = [
+                'name'                    => $user->name,
+                'email'                   => $user->email,
+                'phone_number'            => $user->phone_number,
+                'username'                => $user->username,
+                'created_at'              => $user->created_at->format('Y-m-d H:i:s'),
+                'status'                  => $user->can_login ? 'Active' : 'Inactive',
+                'amount_proof'            => $user->getFirstMediaUrl('user_amount_source'),
+                'transaction_id'          => $user->transaction_id,
+                'payment_method'          => $user->payment_method,
+                'transferred_amount'      => $user->transferred_amount,
+                'converted_usdt_amount'   => $user->converted_usdt_amount,
+                'fee_deducted'            => $user->fee_deducted,
+                'net_invested_usdt_amount'=> $user->net_invested_usdt_amount,
+                'usdt_rate'               => $user->usdt_rate,
+                'account_type'            => $user->account_type,
+                'referBy' => [
+                    'username' => ucfirst($user->parent->username ?? '—'),
+                    'id'       => $user->parent->id ?? null,
                 ],
-            ]);
+                'activationCode' => [
+                    'code'         => $user->activationCode->code ?? 'NA',
+                    'generated_by' => $user->activationCode->generatedBy->name ?? 'NA',
+                ],
+            ];
+
+            if ($user->account_type === 'saving') {
+                $data['saving_registration_completed'] = $user->saving_registration_completed;
+                $data['saving_plan_start_date']        = $user->saving_plan_start_date;
+                $data['saving_total_deposited']        = $user->saving_total_deposited;
+                $data['registration_status']           = $user->saving_registration_completed
+                    ? 'Full Payment ($24)'
+                    : 'Fee Only ($5) — Deposit Pending';
+            }
+
+            return response()->json(['success' => true, 'data' => $data]);
         }
         return response()->json(['success' => false, 'message' => 'User not found.']);
     }
@@ -535,6 +545,52 @@ class UserController extends Controller
 
         $user = User::with('profile')->find($id);
         return view('users.information',compact('user'));
+    }
+
+    public function adminUserWallets($id)
+    {
+        $user = User::findOrFail($id);
+
+        $wallets = \App\Models\Wallet::where('user_id', $id)->get();
+
+        // Standard wallet summaries
+        $summary = [
+            'online'               => $wallets->where('wallet_type', 'online')->sum('balance'),
+            'direct_indirect'      => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
+            'direct_balance'       => $wallets->where('wallet_type', 'direct_indirect')->sum('direct_balance'),
+            'indirect_balance'     => $wallets->where('wallet_type', 'direct_indirect')->sum('indirect_balance'),
+            'roi'                  => $wallets->where('wallet_type', 'roi')->sum('balance'),
+            'reward'               => $wallets->where('wallet_type', 'reward')->sum('balance'),
+            'profit_share'         => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
+            'designation_incentive'=> $wallets->where('wallet_type', 'designation_incentive')->sum('balance'),
+        ];
+
+        // Saving-specific wallet summaries
+        $savingSummary = null;
+        if ($user->account_type === 'saving') {
+            $savingSummary = [
+                'saving_deposit'   => $wallets->where('wallet_type', 'saving')->sum('balance'),
+                'saving_roi'       => $wallets->where('wallet_type', 'saving_roi')->sum('balance'),
+                'saving_direct'    => $wallets->where('wallet_type', 'direct_indirect')
+                                              ->where('source_type', 'saving_instalment')->sum('direct_balance'),
+                'saving_indirect'  => $wallets->where('wallet_type', 'direct_indirect')
+                                              ->where('source_type', 'saving_instalment')->sum('indirect_balance'),
+            ];
+        }
+
+        // Recent transactions per wallet type
+        $recentRoi = \App\Models\Wallet::where('user_id', $id)
+            ->whereIn('wallet_type', $user->account_type === 'saving' ? ['saving_roi'] : ['roi'])
+            ->orderByDesc('created_at')->limit(20)->get();
+
+        $recentCommissions = \App\Models\Wallet::where('user_id', $id)
+            ->where('wallet_type', 'direct_indirect')
+            ->when($user->account_type === 'saving', fn($q) => $q->where('source_type', 'saving_instalment'))
+            ->orderByDesc('created_at')->limit(20)->get();
+
+        return view('users.wallet-overview', compact(
+            'user', 'summary', 'savingSummary', 'recentRoi', 'recentCommissions'
+        ));
     }
 
     public function adminUserTeam($id){

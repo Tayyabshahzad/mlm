@@ -391,7 +391,7 @@ class FrontEndController extends Controller
             'online_wallet'         => $savingBalance,
             'saving_wallet'         => $savingBalance,
             'direct_indirect'       => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
-            'roi'                   => $wallets->where('wallet_type', 'roi')->sum('balance'),
+            'roi'                   => $wallets->where('wallet_type', 'saving_roi')->sum('balance'),
             'total_earning'         => $totalEarning,
             'levelCount'            => $levelCounts,
             'totalTeam'             => $levelCounts->sum(),

@@ -458,8 +458,9 @@
                                     <i class="menu-arrow"></i>
                                     <ul class="menu-subnav">
 
+                                        @php($savingRootId = \App\Models\Setting::first()?->saving_parent_user_id)
                                         @if(auth()->user()->account_type === 'saving')
-                                            {{-- Saving account users: only these 3 wallet links --}}
+                                            {{-- Saving account users --}}
                                             <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
                                                 <a href="{{ route('wallets.saving.account') }}" class="menu-link">
                                                     <i class="menu-bullet menu-bullet-dot"><span></span></i>
@@ -470,6 +471,12 @@
                                                 <a href="{{ route('wallets.direct.indirect') }}" class="menu-link">
                                                     <i class="menu-bullet menu-bullet-dot"><span></span></i>
                                                     <span class="menu-text">Direct / Indirect</span>
+                                                </a>
+                                            </li>
+                                            <li class="menu-item @if(request()->is('wallets/online*')) menu-item-active @endif" aria-haspopup="true">
+                                                <a href="{{ route('wallets.online') }}" class="menu-link">
+                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                    <span class="menu-text">Online Wallet</span>
                                                 </a>
                                             </li>
                                             <li class="menu-item @if(request()->is('wallets/show-transaction-history*')) menu-item-active @endif" aria-haspopup="true">
@@ -528,6 +535,14 @@
                                                     <span class="menu-text">Incentive Wallets</span>
                                                 </a>
                                             </li>
+                                            @if(auth()->id() == $savingRootId)
+                                            <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
+                                                <a href="{{ route('wallets.saving.account') }}" class="menu-link">
+                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                    <span class="menu-text">Saving Commissions</span>
+                                                </a>
+                                            </li>
+                                            @endif
                                         @endif
 
                                         <li class="menu-item" aria-haspopup="true">

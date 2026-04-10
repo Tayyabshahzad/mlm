@@ -45,7 +45,7 @@
                                 @php
                                     $blockedWallets = json_decode($setting->blocked_wallets ?? '{}', true); 
                                 @endphp
-                                @if (!($blockedWallets['online'] ?? false))
+                                @if (!($blockedWallets['online'] ?? false) && auth()->user()->account_type !== 'saving')
                                     @if($setting->withdraw_block == false)
                                         @if($walletSum >= 122700)
                                             <div class="pt-5 align-items-center justify-content-center" >

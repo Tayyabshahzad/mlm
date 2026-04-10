@@ -115,6 +115,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('roi/payments', 'roiPayments')->name('roi.payments');
         Route::post('submit/roi/payments', 'submitRoiPayments')->name('submit.roi.payments');
         Route::get('info/{id}', 'userInfo')->name('user.info');
+        Route::get('{id}/wallet-overview', 'adminUserWallets')->name('admin.user.wallets');
         Route::put('info/{user}/update', 'userInfoUpdate')->name('user.info.update');
         Route::get('team/{id}', 'adminUserTeam')->name('admin.user.team');
         Route::post('user/delete', 'userDelete')->name('user.delete');

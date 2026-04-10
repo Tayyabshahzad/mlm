@@ -23,34 +23,40 @@
         <div class="container">
 
             {{-- Summary Cards --}}
-            <div class="row mb-6">
+            <div class="mb-6 row">
                 <div class="col-md-4">
-                    <div class="card card-custom bg-success text-white">
-                        <div class="card-body py-5 text-center">
+                    <div class="text-white card card-custom bg-success">
+                        <div class="py-5 text-center card-body">
                             <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalRoi, 2) }}</div>
-                            <div class="font-size-sm mt-1">Total Saving ROI Earned</div>
+                            <div class="mt-1 font-size-sm">Total Saving ROI Earned</div> 
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card card-custom bg-primary text-white">
-                        <div class="card-body py-5 text-center">
+                    <div class="text-white card card-custom bg-primary">
+                        <div class="py-5 text-center card-body">
                             <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalDirect, 2) }}</div>
-                            <div class="font-size-sm mt-1">Direct Commissions</div>
+                            <div class="mt-1 font-size-sm">Direct Commissions</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card card-custom bg-info text-white">
-                        <div class="card-body py-5 text-center">
+                    <div class="text-white card card-custom bg-info">
+                        <div class="py-5 text-center card-body">
                             <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalIndirect, 2) }}</div>
-                            <div class="font-size-sm mt-1">Indirect Commissions</div>
+                            <div class="mt-1 font-size-sm">Indirect Commissions</div>
                         </div>
                     </div>
                 </div>
             </div>
+            @if($totalRoi > 0)
+                <button type="button" class="mt-3 mb-3 btn btn-sm btn-info font-weight-bold"
+                    data-toggle="modal" data-target="#roiTransferModal">
+                    Transfer to Online
+                </button>
+            @endif
 
-            @if(!$user->saving_registration_completed)
+            @if($user->account_type === 'saving' && !$user->saving_registration_completed)
                 <div class="alert alert-warning">
                     <strong>Account not yet active.</strong> Complete Instalment #1 to start earning daily ROI and commissions.
                 </div>
@@ -58,10 +64,10 @@
 
             {{-- Daily ROI Table --}}
             <div class="card card-custom gutter-b">
-                <div class="card-header border-0 py-5">
+                <div class="py-5 border-0 card-header">
                     <h3 class="card-title font-weight-bolder text-dark">Daily Saving ROI</h3>
                 </div>
-                <div class="card-body pt-0">
+                <div class="pt-0 card-body">
                     @if($roiEntries->isEmpty())
                         <p class="text-muted">No ROI payments yet.</p>
                     @else
@@ -92,10 +98,10 @@
 
             {{-- Commissions Table --}}
             <div class="card card-custom gutter-b">
-                <div class="card-header border-0 py-5">
+                <div class="py-5 border-0 card-header">
                     <h3 class="card-title font-weight-bolder text-dark">Saving Referral Commissions</h3>
                 </div>
-                <div class="card-body pt-0">
+                <div class="pt-0 card-body">
                     @if($commissionEntries->isEmpty())
                         <p class="text-muted">No commissions yet.</p>
                     @else
@@ -139,6 +145,38 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+</div>
+
+{{-- Saving ROI → Online Wallet transfer modal --}}
+<div class="modal fade" id="roiTransferModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="{{ route('wallet.transfer.to.online') }}" method="POST">
+                @csrf
+                <input type="hidden" name="wallet_type" value="saving_roi">
+                <div class="modal-header">
+                    <h5 class="modal-title">Transfer Saving ROI to Online Wallet</h5>
+                    <button type="button" class="close" data-dismiss="modal"><i class="ki ki-close"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center text-danger">5% charge applies on every transfer.</p>
+                    <div class="form-group">
+                        <label class="font-weight-bold">Transfer Amount</label>
+                        <input type="number" name="amount" class="form-control form-control-sm form-control-solid"
+                            min="{{ $setting->min_wallet_transfer ?? 7.35 }}" step="0.01"
+                            max="{{ $totalRoi }}" required
+                            placeholder="Enter amount">
+                        <strong class="text-danger">Available Balance: ${{ number_format($totalRoi, 2) }}</strong>
+                        <small class="text-muted d-block">Minimum Transfer: ${{ $setting->min_wallet_transfer ?? 7.35 }}</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary btn-sm rounded-0" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-0">Transfer</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

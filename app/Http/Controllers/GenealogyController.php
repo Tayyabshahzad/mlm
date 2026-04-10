@@ -59,21 +59,29 @@ class GenealogyController extends Controller
         $nodeDataArray = [];
 
         $nodeDataArray[] = [
-            'key'      => $root->id,
-            'name'     => $root->name,
-            'username' => $root->username,
-            'image'    => $root->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+            'key'          => $root->id,
+            'name'         => $root->name,
+            'username'     => $root->username,
+            'account_type' => $root->account_type,
+            'image'        => $root->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
         ];
 
-        $allSavingUsers = User::where('account_type', 'saving')->get()->keyBy('id');
-
-        $savingIds = DB::table('referral_trees')
+        // Get all unique descendant IDs under the root in the saving tree
+        $descendantIds = DB::table('referral_trees')
             ->where('ancestor_id', $rootId)
             ->where('tree_type', 'saving')
-            ->pluck('descendant_id');
+            ->pluck('descendant_id')
+            ->unique();
 
-        foreach ($savingIds as $descendantId) {
-            $descendant = $allSavingUsers->get($descendantId);
+        // Only show admin-activated users (can_login = true) in the tree.
+        // Standard sponsors (e.g. the root itself) are always included via the root node above.
+        $allTreeUsers = User::whereIn('id', $descendantIds)
+            ->where('can_login', true)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($descendantIds as $descendantId) {
+            $descendant = $allTreeUsers->get($descendantId);
             if (!$descendant) continue;
 
             $parentRow = DB::table('referral_trees')
@@ -85,11 +93,12 @@ class GenealogyController extends Controller
             $parentId = $parentRow?->ancestor_id ?? $rootId;
 
             $nodeDataArray[] = [
-                'key'      => $descendant->id,
-                'parent'   => $parentId,
-                'name'     => $descendant->name,
-                'username' => $descendant->username,
-                'image'    => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+                'key'          => $descendant->id,
+                'parent'       => $parentId,
+                'name'         => $descendant->name,
+                'username'     => $descendant->username,
+                'account_type' => $descendant->account_type,
+                'image'        => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
             ];
         }
 
