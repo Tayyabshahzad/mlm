@@ -898,12 +898,14 @@ class UserController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. Collect entire subtree: the moved user + all their descendants
+            // 1. Collect entire standard-tree subtree: the moved user + all their descendants
             $subtreeIds = $this->getAllSubtreeIds($movedUser->id);
 
-            // 2. Delete old upline connections for the whole subtree
-            //    (keep internal connections within the subtree)
+            // 2. Delete old upline connections for the whole subtree (standard tree only).
+            //    Keep internal connections within the subtree.
+            //    Saving-tree rows are intentionally untouched.
             DB::table('referral_trees')
+                ->where('tree_type', 'standard')
                 ->whereIn('descendant_id', $subtreeIds)
                 ->whereNotIn('ancestor_id', $subtreeIds)
                 ->delete();
@@ -911,7 +913,8 @@ class UserController extends Controller
             // 3. Update sponsor_id for the moved user
             $movedUser->update(['sponsor_id' => $newParent->id]);
 
-            // 4. Rebuild referral_tree rows for each user in the subtree
+            // 4. Rebuild referral_tree rows for each user in the subtree.
+            //    referral_trees has no timestamp columns — do not include created_at/updated_at.
             $insertData = [];
             foreach ($subtreeIds as $descId) {
                 $ancestors = $this->buildAncestorPath($descId);
@@ -920,8 +923,7 @@ class UserController extends Controller
                         'ancestor_id'   => $ancestorId,
                         'descendant_id' => $descId,
                         'level'         => $level,
-                        'created_at'    => now(),
-                        'updated_at'    => now(),
+                        'tree_type'     => 'standard',
                     ];
                 }
             }
@@ -950,9 +952,9 @@ class UserController extends Controller
      */
     private function getAllSubtreeIds(int $userId): array
     {
-        // Use referral_trees to get all descendants at any level
         $descendants = DB::table('referral_trees')
             ->where('ancestor_id', $userId)
+            ->where('tree_type', 'standard')
             ->pluck('descendant_id')
             ->toArray();
 

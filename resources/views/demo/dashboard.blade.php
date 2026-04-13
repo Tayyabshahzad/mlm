@@ -1020,21 +1020,21 @@
                 <div>
                     <div class="gn-tag">
                         <span class="gn-tag-pulse"></span>
-                        Coming Soon &nbsp;·&nbsp; GVI Smart Finance
+                        Now Live &nbsp;·&nbsp; GVI Welfare Program
                     </div>
 
                     <div class="gn-headline">
-                        Great News! 🎉<br>
-                        <span class="gn-hl-accent">A Smart Saving Plan<br>Is on Its Way!</span>
+                        Alhamdulillah! 🌙<br>
+                        <span class="gn-hl-accent">Welfare Smart Savings Plan<br>Is Now Running!</span>
                     </div>
 
                     <div class="gn-body">
-                        We're launching a <strong>Smart Saving Plan with Appreciation</strong> — because your money works too hard to just sit around doing nothing all day. 😄<br><br>
-                        Think of it as hiring a personal trainer for your wallet. It gets stronger every single day — while you sip chai, spend time with family, and let <strong>your savings quietly become the smartest person in the room.</strong> 📈 No tricks, no headaches, just real growth — Insha'Allah. 🌱
+                        Our <strong>Welfare Smart Savings Plan</strong> is officially live and already changing lives — Insha'Allah. 🤲<br><br>
+                        This plan is built on one simple belief: <strong>every family deserves financial security.</strong> Save a little each month, watch it appreciate, and build a future that takes care of you — even on the days you're not working. Your family matters. Your future matters. This plan is for both. 🌱
                     </div>
 
                     <div class="gn-quote">
-                        🚀 &nbsp;"Work smart, save smarter, retire legendary." &nbsp;— Your Future Self, from a beach somewhere ☀️
+                        🕌 &nbsp;"The best of people are those who bring the most benefit to others." &nbsp;— Now, let your savings do the same. ☀️
                     </div>
                 </div>
 
@@ -1042,12 +1042,12 @@
                 <div class="gn-art">
                     <div class="gn-emoji-stack">
                         <div class="gn-emoji-ring"></div>
-                        <span class="gn-emoji-main">🚀</span>
+                        <span class="gn-emoji-main">🤲</span>
                     </div>
                     <div class="gn-badge-row">
-                        <span class="gn-badge">💎 Save</span>
+                        <span class="gn-badge">🌙 Welfare</span>
                         <span class="gn-badge">📈 Grow</span>
-                        <span class="gn-badge">🏆 Win</span>
+                        <span class="gn-badge">🏡 Secure</span>
                     </div>
                 </div>
 
@@ -1154,6 +1154,113 @@
             </div>
         </div>
 
+        {{-- ─── SECTION: Saving Plan Cards (user) ──────── --}}
+        @if(!empty($data['saving_enrolled']))
+        <div class="sec-head" style="margin-top:2rem;">
+            <div class="sec-head-dot" style="background:#10b981;box-shadow:0 0 8px #10b981"></div>
+            <div class="sec-head-label">Welfare Smart Savings Plan</div>
+        </div>
+
+        <div class="wallet-grid">
+            {{-- Saving Investment --}}
+            <div class="w-card" style="background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);border:1px solid rgba(16,185,129,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(16,185,129,.15);color:#10b981;"><i class="fas fa-piggy-bank"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#6ee7b7;">Saving Investment</div>
+                <div class="w-value" style="color:#ecfdf5;">${{ number_format($data['saving_deposit'] ?? 0, 2) }}</div>
+                <div class="w-note" style="color:#6ee7b7;"><i class="fas fa-calendar-check" style="color:#10b981;"></i> Total deposited</div>
+            </div>
+
+            {{-- Saving ROI --}}
+            <div class="w-card" style="background:linear-gradient(135deg,#1e3a5f 0%,#1e40af 100%);border:1px solid rgba(59,130,246,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(59,130,246,.15);color:#60a5fa;"><i class="fas fa-chart-line"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#93c5fd;">Saving ROI</div>
+                <div class="w-value" style="color:#eff6ff;">${{ number_format($data['saving_roi'] ?? 0, 2) }}</div>
+                <div class="w-note" style="color:#93c5fd;"><i class="fas fa-arrow-trend-up" style="color:#60a5fa;"></i> Daily appreciation</div>
+            </div>
+
+            {{-- Saving Direct & Indirect --}}
+            <div class="w-card" style="background:linear-gradient(135deg,#4a1d96 0%,#5b21b6 100%);border:1px solid rgba(139,92,246,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(139,92,246,.15);color:#a78bfa;"><i class="fas fa-users"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#c4b5fd;">Saving Direct &amp; Indirect</div>
+                <div class="w-value" style="color:#f5f3ff;">${{ number_format(($data['saving_direct'] ?? 0) + ($data['saving_indirect'] ?? 0), 2) }}</div>
+                <div class="w-note" style="color:#c4b5fd;">
+                    <span style="color:#86efac;"><i class="fas fa-arrow-right"></i> D: ${{ number_format($data['saving_direct'] ?? 0, 2) }}</span>
+                    &nbsp;·&nbsp;
+                    <span style="color:#fcd34d;"><i class="fas fa-share-nodes"></i> I: ${{ number_format($data['saving_indirect'] ?? 0, 2) }}</span>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- ─── SECTION: Admin Saving Plan Aggregates ─── --}}
+        @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('super-admin'))
+        @if(isset($data['admin_saving_total_invested']))
+        <div class="sec-head" style="margin-top:2rem;">
+            <div class="sec-head-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b"></div>
+            <div class="sec-head-label">Saving Plan — System Overview</div>
+        </div>
+
+        <div class="wallet-grid">
+            {{-- Total Saving Users --}}
+            <div class="w-card" style="background:linear-gradient(135deg,#1c1917 0%,#292524 100%);border:1px solid rgba(245,158,11,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(245,158,11,.15);color:#fbbf24;"><i class="fas fa-users-rectangle"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#fcd34d;">Total Saving Members</div>
+                <div class="w-value" style="color:#fefce8;font-size:1.6rem;letter-spacing:0;">{{ number_format($data['admin_saving_total_users']) }}</div>
+                <div class="w-note" style="color:#fcd34d;"><i class="fas fa-circle-check" style="color:#4ade80;"></i> Active plan participants</div>
+            </div>
+
+            {{-- Total Saving Invested --}}
+            <div class="w-card" style="background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);border:1px solid rgba(16,185,129,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(16,185,129,.15);color:#10b981;"><i class="fas fa-sack-dollar"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#6ee7b7;">Total Saving Invested</div>
+                <div class="w-value" style="color:#ecfdf5;">${{ number_format($data['admin_saving_total_invested'], 2) }}</div>
+                <div class="w-note" style="color:#6ee7b7;"><i class="fas fa-arrow-up" style="color:#10b981;"></i> All members combined</div>
+            </div>
+
+            {{-- Total Saving ROI Paid --}}
+            <div class="w-card" style="background:linear-gradient(135deg,#1e3a5f 0%,#1e40af 100%);border:1px solid rgba(59,130,246,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(59,130,246,.15);color:#60a5fa;"><i class="fas fa-chart-line"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#93c5fd;">Total Saving ROI Paid</div>
+                <div class="w-value" style="color:#eff6ff;">${{ number_format($data['admin_saving_total_roi'], 2) }}</div>
+                <div class="w-note" style="color:#93c5fd;"><i class="fas fa-calendar-days" style="color:#60a5fa;"></i> Distributed to date</div>
+            </div>
+
+            {{-- Total Saving Direct & Indirect --}}
+            <div class="w-card" style="background:linear-gradient(135deg,#4a1d96 0%,#5b21b6 100%);border:1px solid rgba(139,92,246,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(139,92,246,.15);color:#a78bfa;"><i class="fas fa-diagram-project"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#c4b5fd;">Total Direct &amp; Indirect</div>
+                <div class="w-value" style="color:#f5f3ff;">${{ number_format($data['admin_saving_total_direct'] + $data['admin_saving_total_indirect'], 2) }}</div>
+                <div class="w-note" style="color:#c4b5fd;">
+                    <span style="color:#86efac;"><i class="fas fa-arrow-right"></i> D: ${{ number_format($data['admin_saving_total_direct'], 2) }}</span>
+                    &nbsp;·&nbsp;
+                    <span style="color:#fcd34d;"><i class="fas fa-share-nodes"></i> I: ${{ number_format($data['admin_saving_total_indirect'], 2) }}</span>
+                </div>
+            </div>
+        </div>
+        @endif
+        @endif
+
         {{-- ─── SECTION: Chart + ROI ─────────────────── --}}
         <div class="sec-head">
             <div class="sec-head-dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></div>
@@ -1259,7 +1366,7 @@
         </div>
 
         {{-- Announcement --}}
-        <div class="ann-card">
+        {{-- <div class="ann-card">
             <div class="ann-inner">
                 <div class="ann-eyebrow">Announcement</div>
                 <div class="ann-title">Second Level Reward Increased!</div>
@@ -1279,7 +1386,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         {{-- ─── SECTION: Targets ────────────────────── --}}
         <div class="sec-head">

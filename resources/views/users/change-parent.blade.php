@@ -132,17 +132,24 @@
 </div>
 @endsection
 
-@section('custom_js')
+@section('page_js')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function () {
 
-    $('#user_id').select2({ placeholder: 'Type to search...', allowClear: true });
-    $('#new_parent_id').select2({ placeholder: 'Type to search...', allowClear: true });
+    var s2opts = {
+        placeholder: 'Type to search...',
+        allowClear: true,
+        dropdownParent: $('body'),
+        width: '100%'
+    };
+
+    $('#user_id').select2(s2opts);
+    $('#new_parent_id').select2(s2opts);
 
     function updatePreview() {
-        var userId   = $('#user_id').val();
-        var parentId = $('#new_parent_id').val();
+        var userId     = $('#user_id').val();
+        var parentId   = $('#new_parent_id').val();
         var userText   = $('#user_id option:selected').text().trim();
         var parentText = $('#new_parent_id option:selected').text().trim();
 
@@ -157,10 +164,8 @@ $(document).ready(function () {
         }
     }
 
-    $('#user_id').on('select2:select select2:unselect change', updatePreview);
-    $('#new_parent_id').on('select2:select select2:unselect change', updatePreview);
+    $('#user_id, #new_parent_id').on('select2:select select2:unselect select2:clear change', updatePreview);
 
-    // Confirm before submit
     $('#changeParentForm').on('submit', function (e) {
         var userText   = $('#user_id option:selected').text().trim();
         var parentText = $('#new_parent_id option:selected').text().trim();

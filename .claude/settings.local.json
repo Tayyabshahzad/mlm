@@ -3,7 +3,8 @@
     "allow": [
       "Bash(php artisan migrate:*)",
       "Bash(php artisan:*)",
-      "Bash(php -l:*)"
+      "Bash(php -l:*)",
+      "Bash(ls \"d:\\\\laragon\\\\www\\\\mlm\\\\public\\\\assets\\\\plugins\\\\global\\\\\" 2>/dev/null | grep -i select || find \"d:/laragon/www/mlm/public/assets\" -name \"*.js\" 2>/dev/null | grep -i select | head -10)"
     ],
     "deny": [],
     "ask": []

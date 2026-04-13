@@ -353,6 +353,33 @@ class FrontEndController extends Controller
             ];
         }
 
+        // ── Admin-only: aggregated saving plan stats across all users ──────────
+        $adminSavingStats = [];
+        if ($user->hasRole('admin') || $user->hasRole('super-admin')) {
+            $adminSavingStats = [
+                'admin_saving_total_invested'        => \App\Models\User::where(function ($q) {
+                    $q->where('account_type', 'saving')
+                      ->orWhere('saving_enrolled', true);
+                })->sum('saving_total_deposited'),
+
+                'admin_saving_total_roi'             => \App\Models\Wallet::where('wallet_type', 'saving_roi')
+                                                            ->sum('balance'),
+
+                'admin_saving_total_direct'          => \App\Models\Wallet::where('wallet_type', 'direct_indirect')
+                                                            ->where('source_type', 'saving_instalment')
+                                                            ->sum('direct_balance'),
+
+                'admin_saving_total_indirect'        => \App\Models\Wallet::where('wallet_type', 'direct_indirect')
+                                                            ->where('source_type', 'saving_instalment')
+                                                            ->sum('indirect_balance'),
+
+                'admin_saving_total_users'           => \App\Models\User::where(function ($q) {
+                    $q->where('account_type', 'saving')
+                      ->orWhere('saving_enrolled', true);
+                })->where('saving_registration_completed', true)->count(),
+            ];
+        }
+
         $data = [
             'online_wallet'          => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect'        => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
@@ -370,7 +397,7 @@ class FrontEndController extends Controller
             'reward'                 => $totalRewardPercentage,
             'roi_stats'              => $roiStats,
             'missed_roi_count'       => $missedRoiCount,
-        ] + $savingData;
+        ] + $savingData + $adminSavingStats;
 
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');
@@ -406,13 +433,23 @@ class FrontEndController extends Controller
         $savingBalance  = $wallets->where('wallet_type', 'saving')->sum('balance');
         $roiStats       = $accountService->getRoiAccountStats($user);
 
+        $savingDirect   = \App\Models\Wallet::where('user_id', $user->id)
+                            ->where('wallet_type', 'direct_indirect')
+                            ->where('source_type', 'saving_instalment')
+                            ->sum('direct_balance');
+        $savingIndirect = \App\Models\Wallet::where('user_id', $user->id)
+                            ->where('wallet_type', 'direct_indirect')
+                            ->where('source_type', 'saving_instalment')
+                            ->sum('indirect_balance');
+        $savingRoi      = $wallets->where('wallet_type', 'saving_roi')->sum('balance');
+
         $data = [
             'account_type'          => 'saving',
             // Map saving_wallet → online_wallet so the blade template works without changes
             'online_wallet'         => $savingBalance,
             'saving_wallet'         => $savingBalance,
             'direct_indirect'       => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
-            'roi'                   => $wallets->where('wallet_type', 'saving_roi')->sum('balance'),
+            'roi'                   => $savingRoi,
             'total_earning'         => $totalEarning,
             'levelCount'            => $levelCounts,
             'totalTeam'             => $levelCounts->sum(),
@@ -430,6 +467,12 @@ class FrontEndController extends Controller
             'instalment_summary'    => $instalmentSummary,
             'registration_complete' => $user->saving_registration_completed,
             'plan_activated'        => $user->can_login,
+            // Saving card keys (shared with enrolled standard users)
+            'saving_enrolled'       => true,
+            'saving_deposit'        => $savingBalance,
+            'saving_roi'            => $savingRoi,
+            'saving_direct'         => $savingDirect,
+            'saving_indirect'       => $savingIndirect,
         ];
 
         $reward = collect(); // saving users have no reward tree
