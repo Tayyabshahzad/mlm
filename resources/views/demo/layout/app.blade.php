@@ -228,7 +228,7 @@
                                     <span class="menu-text">Dashboard</span>
                                 </a>
                             </li>
-                            @if(auth()->user()->account_type === 'saving')
+                            @if(auth()->user()->account_type === 'saving' || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated && auth()->user()->savingInstalments()->exists()))
                             <li class="menu-item @if(request()->is('saving/instalments*')) menu-item-active @endif" aria-haspopup="true">
                                 <a href="{{ route('saving.user.instalments') }}" class="menu-link">
                                     <span class="svg-icon menu-icon">
@@ -288,7 +288,7 @@
                                                 <span class="menu-text">Genealogy</span>
                                             </span>
                                         </li>
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
+                                        <li class="menu-item menu-item-submenu @if(request()->is('genealogy/team*')) menu-item-active @endif" aria-haspopup="true"
                                             data-menu-toggle="hover">
                                             <a href="{{ route('genealogy.team') }}" class="menu-link menu-toggle">
                                                 <i class="menu-bullet menu-bullet-line">
@@ -298,6 +298,17 @@
 
                                             </a>
                                         </li>
+                                        @if(auth()->user()->account_type === 'saving' || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
+                                        <li class="menu-item menu-item-submenu @if(request()->is('genealogy/my-saving-tree*')) menu-item-active @endif" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('genealogy.my.saving.tree') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-line">
+                                                    <span></span>
+                                                </i>
+                                                <span class="menu-text">My Saving Team</span>
+                                            </a>
+                                        </li>
+                                        @endif
                                         <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                             data-menu-toggle="hover">
                                             <a href="javascript:;" class="menu-link menu-toggle">
@@ -535,11 +546,17 @@
                                                     <span class="menu-text">Incentive Wallets</span>
                                                 </a>
                                             </li>
-                                            @if(auth()->id() == $savingRootId)
-                                            <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
-                                                <a href="{{ route('wallets.saving.account') }}" class="menu-link">
+                                            @if(auth()->id() == $savingRootId || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
+                                            <li class="menu-item @if(request()->is('wallets/saving-direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
+                                                <a href="{{ route('wallets.saving.direct.indirect') }}" class="menu-link">
                                                     <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                    <span class="menu-text">Saving Commissions</span>
+                                                    <span class="menu-text">Savings Direct / Indirect</span>
+                                                </a>
+                                            </li>
+                                            <li class="menu-item @if(request()->is('wallets/saving-roi*')) menu-item-active @endif" aria-haspopup="true">
+                                                <a href="{{ route('wallets.saving.roi') }}" class="menu-link">
+                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                    <span class="menu-text">Savings ROI</span>
                                                 </a>
                                             </li>
                                             @endif
@@ -742,6 +759,17 @@
                                                     <span class="menu-text">Saving Account Tree</span>
                                                 </a>
                                             </li>
+                                            @if(auth()->user()->account_type === 'saving' || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
+                                            <li class="menu-item menu-item-submenu @if(request()->is('genealogy/my-saving-tree*')) menu-item-active @endif" aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a href="{{ route('genealogy.my.saving.tree') }}" class="menu-link menu-toggle">
+                                                    <i class="menu-bullet menu-bullet-dot">
+                                                        <span></span>
+                                                    </i>
+                                                    <span class="menu-text">My Savings Tree</span>
+                                                </a>
+                                            </li>
+                                            @endif
 
                                             <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                             data-menu-toggle="hover">
@@ -1135,6 +1163,28 @@
                                             </a>
                                         </li>
 
+                                        <li class="menu-item menu-item-submenu @if(request()->is('saving-accounts*') && !request()->is('saving-accounts/enrollments*')) menu-item-active @endif" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('admin.saving.index') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Saving Accounts</span>
+                                            </a>
+                                        </li>
+
+                                        @php($pendingEnrollments = \App\Models\User::where('saving_enrolled',true)->where('account_type','!=','saving')->where('saving_enrollment_activated',false)->count())
+                                        <li class="menu-item menu-item-submenu @if(request()->is('saving-accounts/enrollments*')) menu-item-active @endif" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('admin.saving.enrollments') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">
+                                                    Saving Enrollments
+                                                    @if($pendingEnrollments > 0)
+                                                        <span class="badge badge-pill badge-warning ml-1">{{ $pendingEnrollments }}</span>
+                                                    @endif
+                                                </span>
+                                            </a>
+                                        </li>
+
                                         <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                             data-menu-toggle="hover">
                                             <a href="{{ route('admin.roi-settings.user-plans') }}" class="menu-link menu-toggle">
@@ -1205,17 +1255,28 @@
                             <div id="kt_header_menu"
                                 class="pt-5 header-menu header-menu-mobile header-menu-layout-default">
 
-                                <div class="flex-wrap mb-4 d-flex ">
-                                    <!-- Hidden link for reference -->
+                                <div class="flex-wrap mb-4 d-flex align-items-center" style="gap:0.5rem;">
+                                    <!-- Hidden links for JS reference -->
                                     <span id="refLink"
                                         style="display: none;">{{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link }}</span>
+                                    @if(Auth::user()->canSeeSavingLink())
+                                    <span id="refLinkSaving"
+                                        style="display: none;">{{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link . '?type=saving' }}</span>
+                                    @endif
 
-                                    <!-- Button for copying link -->
-                                    <button onclick="copyToClipboard()" class="btn sm rounded-0 btn-info">
+                                    <!-- Standard referral link -->
+                                    <button onclick="copyToClipboard()" class="btn btn-sm rounded-0 btn-info">
                                         Copy Referral Link
                                     </button>
 
-                                    <!-- Optional Toastr for Copy Notification -->
+                                    @if(Auth::user()->canSeeSavingLink())
+                                    <!-- Savings Program referral link -->
+                                    <button onclick="copySavingLinkToClipboard()" class="btn btn-sm rounded-0 btn-success">
+                                        Copy Savings Program Link
+                                    </button>
+                                    @endif
+
+                                    <!-- Toast notification -->
                                     <div id="toastMessage"
                                         style="display: none; position: fixed; bottom: 20px; right: 20px; background-color: #333; color: #fff; padding: 10px; border-radius: 5px;">
                                         Link Copied!
@@ -2147,15 +2208,20 @@
                 <div class="py-2 subheader py-lg-4 subheader-solid" id="kt_subheader2">
                     <div class="container-fluid align-items-center justify-content-between ">
                         <!--begin::Info-->
-                        <div class="mr-2 align-items-center">
-                            <!--begin::Page Title-->
-                            <p class="mt-2 mb-2 ml-5 text-center text-dark font-weight-bold"
-                                onclick="copyToClipboard()">
+                        <div class="mr-2 align-items-center d-flex flex-wrap" style="gap:1rem;">
+                            <!-- Standard referral link -->
+                            <p class="mt-2 mb-2 ml-5 text-dark font-weight-bold" style="cursor:pointer;" onclick="copyToClipboard()" title="Copy standard referral link">
                                 {{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link }}
                                 <i class="la la-copy"></i>
-
-
                             </p>
+                            @if(Auth::user()->canSeeSavingLink())
+                            <!-- Savings Program referral link -->
+                            <p class="mt-2 mb-2 text-success font-weight-bold" style="cursor:pointer;" onclick="copySavingLinkToClipboard()" title="Copy Savings Program link">
+                                {{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link . '?type=saving' }}
+                                <i class="la la-copy"></i>
+                                <span class="badge badge-success ml-1" style="font-size:0.7rem;">Savings</span>
+                            </p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -3540,25 +3606,31 @@
 
     <script>
         function copyToClipboard() {
-            // Get the hidden reference link element
             const refLinkElement = document.getElementById("refLink");
-
-            // Create a temporary input to hold the link text
             const tempInput = document.createElement("input");
-            tempInput.value = refLinkElement.textContent;
-
-            // Append the input to the body, copy its value, and then remove it
+            tempInput.value = refLinkElement.textContent.trim();
             document.body.appendChild(tempInput);
             tempInput.select();
             document.execCommand("copy");
             document.body.removeChild(tempInput);
-
-            // Show a toast message
             const toast = document.getElementById("toastMessage");
+            toast.textContent = "Referral Link Copied!";
             toast.style.display = "block";
-            setTimeout(() => {
-                toast.style.display = "none";
-            }, 2000);
+            setTimeout(() => { toast.style.display = "none"; }, 2000);
+        }
+
+        function copySavingLinkToClipboard() {
+            const refLinkElement = document.getElementById("refLinkSaving");
+            const tempInput = document.createElement("input");
+            tempInput.value = refLinkElement.textContent.trim();
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            const toast = document.getElementById("toastMessage");
+            toast.textContent = "Savings Program Link Copied!";
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 2000);
         }
     </script>
     @section('page_js')

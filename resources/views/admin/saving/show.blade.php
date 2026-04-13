@@ -53,27 +53,79 @@
                             <h4 class="font-weight-bolder mb-1"> {{ $savingUser->name }} </h4>
                             <div class="text-muted mb-2">@ {{ $savingUser->username }}</div>
                             <div class="text-muted mb-1">{{ $savingUser->email }}</div>
-                            <div class="text-muted mb-4">{{ $savingUser->phone_number }}</div>
-                            <div>
-                                @if($savingUser->saving_registration_completed && $savingUser->can_login)
-                                    <span class="badge badge-success px-4 py-2">Activated</span>
-                                @elseif($savingUser->saving_registration_completed && !$savingUser->can_login)
-                                    <span class="badge badge-info px-4 py-2">Registered — Login Pending</span>
+                            <div class="text-muted mb-3">{{ $savingUser->phone_number }}</div>
+
+                            {{-- Saving Plan Parent (independent from standard plan sponsor) --}}
+                            @php
+                                $savingParent = $savingUser->savingSponsor->first();
+                            @endphp
+                            <div class="mb-4 p-3" style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; font-size:0.82rem;">
+                                <div class="text-muted font-size-xs font-weight-bold text-uppercase mb-1">Saving Plan Parent</div>
+                                @if($savingParent)
+                                    <span class="font-weight-bold text-dark">{{ $savingParent->name }}</span>
+                                    <span class="text-muted ml-1">@ {{ $savingParent->username }}</span>
                                 @else
-                                    <span class="badge badge-warning px-4 py-2">Fee Only — Not Activated</span>
+                                    <span class="text-muted">— (root / no parent)</span>
+                                @endif
+                            </div>
+
+                            @php
+                                $isEnrolled    = $savingUser->saving_enrolled && $savingUser->account_type !== 'saving';
+                                $isFullyActive = $isEnrolled
+                                    ? $savingUser->saving_enrollment_activated
+                                    : ($savingUser->saving_registration_completed && $savingUser->can_login);
+
+                                // inst #1 fully confirmed = ROI + commissions are eligible
+                                $inst1Confirmed = $instalments->where('instalment_number', 1)->where('status', 'confirmed')->isNotEmpty();
+
+                                // Signup net credit (what they already paid toward saving at registration)
+                                $regNet = max(0, (float)($savingUser->saving_initial_payment ?? 0) - (float)($savingUser->saving_initial_fee ?? 0));
+                            @endphp
+
+                            <div>
+                                @if($isEnrolled)
+                                    <span class="badge badge-light-primary px-4 py-2 d-block mb-1">Enrolled Member</span>
+                                @endif
+
+                                @if($isFullyActive)
+                                    <span class="badge badge-success px-4 py-2">Savings Program Active</span>
+                                @elseif($savingUser->saving_registration_completed)
+                                    <span class="badge badge-info px-4 py-2">Registered — Activation Pending</span>
+                                @else
+                                    <span class="badge badge-warning px-4 py-2">Pending Activation</span>
                                 @endif
                             </div>
                             <div class="mt-3 text-muted font-size-sm">
                                 Plan start: {{ $savingUser->saving_plan_start_date ? \Carbon\Carbon::parse($savingUser->saving_plan_start_date)->format('d M Y') : '—' }}
                             </div>
 
-                            @if(!$savingUser->saving_registration_completed || !$savingUser->can_login)
+                            @if(!$inst1Confirmed && ($savingUser->saving_initial_payment ?? 0) > 0)
+                                @php
+                                    $setting      = $setting ?? \App\Models\Setting::first();
+                                    $inst1Amount  = (float)($setting->saving_min_deposit ?? 19);
+                                    $inst1Still   = max(0, $inst1Amount - $regNet);
+                                @endphp
+                                <div class="mt-3 px-3 py-2" style="background:#fef3c7; border:1px solid #f59e0b; border-radius:8px; font-size:0.8rem; color:#92400e;">
+                                    <strong>First instalment incomplete.</strong>
+                                    Paid at signup: ${{ number_format($regNet, 2) }} of ${{ number_format($inst1Amount, 2) }}.
+                                    Still owed: <strong>${{ number_format($inst1Still, 2) }}</strong>.<br>
+                                    ROI and commissions will <strong>not</strong> start until the full ${{ number_format($inst1Amount, 2) }} first instalment is confirmed.
+                                </div>
+                            @endif
+
+                            @if(!$isFullyActive)
                                 <div class="mt-4">
+                                    @php
+                                        $confirmMsg = $inst1Confirmed
+                                            ? 'Activate account for ' . addslashes($savingUser->name) . '? First instalment is confirmed — ROI and commissions will start immediately.'
+                                            : 'Activate login access for ' . addslashes($savingUser->name) . '? NOTE: ROI and commissions will NOT start until the first instalment ($' . number_format($inst1Amount ?? 19, 2) . ') is fully confirmed.';
+                                    @endphp
                                     <form method="POST" action="{{ route('admin.saving.activate', $savingUser) }}"
-                                          onsubmit="return confirm('Activate {{ $savingUser->name }}? This will mark their registration complete and allow login.')">
+                                          onsubmit="return confirm('{{ $confirmMsg }}')">
                                         @csrf
-                                        <button type="submit" class="btn btn-success btn-sm font-weight-bold px-5">
-                                            <i class="fas fa-check mr-1"></i> Activate Account
+                                        <button type="submit" class="btn btn-sm font-weight-bold px-5 {{ $inst1Confirmed ? 'btn-success' : 'btn-warning' }}">
+                                            <i class="fas fa-check mr-1"></i>
+                                            {{ $isEnrolled ? 'Activate Savings Enrollment' : 'Activate Account' }}
                                         </button>
                                     </form>
                                 </div>
@@ -86,8 +138,14 @@
                         <div class="col-6 mb-4">
                             <div class="card card-custom bg-primary text-white">
                                 <div class="card-body py-5 text-center">
-                                    <div style="font-size:1.5rem; font-weight:700;">${{ number_format($paid_amount, 2) }}</div>
-                                    <div class="font-size-sm mt-1">Total Deposited</div>
+                                    @php
+                                        $regNet = max(0, (float)($savingUser->saving_initial_payment ?? 0) - (float)($savingUser->saving_initial_fee ?? 0));
+                                        $displayPaid = $paid_amount > 0 ? $paid_amount : $regNet;
+                                    @endphp
+                                    <div style="font-size:1.5rem; font-weight:700;">${{ number_format($displayPaid, 2) }}</div>
+                                    <div class="font-size-sm mt-1">
+                                        {{ $paid_amount > 0 ? 'Total Confirmed Deposited' : 'Paid at Registration (net)' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -122,6 +180,89 @@
                                     @endif
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Registration Payment Breakdown --}}
+            @php
+                $regTotalPaid  = (float) ($savingUser->saving_initial_payment ?? 0);
+                $regFee        = (float) ($savingUser->saving_initial_fee ?? 0);
+                $regNetCredit  = max(0, $regTotalPaid - $regFee);
+                // Enrolled standard users: saving proof is in 'saving_enrollment_proof' (separate from standard plan).
+                // Dedicated saving users: proof is in 'user_amount_source' (their only proof).
+                $proof = ($savingUser->saving_enrolled && $savingUser->account_type !== 'saving')
+                    ? $savingUser->getFirstMedia('saving_enrollment_proof')
+                    : $savingUser->getFirstMedia('user_amount_source');
+            @endphp
+            <div class="card card-custom gutter-b">
+                <div class="card-header border-0 py-5">
+                    <h3 class="card-title font-weight-bolder text-dark">Registration Payment</h3>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-between border-bottom py-3">
+                                <span class="text-muted">Total Paid at Registration</span>
+                                <span class="font-weight-bold text-primary">${{ number_format($regTotalPaid, 2) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom py-3">
+                                <span class="text-muted">Registration Fee (deducted)</span>
+                                <span class="font-weight-bold text-danger">− ${{ number_format($regFee, 2) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom py-3">
+                                <span class="text-muted">Net Credited Toward Saving</span>
+                                <span class="font-weight-bold text-success">${{ number_format($regNetCredit, 2) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom py-3">
+                                <span class="text-muted">Instalment #1 Full Amount</span>
+                                @php $inst1 = $instalments->where('instalment_number', 1)->first(); @endphp
+                                <span class="font-weight-bold">${{ $inst1 ? number_format($inst1->amount, 2) : '—' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-3">
+                                <span class="text-muted">Still Owed for Instalment #1</span>
+                                @php $stillOwed = $inst1 ? max(0, $inst1->amount - $regNetCredit) : 0; @endphp
+                                <span class="font-weight-bold {{ $stillOwed > 0 ? 'text-warning' : 'text-success' }}">
+                                    @if($stillOwed > 0)
+                                        ${{ number_format($stillOwed, 2) }}
+                                    @else
+                                        <span class="badge badge-success">Fully Covered</span>
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-between border-bottom py-3">
+                                <span class="text-muted">Payment Method</span>
+                                <span class="font-weight-bold">{{ ucfirst($savingUser->payment_method ?? '—') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom py-3">
+                                <span class="text-muted">Transaction ID</span>
+                                <span class="font-weight-bold font-size-sm">{{ $savingUser->transaction_id ?? '—' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-3">
+                                <span class="text-muted">Instalment #1 Status</span>
+                                @if($inst1)
+                                    @switch($inst1->status)
+                                        @case('confirmed') <span class="badge badge-success">Confirmed</span> @break
+                                        @case('submitted') <span class="badge badge-warning">Awaiting Confirmation</span> @break
+                                        @default          <span class="badge badge-secondary">Pending</span>
+                                    @endswitch
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            @if($proof)
+                                <p class="text-muted mb-2 font-size-sm">Payment Proof</p>
+                                <a href="{{ $proof->getUrl() }}" target="_blank">
+                                    <img src="{{ $proof->getUrl() }}" class="img-thumbnail" style="max-width:100%;max-height:200px;object-fit:contain;">
+                                </a>
+                            @else
+                                <div class="text-muted mt-4">No payment proof uploaded.</div>
+                            @endif
                         </div>
                     </div>
                 </div>

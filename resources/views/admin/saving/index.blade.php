@@ -53,7 +53,7 @@
                     <div class="card card-custom bg-success text-white">
                         <div class="card-body py-5 text-center">
                             <div style="font-size:1.8rem; font-weight:700;">{{ $registrationDone }}</div>
-                            <div class="font-size-sm mt-1">Activated (Full $24 Paid)</div>
+                            <div class="font-size-sm mt-1">Activated Accounts</div>
                         </div>
                     </div>
                 </div>
@@ -104,11 +104,11 @@
                                 <tr>
                                     <th>User</th>
                                     <th>Phone</th>
-                                    <th>Sponsor</th>
+                                    <th>Saving Plan Parent</th>
                                     <th>Registered</th>
                                     <th>Status</th>
-                                    <th>Paid</th>
-                                    <th>Remaining</th>
+                                    <th>Signup Payment</th>
+                                    <th>Inst #1 Remaining</th>
                                     <th>Instalments</th>
                                     <th>Actions</th>
                                 </tr>
@@ -116,11 +116,19 @@
                             <tbody>
                                 @forelse($users as $user)
                                 @php
-                                    $confirmed = $user->savingInstalments->where('status', 'confirmed')->count();
-                                    $total     = $user->savingInstalments->count();
-                                    $paidAmt   = $user->savingInstalments->where('status', 'confirmed')->sum('amount');
-                                    $totalAmt  = $user->savingInstalments->sum('amount');
-                                    $submitted = $user->savingInstalments->where('status', 'submitted')->count();
+                                    $confirmed      = $user->savingInstalments->where('status', 'confirmed')->count();
+                                    $total          = $user->savingInstalments->count();
+                                    $paidAmt        = $user->savingInstalments->where('status', 'confirmed')->sum('amount');
+                                    $submitted      = $user->savingInstalments->where('status', 'submitted')->count();
+                                    $signupPayment  = (float)($user->saving_initial_payment ?? 0);
+                                    $signupFee      = (float)($user->saving_initial_fee ?? 0);
+                                    $signupNet      = max(0, $signupPayment - $signupFee);
+                                    // Remaining for inst #1: inst1 amount minus what was already credited at signup
+                                    $inst1          = $user->savingInstalments->where('instalment_number', 1)->first();
+                                    $inst1Amount    = $inst1 ? (float)$inst1->amount : 0;
+                                    $inst1Remaining = $inst1 && $inst1->status !== 'confirmed'
+                                        ? max(0, $inst1Amount - $signupNet)
+                                        : 0;
                                 @endphp
                                 <tr>
                                     <td>
@@ -140,24 +148,51 @@
                                     </td>
                                     <td>{{ $user->phone_number }}</td>
                                     <td>
-                                        @if($user->sponsor_id)
-                                            {{ optional($user->parent)->name ?? '—' }}
-                                        @else —
+                                        @php($savingParent = $user->savingSponsor->first())
+                                        @if($savingParent)
+                                            <span class="font-weight-bold">{{ $savingParent->name }}</span>
+                                            <div class="text-muted font-size-xs">@ {{ $savingParent->username }}</div>
+                                        @else
+                                            <span class="text-muted">—</span>
                                         @endif
                                     </td>
                                     <td>{{ $user->created_at->format('d M Y') }}</td>
                                     <td>
-                                        @if($user->saving_registration_completed)
+                                        @if($user->saving_enrolled && $user->account_type !== 'saving')
+                                            <span class="badge badge-light-primary d-block mb-1">Enrolled Member</span>
+                                            @if($user->saving_enrollment_activated)
+                                                <span class="badge badge-light-success">Active</span>
+                                            @else
+                                                <span class="badge badge-light-warning">Pending Activation</span>
+                                            @endif
+                                        @elseif($user->saving_registration_completed)
                                             <span class="badge badge-light-success">Activated</span>
                                         @else
-                                            <span class="badge badge-light-warning">Fee Only</span>
+                                            <span class="badge badge-light-warning">Fee Only / Pending</span>
                                         @endif
                                         @if($submitted > 0)
                                             <span class="badge badge-light-info ml-1">{{ $submitted }} pending</span>
                                         @endif
                                     </td>
-                                    <td class="text-success font-weight-bold">${{ number_format($paidAmt, 2) }}</td>
-                                    <td class="text-warning font-weight-bold">${{ number_format($totalAmt - $paidAmt, 2) }}</td>
+                                    <td>
+                                        <span class="font-weight-bold {{ $signupPayment > 0 ? 'text-primary' : 'text-muted' }}">
+                                            ${{ number_format($signupPayment, 2) }}
+                                        </span>
+                                        @if($signupPayment > 0)
+                                            <div class="text-muted font-size-xs">Fee: ${{ number_format($signupFee, 2) }} / Net: ${{ number_format($signupNet, 2) }}</div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($inst1 && $inst1->status === 'confirmed')
+                                            <span class="badge badge-light-success">Paid</span>
+                                        @elseif($inst1Remaining > 0)
+                                            <span class="font-weight-bold text-warning">${{ number_format($inst1Remaining, 2) }}</span>
+                                        @elseif($signupNet > 0 && $inst1Amount == 0)
+                                            <span class="text-muted">—</span>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $confirmed }} / {{ $total }}</td>
                                     <td>
                                         <a href="{{ route('admin.saving.show', $user) }}" class="btn btn-sm btn-light-primary">View</a>

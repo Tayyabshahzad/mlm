@@ -40,8 +40,10 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         'eligible_for_binary_2x',
         'eligible_for_binary_7x',
         'total_binary_earnings',
+        'can_login',
         'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id','freez_wallet','blocked','usdt_rate','transferred_amount','converted_usdt_amount','fee_deducted','net_invested_usdt_amount','negative_pv','roi_eligible_investment_amount', 'roi_status', 'roi_stopped_at','stop_reason','stop_reason_description','user_plan',
-        'account_type','saving_plan_start_date','saving_registration_completed','saving_total_deposited'
+        'account_type','saving_plan_start_date','saving_registration_completed','saving_total_deposited','saving_initial_payment','saving_initial_fee','saving_enrolled',
+        'saving_enrollment_activated','saving_enrollment_activated_at','saving_enrollment_activated_by'
 
     ]; 
     /**
@@ -86,6 +88,22 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
     public function isSavingAccount(): bool
     {
         return $this->account_type === 'saving';
+    }
+
+    /**
+     * Whether this user is allowed to see/copy their saving referral link.
+     * Admins always can. Regular users only can if they are registered in the
+     * saving plan (new saving account OR enrolled standard user) AND their
+     * registration is fully completed.
+     */
+    public function canSeeSavingLink(): bool
+    {
+        if ($this->hasRole('admin') || $this->hasRole('super-admin')) {
+            return true;
+        }
+
+        return $this->saving_registration_completed &&
+               ($this->account_type === 'saving' || $this->saving_enrolled);
     }
 
     public function team()
@@ -144,7 +162,22 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
 
     public function parent()
     {
-        return $this->belongsTo(User::class, 'sponsor_id'); // Adjust 'parent_id' based on your schema
+        return $this->belongsTo(User::class, 'sponsor_id');
+    }
+
+    /**
+     * Direct sponsor in the SAVING tree (level-1 ancestor in referral_trees where tree_type = 'saving').
+     * Different from sponsor_id which tracks the standard investment tree.
+     */
+    public function savingSponsor(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,
+            'referral_trees',
+            'descendant_id',
+            'ancestor_id'
+        )->wherePivot('tree_type', 'saving')
+         ->wherePivot('level', 1);
     }
 
     public function referrer()

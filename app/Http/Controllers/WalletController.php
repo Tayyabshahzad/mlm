@@ -315,13 +315,60 @@ class WalletController extends Controller
         return view('wallets.transaction-history', compact('transactions'));
     }
 
+    /**
+     * Savings Program — Direct / Indirect commissions wallet (enrolled standard users + saving account users)
+     */
+    public function savingDirectIndirect()
+    {
+        $user = auth()->user();
+        abort_unless($user->account_type === 'saving' || ($user->saving_enrolled && $user->saving_enrollment_activated), 403);
+
+        $baseQuery = Wallet::where('user_id', $user->id)
+            ->where('wallet_type', 'direct_indirect')
+            ->where('source_type', 'saving_instalment');
+
+        $totalDirect   = (clone $baseQuery)->sum('direct_balance');
+        $totalIndirect = (clone $baseQuery)->sum('indirect_balance');
+        $totalEarning  = $totalDirect + $totalIndirect;
+        $currentBalance= (clone $baseQuery)->sum('balance');
+
+        $entries = (clone $baseQuery)->orderBy('created_at', 'desc')->paginate(20);
+
+        $setting = Setting::first();
+
+        return view('wallets.saving-direct-indirect', compact(
+            'entries', 'totalDirect', 'totalIndirect', 'totalEarning', 'currentBalance', 'setting'
+        ));
+    }
+
+    /**
+     * Savings Program — ROI wallet (enrolled standard users + saving account users)
+     */
+    public function savingRoiWallet()
+    {
+        $user = auth()->user();
+        abort_unless($user->account_type === 'saving' || ($user->saving_enrolled && $user->saving_enrollment_activated), 403);
+
+        $baseQuery = Wallet::where('user_id', $user->id)->where('wallet_type', 'saving_roi');
+
+        $totalEarning   = (clone $baseQuery)->sum('total_amount');
+        $currentBalance = (clone $baseQuery)->sum('balance');
+        $entries        = (clone $baseQuery)->orderBy('created_at', 'desc')->paginate(20);
+
+        $setting = Setting::first();
+
+        return view('wallets.saving-roi-wallet', compact(
+            'entries', 'totalEarning', 'currentBalance', 'setting'
+        ));
+    }
+
     public function savingAccount()
     {
         $user = auth()->user();
 
         $savingRootId = \App\Models\Setting::first()?->saving_parent_user_id;
         abort_unless(
-            $user->account_type === 'saving' || $user->id == $savingRootId,
+            $user->account_type === 'saving' || $user->saving_enrolled || $user->id == $savingRootId,
             403
         );
 

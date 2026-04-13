@@ -112,6 +112,114 @@ class GenealogyController extends Controller
         return view('genealogy.saving-tree', compact('root', 'nodeDataArray'));
     }
 
+    /**
+     * Personal saving tree for any user who is saving_enrolled (or account_type=saving).
+     * Shows the logged-in user as root with their direct/indirect saving downline.
+     */
+    public function mySavingTree()
+    {
+        $user = Auth::user();
+
+        abort_unless($user->account_type === 'saving' || ($user->saving_enrolled && $user->saving_enrollment_activated), 403);
+
+        $nodeDataArray = [];
+
+        // The logged-in user is always the root of their own view
+        $nodeDataArray[] = [
+            'key'          => $user->id,
+            'name'         => $user->name,
+            'username'     => $user->username,
+            'account_type' => $user->account_type,
+            'image'        => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+        ];
+
+        // All saving-tree descendants of this user
+        $descendantIds = DB::table('referral_trees')
+            ->where('ancestor_id', $user->id)
+            ->where('tree_type', 'saving')
+            ->pluck('descendant_id')
+            ->unique();
+
+        $allTreeUsers = User::whereIn('id', $descendantIds)
+            ->where('can_login', true)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($descendantIds as $descendantId) {
+            $descendant = $allTreeUsers->get($descendantId);
+            if (!$descendant) continue;
+
+            $parentRow = DB::table('referral_trees')
+                ->where('descendant_id', $descendantId)
+                ->where('tree_type', 'saving')
+                ->where('level', 1)
+                ->first();
+
+            $parentId = $parentRow?->ancestor_id ?? $user->id;
+
+            $nodeDataArray[] = [
+                'key'          => $descendant->id,
+                'parent'       => $parentId,
+                'name'         => $descendant->name,
+                'username'     => $descendant->username,
+                'account_type' => $descendant->account_type,
+                'image'        => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+            ];
+        }
+
+        $root = $user;
+        return view('genealogy.saving-tree', compact('root', 'nodeDataArray'));
+    }
+
+    /**
+     * Admin: view any user's personal saving subtree.
+     */
+    public function adminUserSavingTree(User $user)
+    {
+        $nodeDataArray = [];
+
+        $nodeDataArray[] = [
+            'key'          => $user->id,
+            'name'         => $user->name,
+            'username'     => $user->username,
+            'account_type' => $user->account_type,
+            'image'        => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+        ];
+
+        $descendantIds = DB::table('referral_trees')
+            ->where('ancestor_id', $user->id)
+            ->where('tree_type', 'saving')
+            ->pluck('descendant_id')
+            ->unique();
+
+        $allTreeUsers = User::whereIn('id', $descendantIds)->get()->keyBy('id');
+
+        foreach ($descendantIds as $descendantId) {
+            $descendant = $allTreeUsers->get($descendantId);
+            if (!$descendant) continue;
+
+            $parentRow = DB::table('referral_trees')
+                ->where('descendant_id', $descendantId)
+                ->where('tree_type', 'saving')
+                ->where('level', 1)
+                ->first();
+
+            $parentId = $parentRow?->ancestor_id ?? $user->id;
+
+            $nodeDataArray[] = [
+                'key'          => $descendant->id,
+                'parent'       => $parentId,
+                'name'         => $descendant->name,
+                'username'     => $descendant->username,
+                'account_type' => $descendant->account_type,
+                'image'        => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+            ];
+        }
+
+        $root = $user;
+        return view('genealogy.saving-tree', compact('root', 'nodeDataArray'));
+    }
+
     public function teamMembers()
     {
         $user     = Auth::user();

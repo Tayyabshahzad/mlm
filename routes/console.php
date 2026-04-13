@@ -18,8 +18,8 @@ Schedule::command('roi:generate-weekly')
         return Carbon::now('Asia/Karachi')->dayOfWeek !== Carbon::FRIDAY;
     });
 
-// Saving account ROI — daily at 23:59, skip Fridays
-Schedule::command('roi:process-automated')
+// Saving account ROI (new saving users + enrolled standard users) — daily at 23:59, skip Fridays
+Schedule::command('roi:process-saving')
     ->dailyAt('23:59')
     ->timezone('Asia/Karachi')
     ->when(function () {

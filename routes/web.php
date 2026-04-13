@@ -72,6 +72,8 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::get('team', 'team')->name('genealogy.team');
         Route::get('team/members', 'teamMembers')->name('genealogy.team.members');
         Route::get('saving-tree', 'savingTree')->name('genealogy.saving.tree');
+        Route::get('my-saving-tree', 'mySavingTree')->name('genealogy.my.saving.tree');
+        Route::get('saving-tree/{user}', 'adminUserSavingTree')->name('genealogy.admin.user.saving.tree');
     });
 
     Route::prefix('wallets')->controller(WalletController::class)->group(function () {
@@ -84,6 +86,8 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::get('rank', 'rank')->name('wallets.rank');
         Route::get('incentive-wallets', 'incentiveWallets')->name('wallets.incentive');
         Route::get('saving-account', 'savingAccount')->name('wallets.saving.account');
+        Route::get('saving-direct-indirect', 'savingDirectIndirect')->name('wallets.saving.direct.indirect');
+        Route::get('saving-roi', 'savingRoiWallet')->name('wallets.saving.roi');
         Route::post('transfer-to-online', 'transferToOnline')->name('wallet.transfer.to.online');
         Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history');
         Route::post('clear-negative-points', 'clearNegativePoints')->name('clear.negative.points');
@@ -267,6 +271,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::prefix('saving-accounts')->controller(SavingInstalmentController::class)->group(function () {
         Route::get('/', 'adminIndex')->name('admin.saving.index');
         Route::get('/pending', 'adminPendingSubmissions')->name('admin.saving.pending');
+        Route::get('/enrollments', 'adminEnrollments')->name('admin.saving.enrollments');
+        Route::post('/enrollments/{user}/activate', 'activateEnrollment')->name('admin.saving.enrollments.activate');
         Route::get('/create-user', 'adminCreateUserForm')->name('admin.saving.create-user');
         Route::post('/create-user', 'adminCreateUser')->name('admin.saving.create-user.store');
         Route::post('/set-parent', 'setSavingParent')->name('admin.saving.set-parent');

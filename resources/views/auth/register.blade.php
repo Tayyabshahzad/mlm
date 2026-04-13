@@ -148,38 +148,75 @@
     <form method="POST" action="{{ route('register.user') }}" enctype="multipart/form-data">
         @csrf
 
+        {{-- Hidden flag so the controller knows which path to take --}}
+        <input type="hidden" name="user_type" id="user_type" value="{{ old('user_type', 'new') }}" />
+
         <!-- ── Account Type ──────────────────── -->
         <div class="field-group">
-            <label class="auth-label">Account Type</label>
-            <div class="auth-input-wrap">
-                <div class="auth-input-icon">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-                        <rect x="2" y="3" width="20" height="14" rx="2" stroke="#94a3b8" stroke-width="1.8"/>
-                        <path d="M8 21h8M12 17v4" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
-                    </svg>
+            @if($isSaving)
+                {{-- Savings Program link: account type is fixed --}}
+                <input type="hidden" name="account_type" value="saving" />
+                <div style="background:rgba(16,185,129,0.06); border:1.5px solid #6ee7b7; border-radius:10px; padding:0.9rem 1rem; font-size:0.82rem; color:#065f46; margin-bottom:0.5rem;">
+                    <strong>Savings Program — 25-Month Plan</strong><br>
+                    Registration fee: <strong>${{ $setting->saving_registration_fee ?? 5 }}</strong> &nbsp;|&nbsp;
+                    Initial deposit: <strong>${{ $setting->saving_min_deposit ?? 19 }}</strong> (optional at signup)<br>
+                    Monthly instalment: <strong>${{ $setting->saving_monthly_instalment ?? 19 }}</strong> over 25 months<br>
+                    <span style="color:#b45309; font-weight:600;">Minimum to join: ${{ $setting->saving_registration_fee ?? 5 }} (fee only). Pay ${{ ($setting->saving_registration_fee ?? 5) + ($setting->saving_min_deposit ?? 19) }} to activate immediately.</span>
                 </div>
-                <select class="auth-input auth-select" name="account_type" id="account_type" onchange="updateAccountBadge(this.value)">
-                    <option value="standard_investment" {{ old('account_type', 'standard_investment') == 'standard_investment' ? 'selected' : '' }}>Standard Investment</option>
-                    <option value="saving" {{ old('account_type') == 'saving' ? 'selected' : '' }}>Saving Account</option>
-                </select>
-                <div class="auth-select-arrow">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M6 9l6 6 6-6" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+            @else
+                <label class="auth-label">Account Type</label>
+                <div class="auth-input-wrap">
+                    <div class="auth-input-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                            <rect x="2" y="3" width="20" height="14" rx="2" stroke="#94a3b8" stroke-width="1.8"/>
+                            <path d="M8 21h8M12 17v4" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <select class="auth-input auth-select" name="account_type" id="account_type" onchange="updateAccountBadge(this.value)">
+                        <option value="standard_investment" {{ old('account_type', 'standard_investment') == 'standard_investment' ? 'selected' : '' }}>Standard Investment</option>
+                        <option value="saving" {{ old('account_type') == 'saving' ? 'selected' : '' }}>Saving Account</option>
+                    </select>
+                    <div class="auth-select-arrow">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M6 9l6 6 6-6" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
                 </div>
-            </div>
-            <div style="margin-top:0.4rem;">
-                <span id="account-badge" class="account-badge badge-investment">One-time full investment upfront</span>
-            </div>
-            <!-- Saving account info panel -->
-            <div id="saving-info-panel" class="d-none" style="margin-top:0.75rem; background:rgba(16,185,129,0.06); border:1.5px solid #6ee7b7; border-radius:10px; padding:0.9rem 1rem; font-size:0.82rem; color:#065f46;">
-                <strong>Saving Account — 25-Month Plan</strong><br>
-                Registration fee: <strong>${{ $setting->saving_registration_fee ?? 5 }}</strong> &nbsp;|&nbsp;
-                Initial deposit: <strong>${{ $setting->saving_min_deposit ?? 19 }}</strong> (optional at signup)<br>
-                Monthly instalment: <strong>${{ $setting->saving_monthly_instalment ?? 19 }}</strong> over 25 months<br>
-                <span style="color:#b45309; font-weight:600;">Minimum to register: ${{ $setting->saving_registration_fee ?? 5 }} (fee only). Pay ${{ ($setting->saving_registration_fee ?? 5) + ($setting->saving_min_deposit ?? 19) }} to activate immediately.</span>
+                <div style="margin-top:0.4rem;">
+                    <span id="account-badge" class="account-badge badge-investment">One-time full investment upfront</span>
+                </div>
+                <!-- Saving account info panel (standard form toggle) -->
+                <div id="saving-info-panel" class="d-none" style="margin-top:0.75rem; background:rgba(16,185,129,0.06); border:1.5px solid #6ee7b7; border-radius:10px; padding:0.9rem 1rem; font-size:0.82rem; color:#065f46;">
+                    <strong>Saving Account — 25-Month Plan</strong><br>
+                    Registration fee: <strong>${{ $setting->saving_registration_fee ?? 5 }}</strong> &nbsp;|&nbsp;
+                    Initial deposit: <strong>${{ $setting->saving_min_deposit ?? 19 }}</strong> (optional at signup)<br>
+                    Monthly instalment: <strong>${{ $setting->saving_monthly_instalment ?? 19 }}</strong> over 25 months<br>
+                    <span style="color:#b45309; font-weight:600;">Minimum to register: ${{ $setting->saving_registration_fee ?? 5 }} (fee only). Pay ${{ ($setting->saving_registration_fee ?? 5) + ($setting->saving_min_deposit ?? 19) }} to activate immediately.</span>
+                </div>
+            @endif
+        </div>
+
+        @if($isSaving)
+        <!-- ── Are you a new or existing user? (Savings Program only) ── -->
+        <div class="field-group" style="margin-top:0.75rem;">
+            <label class="auth-label">Are you a new or existing member? <span style="color:#ef4444;">*</span></label>
+            <div style="display:flex; gap:0.75rem; margin-top:0.3rem;">
+                <label style="flex:1; display:flex; align-items:center; gap:0.5rem; padding:0.65rem 1rem; border:1.5px solid #e8edf0; border-radius:10px; cursor:pointer; font-size:0.88rem; font-weight:500; color:#374151; transition:all 0.2s;" id="label-new-user">
+                    <input type="radio" name="user_type_toggle" value="new" checked onchange="switchUserType('new')" style="accent-color:#4f46e5;" />
+                    New Member
+                </label>
+                <label style="flex:1; display:flex; align-items:center; gap:0.5rem; padding:0.65rem 1rem; border:1.5px solid #e8edf0; border-radius:10px; cursor:pointer; font-size:0.88rem; font-weight:500; color:#374151; transition:all 0.2s;" id="label-existing-user">
+                    <input type="radio" name="user_type_toggle" value="existing" onchange="switchUserType('existing')" style="accent-color:#4f46e5;" />
+                    Existing Member
+                </label>
             </div>
         </div>
+        @endif
+
+        <!-- ════════════════════════════════════════════
+             NEW USER FIELDS (full registration form)
+             ════════════════════════════════════════════ -->
+        <div id="new-user-fields">
 
         <div class="section-divider">Personal Details</div>
 
@@ -194,7 +231,7 @@
                             <circle cx="12" cy="7" r="4" stroke="#94a3b8" stroke-width="1.8"/>
                         </svg>
                     </div>
-                    <input class="auth-input" type="text" name="name" placeholder="Your name" value="{{ old('name') }}" required autocomplete="off" />
+                    <input class="auth-input" type="text" name="name" placeholder="Your name" value="{{ old('name') }}" autocomplete="off" />
                 </div>
                 @error('name') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
@@ -208,7 +245,7 @@
                             <path d="M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0" stroke="#94a3b8" stroke-width="1.8"/>
                         </svg>
                     </div>
-                    <input class="auth-input" type="text" name="username" placeholder="username" value="{{ old('username') }}" required autocomplete="off" />
+                    <input class="auth-input" type="text" name="username" placeholder="username" value="{{ old('username') }}" autocomplete="off" />
                 </div>
                 @error('username') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
@@ -224,7 +261,7 @@
                         <polyline points="22,6 12,13 2,6" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <input class="auth-input" type="email" name="email" placeholder="your@email.com" value="{{ old('email') }}" required autocomplete="off" />
+                <input class="auth-input" type="email" name="email" placeholder="your@email.com" value="{{ old('email') }}" autocomplete="off" />
             </div>
             @error('email') <div class="text-danger">{{ $message }}</div> @enderror
         </div>
@@ -240,7 +277,7 @@
                             <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
                         </svg>
                     </div>
-                    <input class="auth-input" type="password" name="password" placeholder="Password" required autocomplete="off" />
+                    <input class="auth-input" type="password" name="password" placeholder="Password" autocomplete="off" />
                 </div>
                 @error('password') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
@@ -255,7 +292,7 @@
                             <path d="M9 16l2 2 4-4" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </div>
-                    <input class="auth-input" type="password" name="password_confirmation" placeholder="Confirm" required autocomplete="off" />
+                    <input class="auth-input" type="password" name="password_confirmation" placeholder="Confirm" autocomplete="off" />
                 </div>
             </div>
         </div>
@@ -293,12 +330,39 @@
                     type="tel"
                     class="auth-input"
                     placeholder="Phone number"
-                    required
                     style="padding-left:1rem !important;"
                 />
             </div>
             @error('phone_number') <div class="text-danger">{{ $message }}</div> @enderror
         </div>
+
+        </div>{{-- end #new-user-fields --}}
+
+        <!-- ════════════════════════════════════════════
+             EXISTING USER FIELDS (savings enrolment only)
+             ════════════════════════════════════════════ -->
+        <div id="existing-user-fields" class="d-none">
+
+        <div class="section-divider">Identify Your Account</div>
+        <div style="font-size:0.82rem; color:#64748b; margin-bottom:0.75rem;">
+            Enter your existing username or email address. Your account details remain unchanged — only your Savings Program membership is added.
+        </div>
+
+        <div class="field-group">
+            <label class="auth-label">Username or Email <span style="color:#ef4444;">*</span></label>
+            <div class="auth-input-wrap">
+                <div class="auth-input-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="#94a3b8" stroke-width="1.8"/>
+                        <path d="M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0" stroke="#94a3b8" stroke-width="1.8"/>
+                    </svg>
+                </div>
+                <input class="auth-input" type="text" name="identifier" id="identifier" placeholder="Your username or email" value="{{ old('identifier') }}" autocomplete="off" />
+            </div>
+            @error('identifier') <div class="text-danger">{{ $message }}</div> @enderror
+        </div>
+
+        </div>{{-- end #existing-user-fields --}}
 
         <!-- Referral Link -->
         <div class="field-group">
@@ -444,7 +508,9 @@
 
         <!-- Submit -->
         <div style="margin-top: 1.5rem; margin-bottom: 0.5rem;">
-            <button type="submit" class="auth-btn">Create Account</button>
+            <button type="submit" class="auth-btn" id="submit-btn">
+                @if($isSaving) Join Savings Program @else Create Account @endif
+            </button>
         </div>
 
     </form>
@@ -462,51 +528,79 @@
     const savingFee     = {{ $setting->saving_registration_fee ?? 5 }};
     const savingDeposit = {{ $setting->saving_min_deposit ?? 19 }};
     const savingFull    = savingFee + savingDeposit;
+    const isSavingPage  = {{ $isSaving ? 'true' : 'false' }};
+
+    // ── Savings Program: toggle between new / existing member ──────────────────
+    function switchUserType(type) {
+        const newFields      = document.getElementById('new-user-fields');
+        const existingFields = document.getElementById('existing-user-fields');
+        const userTypeInput  = document.getElementById('user_type');
+        const submitBtn      = document.getElementById('submit-btn');
+
+        // Update labels styling
+        const labelNew      = document.getElementById('label-new-user');
+        const labelExisting = document.getElementById('label-existing-user');
+
+        if (type === 'existing') {
+            newFields.classList.add('d-none');
+            existingFields.classList.remove('d-none');
+            userTypeInput.value = 'existing';
+            if (submitBtn) submitBtn.textContent = 'Enroll in Savings Program';
+            if (labelNew)      labelNew.style.borderColor      = '#e8edf0';
+            if (labelExisting) labelExisting.style.borderColor = '#4f46e5';
+        } else {
+            newFields.classList.remove('d-none');
+            existingFields.classList.add('d-none');
+            userTypeInput.value = 'new';
+            if (submitBtn) submitBtn.textContent = 'Join Savings Program';
+            if (labelNew)      labelNew.style.borderColor      = '#4f46e5';
+            if (labelExisting) labelExisting.style.borderColor = '#e8edf0';
+        }
+    }
 
     function updateAccountBadge(value) {
         const badge      = document.getElementById('account-badge');
         const infoPanel  = document.getElementById('saving-info-panel');
         const usdtInput  = document.getElementById('usdt_amount');
-        const usdtLabel  = usdtInput.closest('.field-group').querySelector('.auth-label');
+        const usdtLabel  = usdtInput ? usdtInput.closest('.field-group').querySelector('.auth-label') : null;
 
         if (value === 'standard_investment') {
-            badge.className = 'account-badge badge-investment';
-            badge.textContent = 'One-time full investment upfront';
-            infoPanel.classList.add('d-none');
-            usdtInput.min = 60;
-            usdtInput.removeAttribute('max');
+            if (badge) {
+                badge.className = 'account-badge badge-investment';
+                badge.textContent = 'One-time full investment upfront';
+            }
+            if (infoPanel) infoPanel.classList.add('d-none');
+            if (usdtInput) { usdtInput.min = 60; usdtInput.removeAttribute('max'); }
             if (usdtLabel) usdtLabel.innerHTML = 'Equivalent in USDT <span style="font-size:0.68rem; color:#ef4444;">(Min. 60 USD)</span>';
         } else {
-            badge.className = 'account-badge badge-installment';
-            badge.textContent = 'Pay in scheduled monthly instalments — 25 months';
-            infoPanel.classList.remove('d-none');
-            usdtInput.min = savingFee;
-            usdtInput.max = savingFull;
+            if (badge) {
+                badge.className = 'account-badge badge-installment';
+                badge.textContent = 'Pay in scheduled monthly instalments — 25 months';
+            }
+            if (infoPanel) infoPanel.classList.remove('d-none');
+            if (usdtInput) { usdtInput.min = savingFee; usdtInput.max = savingFull; }
             if (usdtLabel) usdtLabel.innerHTML = `Equivalent in USDT <span style="font-size:0.68rem; color:#ef4444;">(Min. $${savingFee} — Max. $${savingFull})</span>`;
         }
     }
 
     // Payment method toggle
     function toggleReferralLink(method) {
-        const qrPanel = document.getElementById('referral-link-container');
-        const codePanel = document.getElementById('activation-code-container');
-        const codeInput = document.getElementById('activation_code');
-        const proofContainer = document.getElementById('transaction-proof-container');
-        const proofInput = document.getElementById('amount_src');
+        const qrPanel       = document.getElementById('referral-link-container');
+        const codePanel     = document.getElementById('activation-code-container');
+        const codeInput     = document.getElementById('activation_code');
+        const proofContainer= document.getElementById('transaction-proof-container');
 
-        qrPanel.classList.add('d-none');
-        codePanel.classList.add('d-none');
-        codeInput.removeAttribute('required');
+        if (qrPanel)   qrPanel.classList.add('d-none');
+        if (codePanel) codePanel.classList.add('d-none');
+        if (codeInput) codeInput.removeAttribute('required');
 
         if (method === 'activation_code') {
-            codePanel.classList.remove('d-none');
-            codeInput.setAttribute('required', 'required');
-            proofContainer.classList.add('d-none');
+            if (codePanel) codePanel.classList.remove('d-none');
+            if (codeInput) codeInput.setAttribute('required', 'required');
+            if (proofContainer) proofContainer.classList.add('d-none');
         } else {
-            proofContainer.classList.remove('d-none');
-            if (method === 'usdt') {
-                qrPanel.classList.remove('d-none');
-            }
+            if (proofContainer) proofContainer.classList.remove('d-none');
+            if (method === 'usdt' && qrPanel) qrPanel.classList.remove('d-none');
         }
     }
 
@@ -528,40 +622,54 @@
 
     // PKR → USDT conversion
     document.addEventListener('DOMContentLoaded', function () {
-        const rate = {{ $setting->usd ?? 281.10 }};
-        const pkrInput = document.getElementById('transferred_amount');
+        const rate      = {{ $setting->usd ?? 281.10 }};
+        const pkrInput  = document.getElementById('transferred_amount');
         const usdOutput = document.getElementById('usdt_amount');
-        const usdInfo = document.getElementById('usdInfo');
+        const usdInfo   = document.getElementById('usdInfo');
 
-        pkrInput.addEventListener('blur', function () {
-            const pkr = parseFloat(pkrInput.value);
-            if (!isNaN(pkr) && pkr > 0) {
-                let usd = parseFloat((pkr / rate).toFixed(2));
-                const isSaving = document.getElementById('account_type').value === 'saving';
-                if (isSaving && usd > savingFull) {
-                    usd = savingFull;
-                    usdInfo.textContent = `Capped at $${savingFull} maximum for Saving Account`;
+        if (pkrInput) {
+            pkrInput.addEventListener('blur', function () {
+                const pkr = parseFloat(pkrInput.value);
+                if (!isNaN(pkr) && pkr > 0) {
+                    let usd = parseFloat((pkr / rate).toFixed(2));
+                    const accountTypeEl = document.getElementById('account_type');
+                    const currentType   = isSavingPage ? 'saving' : (accountTypeEl ? accountTypeEl.value : 'standard_investment');
+                    if (currentType === 'saving' && usd > savingFull) {
+                        usd = savingFull;
+                        if (usdInfo) usdInfo.textContent = `Capped at $${savingFull} maximum for Saving Account`;
+                    } else {
+                        if (usdInfo) usdInfo.textContent = `At PKR ${rate}/USD ≈ ${usd} USDT`;
+                    }
+                    usdOutput.value = usd;
                 } else {
-                    usdInfo.textContent = `At PKR ${rate}/USD ≈ ${usd} USDT`;
+                    usdOutput.value = '';
+                    if (usdInfo) usdInfo.textContent = '';
                 }
-                usdOutput.value = usd;
-            } else {
-                usdOutput.value = '';
-                usdInfo.textContent = '';
-            }
-        });
+            });
+        }
 
         // Restore old payment method on page reload
         const oldMethod = "{{ old('payment_method') }}";
         if (oldMethod) toggleReferralLink(oldMethod);
 
-        // Restore account type badge
-        updateAccountBadge(document.getElementById('account_type').value);
-
-        // Re-evaluate on change
-        document.getElementById('account_type').addEventListener('change', function () {
-            updateAccountBadge(this.value);
-        });
+        if (isSavingPage) {
+            // Restore user type toggle on validation error reload
+            const oldUserType = "{{ old('user_type', 'new') }}";
+            switchUserType(oldUserType);
+            const radios = document.querySelectorAll('input[name="user_type_toggle"]');
+            radios.forEach(r => { if (r.value === oldUserType) r.checked = true; });
+            // Saving page always caps USDT
+            if (usdOutput) { usdOutput.min = savingFee; usdOutput.max = savingFull; }
+        } else {
+            // Restore account type badge (standard form)
+            const accountTypeEl = document.getElementById('account_type');
+            if (accountTypeEl) {
+                updateAccountBadge(accountTypeEl.value);
+                accountTypeEl.addEventListener('change', function () {
+                    updateAccountBadge(this.value);
+                });
+            }
+        }
     });
 </script>
 @endsection

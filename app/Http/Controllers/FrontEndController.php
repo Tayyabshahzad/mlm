@@ -268,7 +268,7 @@ class FrontEndController extends Controller
 
         $user = Auth::user();
 
-        // ── Saving account users get their own dashboard data ─────────────
+        // ── Dedicated saving-account users get their own dashboard ───────────
         if ($user->account_type === 'saving') {
             return $this->savingDashboard($user, $accountService);
         }
@@ -332,6 +332,27 @@ class FrontEndController extends Controller
                 ->count();
         }
 
+        // ── Saving Program wallet totals (for saving_enrolled standard users) ──
+        $savingData = [];
+        if ($user->saving_enrolled) {
+            $savingService = app(\App\Services\SavingAccountService::class);
+            $savingData = [
+                'saving_enrolled'        => true,
+                'saving_deposit'         => $wallets->where('wallet_type', 'saving')->sum('balance'),
+                'saving_direct'          => Wallet::where('user_id', $user->id)
+                                                ->where('wallet_type', 'direct_indirect')
+                                                ->where('source_type', 'saving_instalment')
+                                                ->sum('direct_balance'),
+                'saving_indirect'        => Wallet::where('user_id', $user->id)
+                                                ->where('wallet_type', 'direct_indirect')
+                                                ->where('source_type', 'saving_instalment')
+                                                ->sum('indirect_balance'),
+                'saving_roi'             => $wallets->where('wallet_type', 'saving_roi')->sum('balance'),
+                'instalment_summary'     => $savingService->getInstalmentSummary($user),
+                'saving_plan_activated'  => $user->saving_registration_completed,
+            ];
+        }
+
         $data = [
             'online_wallet'          => $wallets->where('wallet_type', 'online')->sum('balance'),
             'direct_indirect'        => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
@@ -349,7 +370,7 @@ class FrontEndController extends Controller
             'reward'                 => $totalRewardPercentage,
             'roi_stats'              => $roiStats,
             'missed_roi_count'       => $missedRoiCount,
-        ];
+        ] + $savingData;
 
         return view('demo.dashboard',compact('data','reward'));
         //return Inertia::render('Dashboard');

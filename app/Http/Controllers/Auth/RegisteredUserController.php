@@ -31,8 +31,9 @@ class RegisteredUserController extends Controller
      */
     public function create(Request $request, $ref = null)
     {
-        $setting = Setting::first();
-        return view('auth.register', compact('ref', 'setting'));
+        $setting  = Setting::first();
+        $isSaving = $request->query('type') === 'saving';
+        return view('auth.register', compact('ref', 'setting', 'isSaving'));
     }
 
     /**
@@ -44,6 +45,9 @@ class RegisteredUserController extends Controller
         $accountType = $request->input('account_type', 'standard_investment');
 
         if ($accountType === 'saving') {
+            if ($request->input('user_type') === 'existing') {
+                return $this->storeSavingExistingUser($request, $setting);
+            }
             return $this->storeSavingAccount($request, $setting);
         }
 
@@ -185,9 +189,12 @@ class RegisteredUserController extends Controller
 
         DB::beginTransaction();
         try {
-            $username         = $this->generateUsername($request->username);
-            $netDeposit       = $isFullPayment ? ($request->usdt_amount - $savingFee) : 0;
-            $registrationComplete = $isFullPayment;
+            $username = $this->generateUsername($request->username);
+
+            // Net deposit = everything above the fee, regardless of whether it covers inst#1 fully.
+            $netDeposit           = max(0.0, (float) $request->usdt_amount - (float) $savingFee);
+            // Registration is "complete" only when the net deposit covers the full saving amount.
+            $registrationComplete = $netDeposit >= (float) $savingDeposit;
 
             $user = User::create([
                 'name'                           => $request->name,
@@ -205,13 +212,18 @@ class RegisteredUserController extends Controller
                 'transferred_amount'             => $request->transferred_amount,
                 'converted_usdt_amount'          => $request->usdt_amount,
                 'fee_deducted'                   => $savingFee,
-                'net_invested_usdt_amount'       => $netDeposit,
-                'roi_eligible_investment_amount' => $netDeposit,
+                'net_invested_usdt_amount'       => $registrationComplete ? $netDeposit : 0,
+                'roi_eligible_investment_amount' => $registrationComplete ? $netDeposit : 0,
                 'user_plan'                      => 'standard',
                 'account_type'                   => 'saving',
                 'saving_plan_start_date'         => Carbon::today()->toDateString(),
                 'saving_registration_completed'  => $registrationComplete,
-                'saving_total_deposited'         => $netDeposit,
+                // saving_total_deposited is only updated via creditDepositToWallet on admin confirmation.
+                // For full payment at registration we pre-set it; for partials it stays 0 and gets
+                // incremented when the admin confirms the submitted instalment.
+                'saving_total_deposited'         => $registrationComplete ? $netDeposit : 0,
+                'saving_initial_payment'         => $request->usdt_amount,
+                'saving_initial_fee'             => $savingFee,
             ]);
 
             $this->handleActivationCode($request, $user);
@@ -229,11 +241,10 @@ class RegisteredUserController extends Controller
             $monthlyAmount = $setting->saving_monthly_instalment ?? 19;
             $this->savingAccountService->createInstalmentSchedule($user, $netDeposit, $monthlyAmount);
 
-            // If full payment at registration, mark instalment #1 confirmed immediately
-            if ($isFullPayment && $netDeposit > 0) {
+            if ($registrationComplete) {
+                // Full payment: confirm instalment #1 immediately and credit saving wallet.
                 $this->savingAccountService->markFirstInstalmentConfirmed($user, $request->transaction_id, 1);
 
-                // Credit to saving wallet
                 \App\Models\Wallet::create([
                     'user_id'         => $user->id,
                     'wallet_type'     => 'saving',
@@ -246,9 +257,12 @@ class RegisteredUserController extends Controller
                     'description'     => 'Initial saving deposit on registration',
                     'transaction_type'=> 'credit',
                 ]);
-
-                // Commissions are NOT distributed at registration — admin must activate first
             }
+            // Partial payment or fee-only: inst #1 stays 'pending'.
+            // The signup amount is stored in saving_initial_payment / saving_initial_fee on the user.
+            // Admin reviews proof and activates the account. The user then submits the
+            // remaining amount for inst #1 via the normal instalment flow, at which point
+            // creditDepositToWallet auto-credits the registration partial on top.
 
             DB::commit();
             Auth::login($user);
@@ -257,6 +271,110 @@ class RegisteredUserController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Saving account registration failed: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Something went wrong! ' . $e->getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Existing user Savings Program enrollment
+    // -------------------------------------------------------------------------
+
+    private function storeSavingExistingUser(Request $request, $setting): RedirectResponse
+    {
+        $savingFee     = $setting->saving_registration_fee ?? 5;
+        $savingDeposit = $setting->saving_min_deposit ?? 19;
+        $minTotal      = $savingFee;
+        $fullTotal     = $savingFee + $savingDeposit;
+
+        $isFullPayment = $request->usdt_amount >= $fullTotal;
+
+        $request->validate([
+            'identifier'         => 'required|string|max:255',
+            'transaction_id'     => 'required|max:50|string',
+            'payment_method'     => 'required|in:usdt,bank,cash_slip',
+            'referral_link'      => ['required', 'string', 'exists:referral_links,link'],
+            'amount_src'         => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'transferred_amount' => 'required|numeric',
+            'usdt_amount'        => 'required|numeric|min:' . $minTotal . '|max:' . $fullTotal,
+        ]);
+
+        // Find the existing user by username or email
+        $existingUser = User::where('username', $request->identifier)
+            ->orWhere('email', $request->identifier)
+            ->first();
+
+        if (!$existingUser) {
+            return redirect()->back()->withInput()
+                ->with('error', 'No account found with that username or email.');
+        }
+
+        if ($existingUser->saving_enrolled) {
+            return redirect()->back()->withInput()
+                ->with('error', 'This account is already enrolled in the Savings Program.');
+        }
+
+        $referralLink = ReferralLink::where('link', $request->referral_link)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$referralLink) {
+            return redirect()->back()->withInput()->with('error', 'Invalid referral code.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $netDeposit           = max(0.0, (float) $request->usdt_amount - (float) $savingFee);
+            $registrationComplete = $netDeposit >= (float) $savingDeposit;
+
+            $existingUser->update([
+                'saving_enrolled'               => true,
+                'saving_plan_start_date'        => Carbon::today()->toDateString(),
+                'saving_registration_completed' => $registrationComplete,
+                'saving_total_deposited'        => $registrationComplete ? $netDeposit : 0,
+                'saving_initial_payment'        => $request->usdt_amount,
+                'saving_initial_fee'            => $savingFee,
+            ]);
+
+            // Place user in the saving tree under the referral link owner
+            $this->registerUser($referralLink->user_id, $existingUser->id, 'saving', $setting->saving_parent_user_id);
+
+            if ($request->hasFile('amount_src')) {
+                // Use a dedicated collection so it never mixes with the standard-plan proof
+                // stored in 'user_amount_source' from their original registration.
+                $existingUser->addMedia($request->file('amount_src'))->toMediaCollection('saving_enrollment_proof');
+            }
+
+            $monthlyAmount = $setting->saving_monthly_instalment ?? 19;
+            $this->savingAccountService->createInstalmentSchedule($existingUser, $netDeposit, $monthlyAmount);
+
+            if ($registrationComplete) {
+                $this->savingAccountService->markFirstInstalmentConfirmed($existingUser, $request->transaction_id, 1);
+
+                \App\Models\Wallet::create([
+                    'user_id'          => $existingUser->id,
+                    'wallet_type'      => 'saving',
+                    'balance'          => $netDeposit,
+                    'commission_type'  => 'saving_deposit',
+                    'level'            => '-',
+                    'total_amount'     => $netDeposit,
+                    'wallet_src'       => 'saving_instalment',
+                    'source_type'      => 'saving',
+                    'description'      => 'Initial saving deposit on enrollment',
+                    'transaction_type' => 'credit',
+                ]);
+            }
+            // Partial payment or fee-only: inst #1 stays 'pending'.
+            // Admin reviews proof via saving_initial_payment and activates the enrollment.
+            // User then submits the remaining amount for inst #1 via the normal instalment flow.
+
+            DB::commit();
+
+            return redirect(route('login'))
+                ->with('status', 'You have been enrolled in the Savings Program. Please log in to view your saving dashboard.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Saving enrollment (existing user) failed: ' . $e->getMessage());
             return redirect()->back()->withInput()->with('error', 'Something went wrong! ' . $e->getMessage());
         }
     }

@@ -210,16 +210,23 @@
                                             <tbody>
                                                 @foreach($savingMembers as $member)
                                                 @php
-                                                    $confirmedInst = $member->savingInstalments->where('status','confirmed')->count();
-                                                    $totalInst     = $member->savingInstalments->count();
-                                                    $submittedInst = $member->savingInstalments->where('status','submitted')->count();
+                                                    $confirmedInst  = $member->savingInstalments->where('status','confirmed')->count();
+                                                    $totalInst      = $member->savingInstalments->count();
+                                                    $submittedInst  = $member->savingInstalments->where('status','submitted')->count();
+                                                    $isEnrolled     = $member->saving_enrolled && $member->account_type !== 'saving';
+                                                    $savingActive   = $isEnrolled ? $member->saving_enrollment_activated : $member->can_login;
                                                 @endphp
-                                                <tr class="{{ !$member->can_login ? 'text-warning' : 'text-success' }}">
+                                                <tr class="{{ !$savingActive ? 'text-warning' : 'text-success' }}">
                                                     <td>{{ $loop->iteration }}</td>
-                                                    <td>{{ $member->username }}</td>
+                                                    <td>
+                                                        {{ $member->username }}
+                                                        @if($isEnrolled)
+                                                            <span class="badge badge-light-primary ml-1" style="font-size:0.7rem;">Enrolled</span>
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $member->name }}</td>
                                                     <td>{{ $member->phone_number }}</td>
-                                                    <td>{{ optional($member->parent)->username ?? '—' }}</td>
+                                                    <td>{{ optional($member->savingSponsor->first())->username ?? '—' }}</td>
                                                     <td>
                                                         @if($member->saving_registration_completed)
                                                             <span class="badge badge-success">Deposit Done</span>
@@ -228,7 +235,7 @@
                                                         @endif
                                                     </td>
                                                     <td>
-                                                        @if($member->can_login)
+                                                        @if($savingActive)
                                                             <span class="badge badge-success">Activated</span>
                                                         @else
                                                             <span class="badge badge-danger">Not Activated</span>
@@ -246,11 +253,10 @@
                                                                 Actions
                                                             </button>
                                                             <div class="dropdown-menu">
-                                                                @if(!$member->can_login)
+                                                                @if(!$savingActive)
                                                                     <a class="dropdown-item text-success"
-                                                                       data-toggle="modal" data-target="#changeStatus"
-                                                                       data-id="{{ $member->id }}" href="#">
-                                                                       Activate Account
+                                                                       href="{{ route('admin.saving.show', $member) }}">
+                                                                       Activate Savings
                                                                     </a>
                                                                 @else
                                                                     <span class="dropdown-item text-muted">Already Activated</span>
@@ -408,47 +414,137 @@ $(document).ready(function () {
                 $('#loading-spinner').hide();
                 if (response.success) {
                     var d = response.data;
-                    var isSaving = d.account_type === 'saving';
+                    var isSaving        = d.account_type === 'saving';
+                    var isSavingRelated = isSaving || d.saving_enrolled;
 
-                    var html = `<table class='table table-bordered table-sm'>
-                        <tr class="bg-light-primary"><td colspan="2" class="text-center font-weight-bold">Personal Information</td></tr>
-                        <tr><td width="40%">Name</td><td>${d.name}</td></tr>
-                        <tr><td>Username</td><td>${d.username}</td></tr>
-                        <tr><td>Email</td><td>${d.email}</td></tr>
-                        <tr><td>Phone</td><td>${d.phone_number ?? '—'}</td></tr>
-                        <tr><td>Referred By</td><td>${d.referBy.id ? '<a href="/users/info/'+d.referBy.id+'">'+d.referBy.username+'</a>' : '—'}</td></tr>
-                        <tr><td>Joined</td><td>${d.created_at}</td></tr>
-                        <tr><td>Account Type</td><td>${isSaving ? '<span class="badge badge-info">Saving Account</span>' : '<span class="badge badge-primary">Standard Investment</span>'}</td></tr>
-                        <tr><td>Login Status</td><td>${d.status === 'Active' ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Not Activated</span>'}</td></tr>`;
-
-                    if (isSaving) {
-                        var regBadge = d.saving_registration_completed
-                            ? '<span class="badge badge-success">Full Payment ($24)</span>'
-                            : '<span class="badge badge-warning">Fee Only ($5) — Deposit Pending</span>';
-                        html += `<tr><td>Registration Status</td><td>${regBadge}</td></tr>`;
-                        html += `<tr><td>Plan Start Date</td><td>${d.saving_plan_start_date ?? '—'}</td></tr>`;
-                        html += `<tr><td>Total Deposited</td><td>$${d.saving_total_deposited ?? '0.00'}</td></tr>`;
+                    // ── Personal info ────────────────────────────────────────────
+                    // For saving-related users show ONLY the saving tree referrer.
+                    // Never fall back to the standard-plan parent — they are different trees.
+                    var referLabel = isSavingRelated ? 'Saving Plan Referrer' : 'Referred By';
+                    var referLink  = '—';
+                    if (isSavingRelated) {
+                        if (d.saving_sponsor && d.saving_sponsor.id) {
+                            referLink = '<a href="/users/info/' + d.saving_sponsor.id + '">' + d.saving_sponsor.username + '</a>';
+                        }
+                    } else if (d.referBy && d.referBy.id) {
+                        referLink = '<a href="/users/info/' + d.referBy.id + '">' + d.referBy.username + '</a>';
                     }
 
-                    html += `<tr class="bg-light-danger"><td colspan="2" class="text-center font-weight-bold">Payment Information</td></tr>
-                        <tr><td>Payment Method</td><td>${d.payment_method}</td></tr>
-                        <tr><td>Transaction ID</td><td>${d.transaction_id}</td></tr>
-                        <tr><td>Activation Code</td><td>${d.activationCode.code}</td></tr>
-                        <tr><td>Code Generated By</td><td>${d.activationCode.generated_by}</td></tr>
-                        <tr><td>Transferred (PKR)</td><td>${d.transferred_amount}</td></tr>
-                        <tr><td>Total USDT Paid</td><td>$${d.converted_usdt_amount}</td></tr>
-                        <tr><td>Fee Deducted</td><td>$${d.fee_deducted}</td></tr>
-                        <tr><td>Net Invested USDT</td><td>$${d.net_invested_usdt_amount}</td></tr>
-                        <tr><td>USDT Rate</td><td>${d.usdt_rate}</td></tr>
-                    </table>`;
+                    var accountBadge = isSaving
+                        ? '<span class="badge badge-info">Saving Account</span>'
+                        : (d.saving_enrolled
+                            ? '<span class="badge badge-light-info">Standard + Saving Enrolled</span>'
+                            : '<span class="badge badge-primary">Standard Investment</span>');
 
-                    if (d.amount_proof) {
-                        html += `<table class='table table-bordered table-sm'>
-                            <tr class="bg-light-warning"><td class="text-center font-weight-bold">Transaction Proof</td></tr>
-                            <tr><td><a href="${d.amount_proof}" target="_blank"><img src="${d.amount_proof}" class="img img-thumbnail" style="max-width:100%;height:auto;"/></a></td></tr>
-                        </table>`;
-                    } else {
-                        html += `<div class="alert alert-warning mt-2">No transaction proof uploaded.</div>`;
+                    var html = '<table class="table table-bordered table-sm">'
+                        + '<tr class="bg-light-primary"><td colspan="2" class="text-center font-weight-bold">Personal Information</td></tr>'
+                        + '<tr><td width="40%">Name</td><td>' + d.name + '</td></tr>'
+                        + '<tr><td>Username</td><td>' + d.username + '</td></tr>'
+                        + '<tr><td>Email</td><td>' + d.email + '</td></tr>'
+                        + '<tr><td>Phone</td><td>' + (d.phone_number || '—') + '</td></tr>'
+                        + '<tr><td>' + referLabel + '</td><td>' + referLink + '</td></tr>'
+                        + '<tr><td>Joined</td><td>' + d.created_at + '</td></tr>'
+                        + '<tr><td>Account Type</td><td>' + accountBadge + '</td></tr>'
+                        + '<tr><td>Login Status</td><td>' + (d.status === 'Active'
+                            ? '<span class="badge badge-success">Active</span>'
+                            : '<span class="badge badge-danger">Not Activated</span>') + '</td></tr>';
+
+                    if (isSavingRelated) {
+                        var regBadge = d.saving_registration_completed
+                            ? '<span class="badge badge-success">Fully Paid</span>'
+                            : '<span class="badge badge-warning">Partial / Fee Only</span>';
+                        html += '<tr><td>Registration Status</td><td>' + regBadge + '</td></tr>'
+                             +  '<tr><td>Plan Start Date</td><td>' + (d.saving_plan_start_date || '—') + '</td></tr>'
+                             +  '<tr><td>Total Confirmed Deposited</td><td><strong>$' + parseFloat(d.saving_total_deposited || 0).toFixed(2) + '</strong></td></tr>';
+                    }
+                    html += '</table>';
+
+                    // ── Saving Plan — Signup Payment Breakdown ───────────────────
+                    if (isSavingRelated) {
+                        var totalPaid   = parseFloat(d.saving_initial_payment || 0);
+                        var fee         = parseFloat(d.saving_initial_fee || 0);
+                        var netCredited = Math.max(0, parseFloat((totalPaid - fee).toFixed(2)));
+
+                        var inst1Due      = d.signup_instalment ? parseFloat(d.signup_instalment.amount || 0) : 0;
+                        var inst1Status   = d.signup_instalment ? d.signup_instalment.status : 'pending';
+                        var inst1TxId     = (d.saving_transaction_id) || (d.signup_instalment && d.signup_instalment.transaction_id) || '—';
+                        var inst1DueDate  = d.signup_instalment ? d.signup_instalment.due_date : '—';
+                        var stillOwed     = Math.max(0, inst1Due - netCredited);
+
+                        var statusMap = {
+                            confirmed: '<span class="badge badge-success">Confirmed</span>',
+                            submitted: '<span class="badge badge-warning">Awaiting Admin Confirmation</span>',
+                            missed:    '<span class="badge badge-danger">Missed</span>',
+                            pending:   '<span class="badge badge-secondary">Pending</span>',
+                        };
+                        var inst1Badge = statusMap[inst1Status] || '<span class="badge badge-secondary">' + inst1Status + '</span>';
+
+                        html += '<table class="table table-bordered table-sm">'
+                            + '<tr class="bg-light-success"><td colspan="2" class="text-center font-weight-bold">Saving Plan — Signup Payment</td></tr>'
+                            + '<tr><td width="50%"><strong>Instalment #1 Total Due</strong></td>'
+                            +     '<td><strong>$' + inst1Due.toFixed(2) + '</strong> &nbsp;' + inst1Badge + '</td></tr>'
+                            + '<tr><td>Amount Paid at Signup</td>'
+                            +     '<td class="text-primary font-weight-bold">$' + totalPaid.toFixed(2) + '</td></tr>'
+                            + '<tr><td>Registration Fee (deducted)</td>'
+                            +     '<td class="text-danger">− $' + fee.toFixed(2) + '</td></tr>'
+                            + '<tr><td>Net Credited Toward Saving</td>'
+                            +     '<td class="text-success font-weight-bold">$' + netCredited.toFixed(2) + '</td></tr>'
+                            + '<tr><td>Still Owed for Instalment #1</td>'
+                            +     '<td class="' + (stillOwed > 0 ? 'text-warning font-weight-bold' : 'text-success') + '">'
+                            +     (stillOwed > 0 ? '$' + stillOwed.toFixed(2) : '<span class="badge badge-success">Fully Covered</span>')
+                            +     '</td></tr>'
+                            + '<tr><td>Transaction ID</td><td>' + inst1TxId + '</td></tr>'
+                            + '<tr><td>Instalment #1 Due Date</td><td>' + inst1DueDate + '</td></tr>'
+                            + '</table>';
+
+                        var proof = (d.signup_instalment && d.signup_instalment.proof_url) || d.amount_proof || '';
+                        if (proof) {
+                            html += '<table class="table table-bordered table-sm">'
+                                + '<tr class="bg-light-info"><td class="text-center font-weight-bold">Signup Payment Proof</td></tr>'
+                                + '<tr><td><a href="' + proof + '" target="_blank">'
+                                + '<img src="' + proof + '" class="img img-thumbnail" style="max-width:100%;height:auto;"/>'
+                                + '</a></td></tr></table>';
+                        } else {
+                            html += '<div class="alert alert-warning mt-2">No payment proof uploaded.</div>';
+                        }
+                    }
+
+                    // ── Standard Plan registration info (only for non-saving users) ──
+                    if (!isSavingRelated) {
+                        html += '<table class="table table-bordered table-sm">'
+                            + '<tr class="bg-light-danger"><td colspan="2" class="text-center font-weight-bold">Registration Payment Information</td></tr>'
+                            + '<tr><td width="40%">Payment Method</td><td>' + d.payment_method + '</td></tr>'
+                            + '<tr><td>Transaction ID</td><td>' + d.transaction_id + '</td></tr>'
+                            + '<tr><td>Activation Code</td><td>' + d.activationCode.code + '</td></tr>'
+                            + '<tr><td>Code Generated By</td><td>' + d.activationCode.generated_by + '</td></tr>'
+                            + '<tr><td>Transferred (PKR)</td><td>' + d.transferred_amount + '</td></tr>'
+                            + '<tr><td>Total USDT Paid</td><td>$' + d.converted_usdt_amount + '</td></tr>'
+                            + '<tr><td>Fee Deducted</td><td>$' + d.fee_deducted + '</td></tr>'
+                            + '<tr><td>Net Invested USDT</td><td>$' + d.net_invested_usdt_amount + '</td></tr>'
+                            + '<tr><td>USDT Rate</td><td>' + d.usdt_rate + '</td></tr>'
+                            + '</table>';
+
+                        if (d.amount_proof) {
+                            html += '<table class="table table-bordered table-sm">'
+                                + '<tr class="bg-light-warning"><td class="text-center font-weight-bold">Transaction Proof</td></tr>'
+                                + '<tr><td><a href="' + d.amount_proof + '" target="_blank">'
+                                + '<img src="' + d.amount_proof + '" class="img img-thumbnail" style="max-width:100%;height:auto;"/>'
+                                + '</a></td></tr></table>';
+                        } else {
+                            html += '<div class="alert alert-warning mt-2">No transaction proof uploaded.</div>';
+                        }
+                    }
+
+                    // For pure saving accounts also show method / transferred amount if available
+                    if (isSaving && d.saving_payment_method) {
+                        html += '<table class="table table-bordered table-sm">'
+                            + '<tr class="bg-light-secondary"><td colspan="2" class="text-center font-weight-bold">Saving Plan Registration Details</td></tr>'
+                            + '<tr><td width="40%">Payment Method</td><td>' + d.saving_payment_method + '</td></tr>'
+                            + '<tr><td>Transaction ID</td><td>' + (d.saving_transaction_id || '—') + '</td></tr>'
+                            + (d.saving_transferred_amount ? '<tr><td>Transferred (PKR)</td><td>' + d.saving_transferred_amount + '</td></tr>' : '')
+                            + '<tr><td>Activation Code</td><td>' + d.activationCode.code + '</td></tr>'
+                            + '<tr><td>Code Generated By</td><td>' + d.activationCode.generated_by + '</td></tr>'
+                            + '</table>';
                     }
 
                     $('#user-details-content').html(html);

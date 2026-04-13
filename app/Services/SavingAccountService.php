@@ -24,6 +24,12 @@ class SavingAccountService
         7 => 1.00,
     ];
 
+    // 7x7 rule: to receive commission at level N you must have N direct referrals
+    // in the saving tree (same formula as the standard CommissionService).
+    private const SAVING_TEAM_REQUIREMENTS = [
+        1 => 1, 2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 7 => 7,
+    ];
+
     public function __construct(private WalletService $walletService) {}
 
     // -------------------------------------------------------------------------
@@ -98,6 +104,27 @@ class SavingAccountService
             ->where('status', 'pending')
             ->orderBy('instalment_number')
             ->first();
+    }
+
+    /**
+     * Auto-enroll a standard user as a saving-tree referrer when someone registers
+     * under them in the saving system. They earn commissions and can see their saving
+     * team / wallets — but they are NOT on the saving plan (no instalments).
+     * No admin approval is needed for pure referrers.
+     */
+    public function autoEnrollSponsor(User $sponsor): void
+    {
+        // Only standard investment users who aren't already enrolled / in the plan
+        if ($sponsor->account_type === 'saving' || $sponsor->saving_enrolled) {
+            return;
+        }
+
+        $sponsor->update([
+            'saving_enrolled'                => true,
+            'saving_enrollment_activated'    => true,
+            'saving_enrollment_activated_at' => now(),
+            'saving_enrollment_activated_by' => null, // system-triggered, not by admin
+        ]);
     }
 
     public function getInstalmentSummary(User $user): array
@@ -178,12 +205,15 @@ class SavingAccountService
         $amount = $instalment->submitted_amount ?? $instalment->amount;
 
         // For instalment #1: also credit the partial deposit the user paid at registration
-        // (amount beyond the registration fee that was never yet credited to saving_total_deposited)
+        // (amount beyond the saving fee that was never yet credited to saving_total_deposited).
+        // Use saving_initial_payment / saving_initial_fee — these are set for both dedicated
+        // saving users and enrolled standard users. Do NOT use converted_usdt_amount or
+        // fee_deducted, which belong to the standard investment plan.
         $registrationPartial = 0.0;
         if ($instalment->instalment_number === 1 && $user->saving_total_deposited == 0) {
-            $regFee = (float) ($user->fee_deducted ?? 0);
-            $paidAtReg = (float) ($user->converted_usdt_amount ?? 0);
-            $registrationPartial = max(0.0, $paidAtReg - $regFee);
+            $savingFee   = (float) ($user->saving_initial_fee ?? 0);
+            $savingPaid  = (float) ($user->saving_initial_payment ?? 0);
+            $registrationPartial = max(0.0, $savingPaid - $savingFee);
         }
 
         $totalCredit = $amount + $registrationPartial;
@@ -233,19 +263,12 @@ class SavingAccountService
         $user->increment('saving_total_deposited', $totalCredit);
         $user->increment('roi_eligible_investment_amount', $totalCredit);
 
-        // Mark registration complete + enable login when instalment #1 is deposited
-        if ($instalment->instalment_number === 1) {
-            $updates = [];
-            if (!$user->saving_registration_completed) {
-                $updates['saving_registration_completed'] = true;
-            }
-            if (!$user->can_login) {
-                $updates['can_login'] = true;
-            }
-            if ($updates) {
-                $user->update($updates);
-                $user->refresh();
-            }
+        // Mark registration complete when instalment #1 is deposited.
+        // NOTE: can_login is intentionally NOT set here — that is admin's job via
+        // adminActivate(). Commissions and ROI should only fire after admin approval.
+        if ($instalment->instalment_number === 1 && !$user->saving_registration_completed) {
+            $user->update(['saving_registration_completed' => true]);
+            $user->refresh();
         }
 
         $instalment->update(['deposited_at' => now()]);
@@ -264,7 +287,13 @@ class SavingAccountService
 
         // Commission fires ONLY on instalment #1, on the FULL deposit total
         // (submitted amount + any partial paid at registration), guarded against double-fire.
-        if ($instalment->instalment_number === 1 && $user->can_login && $user->saving_registration_completed) {
+        // For enrolled standard users, also require saving_enrollment_activated.
+        $isEligibleForCommission = $user->saving_registration_completed && (
+            ($user->account_type === 'saving' && $user->can_login) ||
+            ($user->saving_enrolled && $user->saving_enrollment_activated)
+        );
+
+        if ($instalment->instalment_number === 1 && $isEligibleForCommission) {
             $alreadyFired = DB::table('wallets')
                 ->where('user_id', $user->id)
                 ->where('wallet_type', 'direct_indirect')
@@ -325,6 +354,14 @@ class SavingAccountService
                 continue;
             }
 
+            // 7x7 rule: ancestor must have at least N direct referrals in the saving tree
+            // to receive commission at level N.
+            // Example: need 1 direct for level 1, 2 directs for level 2, etc.
+            if (!$this->qualifiesForSavingLevel($ancestorUser, $ancestor->level)) {
+                Log::info("Saving commission skipped: user {$ancestorUser->id} has insufficient saving directs for level {$ancestor->level}");
+                continue;
+            }
+
             $fieldName  = "saving_commission_l{$ancestor->level}";
             $percentage = $setting && isset($setting->$fieldName)
                 ? (float) $setting->$fieldName
@@ -346,6 +383,27 @@ class SavingAccountService
                 sourceType: 'saving_instalment'
             );
         }
+    }
+
+    /**
+     * 7x7 check for saving commissions.
+     * Returns true if the user has enough direct saving referrals to unlock commission at $level.
+     * Direct saving referrals = level-1 entries in referral_trees where tree_type = 'saving'.
+     */
+    private function qualifiesForSavingLevel(User $user, int $level): bool
+    {
+        $required = self::SAVING_TEAM_REQUIREMENTS[$level] ?? 0;
+        if ($required <= 0) {
+            return false;
+        }
+
+        $directSavingReferrals = DB::table('referral_trees')
+            ->where('ancestor_id', $user->id)
+            ->where('level', 1)
+            ->where('tree_type', 'saving')
+            ->count();
+
+        return $directSavingReferrals >= $required;
     }
 
     // -------------------------------------------------------------------------
@@ -418,12 +476,17 @@ class SavingAccountService
      */
     public function canReceiveSavingRoi(User $user): bool
     {
-        if ($user->account_type !== 'saving') {
-            return false;
-        }
-
-        // Must be activated by admin
-        if (!$user->can_login) {
+        // Dedicated saving account users: gated by can_login
+        if ($user->account_type === 'saving') {
+            if (!$user->can_login) {
+                return false;
+            }
+        } elseif ($user->saving_enrolled) {
+            // Enrolled standard users: gated by saving_enrollment_activated
+            if (!$user->saving_enrollment_activated) {
+                return false;
+            }
+        } else {
             return false;
         }
 

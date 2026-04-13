@@ -114,14 +114,29 @@ class ProcessAutomatedROI extends Command
         $progressBar->finish();
         $this->newLine();
 
-        // Process saving account ROI separately
+        // Process saving account ROI separately — includes both dedicated saving users
+        // (account_type = 'saving', gated by can_login) AND enrolled standard users
+        // (saving_enrolled = true, gated by saving_enrollment_activated).
+        // Auto-enrolled sponsors (saving_initial_payment = 0) are excluded.
         $this->info('Processing saving account ROI...');
-        $savingUsers = User::where('account_type', 'saving')
-            ->where('can_login', true)
+        $savingUsers = User::where(function ($q) {
+                $q->where('account_type', 'saving')
+                  ->orWhere(function ($q2) {
+                      $q2->where('saving_enrolled', true)
+                         ->where('saving_initial_payment', '>', 0);
+                  });
+            })
             ->where('saving_registration_completed', true)
             ->where('blocked', false)
             ->where('freez_wallet', false)
             ->where('saving_total_deposited', '>', 0)
+            ->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->where('account_type', 'saving')->where('can_login', true);
+                })->orWhere(function ($q2) {
+                    $q2->where('saving_enrolled', true)->where('saving_enrollment_activated', true);
+                });
+            })
             ->get();
 
         foreach ($savingUsers as $savingUser) {

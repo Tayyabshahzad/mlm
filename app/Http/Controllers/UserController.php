@@ -361,7 +361,11 @@ class UserController extends Controller
                 'username'                => $user->username,
                 'created_at'              => $user->created_at->format('Y-m-d H:i:s'),
                 'status'                  => $user->can_login ? 'Active' : 'Inactive',
-                'amount_proof'            => $user->getFirstMediaUrl('user_amount_source'),
+                // For enrolled standard users the saving proof is in 'saving_enrollment_proof';
+                // user_amount_source belongs to their standard plan and must not be shown here.
+                'amount_proof' => ($user->saving_enrolled && $user->account_type !== 'saving')
+                    ? $user->getFirstMediaUrl('saving_enrollment_proof')
+                    : $user->getFirstMediaUrl('user_amount_source'),
                 'transaction_id'          => $user->transaction_id,
                 'payment_method'          => $user->payment_method,
                 'transferred_amount'      => $user->transferred_amount,
@@ -370,6 +374,7 @@ class UserController extends Controller
                 'net_invested_usdt_amount'=> $user->net_invested_usdt_amount,
                 'usdt_rate'               => $user->usdt_rate,
                 'account_type'            => $user->account_type,
+                'saving_enrolled'         => (bool) $user->saving_enrolled,
                 'referBy' => [
                     'username' => ucfirst($user->parent->username ?? '—'),
                     'id'       => $user->parent->id ?? null,
@@ -380,13 +385,48 @@ class UserController extends Controller
                 ],
             ];
 
-            if ($user->account_type === 'saving') {
+            if ($user->account_type === 'saving' || $user->saving_enrolled) {
                 $data['saving_registration_completed'] = $user->saving_registration_completed;
                 $data['saving_plan_start_date']        = $user->saving_plan_start_date;
                 $data['saving_total_deposited']        = $user->saving_total_deposited;
-                $data['registration_status']           = $user->saving_registration_completed
-                    ? 'Full Payment ($24)'
-                    : 'Fee Only ($5) — Deposit Pending';
+                // Saving-specific payment fields — correct for both pure saving users AND enrolled users.
+                // (Do NOT use converted_usdt_amount / fee_deducted for enrolled users — those belong
+                //  to their standard investment, not their saving enrollment payment.)
+                $data['saving_initial_payment'] = $user->saving_initial_payment;
+                $data['saving_initial_fee']     = $user->saving_initial_fee;
+
+                // Saving Plan sponsor: level-1 ancestor in the SAVING referral tree only.
+                // No fallback to the standard-plan parent — they are different trees.
+                $savingSponsor = $user->savingSponsor()->first();
+                $data['saving_sponsor'] = $savingSponsor
+                    ? ['username' => $savingSponsor->username, 'id' => $savingSponsor->id]
+                    : ['username' => '—', 'id' => null];
+
+                // Instalment #1 — carries the payment submitted at signup (full or partial).
+                $inst1 = $user->savingInstalments()->where('instalment_number', 1)->first();
+                $data['signup_instalment'] = $inst1 ? [
+                    'amount'          => number_format((float) $inst1->amount, 2),
+                    'submitted_amount'=> $inst1->submitted_amount
+                                            ? number_format((float) $inst1->submitted_amount, 2)
+                                            : null,
+                    'transaction_id'  => $inst1->transaction_id,
+                    'status'          => $inst1->status,
+                    'due_date'        => $inst1->due_date->format('d M Y'),
+                    'submitted_at'    => $inst1->submitted_at?->format('d M Y H:i'),
+                    'proof_url'       => $inst1->proofScreenshot(),
+                ] : null;
+
+                // For pure saving accounts the saving transaction IS on the user record.
+                // For enrolled users the enrollment transaction is on instalment #1 (set at enrollment).
+                $data['saving_transaction_id']  = $user->account_type === 'saving'
+                    ? $user->transaction_id
+                    : ($inst1?->transaction_id ?? null);
+                $data['saving_payment_method']  = $user->account_type === 'saving'
+                    ? $user->payment_method
+                    : null;
+                $data['saving_transferred_amount'] = $user->account_type === 'saving'
+                    ? $user->transferred_amount
+                    : null;
             }
 
             return response()->json(['success' => true, 'data' => $data]);
@@ -678,17 +718,31 @@ class UserController extends Controller
 
         $baseQuery = function ($accountType) use ($request, $search) {
             $eagerLoads = $accountType === 'saving'
-                ? ['team', 'activationCode', 'savingInstalments', 'parent']
+                ? ['team', 'activationCode', 'savingInstalments', 'parent', 'savingSponsor']
                 : ['team', 'activationCode'];
 
-            return User::with($eagerLoads)
-                ->where('id', '!=', auth()->user()->id)
-                ->where('account_type', $accountType)
-                ->when($search, function ($query, $search) {
-                    $query->where(function ($query) use ($search) {
-                        $query->where('username', 'like', "%{$search}%")
-                              ->orWhere('name', 'like', "%{$search}%")
-                              ->orWhere('email', 'like', "%{$search}%");
+            $query = User::with($eagerLoads)
+                ->where('id', '!=', auth()->user()->id);
+
+            if ($accountType === 'saving') {
+                // Only actual saving plan participants — exclude auto-enrolled sponsors
+                // (who have saving_enrolled = true but saving_initial_payment = 0)
+                $query->where(function ($q) {
+                    $q->where('account_type', 'saving')
+                      ->orWhere(function ($q2) {
+                          $q2->where('saving_enrolled', true)
+                             ->where('saving_initial_payment', '>', 0);
+                      });
+                });
+            } else {
+                $query->where('account_type', $accountType);
+            }
+
+            return $query->when($search, function ($q, $search) {
+                    $q->where(function ($q) use ($search) {
+                        $q->where('username', 'like', "%{$search}%")
+                          ->orWhere('name', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
                     });
                 })
                 ->orderBy('can_login', 'asc')
@@ -705,11 +759,13 @@ class UserController extends Controller
         $totalBlockedMembers = User::where('account_type', 'standard_investment')->where('blocked', true)->count();
         $totalfreezeMembers  = User::where('account_type', 'standard_investment')->where('freez_wallet', true)->count();
 
-        // Stats for saving users
-        $totalSavingMembers       = User::where('account_type', 'saving')->count();
-        $totalActiveSaving        = User::where('account_type', 'saving')->where('can_login', true)->count();
-        $totalInactiveSaving      = User::where('account_type', 'saving')->where('can_login', false)->count();
-        $totalActivatedSaving     = User::where('account_type', 'saving')->where('saving_registration_completed', true)->count();
+        // Stats for saving program members — exclude auto-enrolled sponsors (saving_initial_payment = 0)
+        $savingScope = fn($q) => $q->where('account_type', 'saving')
+            ->orWhere(fn($q2) => $q2->where('saving_enrolled', true)->where('saving_initial_payment', '>', 0));
+        $totalSavingMembers   = User::where($savingScope)->count();
+        $totalActiveSaving    = User::where($savingScope)->where(fn($q) => $q->where('can_login', true)->orWhere('saving_enrollment_activated', true))->count();
+        $totalInactiveSaving  = User::where($savingScope)->where('saving_enrollment_activated', false)->where('can_login', false)->count();
+        $totalActivatedSaving = User::where($savingScope)->where('saving_registration_completed', true)->count();
 
         return view('users.index', compact(
             'teamMembers', 'savingMembers', 'search', 'tab',

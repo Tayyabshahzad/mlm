@@ -44,8 +44,11 @@ class ProcessSavingROI extends Command
             return Command::FAILURE;
         }
 
-        if ($user->account_type !== 'saving') {
-            $this->error("User {$user->username} is not a saving account user.");
+        $isSavingParticipant = $user->account_type === 'saving'
+            || ($user->saving_enrolled && $user->saving_initial_payment > 0);
+
+        if (!$isSavingParticipant) {
+            $this->error("User {$user->username} is not a saving plan participant.");
             return Command::FAILURE;
         }
 
@@ -65,12 +68,28 @@ class ProcessSavingROI extends Command
 
     private function processAll(bool $dryRun): int
     {
-        $users = User::where('account_type', 'saving')
-            ->where('can_login', true)
+        // Include both dedicated saving account users AND enrolled standard users
+        // who actually signed up (saving_initial_payment > 0).
+        // Auto-enrolled sponsors (saving_initial_payment = 0) are excluded.
+        $users = User::where(function ($q) {
+                $q->where('account_type', 'saving')
+                  ->orWhere(function ($q2) {
+                      $q2->where('saving_enrolled', true)
+                         ->where('saving_initial_payment', '>', 0);
+                  });
+            })
             ->where('saving_registration_completed', true)
             ->where('blocked', false)
             ->where('freez_wallet', false)
             ->where('saving_total_deposited', '>', 0)
+            ->where(function ($q) {
+                // Dedicated saving users need can_login; enrolled users need saving_enrollment_activated
+                $q->where(function ($q2) {
+                    $q2->where('account_type', 'saving')->where('can_login', true);
+                })->orWhere(function ($q2) {
+                    $q2->where('saving_enrolled', true)->where('saving_enrollment_activated', true);
+                });
+            })
             ->get();
 
         $this->info("Found {$users->count()} eligible saving account users.");

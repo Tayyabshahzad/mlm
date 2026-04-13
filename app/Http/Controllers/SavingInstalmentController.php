@@ -28,21 +28,30 @@ class SavingInstalmentController extends Controller
     public function userIndex()
     {
         $user    = Auth::user();
+
+        $hasInstalments = $user->savingInstalments()->exists();
+        abort_unless($user->account_type === 'saving' || ($user->saving_enrolled && $user->saving_enrollment_activated && $hasInstalments), 403);
+
         $summary = $this->savingAccountService->getInstalmentSummary($user);
         $setting = Setting::first();
 
-        // Registration payment breakdown
-        $regFee        = (float) ($setting->saving_registration_fee ?? 5);
-        $minDeposit    = (float) ($setting->saving_min_deposit ?? 19);
-        $fullTotal     = $regFee + $minDeposit;
-        $paidAtReg     = (float) ($user->converted_usdt_amount ?? 0);
-        $partialDeposit = max(0, $paidAtReg - $regFee); // amount paid toward instalment #1 at registration
+        $regFee     = (float) ($setting->saving_registration_fee ?? 5);
+        $minDeposit = (float) ($setting->saving_min_deposit ?? 19);
+        $fullTotal  = $regFee + $minDeposit;
+
+        // Use saving_initial_payment / saving_initial_fee for both dedicated saving users
+        // and enrolled standard users. converted_usdt_amount belongs to the standard plan
+        // and must NOT be used here.
+        $paidAtReg      = (float) ($user->saving_initial_payment ?? 0);
+        $savingFeeAtReg = (float) ($user->saving_initial_fee ?? $regFee);
+
+        $partialDeposit = max(0, $paidAtReg - $savingFeeAtReg);
         $inst1Remaining = max(0, $minDeposit - $partialDeposit);
 
         return view('saving.instalments', array_merge($summary, [
             'setting'        => $setting,
             'paidAtReg'      => $paidAtReg,
-            'regFee'         => $regFee,
+            'regFee'         => $savingFeeAtReg,
             'partialDeposit' => $partialDeposit,
             'inst1Remaining' => $inst1Remaining,
             'fullTotal'      => $fullTotal,
@@ -56,8 +65,8 @@ class SavingInstalmentController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->account_type !== 'saving') {
-            return back()->with('error', 'This action is only available for Saving accounts.');
+        if ($user->account_type !== 'saving' && !($user->saving_enrolled && $user->saving_enrollment_activated && $user->savingInstalments()->exists())) {
+            return back()->with('error', 'This action is only available for Savings Program members.');
         }
 
         $request->validate([
@@ -108,8 +117,18 @@ class SavingInstalmentController extends Controller
 
     public function adminIndex(Request $request)
     {
-        $query = User::where('account_type', 'saving')
-            ->with(['savingInstalments'])
+        // Only actual saving plan participants:
+        // — dedicated saving account users (account_type = 'saving')
+        // — enrolled standard users who actually signed up (saving_initial_payment > 0)
+        // Auto-enrolled sponsors (saving_enrolled = true but never paid) are excluded.
+        $query = User::where(function ($q) {
+                $q->where('account_type', 'saving')
+                  ->orWhere(function ($q2) {
+                      $q2->where('saving_enrolled', true)
+                         ->where('saving_initial_payment', '>', 0);
+                  });
+            })
+            ->with(['savingInstalments', 'savingSponsor'])
             ->orderBy('created_at', 'desc');
 
         if ($search = $request->get('search')) {
@@ -132,9 +151,12 @@ class SavingInstalmentController extends Controller
         $users   = $query->paginate(20)->withQueryString();
         $setting = Setting::first();
 
-        // Counts for summary cards
-        $totalSaving      = User::where('account_type', 'saving')->count();
-        $registrationDone = User::where('account_type', 'saving')->where('saving_registration_completed', true)->count();
+        // Counts for summary cards — same scope as the main query (exclude auto-enrolled sponsors)
+        $savingParticipant = fn($q) => $q->where('account_type', 'saving')
+            ->orWhere(fn($q2) => $q2->where('saving_enrolled', true)->where('saving_initial_payment', '>', 0));
+
+        $totalSaving        = User::where($savingParticipant)->count();
+        $registrationDone   = User::where($savingParticipant)->where('saving_registration_completed', true)->count();
         $pendingSubmissions = SavingInstalment::where('status', 'submitted')->count();
 
         return view('admin.saving.index', compact(
@@ -147,7 +169,8 @@ class SavingInstalmentController extends Controller
      */
     public function adminShow(User $user)
     {
-        abort_unless($user->account_type === 'saving', 404);
+        // Allow dedicated saving users AND enrolled standard users
+        abort_unless($user->account_type === 'saving' || $user->saving_enrolled, 404);
 
         $summary = $this->savingAccountService->getInstalmentSummary($user);
         $setting = Setting::first();
@@ -277,6 +300,7 @@ class SavingInstalmentController extends Controller
                     'level'         => 1,
                     'tree_type'     => 'saving',
                 ]);
+
                 $ancestors = DB::table('referral_trees')
                     ->where('descendant_id', $parentId)
                     ->where('tree_type', 'saving')
@@ -340,29 +364,137 @@ class SavingInstalmentController extends Controller
 
     public function adminActivate(User $user): RedirectResponse
     {
-        abort_unless($user->account_type === 'saving', 404);
+        abort_unless($user->account_type === 'saving' || $user->saving_enrolled, 404);
 
-        $user->update([
-            'saving_registration_completed' => true,
-            'can_login'                     => true,
-        ]);
+        if ($user->account_type === 'saving') {
+            // Dedicated saving account user — enable login
+            $user->update([
+                'saving_registration_completed' => true,
+                'can_login'                     => true,
+            ]);
+        } else {
+            // Enrolled standard user — activate the saving program membership only
+            // (their existing can_login is untouched)
+            $user->update([
+                'saving_registration_completed'  => true,
+                'saving_enrollment_activated'    => true,
+                'saving_enrollment_activated_at' => now(),
+                'saving_enrollment_activated_by' => Auth::id(),
+            ]);
+        }
 
-        // Fire commissions only if instalment #1 is deposited AND not already fired
+        // Auto-enroll the sponsor so they can see their saving team / wallets
+        $sponsor = $user->savingSponsor()->first() ?? $user->parent;
+        if ($sponsor) {
+            $this->savingAccountService->autoEnrollSponsor($sponsor);
+        }
+
+        // Check whether inst #1 has been fully deposited (confirmed + deposited_at set)
         $inst1Deposited = $user->savingInstalments()
             ->where('instalment_number', 1)
             ->whereNotNull('deposited_at')
             ->exists();
+
+        // Only fire commissions if inst #1 is fully deposited — never on a partial/pending payment
+        if ($inst1Deposited && $user->saving_total_deposited > 0) {
+            $alreadyFired = \App\Models\Wallet::where('user_id', $user->id)
+                ->where('wallet_type', 'direct_indirect')
+                ->where('source_type', 'saving_instalment')
+                ->exists();
+
+            if (!$alreadyFired) {
+                $this->savingAccountService->assignSavingCommissions($user, $user->saving_total_deposited);
+            }
+        }
+
+        // Build a success message that accurately reflects what was enabled
+        if ($inst1Deposited) {
+            $message = "'{$user->name}' activated — login enabled and ROI/commissions are now running.";
+        } else {
+            $setting    = Setting::first();
+            $inst1Amount = $setting->saving_min_deposit ?? 19;
+            $message = "'{$user->name}' activated — login access granted. ROI and commissions will start automatically once the first instalment (\${$inst1Amount}) is confirmed.";
+        }
+
+        return back()->with('success', $message);
+    }
+
+    // =========================================================================
+    // ADMIN — list enrolled standard users pending saving activation
+    // =========================================================================
+
+    public function adminEnrollments(Request $request)
+    {
+        $query = User::where('saving_enrolled', true)
+            ->where('account_type', '!=', 'saving') // exclude dedicated saving account users
+            ->with(['savingInstalments' => fn($q) => $q->orderBy('instalment_number'), 'savingSponsor']);
+
+        if ($request->search) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
+                  ->orWhere('username', 'like', "%{$s}%")
+                  ->orWhere('email', 'like', "%{$s}%");
+            });
+        }
+
+        if ($request->status === 'activated') {
+            $query->where('saving_enrollment_activated', true);
+        } elseif ($request->status === 'pending') {
+            $query->where('saving_enrollment_activated', false);
+        }
+
+        $users              = $query->latest()->paginate(20)->withQueryString();
+        $totalEnrolled      = User::where('saving_enrolled', true)->where('account_type', '!=', 'saving')->count();
+        $totalActivated     = User::where('saving_enrolled', true)->where('account_type', '!=', 'saving')->where('saving_enrollment_activated', true)->count();
+        $pendingActivation  = $totalEnrolled - $totalActivated;
+
+        return view('admin.saving.enrollments', compact(
+            'users', 'totalEnrolled', 'totalActivated', 'pendingActivation'
+        ));
+    }
+
+    /**
+     * Admin activates a saving program enrollment for an existing standard user.
+     * After activation: daily ROI and saving commissions become eligible.
+     */
+    public function activateEnrollment(User $user): RedirectResponse
+    {
+        abort_unless($user->saving_enrolled && $user->account_type !== 'saving', 404);
+
+        if ($user->saving_enrollment_activated) {
+            return back()->with('info', "'{$user->name}' is already activated.");
+        }
+
+        $user->update([
+            'saving_enrollment_activated'    => true,
+            'saving_enrollment_activated_at' => now(),
+            'saving_enrollment_activated_by' => Auth::id(),
+            'saving_registration_completed'  => true,
+        ]);
+
+        // Auto-enroll the sponsor so they can see their saving team, commissions and ROI
+        $sponsor = $user->savingSponsor()->first() ?? $user->parent;
+        if ($sponsor) {
+            $this->savingAccountService->autoEnrollSponsor($sponsor);
+        }
+
+        // Fire commissions if instalment #1 has been deposited and commissions not already sent
+        $inst1 = $user->savingInstalments()
+            ->where('instalment_number', 1)
+            ->whereNotNull('deposited_at')
+            ->first();
 
         $alreadyFired = \App\Models\Wallet::where('user_id', $user->id)
             ->where('wallet_type', 'direct_indirect')
             ->where('source_type', 'saving_instalment')
             ->exists();
 
-        if ($inst1Deposited && !$alreadyFired) {
+        if ($inst1 && !$alreadyFired && $user->saving_total_deposited > 0) {
             $this->savingAccountService->assignSavingCommissions($user, $user->saving_total_deposited);
         }
 
-        return back()->with('success', "'{$user->name}' has been activated. They can now log in and earn commissions.");
+        return back()->with('success', "'{$user->name}' Savings Program enrollment activated. ROI and commissions are now enabled.");
     }
 
     // =========================================================================
