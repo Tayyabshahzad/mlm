@@ -333,8 +333,10 @@ class FrontEndController extends Controller
         }
 
         // ── Saving Program wallet totals (for saving_enrolled standard users) ──
+        // Only fetch if the account is fully activated by admin (saving_enrollment_activated).
+        // Enrolled-but-not-yet-activated users get no saving data — no DB queries fired.
         $savingData = [];
-        if ($user->saving_enrolled) {
+        if ($user->saving_enrolled && $user->saving_enrollment_activated) {
             $savingService = app(\App\Services\SavingAccountService::class);
             $savingData = [
                 'saving_enrolled'        => true,
@@ -349,34 +351,43 @@ class FrontEndController extends Controller
                                                 ->sum('indirect_balance'),
                 'saving_roi'             => $wallets->where('wallet_type', 'saving_roi')->sum('balance'),
                 'instalment_summary'     => $savingService->getInstalmentSummary($user),
-                'saving_plan_activated'  => $user->saving_registration_completed,
+                'saving_plan_activated'  => true,
             ];
         }
 
         // ── Admin-only: aggregated saving plan stats across all users ──────────
         $adminSavingStats = [];
         if ($user->hasRole('admin') || $user->hasRole('super-admin')) {
-            $adminSavingStats = [
-                'admin_saving_total_invested'        => \App\Models\User::where(function ($q) {
-                    $q->where('account_type', 'saving')
-                      ->orWhere('saving_enrolled', true);
-                })->sum('saving_total_deposited'),
+            // Only include activated saving accounts in all card totals:
+            // - saving account type users: activated when admin sets can_login = true
+            // - enrolled standard users: activated when saving_enrollment_activated = true
+            $activatedSavingUserIds = \App\Models\User::where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->where('account_type', 'saving')->where('can_login', true);
+                })->orWhere(function ($q2) {
+                    $q2->where('saving_enrolled', true)->where('saving_enrollment_activated', true);
+                });
+            })->pluck('id');
 
-                'admin_saving_total_roi'             => \App\Models\Wallet::where('wallet_type', 'saving_roi')
+            $adminSavingStats = [
+                'admin_saving_total_invested'        => \App\Models\User::whereIn('id', $activatedSavingUserIds)
+                                                            ->sum('saving_total_deposited'),
+
+                'admin_saving_total_roi'             => \App\Models\Wallet::whereIn('user_id', $activatedSavingUserIds)
+                                                            ->where('wallet_type', 'saving_roi')
                                                             ->sum('balance'),
 
-                'admin_saving_total_direct'          => \App\Models\Wallet::where('wallet_type', 'direct_indirect')
+                'admin_saving_total_direct'          => \App\Models\Wallet::whereIn('user_id', $activatedSavingUserIds)
+                                                            ->where('wallet_type', 'direct_indirect')
                                                             ->where('source_type', 'saving_instalment')
                                                             ->sum('direct_balance'),
 
-                'admin_saving_total_indirect'        => \App\Models\Wallet::where('wallet_type', 'direct_indirect')
+                'admin_saving_total_indirect'        => \App\Models\Wallet::whereIn('user_id', $activatedSavingUserIds)
+                                                            ->where('wallet_type', 'direct_indirect')
                                                             ->where('source_type', 'saving_instalment')
                                                             ->sum('indirect_balance'),
 
-                'admin_saving_total_users'           => \App\Models\User::where(function ($q) {
-                    $q->where('account_type', 'saving')
-                      ->orWhere('saving_enrolled', true);
-                })->where('saving_registration_completed', true)->count(),
+                'admin_saving_total_users'           => $activatedSavingUserIds->count(),
             ];
         }
 
@@ -406,54 +417,65 @@ class FrontEndController extends Controller
     // ── Saving account dashboard ──────────────────────────────────────────
     private function savingDashboard(User $user, AccountManagementService $accountService)
     {
-        // Referral counts within the SAVING tree only
-        $referralCounts = DB::table('referral_trees')
-            ->select('referral_trees.level', DB::raw('COUNT(referral_trees.descendant_id) as count'))
-            ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
-            ->where('referral_trees.ancestor_id', $user->id)
-            ->where('referral_trees.tree_type', 'saving')
-            ->where('users.can_login', true)
-            ->where('referral_trees.level', '<=', 7)
-            ->groupBy('referral_trees.level')
-            ->orderBy('referral_trees.level')
-            ->get();
+        $isActivated = (bool) $user->can_login;
 
-        $levels     = range(1, 7);
-        $levelCounts = collect($levels)->mapWithKeys(function ($level) use ($referralCounts) {
-            return [$level => $referralCounts->firstWhere('level', $level)->count ?? 0];
-        });
+        // ── Only fetch saving details when admin has activated the account ──
+        // Before activation: no DB queries fired for saving data at all.
+        if ($isActivated) {
+            $savingService     = app(\App\Services\SavingAccountService::class);
+            $instalmentSummary = $savingService->getInstalmentSummary($user);
+            $referralCounts = DB::table('referral_trees')
+                ->select('referral_trees.level', DB::raw('COUNT(referral_trees.descendant_id) as count'))
+                ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
+                ->where('referral_trees.ancestor_id', $user->id)
+                ->where('referral_trees.tree_type', 'saving')
+                ->where('users.can_login', true)
+                ->where('referral_trees.level', '<=', 7)
+                ->groupBy('referral_trees.level')
+                ->orderBy('referral_trees.level')
+                ->get();
 
-        $wallets     = Wallet::where('user_id', $user->id)->get();
-        $totalEarning = $wallets->sum('total_amount');
+            $levels      = range(1, 7);
+            $levelCounts = collect($levels)->mapWithKeys(function ($level) use ($referralCounts) {
+                return [$level => $referralCounts->firstWhere('level', $level)->count ?? 0];
+            });
 
-        // Instalment summary
-        $savingService  = app(\App\Services\SavingAccountService::class);
-        $instalmentSummary = $savingService->getInstalmentSummary($user);
+            $wallets        = Wallet::where('user_id', $user->id)->get();
+            $totalEarning   = $wallets->sum('total_amount');
+            $savingBalance  = $wallets->where('wallet_type', 'saving')->sum('balance');
+            $savingRoi      = $wallets->where('wallet_type', 'saving_roi')->sum('balance');
+            $roiStats       = $accountService->getRoiAccountStats($user);
 
-        $savingBalance  = $wallets->where('wallet_type', 'saving')->sum('balance');
-        $roiStats       = $accountService->getRoiAccountStats($user);
-
-        $savingDirect   = \App\Models\Wallet::where('user_id', $user->id)
-                            ->where('wallet_type', 'direct_indirect')
-                            ->where('source_type', 'saving_instalment')
-                            ->sum('direct_balance');
-        $savingIndirect = \App\Models\Wallet::where('user_id', $user->id)
-                            ->where('wallet_type', 'direct_indirect')
-                            ->where('source_type', 'saving_instalment')
-                            ->sum('indirect_balance');
-        $savingRoi      = $wallets->where('wallet_type', 'saving_roi')->sum('balance');
+            $savingDirect   = Wallet::where('user_id', $user->id)
+                                ->where('wallet_type', 'direct_indirect')
+                                ->where('source_type', 'saving_instalment')
+                                ->sum('direct_balance');
+            $savingIndirect = Wallet::where('user_id', $user->id)
+                                ->where('wallet_type', 'direct_indirect')
+                                ->where('source_type', 'saving_instalment')
+                                ->sum('indirect_balance');
+        } else {
+            $instalmentSummary = [];
+            $levelCounts       = collect(range(1, 7))->mapWithKeys(fn($l) => [$l => 0]);
+            $totalEarning      = 0;
+            $savingBalance     = 0;
+            $savingRoi         = 0;
+            $savingDirect      = 0;
+            $savingIndirect    = 0;
+            $roiStats          = $accountService->getRoiAccountStats($user);
+        }
 
         $data = [
             'account_type'          => 'saving',
             // Map saving_wallet → online_wallet so the blade template works without changes
             'online_wallet'         => $savingBalance,
             'saving_wallet'         => $savingBalance,
-            'direct_indirect'       => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
+            'direct_indirect'       => $savingDirect + $savingIndirect,
             'roi'                   => $savingRoi,
             'total_earning'         => $totalEarning,
             'levelCount'            => $levelCounts,
             'totalTeam'             => $levelCounts->sum(),
-            'initial_investment'    => $user->saving_total_deposited,
+            'initial_investment'    => $isActivated ? $user->saving_total_deposited : 0,
             'user_plan'             => 'saving',
             'rewardWallet'          => 0,
             'profit_share'          => 0,

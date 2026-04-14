@@ -1165,7 +1165,7 @@
             {{-- Saving Investment --}}
             <div class="w-card" style="background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);border:1px solid rgba(16,185,129,.25);">
                 <div class="w-card-top">
-                    <div class="w-icon" style="background:rgba(16,185,129,.15);color:#10b981;"><i class="fas fa-piggy-bank"></i></div>
+                    <div class="w-icon" style="background:rgba(16,185,129,.15);color:#10b981;"><i class="fas fa-wallet"></i></div>
                     <i class="fas fa-chevron-right w-arrow"></i>
                 </div>
                 <div class="w-label" style="color:#6ee7b7;">Saving Investment</div>

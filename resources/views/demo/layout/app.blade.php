@@ -228,7 +228,7 @@
                                     <span class="menu-text">Dashboard</span>
                                 </a>
                             </li>
-                            @if(auth()->user()->account_type === 'saving' || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated && auth()->user()->savingInstalments()->exists()))
+                            @if((auth()->user()->account_type === 'saving' && auth()->user()->can_login) || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated && auth()->user()->savingInstalments()->exists()))
                             <li class="menu-item @if(request()->is('saving/instalments*')) menu-item-active @endif" aria-haspopup="true">
                                 <a href="{{ route('saving.user.instalments') }}" class="menu-link">
                                     <span class="svg-icon menu-icon">
@@ -298,7 +298,7 @@
 
                                             </a>
                                         </li>
-                                        @if(auth()->user()->account_type === 'saving' || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
+                                        @if((auth()->user()->account_type === 'saving' && auth()->user()->can_login) || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
                                         <li class="menu-item menu-item-submenu @if(request()->is('genealogy/my-saving-tree*')) menu-item-active @endif" aria-haspopup="true"
                                             data-menu-toggle="hover">
                                             <a href="{{ route('genealogy.my.saving.tree') }}" class="menu-link menu-toggle">
@@ -470,7 +470,7 @@
                                     <ul class="menu-subnav">
 
                                         @php($savingRootId = \App\Models\Setting::first()?->saving_parent_user_id)
-                                        @if(auth()->user()->account_type === 'saving')
+                                        @if(auth()->user()->account_type === 'saving' && auth()->user()->can_login)
                                             {{-- Saving account users --}}
                                             <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
                                                 <a href="{{ route('wallets.saving.account') }}" class="menu-link">
@@ -759,7 +759,7 @@
                                                     <span class="menu-text">Saving Account Tree</span>
                                                 </a>
                                             </li>
-                                            @if(auth()->user()->account_type === 'saving' || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
+                                            @if((auth()->user()->account_type === 'saving' && auth()->user()->can_login) || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
                                             <li class="menu-item menu-item-submenu @if(request()->is('genealogy/my-saving-tree*')) menu-item-active @endif" aria-haspopup="true"
                                                 data-menu-toggle="hover">
                                                 <a href="{{ route('genealogy.my.saving.tree') }}" class="menu-link menu-toggle">
