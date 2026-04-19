@@ -721,8 +721,7 @@ class UserController extends Controller
                 ? ['team', 'activationCode', 'savingInstalments', 'parent', 'savingSponsor']
                 : ['team', 'activationCode'];
 
-            $query = User::with($eagerLoads)
-                ->where('id', '!=', auth()->user()->id);
+            $query = User::with($eagerLoads);
 
             if ($accountType === 'saving') {
                 // Only actual saving plan participants — exclude auto-enrolled sponsors
@@ -735,7 +734,8 @@ class UserController extends Controller
                       });
                 });
             } else {
-                $query->where('account_type', $accountType);
+                $query->where('account_type', $accountType)
+                      ->where('id', '!=', auth()->user()->id);
             }
 
             return $query->when($search, function ($q, $search) {

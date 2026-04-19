@@ -317,7 +317,6 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
                 'saving_total_deposited'         => 0.00,
                 'saving_initial_payment'         => 0.00,
                 'saving_initial_fee'             => 0.00,
-                'can_login'                      => 0,
             ]);
 
             // 5b. Reset saving-enrolled standard users
