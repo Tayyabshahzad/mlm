@@ -98,7 +98,9 @@ class WalletController extends Controller
     }
 
     public function directIndirect(){
-        $walletQuery = Wallet::where('wallet_type','direct_indirect')->where('user_id',auth()->user()->id);
+        $walletQuery = Wallet::where('wallet_type','direct_indirect')
+            ->where('user_id', auth()->user()->id)
+            ->where(fn($q) => $q->whereNull('source_type')->orWhere('source_type', '!=', 'saving_instalment'));
         $totalEarning   = $walletQuery->sum('total_amount');
         $currentBalance = $walletQuery->sum('balance');
         $wallets = $walletQuery->orderBy('id', 'desc')

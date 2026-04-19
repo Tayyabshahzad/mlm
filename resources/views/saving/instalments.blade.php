@@ -138,17 +138,18 @@
                 </div>
             </div>
 
-            {{-- Upcoming instalment notice (not due yet) --}}
+            {{-- Early payment notice --}}
             @if($next_due && $next_due->status === 'pending' && $next_due->instalment_number > 1 && \Carbon\Carbon::today()->lt($next_due->due_date))
                 <div class="alert alert-info mb-6">
-                    <strong>Instalment #{{ $next_due->instalment_number }} is not due yet.</strong>
-                    You can submit it from <strong>{{ $next_due->due_date->format('d M Y') }}</strong>
-                    ({{ \Carbon\Carbon::today()->diffInDays($next_due->due_date) }} days away).
+                    <i class="fas fa-info-circle mr-1"></i>
+                    <strong>Early Payment:</strong> Instalment #{{ $next_due->instalment_number }} is scheduled for
+                    <strong>{{ $next_due->due_date->format('d M Y') }}</strong>.
+                    You can pay now — ROI for this instalment will begin from its scheduled date.
                 </div>
             @endif
 
-            {{-- Submit Next Instalment --}}
-            @if($next_due && $next_due->status === 'pending' && ($next_due->instalment_number === 1 || \Carbon\Carbon::today()->gte($next_due->due_date)))
+            {{-- Submit Next Instalment — shown for all pending instalments --}}
+            @if($next_due && $next_due->status === 'pending')
                 <div class="card card-custom gutter-b">
                     <div class="card-header border-0 py-5">
                         <h3 class="card-title font-weight-bolder text-dark">

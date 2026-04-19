@@ -133,9 +133,10 @@ class GenealogyController extends Controller
             'image'        => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
         ];
 
-        // All saving-tree descendants of this user
+        // All saving-tree descendants of this user (exclude self to prevent duplicate root node)
         $descendantIds = DB::table('referral_trees')
             ->where('ancestor_id', $user->id)
+            ->where('descendant_id', '!=', $user->id)
             ->where('tree_type', 'saving')
             ->pluck('descendant_id')
             ->unique();

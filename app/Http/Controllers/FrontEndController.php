@@ -296,7 +296,12 @@ class FrontEndController extends Controller
         $authUsers =  User::where('sponsor_id',$user->id)->where('can_login',true);
         $inactiveUsers = $authUsers->where('can_login',false)->count();
         $reward = $authUsers->with('descendants');
-        $totalEarning = Wallet::where('user_id', $user->id)->get()->sum('total_amount');
+        // Exclude saving principal (wallet_type='saving') and saving-specific commissions —
+        // those are shown separately in the Saving Plan section, not in standard earnings.
+        $totalEarning = $wallets
+            ->whereNotIn('wallet_type', ['saving', 'saving_roi'])
+            ->reject(fn($w) => $w->wallet_type === 'direct_indirect' && $w->source_type === 'saving_instalment')
+            ->sum('total_amount');
 
         $teamSizing = User::where('sponsor_id', $user->id)
         ->where('can_login',true)
@@ -393,7 +398,7 @@ class FrontEndController extends Controller
 
         $data = [
             'online_wallet'          => $wallets->where('wallet_type', 'online')->sum('balance'),
-            'direct_indirect'        => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
+            'direct_indirect'        => $wallets->where('wallet_type', 'direct_indirect')->reject(fn($w) => $w->source_type === 'saving_instalment')->sum('balance'),
             'rewardWallet'           => $wallets->where('wallet_type', 'reward')->sum('balance'),
             'roi'                    => $wallets->where('wallet_type', 'roi')->sum('balance'),
             'profit_share'           => $wallets->where('wallet_type', 'profit_share')->sum('balance'),

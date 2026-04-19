@@ -160,16 +160,23 @@ class SavingAccountService
         DB::transaction(function () use ($instalment, $adminId, $notes) {
             $user    = $instalment->user;
             $now     = Carbon::now();
-            $isLate  = $now->gt(Carbon::parse($instalment->due_date)->endOfDay());
+            $dueDate = Carbon::parse($instalment->due_date);
+            $isLate  = $now->gt($dueDate->copy()->endOfDay());
+            $isEarly = $now->lt($dueDate->copy()->startOfDay());
 
             // Determine next cycle date if late
             $nextCycleDate = null;
             $deferred      = false;
             if ($isLate) {
                 // Next cycle = same day-of-month next month
-                $nextCycleDate = Carbon::parse($instalment->due_date)->addMonth();
+                $nextCycleDate = $dueDate->copy()->addMonth();
                 $deferred      = true;
             }
+
+            // ROI base for this instalment starts:
+            //   - Early payment: from the originally scheduled due_date (not before)
+            //   - On-time / late: from today (confirmation date)
+            $roiEligibleFrom = $isEarly ? $dueDate->toDateString() : $now->toDateString();
 
             $instalment->update([
                 'status'           => 'confirmed',
@@ -178,6 +185,7 @@ class SavingAccountService
                 'is_late'          => $isLate,
                 'deposit_deferred' => $deferred,
                 'next_cycle_date'  => $nextCycleDate,
+                'roi_eligible_from'=> $roiEligibleFrom,
                 'notes'            => $notes,
             ]);
 
@@ -427,7 +435,16 @@ class SavingAccountService
 
         $setting    = Setting::first();
         $dailyRate  = (float) ($setting->saving_roi_daily_rate ?? 0.1); // default 0.1% daily
-        $base       = (float) $user->saving_total_deposited;
+
+        // ROI base = sum of confirmed instalments whose roi_eligible_from has arrived.
+        // Early-paid instalments only contribute once their scheduled due_date is reached.
+        // Fall back to saving_total_deposited for legacy rows without roi_eligible_from.
+        $eligibleBase = \App\Models\SavingInstalment::where('user_id', $user->id)
+            ->where('status', 'confirmed')
+            ->where(fn($q) => $q->whereNull('roi_eligible_from')->orWhereDate('roi_eligible_from', '<=', Carbon::today()))
+            ->sum('amount');
+
+        $base = $eligibleBase > 0 ? (float) $eligibleBase : (float) $user->saving_total_deposited;
 
         if ($base <= 0 || $dailyRate <= 0) {
             return ['success' => false, 'message' => 'No deposit base or rate'];

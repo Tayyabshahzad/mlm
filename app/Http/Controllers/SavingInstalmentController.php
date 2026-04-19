@@ -86,12 +86,9 @@ class SavingInstalmentController extends Controller
             return back()->with('error', 'You have already submitted proof for this instalment. Please wait for admin confirmation.');
         }
 
-        // Allow instalment #1 always (it may be overdue from registration partial payment).
-        // For instalment #2+, enforce the due date — user cannot submit early.
-        if ($instalment->instalment_number > 1 && \Carbon\Carbon::today()->lt($instalment->due_date)) {
-            $daysLeft = \Carbon\Carbon::today()->diffInDays($instalment->due_date);
-            return back()->with('error', "Instalment #{$instalment->instalment_number} is not due yet. You can submit it in {$daysLeft} day(s) (due: {$instalment->due_date->format('d M Y')}).");
-        }
+        // Early payment is allowed for any instalment.
+        // ROI for early-paid instalments will only start from their original due_date
+        // (handled by roi_eligible_from in confirmAndDeposit).
 
         DB::transaction(function () use ($request, $instalment) {
             $instalment->update([
