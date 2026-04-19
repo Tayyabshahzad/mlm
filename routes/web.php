@@ -285,7 +285,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     // ── One-time: reset saving plan and set admin_11 as root ──────────────
     Route::get('/admin/saving/reset-and-setup-root', function () {
         DB::transaction(function () {
-            $adminId = 1; // admin_11
+            $admin   = \App\Models\User::where('username', 'admin_11')->firstOrFail();
+            $adminId = $admin->id;
 
             // 1. Delete proof screenshots for all saving instalments
             $instalmentIds = \App\Models\SavingInstalment::pluck('id');
@@ -304,8 +305,23 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
             // 4. Remove the entire saving referral tree
             \DB::table('referral_trees')->where('tree_type', 'saving')->delete();
 
-            // 5. Reset saving fields on all enrolled users
-            \App\Models\User::where('saving_enrolled', 1)->update([
+            // 5a. Reset saving account type users (account_type = 'saving') back to standard
+            \App\Models\User::where('account_type', 'saving')->where('id', '!=', $adminId)->update([
+                'account_type'                   => 'standard_investment',
+                'saving_enrolled'                => 0,
+                'saving_enrollment_activated'    => 0,
+                'saving_enrollment_activated_at' => null,
+                'saving_enrollment_activated_by' => null,
+                'saving_registration_completed'  => 0,
+                'saving_plan_start_date'         => null,
+                'saving_total_deposited'         => 0.00,
+                'saving_initial_payment'         => 0.00,
+                'saving_initial_fee'             => 0.00,
+                'can_login'                      => 0,
+            ]);
+
+            // 5b. Reset saving-enrolled standard users
+            \App\Models\User::where('saving_enrolled', 1)->where('id', '!=', $adminId)->update([
                 'saving_enrolled'                => 0,
                 'saving_enrollment_activated'    => 0,
                 'saving_enrollment_activated_at' => null,

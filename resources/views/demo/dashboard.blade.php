@@ -1168,7 +1168,7 @@
                     <div class="w-icon" style="background:rgba(16,185,129,.15);color:#10b981;"><i class="fas fa-wallet"></i></div>
                     <i class="fas fa-chevron-right w-arrow"></i>
                 </div>
-                <div class="w-label" style="color:#6ee7b7;">Saving Investment</div>
+                <div class="w-label" style="color:#6ee7b7;">Saving Investments</div>
                 <div class="w-value" style="color:#ecfdf5;">${{ number_format($data['saving_deposit'] ?? 0, 2) }}</div>
                 <div class="w-note" style="color:#6ee7b7;"><i class="fas fa-calendar-check" style="color:#10b981;"></i> Total deposited</div>
             </div>
@@ -1179,7 +1179,7 @@
                     <div class="w-icon" style="background:rgba(59,130,246,.15);color:#60a5fa;"><i class="fas fa-chart-line"></i></div>
                     <i class="fas fa-chevron-right w-arrow"></i>
                 </div>
-                <div class="w-label" style="color:#93c5fd;">Saving ROI</div>
+                <div class="w-label" style="color:#93c5fd;">Saving ROI's</div>
                 <div class="w-value" style="color:#eff6ff;">${{ number_format($data['saving_roi'] ?? 0, 2) }}</div>
                 <div class="w-note" style="color:#93c5fd;"><i class="fas fa-arrow-trend-up" style="color:#60a5fa;"></i> Daily appreciation</div>
             </div>
