@@ -1198,6 +1198,19 @@
                     <span style="color:#fcd34d;"><i class="fas fa-share-nodes"></i> I: ${{ number_format($data['saving_indirect'] ?? 0, 2) }}</span>
                 </div>
             </div>
+
+            {{-- My Saving Members --}}
+            @if(isset($data['user_saving_team_count']))
+            <div class="w-card" style="background:linear-gradient(135deg,#1c1917 0%,#292524 100%);border:1px solid rgba(245,158,11,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(245,158,11,.15);color:#fbbf24;"><i class="fas fa-users-rectangle"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#fcd34d;">My Saving Members</div>
+                <div class="w-value" style="color:#fefce8;font-size:1.6rem;letter-spacing:0;">{{ number_format($data['user_saving_team_count']) }}</div>
+                <div class="w-note" style="color:#fcd34d;"><i class="fas fa-circle-check" style="color:#4ade80;"></i> In your saving network</div>
+            </div>
+            @endif
         </div>
         @endif
 

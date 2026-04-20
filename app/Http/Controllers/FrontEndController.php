@@ -343,6 +343,22 @@ class FrontEndController extends Controller
         $savingData = [];
         if ($user->saving_enrolled && $user->saving_enrollment_activated) {
             $savingService = app(\App\Services\SavingAccountService::class);
+
+            // Count saving plan members in this user's saving downline
+            $userSavingTeamCount = DB::table('referral_trees')
+                ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
+                ->where('referral_trees.ancestor_id', $user->id)
+                ->where('referral_trees.tree_type', 'saving')
+                ->where('referral_trees.level', '>=', 1)
+                ->where(function ($q) {
+                    $q->where('users.account_type', 'saving')
+                      ->orWhere(function ($q2) {
+                          $q2->where('users.saving_enrolled', true)
+                             ->where('users.saving_registration_completed', true);
+                      });
+                })
+                ->count();
+
             $savingData = [
                 'saving_enrolled'        => true,
                 'saving_deposit'         => $wallets->where('wallet_type', 'saving')->sum('balance'),
@@ -357,6 +373,7 @@ class FrontEndController extends Controller
                 'saving_roi'             => $wallets->where('wallet_type', 'saving_roi')->sum('balance'),
                 'instalment_summary'     => $savingService->getInstalmentSummary($user),
                 'saving_plan_activated'  => true,
+                'user_saving_team_count' => $userSavingTeamCount,
             ];
         }
 
