@@ -19,6 +19,13 @@ class CheckUserStatus
     {
         $user = FacadesAuth::user();
         if($user){
+            // Force logout if account was soft-deleted
+            if($user->deleted_at !== null){
+                FacadesAuth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('login')->with('error', 'Your account has been deactivated.');
+            }
             // if ($user->phone_verified == 0 &&  $user->phone_verified == 0) {
             //     if (!in_array($request->route()->getName(), ['profile.edit', 'account.information','social.account.information','profile.change.password','update.password','user.profile.update','phone.verify','generate.otp','verify.otp','logout','verification.notice','verification.verify','profile.bank.details'])) {
             //         return redirect()->route('profile.edit')->with('error', 'Please verify your phone & complete your profile.');

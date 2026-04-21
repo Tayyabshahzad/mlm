@@ -573,8 +573,20 @@ class UserController extends Controller
         if (!$user) {
             return redirect()->back()->with('error', 'User not found.');
         }
+
+        // Lock all operations before soft-deleting
+        $user->update([
+            'can_login'    => 0,
+            'blocked'      => 1,
+            'is_active'    => 0,
+            'freez_wallet' => 1,
+            'roi_status'   => 'inactive',
+        ]);
+
+        // Soft delete — sets deleted_at, keeps DB record intact, no cascade
         $user->delete();
-        return redirect()->back()->with('success', 'User deleted successfully');
+
+        return redirect()->back()->with('success', 'User account has been deactivated.');
     }
 
     /**
@@ -827,7 +839,7 @@ class UserController extends Controller
     {
 
         $search = $request->input('search');
-        $teamMembers = User::where('deleted_at','!=',null)->with('team')
+        $teamMembers = User::onlyTrashed()->with('team')
             ->where('id', '!=', auth()->user()->id)
             ->when($search, function ($query, $search) {
                 $query->where(function ($query) use ($search) {
