@@ -114,6 +114,22 @@
                     <form method="POST" action="{{ route('admin.saving.roi.manual.run') }}" id="manualRoiForm">
                         @csrf
 
+                        {{-- Date selector --}}
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="font-weight-bold font-size-sm">ROI Date <span class="text-danger">*</span></label>
+                                <input type="date" name="roi_date" id="roiDate"
+                                    class="form-control form-control-solid @error('roi_date') is-invalid @enderror"
+                                    value="{{ old('roi_date', now()->format('Y-m-d')) }}"
+                                    max="{{ now()->format('Y-m-d') }}"
+                                    required>
+                                @error('roi_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">Cannot select a future date. Users already paid on the selected date will be skipped.</small>
+                            </div>
+                        </div>
+
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div>
                                 <button type="button" id="selectAll" class="btn btn-xs btn-light-primary font-weight-bold mr-2">Select All</button>
@@ -144,16 +160,14 @@
                                         $paidToday = $u->last_saving_roi_payment_date &&
                                                      \Carbon\Carbon::parse($u->last_saving_roi_payment_date)->isToday();
                                     @endphp
-                                    <tr class="{{ $paidToday ? 'text-muted' : '' }}">
+                                    <tr>
                                         <td>
                                             <label class="checkbox checkbox-single">
-                                                <input type="checkbox" name="user_ids[]" value="{{ $u->id }}"
-                                                    class="user-checkbox"
-                                                    {{ $paidToday ? 'disabled' : '' }}>
+                                                <input type="checkbox" name="user_ids[]" value="{{ $u->id }}" class="user-checkbox">
                                                 <span></span>
                                             </label>
                                         </td>
-                                        <td class="{{ $paidToday ? '' : 'font-weight-bold' }}">{{ $u->username }}</td>
+                                        <td class="font-weight-bold">{{ $u->username }}</td>
                                         <td>{{ $u->name }}</td>
                                         <td>
                                             @if($u->last_saving_roi_payment_date)
@@ -182,7 +196,7 @@
                             <button type="submit" class="btn btn-warning font-weight-bold" id="runBtn" disabled>
                                 <i class="la la-play"></i> Run ROI for Selected Users
                             </button>
-                            <span class="text-muted font-size-sm ml-3">Users already paid today cannot be selected.</span>
+                            <span class="text-muted font-size-sm ml-3">Users already paid on the selected date will be skipped automatically.</span>
                         </div>
                         @endif
                     </form>
@@ -359,7 +373,8 @@
     if (form) {
         form.addEventListener('submit', function (e) {
             const count = document.querySelectorAll('.user-checkbox:checked').length;
-            if (!confirm('Run saving ROI for ' + count + ' user(s)?')) {
+            const date  = document.getElementById('roiDate')?.value || 'selected date';
+            if (!confirm('Run saving ROI for ' + count + ' user(s) on date: ' + date + '?\n\nUsers already paid on that date will be skipped automatically.')) {
                 e.preventDefault();
             }
         });

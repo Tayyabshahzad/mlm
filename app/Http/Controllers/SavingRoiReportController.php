@@ -157,9 +157,11 @@ class SavingRoiReportController extends Controller
         $request->validate([
             'user_ids'   => 'required|array|min:1',
             'user_ids.*' => 'integer|exists:users,id',
+            'roi_date'   => 'required|date|before_or_equal:today',
         ]);
 
-        $results   = ['processed' => [], 'skipped' => [], 'failed' => []];
+        $forDate = \Carbon\Carbon::parse($request->roi_date);
+        $results = ['processed' => [], 'skipped' => [], 'failed' => []];
         $totalAmount = 0;
 
         foreach ($request->user_ids as $userId) {
@@ -170,7 +172,7 @@ class SavingRoiReportController extends Controller
                 continue;
             }
 
-            $result = $savingAccountService->processSavingRoi($user);
+            $result = $savingAccountService->processSavingRoi($user, $forDate);
 
             if ($result['success']) {
                 $results['processed'][] = [
@@ -189,7 +191,7 @@ class SavingRoiReportController extends Controller
         $processedCount = count($results['processed']);
         $skippedCount   = count($results['skipped']);
 
-        $message = "Done. Processed: {$processedCount} | Skipped: {$skippedCount} | Total ROI: $" . number_format($totalAmount, 2);
+        $message = "Done for {$forDate->format('d M Y')}. Processed: {$processedCount} | Skipped: {$skippedCount} | Total ROI: $" . number_format($totalAmount, 2);
 
         if ($processedCount > 0) {
             return back()->with('roi_success', $message)->with('roi_results', $results);

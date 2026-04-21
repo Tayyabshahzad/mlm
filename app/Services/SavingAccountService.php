@@ -422,26 +422,31 @@ class SavingAccountService
      * Process daily saving ROI for a single user.
      * Only fires if instalment #1 is deposited and account is within the 25-month plan.
      */
-    public function processSavingRoi(User $user): array
+    public function processSavingRoi(User $user, ?Carbon $forDate = null): array
     {
+        $forDate = $forDate ?? Carbon::today();
+
         if (!$this->canReceiveSavingRoi($user)) {
             return ['success' => false, 'message' => 'Not eligible for saving ROI'];
         }
 
-        // Already received saving ROI today? Use dedicated field to avoid conflict with standard ROI.
-        if ($user->last_saving_roi_payment_date && Carbon::parse($user->last_saving_roi_payment_date)->isToday()) {
-            return ['success' => false, 'message' => 'Saving ROI already processed today'];
+        // Block if ROI already exists for this specific date (prevents duplicates).
+        $alreadyPaid = Wallet::where('user_id', $user->id)
+            ->where('wallet_type', 'saving_roi')
+            ->whereDate('created_at', $forDate->toDateString())
+            ->exists();
+
+        if ($alreadyPaid) {
+            return ['success' => false, 'message' => 'ROI already processed for ' . $forDate->format('d M Y')];
         }
 
-        $setting    = Setting::first();
-        $dailyRate  = (float) ($setting->saving_roi_daily_rate ?? 0.1); // default 0.1% daily
+        $setting   = Setting::first();
+        $dailyRate = (float) ($setting->saving_roi_daily_rate ?? 0.1);
 
-        // ROI base = sum of confirmed instalments whose roi_eligible_from has arrived.
-        // Early-paid instalments only contribute once their scheduled due_date is reached.
-        // Fall back to saving_total_deposited for legacy rows without roi_eligible_from.
+        // ROI base = confirmed instalments whose roi_eligible_from has arrived by $forDate.
         $eligibleBase = \App\Models\SavingInstalment::where('user_id', $user->id)
             ->where('status', 'confirmed')
-            ->where(fn($q) => $q->whereNull('roi_eligible_from')->orWhereDate('roi_eligible_from', '<=', Carbon::today()))
+            ->where(fn($q) => $q->whereNull('roi_eligible_from')->orWhereDate('roi_eligible_from', '<=', $forDate->toDateString()))
             ->sum('amount');
 
         $base = $eligibleBase > 0 ? (float) $eligibleBase : (float) $user->saving_total_deposited;
@@ -455,8 +460,10 @@ class SavingAccountService
             return ['success' => false, 'message' => 'Calculated ROI is zero'];
         }
 
-        DB::transaction(function () use ($user, $amount) {
-            Wallet::create([
+        DB::transaction(function () use ($user, $amount, $forDate) {
+            $entryDate = $forDate->copy()->setTime(23, 59, 0);
+
+            $wallet = Wallet::create([
                 'user_id'          => $user->id,
                 'wallet_type'      => 'saving_roi',
                 'balance'          => $amount,
@@ -465,12 +472,20 @@ class SavingAccountService
                 'total_amount'     => $amount,
                 'wallet_src'       => 'saving_roi',
                 'source_type'      => 'saving',
-                'description'      => 'Daily saving account ROI',
+                'description'      => 'Daily saving account ROI (' . $forDate->format('d M Y') . ')',
                 'transaction_type' => 'credit',
             ]);
 
+            // Stamp the entry with the target date so reports show the correct day
+            $wallet->forceFill(['created_at' => $entryDate, 'updated_at' => $entryDate])->saveQuietly();
+
             $user->increment('roi_wallet_balance', $amount);
-            $user->update(['last_saving_roi_payment_date' => now()]);
+
+            // Only advance last_saving_roi_payment_date if this date is more recent
+            if (!$user->last_saving_roi_payment_date ||
+                $forDate->gt(Carbon::parse($user->last_saving_roi_payment_date))) {
+                $user->update(['last_saving_roi_payment_date' => $forDate->toDateString()]);
+            }
 
             TransactionLog::create([
                 'user_id'          => $user->id,
@@ -479,7 +494,7 @@ class SavingAccountService
                 'charge'           => 0,
                 'amount'           => $amount,
                 'final_amount'     => $amount,
-                'description'      => 'Daily saving ROI',
+                'description'      => 'Daily saving ROI (' . $forDate->format('d M Y') . ')',
                 'status'           => 'credit',
             ]);
         });
