@@ -29,6 +29,7 @@ class Setting extends Model
         'saving_monthly_instalment','saving_plan_months',
         'saving_commission_l1','saving_commission_l2','saving_commission_l3','saving_commission_l4',
         'saving_commission_l5','saving_commission_l6','saving_commission_l7',
-        'saving_roi_daily_rate'
+        'saving_roi_daily_rate',
+        'saving_commission_min_transfer'
     ];
 }

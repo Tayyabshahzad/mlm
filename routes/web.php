@@ -90,6 +90,7 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::get('saving-direct-indirect', 'savingDirectIndirect')->name('wallets.saving.direct.indirect');
         Route::get('saving-roi', 'savingRoiWallet')->name('wallets.saving.roi');
         Route::post('transfer-to-online', 'transferToOnline')->name('wallet.transfer.to.online');
+        Route::post('saving-commission-to-online', 'transferSavingCommissionToOnline')->name('wallet.saving.commission.to.online');
         Route::get('show-transaction-history', 'showTransactionHistory')->name('show.transaction.history');
         Route::post('clear-negative-points', 'clearNegativePoints')->name('clear.negative.points');
     });

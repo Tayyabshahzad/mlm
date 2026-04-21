@@ -29,9 +29,22 @@
                 </div>
             @endif
 
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show">
+                    {{ session('success') }}
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show">
+                    {{ session('error') }}
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                </div>
+            @endif
+
             {{-- Summary Cards --}}
             <div class="row mb-6">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card card-custom bg-primary text-white">
                         <div class="card-body py-5 text-center">
                             <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalEarning, 2) }}</div>
@@ -39,7 +52,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card card-custom bg-success text-white">
                         <div class="card-body py-5 text-center">
                             <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalDirect, 2) }}</div>
@@ -47,7 +60,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card card-custom bg-info text-white">
                         <div class="card-body py-5 text-center">
                             <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalIndirect, 2) }}</div>
@@ -55,7 +68,26 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <div class="card card-custom bg-warning text-white">
+                        <div class="card-body py-5 text-center">
+                            <div style="font-size:1.6rem;font-weight:700;">${{ number_format($currentBalance, 2) }}</div>
+                            <div class="font-size-sm mt-1">Available Balance</div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            {{-- Transfer Button --}}
+            @if($currentBalance > 0)
+            <div class="mb-6">
+                <button type="button" class="btn btn-warning font-weight-bold"
+                    data-toggle="modal" data-target="#savingCommissionTransferModal">
+                    <i class="la la-exchange-alt"></i> Transfer to Online Wallet
+                </button>
+                <span class="text-muted font-size-sm ml-3">Minimum transfer: ${{ number_format($setting->saving_commission_min_transfer ?? 10.70, 2) }} &nbsp;|&nbsp; 5% charge applies</span>
+            </div>
+            @endif
 
             {{-- Commission Rate Info --}}
             <div class="card card-custom gutter-b">
@@ -122,4 +154,67 @@
         </div>
     </div>
 </div>
+{{-- Transfer Modal --}}
+<div class="modal fade" id="savingCommissionTransferModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="{{ route('wallet.saving.commission.to.online') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold">Transfer Saving Commissions to Online Wallet</h5>
+                    <button type="button" class="close" data-dismiss="modal"><i class="ki ki-close"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-danger text-center font-weight-bold">5% charge applies on every transfer.</p>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Transfer Amount ($)</label>
+                        <input type="number" name="amount" id="transferAmount"
+                            class="form-control form-control-solid"
+                            min="{{ $setting->saving_commission_min_transfer ?? 10.70 }}"
+                            max="{{ $currentBalance }}"
+                            step="0.01" required
+                            placeholder="Enter amount">
+                        <div class="mt-2">
+                            <strong class="text-warning">Available Balance: ${{ number_format($currentBalance, 2) }}</strong><br>
+                            <small class="text-muted">Minimum Transfer: ${{ number_format($setting->saving_commission_min_transfer ?? 10.70, 2) }}</small>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light-info mt-3" id="transferPreview" style="display:none;">
+                        <table class="table table-sm mb-0">
+                            <tr><td class="text-muted">Transfer Amount</td><td class="font-weight-bold" id="previewAmount">—</td></tr>
+                            <tr><td class="text-muted">5% Charge</td><td class="text-danger" id="previewCharge">—</td></tr>
+                            <tr><td class="text-muted font-weight-bold">You Receive</td><td class="text-success font-weight-bold" id="previewFinal">—</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning btn-sm font-weight-bold">Confirm Transfer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section('page_js')
+<script>
+document.getElementById('transferAmount')?.addEventListener('input', function () {
+    const amount = parseFloat(this.value);
+    const preview = document.getElementById('transferPreview');
+    if (!isNaN(amount) && amount > 0) {
+        const charge = Math.round(amount * 0.05 * 100) / 100;
+        const final  = Math.round((amount - charge) * 100) / 100;
+        document.getElementById('previewAmount').textContent = '$' + amount.toFixed(2);
+        document.getElementById('previewCharge').textContent = '-$' + charge.toFixed(2);
+        document.getElementById('previewFinal').textContent  = '$' + final.toFixed(2);
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+    }
+});
+</script>
+@endsection
+
 @endsection

@@ -317,6 +317,70 @@ class WalletController extends Controller
         return view('wallets.transaction-history', compact('transactions'));
     }
 
+    public function transferSavingCommissionToOnline(Request $request)
+    {
+        $user    = auth()->user();
+        $setting = Setting::first();
+        $minTransfer = (float) ($setting->saving_commission_min_transfer ?? 10.70);
+
+        $request->validate([
+            'amount' => 'required|numeric|min:' . $minTransfer,
+        ]);
+
+        $amount = (float) $request->amount;
+
+        $wallets = Wallet::where('user_id', $user->id)
+            ->where('wallet_type', 'direct_indirect')
+            ->where('source_type', 'saving_instalment')
+            ->where('balance', '>', 0)
+            ->get();
+
+        $currentBalance = $wallets->sum('balance');
+
+        if ($currentBalance < $amount) {
+            return back()->with('error', 'Insufficient balance. Available: $' . number_format($currentBalance, 2));
+        }
+
+        DB::beginTransaction();
+        try {
+            $chargePercent = 5;
+            $chargeAmount  = round(($chargePercent / 100) * $amount, 2);
+            $finalAmount   = round($amount - $chargeAmount, 2);
+
+            if ($finalAmount <= 0) {
+                throw new \Exception('Amount too small after charge.');
+            }
+
+            // Deduct from saving commission wallets (oldest first)
+            $remaining = $amount;
+            foreach ($wallets->sortBy('created_at') as $wallet) {
+                if ($remaining <= 0) break;
+                $deduct = min($wallet->balance, $remaining);
+                $wallet->decrement('balance', $deduct);
+                $remaining -= $deduct;
+            }
+
+            // Credit online wallet
+            $onlineWallet = Wallet::firstOrCreate(
+                ['user_id' => $user->id, 'wallet_type' => 'online', 'commission_type' => 'online', 'level' => 'online'],
+                ['balance' => 0.00]
+            );
+            $onlineWallet->increment('balance', $finalAmount);
+
+            $this->logTransaction($user->id, 'online', 'saving_commission', $amount, $finalAmount,
+                "Saving commission transfer to Online Wallet (5% charge applied)", 'debit', $chargeAmount);
+
+            $this->logTransaction($user->id, 'saving_commission', 'online', $amount, $finalAmount,
+                "Received \${$finalAmount} in Online Wallet from Saving Commissions", 'credit', $chargeAmount);
+
+            DB::commit();
+            return back()->with('success', "Transfer successful! Amount: \${$amount}, Charge: \${$chargeAmount}, Received: \${$finalAmount}");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Transfer failed: ' . $e->getMessage());
+        }
+    }
+
     /**
      * Savings Program — Direct / Indirect commissions wallet (enrolled standard users + saving account users)
      */
