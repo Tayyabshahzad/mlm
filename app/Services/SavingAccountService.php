@@ -428,9 +428,9 @@ class SavingAccountService
             return ['success' => false, 'message' => 'Not eligible for saving ROI'];
         }
 
-        // Already received today?
-        if ($user->last_roi_payment_date && Carbon::parse($user->last_roi_payment_date)->isToday()) {
-            return ['success' => false, 'message' => 'ROI already processed today'];
+        // Already received saving ROI today? Use dedicated field to avoid conflict with standard ROI.
+        if ($user->last_saving_roi_payment_date && Carbon::parse($user->last_saving_roi_payment_date)->isToday()) {
+            return ['success' => false, 'message' => 'Saving ROI already processed today'];
         }
 
         $setting    = Setting::first();
@@ -470,7 +470,7 @@ class SavingAccountService
             ]);
 
             $user->increment('roi_wallet_balance', $amount);
-            $user->update(['last_roi_payment_date' => now()]);
+            $user->update(['last_saving_roi_payment_date' => now()]);
 
             TransactionLog::create([
                 'user_id'          => $user->id,

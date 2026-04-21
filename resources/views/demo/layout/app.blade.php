@@ -559,6 +559,12 @@
                                                     <span class="menu-text">Savings ROI</span>
                                                 </a>
                                             </li>
+                                            <li class="menu-item @if(request()->is('saving-roi-report*') && !auth()->user()->hasRole('admin')) menu-item-active @endif" aria-haspopup="true">
+                                                <a href="{{ route('saving.roi.report') }}" class="menu-link">
+                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                    <span class="menu-text">Saving ROI Report</span>
+                                                </a>
+                                            </li>
                                             @endif
                                         @endif
 
@@ -1182,6 +1188,14 @@
                                                         <span class="badge badge-pill badge-warning ml-1">{{ $pendingEnrollments }}</span>
                                                     @endif
                                                 </span>
+                                            </a>
+                                        </li>
+
+                                        <li class="menu-item menu-item-submenu @if(request()->is('saving-roi-report*') && auth()->user()->hasRole('admin')) menu-item-active @endif" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('admin.saving.roi.report') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Saving ROI Report</span>
                                             </a>
                                         </li>
 

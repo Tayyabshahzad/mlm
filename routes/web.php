@@ -14,6 +14,7 @@ use App\Http\Controllers\{
     ProfileController,
     ReportController,
     SavingInstalmentController,
+    SavingRoiReportController,
     ScheduleRoiController,
     SettingController,
     TopupController,
@@ -108,6 +109,10 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::get('instalments', 'userIndex')->name('saving.user.instalments');
         Route::post('instalments/submit', 'userSubmit')->name('saving.user.submit');
     });
+
+    // Saving ROI Report — user sees own ROI chart + export
+    Route::get('wallets/saving-roi-report', [SavingRoiReportController::class, 'userIndex'])->name('saving.roi.report');
+    Route::get('wallets/saving-roi-report/export', [SavingRoiReportController::class, 'userExport'])->name('saving.roi.report.export');
 });
 
 // Admin Routes
@@ -266,6 +271,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::post('/preview', 'preview')->name('admin.roi-reversal.preview');
         Route::post('/execute', 'execute')->name('admin.roi-reversal.execute');
     });
+
+    // Saving ROI Report — admin sees all users, date range, per-user filter, export, manual run
+    Route::get('saving-roi-report', [SavingRoiReportController::class, 'adminIndex'])->name('admin.saving.roi.report');
+    Route::get('saving-roi-report/export', [SavingRoiReportController::class, 'adminExport'])->name('admin.saving.roi.report.export');
+    Route::post('saving-roi-report/manual-run', [SavingRoiReportController::class, 'manualRun'])->name('admin.saving.roi.manual.run');
 
     // Saving Account — admin management (specific routes before wildcard)
     Route::prefix('saving-accounts')->controller(SavingInstalmentController::class)->group(function () {
