@@ -267,7 +267,7 @@
                                                                 <a class="dropdown-item text-success" href="{{ route('admin.user.wallets', $member->id) }}">Wallet Overview</a>
                                                                 <a class="dropdown-item text-primary" href="{{ route('admin.saving.show', $member) }}">Instalment Details</a>
                                                                 <a class="dropdown-item text-info" href="{{ route('user.info', $member->id) }}">User Info</a>
-                                                                <a class="dropdown-item text-danger" data-toggle="modal" data-target="#deleteUser" data-id="{{ $member->id }}" href="#">Delete</a>
+                                                                <a class="dropdown-item text-danger" data-toggle="modal" data-target="#deleteUser" data-id="{{ $member->id }}" data-saving="true" href="#">Remove Saving Data</a>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -341,15 +341,15 @@
                 <h5 class="modal-title">Delete User</h5>
                 <button type="button" class="close" data-dismiss="modal"><i class="ki ki-close"></i></button>
             </div>
-            <form action="{{ route('user.delete') }}" id="deleteUserForm" method="POST">
+            <form action="" id="deleteUserForm" method="POST">
                 @csrf
                 <div class="modal-body">
                     <input type="hidden" name="delete_id" id="delete_id">
-                    <p class="text-center text-danger">Are you sure you want to delete this member?<br>This action cannot be undone.</p>
+                    <p class="text-center text-danger" id="deleteModalMessage">Are you sure you want to delete this member?<br>This action cannot be undone.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light-primary btn-sm font-weight-bold rounded-0" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger btn-sm font-weight-bold rounded-0">Delete</button>
+                    <button type="submit" class="btn btn-danger btn-sm font-weight-bold rounded-0">Confirm</button>
                 </div>
             </form>
         </div>
@@ -390,9 +390,18 @@ $(document).ready(function () {
         $('#member_id').val($(this).data('id'));
     });
 
-    // Delete modal — set delete_id
+    // Delete modal — set delete_id and correct action based on tab
     $('[data-target="#deleteUser"]').click(function () {
-        $('#delete_id').val($(this).data('id'));
+        var id      = $(this).data('id');
+        var isSaving= $(this).data('saving') == true || $(this).data('saving') == 'true';
+        $('#delete_id').val(id);
+        if (isSaving) {
+            $('#deleteUserForm').attr('action', '{{ route("user.saving.remove") }}');
+            $('#deleteModalMessage').html('This will <strong>remove this user\'s saving plan data only</strong>.<br>Their main account will remain intact.');
+        } else {
+            $('#deleteUserForm').attr('action', '{{ route("user.delete") }}');
+            $('#deleteModalMessage').html('Are you sure you want to delete this member?<br>This action cannot be undone.');
+        }
     });
 
     // Disable button on submit

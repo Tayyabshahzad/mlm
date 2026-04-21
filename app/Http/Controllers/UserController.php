@@ -568,16 +568,66 @@ class UserController extends Controller
     }
 
     public function userDelete(Request $request){
-        
-        $request->validate([
-            'delete_id' => 'required',  
-        ]);
+        $request->validate(['delete_id' => 'required']);
         $user = User::find($request->delete_id);
         if (!$user) {
             return redirect()->back()->with('error', 'User not found.');
-        }  
-        $user->delete();   
+        }
+        $user->delete();
         return redirect()->back()->with('success', 'User deleted successfully');
+    }
+
+    /**
+     * Remove a user's saving plan data only — does NOT delete the user account.
+     */
+    public function removeSavingData(Request $request)
+    {
+        $request->validate(['delete_id' => 'required|exists:users,id']);
+        $user = User::findOrFail($request->delete_id);
+
+        DB::transaction(function () use ($user) {
+            // Delete proof screenshots for their instalments
+            $instalmentIds = $user->savingInstalments()->pluck('id');
+            if ($instalmentIds->isNotEmpty()) {
+                \DB::table('media')
+                    ->where('model_type', 'App\\Models\\SavingInstalment')
+                    ->whereIn('model_id', $instalmentIds)
+                    ->delete();
+            }
+
+            // Delete saving instalments
+            $user->savingInstalments()->delete();
+
+            // Delete saving wallets and saving commissions
+            Wallet::where('user_id', $user->id)
+                ->whereIn('wallet_type', ['saving', 'saving_roi'])
+                ->delete();
+            Wallet::where('user_id', $user->id)
+                ->where('source_type', 'saving_instalment')
+                ->delete();
+
+            // Remove from saving referral tree
+            \DB::table('referral_trees')
+                ->where('tree_type', 'saving')
+                ->where(fn($q) => $q->where('ancestor_id', $user->id)->orWhere('descendant_id', $user->id))
+                ->delete();
+
+            // Reset saving fields — account stays intact
+            $user->update([
+                'account_type'                   => 'standard_investment',
+                'saving_enrolled'                => 0,
+                'saving_enrollment_activated'    => 0,
+                'saving_enrollment_activated_at' => null,
+                'saving_enrollment_activated_by' => null,
+                'saving_registration_completed'  => 0,
+                'saving_plan_start_date'         => null,
+                'saving_total_deposited'         => 0.00,
+                'saving_initial_payment'         => 0.00,
+                'saving_initial_fee'             => 0.00,
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Saving plan data removed. User account remains active.');
     }
 
     

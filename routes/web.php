@@ -129,6 +129,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::put('info/{user}/update', 'userInfoUpdate')->name('user.info.update');
         Route::get('team/{id}', 'adminUserTeam')->name('admin.user.team');
         Route::post('user/delete', 'userDelete')->name('user.delete');
+        Route::post('user/saving/remove', 'removeSavingData')->name('user.saving.remove');
         Route::get('deleted/user', 'deletedUser')->name('deleted.users');
         Route::get('activation-code','activationCode')->name('user.activation.code');
         Route::post('/admin/activation-code/update-status','updateActivationCode')->name('admin.activation-code.update-status');
