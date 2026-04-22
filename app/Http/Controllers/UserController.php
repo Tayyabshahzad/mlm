@@ -992,7 +992,7 @@ class UserController extends Controller
 
             if (!empty($insertData)) {
                 foreach (array_chunk($insertData, 500) as $chunk) {
-                    DB::table('referral_trees')->insert($chunk);
+                    DB::table('referral_trees')->insertOrIgnore($chunk);
                 }
             }
 
