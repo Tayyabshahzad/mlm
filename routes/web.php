@@ -419,6 +419,35 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         return response()->json(['success' => true, 'message' => 'Saving plan reset complete. admin_11 is now the root saving user.']);
     })->name('admin.saving.reset-setup-root');
 
+    // ── Storage media backup download ──────────────────────────────────────
+    Route::get('/admin/storage/download-backup', function () {
+        $storageDir = storage_path('app');
+        $zipName    = 'storage-backup-' . now()->format('Y-m-d_H-i-s') . '.zip';
+        $zipPath    = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $zipName;
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            abort(500, 'Could not create zip archive.');
+        }
+
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($storageDir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $file) {
+            if ($file->isFile()) {
+                $relativePath = str_replace($storageDir . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+                $zip->addFile($file->getRealPath(), $relativePath);
+            }
+        }
+
+        $zip->close();
+
+        return response()->download($zipPath, $zipName)->deleteFileAfterSend(true);
+    })->name('admin.storage.download-backup');
+    // ───────────────────────────────────────────────────────────────────────
+
 });
 
 Route::prefix('account')->controller(TopupController::class)->middleware(['auth', 'verified'])->group(function () {
