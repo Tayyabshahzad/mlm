@@ -16,7 +16,7 @@
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
-        <h2 class="auth-card-title">Welcome Back</h2>
+        <h2 class="auth-card-title">Welcome Back Oracle</h2>
         <p class="auth-card-subtitle">Sign in to your GVI account</p>
     </div>
 
