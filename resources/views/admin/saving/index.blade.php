@@ -22,6 +22,10 @@
                         <span class="badge badge-pill badge-light ml-1">{{ $pendingSubmissions }}</span>
                     @endif
                 </a>
+                <button type="button" class="btn btn-sm btn-danger mr-2"
+                        data-toggle="modal" data-target="#dueExportModal">
+                    <i class="fas fa-file-excel mr-1"></i> Due Instalment Sheet
+                </button>
                 <a href="{{ route('admin.saving.create-user') }}" class="btn btn-sm btn-primary">
                     + Create Saving User
                 </a>
@@ -208,6 +212,71 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+</div>
+
+{{-- ── Due Instalment Export Modal ──────────────────────────────────── --}}
+<div class="modal fade" id="dueExportModal" tabindex="-1" role="dialog" aria-labelledby="dueExportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#dc3545;">
+                <h5 class="modal-title text-white font-weight-bold" id="dueExportModalLabel">
+                    <i class="fas fa-file-excel mr-2 text-white"></i> Download Due Instalment Sheet
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <form method="GET" action="{{ route('admin.saving.due.export') }}">
+                <div class="modal-body">
+
+                    <p class="text-muted font-size-sm mb-5">
+                        Downloads all <strong>pending / overdue</strong> instalments within the selected date range.
+                        Choose a specific member or leave on <em>All Members</em>.
+                    </p>
+
+                    {{-- Date Range --}}
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold font-size-sm">From Date</label>
+                                <input type="date" name="from" class="form-control"
+                                       value="{{ date('Y-m-01') }}">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold font-size-sm">To Date</label>
+                                <input type="date" name="to" class="form-control"
+                                       value="{{ date('Y-m-d') }}"
+                                       max="{{ date('Y-m-d') }}">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="form-text text-muted mt-n3 mb-4 d-block">Only pending instalments with due dates within this range will be included.</span>
+
+                    {{-- Member Select --}}
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold font-size-sm">Member</label>
+                        <select name="user_id" class="form-control" id="dueExportUserSelect">
+                            <option value="">— All Members —</option>
+                            @foreach($savingUsers as $su)
+                                <option value="{{ $su->id }}">{{ $su->name }} (@{{ $su->username }})</option>
+                            @endforeach
+                        </select>
+                        <span class="form-text text-muted">Select a specific member or leave blank for all.</span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-download mr-1"></i> Download Excel
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

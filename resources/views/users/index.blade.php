@@ -34,7 +34,7 @@
                         <div class="p-0 card-body">
 
                             {{-- ── Tabs ─────────────────────────────────── --}}
-                            <ul class="nav nav-tabs nav-tabs-line px-8 pt-5" id="memberTabs">
+                            <ul class="px-8 pt-5 nav nav-tabs nav-tabs-line" id="memberTabs">
                                 <li class="nav-item">
                                     <a class="nav-link {{ $tab === 'standard' ? 'active' : '' }}"
                                        href="{{ route('users.index', array_merge(request()->query(), ['tab' => 'standard'])) }}">
@@ -75,7 +75,7 @@
                                 @if($tab === 'standard')
 
                                     {{-- Stats --}}
-                                    <div class="btn-group flex-wrap mb-4" role="group">
+                                    <div class="flex-wrap mb-4 btn-group" role="group">
                                         <button type="button" class="mb-2 mr-2 rounded-0 btn btn-primary">Total: {{ $totalMembers }}</button>
                                         <button type="button" class="mb-2 mr-2 rounded-0 btn btn-success">Active: {{ $totalActiveMembers }}</button>
                                         <button type="button" class="mb-2 mr-2 rounded-0 btn btn-warning">Inactive: {{ $totalInActiveMembers }}</button>
@@ -94,7 +94,7 @@
                                                    placeholder="Search by username, name, or email"
                                                    value="{{ $tab === 'standard' ? ($search ?? '') : '' }}">
                                             <div class="input-group-append">
-                                                <button type="submit" class="btn btn-sm rounded-0 btn btn-info">Search</button>
+                                                <button type="submit" class="btn btn-sm rounded-0 btn-info">Search</button>
                                                 <a href="{{ route('users.index', ['tab' => 'standard']) }}" class="rounded-0 btn btn-success">Clear</a>
                                             </div>
                                         </div>
@@ -169,12 +169,16 @@
                                 @if($tab === 'saving')
 
                                     {{-- Stats --}}
-                                    <div class="btn-group flex-wrap mb-4" role="group">
+                                    <div class="flex-wrap mb-4 btn-group" role="group">
                                         <button type="button" class="mb-2 mr-2 rounded-0 btn btn-primary">Total: {{ $totalSavingMembers }}</button>
                                         <button type="button" class="mb-2 mr-2 rounded-0 btn btn-success">Admin Activated: {{ $totalActiveSaving }}</button>
                                         <button type="button" class="mb-2 mr-2 rounded-0 btn btn-warning">Pending Activation: {{ $totalInactiveSaving }}</button>
                                         <button type="button" class="mb-2 mr-2 rounded-0 btn btn-info">Deposit Complete: {{ $totalActivatedSaving }}</button>
                                         <a href="{{ route('admin.saving.pending') }}" class="mb-2 mr-2 btn btn-danger">View Pending Instalments</a>
+                                        <button type="button" class="mb-2 mr-2 rounded-0 btn btn-dark"
+                                                data-toggle="modal" data-target="#dueExportModal">
+                                            <i class="mr-1 fas fa-file-excel"></i> Due Instalment Sheet
+                                        </button>
                                     </div>
 
                                     {{-- Search --}}
@@ -185,7 +189,7 @@
                                                    placeholder="Search saving account users..."
                                                    value="{{ $tab === 'saving' ? ($search ?? '') : '' }}">
                                             <div class="input-group-append">
-                                                <button type="submit" class="btn btn-sm rounded-0 btn btn-info">Search</button>
+                                                <button type="submit" class="btn btn-sm rounded-0 btn-info">Search</button>
                                                 <a href="{{ route('users.index', ['tab' => 'saving']) }}" class="rounded-0 btn btn-success">Clear</a>
                                             </div>
                                         </div>
@@ -221,7 +225,7 @@
                                                     <td>
                                                         {{ $member->username }}
                                                         @if($isEnrolled)
-                                                            <span class="badge badge-light-primary ml-1" style="font-size:0.7rem;">Enrolled</span>
+                                                            <span class="ml-1 badge badge-light-primary" style="font-size:0.7rem;">Enrolled</span>
                                                         @endif
                                                     </td>
                                                     <td>{{ $member->name }}</td>
@@ -244,7 +248,7 @@
                                                     <td>
                                                         {{ $confirmedInst }}/{{ $totalInst }}
                                                         @if($submittedInst > 0)
-                                                            <span class="badge badge-warning ml-1">{{ $submittedInst }} pending</span>
+                                                            <span class="ml-1 badge badge-warning">{{ $submittedInst }} pending</span>
                                                         @endif
                                                     </td>
                                                     <td>
@@ -373,6 +377,71 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Download</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- ── Due Instalment Export Modal ──────────────────────────────────── --}}
+<div class="modal fade" id="dueExportModal" tabindex="-1" role="dialog" aria-labelledby="dueExportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#343a40;">
+                <h5 class="text-white modal-title font-weight-bold" id="dueExportModalLabel">
+                    <i class="mr-2 text-white fas fa-file-excel"></i> Download Due Instalment Sheet
+                </h5>
+                <button type="button" class="text-white close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <form method="GET" action="{{ route('admin.saving.due.export') }}">
+                <div class="modal-body">
+
+                    <p class="mb-5 text-muted font-size-sm">
+                        Downloads all <strong>pending / overdue</strong> instalments within the selected date range.
+                        Choose a specific member or leave on <em>All Members</em>.
+                    </p>
+
+                    {{-- Date Range --}}
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold font-size-sm">From Date</label>
+                                <input type="date" name="from" class="form-control"
+                                       value="{{ date('Y-m-01') }}">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold font-size-sm">To Date</label>
+                                <input type="date" name="to" class="form-control"
+                                       value="{{ date('Y-m-d') }}"
+                                       max="{{ date('Y-m-d') }}">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="mb-4 form-text text-muted mt-n3 d-block">Only pending instalments with due dates within this range will be included.</span>
+
+                    {{-- Member Select --}}
+                    <div class="mb-0 form-group">
+                        <label class="font-weight-bold font-size-sm">Member</label>
+                        <select name="user_id" class="form-control">
+                            <option value="">— All Members —</option>
+                            @foreach($savingUsers as $su)
+                                <option value="{{ $su->id }}">{{ $su->name }} (@ {{ $su->username }})</option>
+                            @endforeach
+                        </select>
+                        <span class="form-text text-muted">Select a specific member or leave blank for all.</span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-dark">
+                        <i class="mr-1 fas fa-download"></i> Download Excel
+                    </button>
                 </div>
             </form>
         </div>
@@ -514,7 +583,7 @@ $(document).ready(function () {
                                 + '<img src="' + proof + '" class="img img-thumbnail" style="max-width:100%;height:auto;"/>'
                                 + '</a></td></tr></table>';
                         } else {
-                            html += '<div class="alert alert-warning mt-2">No payment proof uploaded.</div>';
+                            html += '<div class="mt-2 alert alert-warning">No payment proof uploaded.</div>';
                         }
                     }
 
@@ -540,7 +609,7 @@ $(document).ready(function () {
                                 + '<img src="' + d.amount_proof + '" class="img img-thumbnail" style="max-width:100%;height:auto;"/>'
                                 + '</a></td></tr></table>';
                         } else {
-                            html += '<div class="alert alert-warning mt-2">No transaction proof uploaded.</div>';
+                            html += '<div class="mt-2 alert alert-warning">No transaction proof uploaded.</div>';
                         }
                     }
 

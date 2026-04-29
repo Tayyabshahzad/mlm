@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SavingDueInstalmentExport;
 use App\Models\ReferralLink;
 use App\Models\SavingInstalment;
 use App\Models\Setting;
 use App\Models\TransactionLog;
 use App\Models\User;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Services\SavingAccountService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -156,8 +158,13 @@ class SavingInstalmentController extends Controller
         $registrationDone   = User::where($savingParticipant)->where('saving_registration_completed', true)->count();
         $pendingSubmissions = SavingInstalment::where('status', 'submitted')->count();
 
+        // Lightweight list for the due-export modal dropdown
+        $savingUsers = User::where($savingParticipant)
+            ->orderBy('name')
+            ->get(['id', 'name', 'username']);
+
         return view('admin.saving.index', compact(
-            'users', 'setting', 'totalSaving', 'registrationDone', 'pendingSubmissions'
+            'users', 'setting', 'totalSaving', 'registrationDone', 'pendingSubmissions', 'savingUsers'
         ));
     }
 
@@ -497,6 +504,22 @@ class SavingInstalmentController extends Controller
     // =========================================================================
     // ADMIN — set saving parent user
     // =========================================================================
+
+    // =========================================================================
+    // ADMIN — download due / overdue instalment report
+    // =========================================================================
+
+    public function adminDueExport(Request $request)
+    {
+        $from   = $request->get('from');
+        $to     = $request->get('to');
+        $userId = $request->get('user_id') ?: null;
+
+        $suffix   = $userId ? ('-user' . $userId) : '-all';
+        $filename = 'due-instalments' . $suffix . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new SavingDueInstalmentExport($from, $to, $userId ? (int) $userId : null), $filename);
+    }
 
     public function setSavingParent(Request $request): RedirectResponse
     {

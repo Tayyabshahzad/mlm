@@ -1199,6 +1199,32 @@
                 </div>
             </div>
 
+            {{-- Next Due Date --}}
+            @if(!empty($data['instalment_summary']['next_due']))
+            <div class="w-card" style="background:linear-gradient(135deg,#1a1230 0%,#2d1b69 100%);border:1px solid rgba(248,113,113,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(248,113,113,.15);color:#f87171;"><i class="fas fa-calendar-exclamation"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#fca5a5;">Next Due Date</div>
+                <div class="w-value" data-no-counter style="color:#fff1f2;font-size:1.15rem;letter-spacing:0;">{{ $data['instalment_summary']['next_due']->due_date->format('d-m-Y') }}</div>
+                <div class="w-note" style="color:#fca5a5;"><i class="fas fa-receipt" style="color:#f87171;"></i> Instalment #{{ $data['instalment_summary']['next_due']->instalment_number }} &nbsp;·&nbsp; ${{ number_format($data['instalment_summary']['next_due']->amount, 2) }}</div>
+            </div>
+            @endif
+
+            {{-- Direct Team Members --}}
+            @if(isset($data['saving_direct_team_count']))
+            <div class="w-card" style="background:linear-gradient(135deg,#0f2417 0%,#14532d 100%);border:1px solid rgba(74,222,128,.25);">
+                <div class="w-card-top">
+                    <div class="w-icon" style="background:rgba(74,222,128,.15);color:#4ade80;"><i class="fas fa-user-plus"></i></div>
+                    <i class="fas fa-chevron-right w-arrow"></i>
+                </div>
+                <div class="w-label" style="color:#86efac;">Direct Team Members</div>
+                <div class="w-value" style="color:#f0fdf4;font-size:1.6rem;letter-spacing:0;">{{ number_format($data['saving_direct_team_count']) }}</div>
+                <div class="w-note" style="color:#86efac;"><i class="fas fa-circle-check" style="color:#4ade80;"></i> Your direct saving referrals</div>
+            </div>
+            @endif
+
             {{-- My Saving Members --}}
             @if(isset($data['user_saving_team_count']))
             <div class="w-card" style="background:linear-gradient(135deg,#1c1917 0%,#292524 100%);border:1px solid rgba(245,158,11,.25);">
@@ -1650,6 +1676,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function initCounters() {
         document.querySelectorAll('.kpi-t-val, .w-value, #heroBalance').forEach(el => {
+            if (el.hasAttribute('data-no-counter')) return;
             const raw = el.textContent.trim();
             const prefix = raw.startsWith('$') ? '$' : '';
             const num = parseFloat(raw.replace(/[^0-9.]/g, ''));

@@ -1199,6 +1199,14 @@
                                             </a>
                                         </li>
 
+                                        <li class="menu-item menu-item-submenu @if(request()->is('users/index') && request('tab') === 'saving') menu-item-active @endif" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ url('users/index?tab=saving') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Saving Members List</span>
+                                            </a>
+                                        </li>
+
                                         <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                             data-menu-toggle="hover">
                                             <a href="{{ route('admin.roi-settings.user-plans') }}" class="menu-link menu-toggle">

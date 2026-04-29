@@ -828,11 +828,12 @@ class UserController extends Controller
         $totalActiveSaving    = User::where($savingScope)->where(fn($q) => $q->where('can_login', true)->orWhere('saving_enrollment_activated', true))->count();
         $totalInactiveSaving  = User::where($savingScope)->where('saving_enrollment_activated', false)->where('can_login', false)->count();
         $totalActivatedSaving = User::where($savingScope)->where('saving_registration_completed', true)->count();
+        $savingUsers          = User::where($savingScope)->orderBy('name')->get(['id', 'name', 'username']);
 
         return view('users.index', compact(
             'teamMembers', 'savingMembers', 'search', 'tab',
             'totalMembers', 'totalActiveMembers', 'totalInActiveMembers', 'totalBlockedMembers', 'totalfreezeMembers',
-            'totalSavingMembers', 'totalActiveSaving', 'totalInactiveSaving', 'totalActivatedSaving'
+            'totalSavingMembers', 'totalActiveSaving', 'totalInactiveSaving', 'totalActivatedSaving', 'savingUsers'
         ));
     }
     public function deletedUser(Request $request)

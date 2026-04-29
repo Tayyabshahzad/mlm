@@ -283,6 +283,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::prefix('saving-accounts')->controller(SavingInstalmentController::class)->group(function () {
         Route::get('/', 'adminIndex')->name('admin.saving.index');
         Route::get('/pending', 'adminPendingSubmissions')->name('admin.saving.pending');
+        Route::get('/due-export', 'adminDueExport')->name('admin.saving.due.export');
         Route::get('/enrollments', 'adminEnrollments')->name('admin.saving.enrollments');
         Route::post('/enrollments/{user}/activate', 'activateEnrollment')->name('admin.saving.enrollments.activate');
         Route::get('/create-user', 'adminCreateUserForm')->name('admin.saving.create-user');
@@ -295,129 +296,129 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     });
 
     // ── One-time: reset saving plan and set admin_11 as root ──────────────
-    Route::get('/admin/saving/reset-and-setup-root', function () {
-        DB::transaction(function () {
-            $admin   = \App\Models\User::where('username', 'admin_11')->firstOrFail();
-            $adminId = $admin->id;
+    // Route::get('/admin/saving/reset-and-setup-root', function () {
+    //     DB::transaction(function () {
+    //         $admin   = \App\Models\User::where('username', 'admin_11')->firstOrFail();
+    //         $adminId = $admin->id;
 
-            // 1. Delete proof screenshots for all saving instalments
-            $instalmentIds = \App\Models\SavingInstalment::pluck('id');
-            \DB::table('media')
-                ->where('model_type', 'App\\Models\\SavingInstalment')
-                ->whereIn('model_id', $instalmentIds)
-                ->delete();
+    //         // 1. Delete proof screenshots for all saving instalments
+    //         $instalmentIds = \App\Models\SavingInstalment::pluck('id');
+    //         \DB::table('media')
+    //             ->where('model_type', 'App\\Models\\SavingInstalment')
+    //             ->whereIn('model_id', $instalmentIds)
+    //             ->delete();
 
-            // 2. Delete all saving instalments
-            \App\Models\SavingInstalment::query()->delete();
+    //         // 2. Delete all saving instalments
+    //         \App\Models\SavingInstalment::query()->delete();
 
-            // 3. Delete saving wallets & saving commissions for all users
-            \App\Models\Wallet::whereIn('wallet_type', ['saving', 'saving_roi'])->delete();
-            \App\Models\Wallet::where('source_type', 'saving_instalment')->delete();
+    //         // 3. Delete saving wallets & saving commissions for all users
+    //         \App\Models\Wallet::whereIn('wallet_type', ['saving', 'saving_roi'])->delete();
+    //         \App\Models\Wallet::where('source_type', 'saving_instalment')->delete();
 
-            // 4. Remove the entire saving referral tree
-            \DB::table('referral_trees')->where('tree_type', 'saving')->delete();
+    //         // 4. Remove the entire saving referral tree
+    //         \DB::table('referral_trees')->where('tree_type', 'saving')->delete();
 
-            // 5a. Reset saving account type users (account_type = 'saving') back to standard
-            \App\Models\User::where('account_type', 'saving')->where('id', '!=', $adminId)->update([
-                'account_type'                   => 'standard_investment',
-                'saving_enrolled'                => 0,
-                'saving_enrollment_activated'    => 0,
-                'saving_enrollment_activated_at' => null,
-                'saving_enrollment_activated_by' => null,
-                'saving_registration_completed'  => 0,
-                'saving_plan_start_date'         => null,
-                'saving_total_deposited'         => 0.00,
-                'saving_initial_payment'         => 0.00,
-                'saving_initial_fee'             => 0.00,
-            ]);
+    //         // 5a. Reset saving account type users (account_type = 'saving') back to standard
+    //         \App\Models\User::where('account_type', 'saving')->where('id', '!=', $adminId)->update([
+    //             'account_type'                   => 'standard_investment',
+    //             'saving_enrolled'                => 0,
+    //             'saving_enrollment_activated'    => 0,
+    //             'saving_enrollment_activated_at' => null,
+    //             'saving_enrollment_activated_by' => null,
+    //             'saving_registration_completed'  => 0,
+    //             'saving_plan_start_date'         => null,
+    //             'saving_total_deposited'         => 0.00,
+    //             'saving_initial_payment'         => 0.00,
+    //             'saving_initial_fee'             => 0.00,
+    //         ]);
 
-            // 5b. Reset saving-enrolled standard users
-            \App\Models\User::where('saving_enrolled', 1)->where('id', '!=', $adminId)->update([
-                'saving_enrolled'                => 0,
-                'saving_enrollment_activated'    => 0,
-                'saving_enrollment_activated_at' => null,
-                'saving_enrollment_activated_by' => null,
-                'saving_registration_completed'  => 0,
-                'saving_plan_start_date'         => null,
-                'saving_total_deposited'         => 0.00,
-                'saving_initial_payment'         => 0.00,
-                'saving_initial_fee'             => 0.00,
-            ]);
+    //         // 5b. Reset saving-enrolled standard users
+    //         \App\Models\User::where('saving_enrolled', 1)->where('id', '!=', $adminId)->update([
+    //             'saving_enrolled'                => 0,
+    //             'saving_enrollment_activated'    => 0,
+    //             'saving_enrollment_activated_at' => null,
+    //             'saving_enrollment_activated_by' => null,
+    //             'saving_registration_completed'  => 0,
+    //             'saving_plan_start_date'         => null,
+    //             'saving_total_deposited'         => 0.00,
+    //             'saving_initial_payment'         => 0.00,
+    //             'saving_initial_fee'             => 0.00,
+    //         ]);
 
-            // ── Setup admin_11 as root saving user ────────────────────────
+    //         // ── Setup admin_11 as root saving user ────────────────────────
 
-            $setting       = \App\Models\Setting::first();
-            $fee           = (float) ($setting->saving_registration_fee   ?? 5.00);
-            $deposit       = (float) ($setting->saving_min_deposit        ?? 19.00);
-            $monthly       = (float) ($setting->saving_monthly_instalment ?? 19.00);
-            $planMonths    = (int)   ($setting->saving_plan_months        ?? 25);
-            $today         = now()->toDateString();
+    //         $setting       = \App\Models\Setting::first();
+    //         $fee           = (float) ($setting->saving_registration_fee   ?? 5.00);
+    //         $deposit       = (float) ($setting->saving_min_deposit        ?? 19.00);
+    //         $monthly       = (float) ($setting->saving_monthly_instalment ?? 19.00);
+    //         $planMonths    = (int)   ($setting->saving_plan_months        ?? 25);
+    //         $today         = now()->toDateString();
 
-            // 6. Activate saving plan on admin_11
-            \App\Models\User::where('id', $adminId)->update([
-                'saving_enrolled'                => 1,
-                'saving_enrollment_activated'    => 1,
-                'saving_enrollment_activated_at' => now(),
-                'saving_registration_completed'  => 1,
-                'saving_plan_start_date'         => $today,
-                'saving_total_deposited'         => $deposit,
-                'saving_initial_payment'         => $fee + $deposit,
-                'saving_initial_fee'             => $fee,
-            ]);
+    //         // 6. Activate saving plan on admin_11
+    //         \App\Models\User::where('id', $adminId)->update([
+    //             'saving_enrolled'                => 1,
+    //             'saving_enrollment_activated'    => 1,
+    //             'saving_enrollment_activated_at' => now(),
+    //             'saving_registration_completed'  => 1,
+    //             'saving_plan_start_date'         => $today,
+    //             'saving_total_deposited'         => $deposit,
+    //             'saving_initial_payment'         => $fee + $deposit,
+    //             'saving_initial_fee'             => $fee,
+    //         ]);
 
-            // 7. Create saving wallet entry ($19 deposit)
-            \App\Models\Wallet::create([
-                'user_id'          => $adminId,
-                'wallet_type'      => 'saving',
-                'balance'          => $deposit,
-                'direct_balance'   => 0.00,
-                'indirect_balance' => 0.00,
-                'total_amount'     => $deposit,
-                'total_earning'    => 0.00,
-                'commission_type'  => 'saving_deposit',
-                'level'            => '-',
-                'wallet_src'       => 'saving_instalment',
-                'source_type'      => 'saving',
-                'description'      => 'Initial saving deposit — Instalment #1 ($' . ($fee + $deposit) . ' paid, $' . $fee . ' fee, $' . $deposit . ' deposited)',
-                'transaction_type' => 'credit',
-            ]);
+    //         // 7. Create saving wallet entry ($19 deposit)
+    //         \App\Models\Wallet::create([
+    //             'user_id'          => $adminId,
+    //             'wallet_type'      => 'saving',
+    //             'balance'          => $deposit,
+    //             'direct_balance'   => 0.00,
+    //             'indirect_balance' => 0.00,
+    //             'total_amount'     => $deposit,
+    //             'total_earning'    => 0.00,
+    //             'commission_type'  => 'saving_deposit',
+    //             'level'            => '-',
+    //             'wallet_src'       => 'saving_instalment',
+    //             'source_type'      => 'saving',
+    //             'description'      => 'Initial saving deposit — Instalment #1 ($' . ($fee + $deposit) . ' paid, $' . $fee . ' fee, $' . $deposit . ' deposited)',
+    //             'transaction_type' => 'credit',
+    //         ]);
 
-            // 8. Create instalment #1 as confirmed
-            \App\Models\SavingInstalment::create([
-                'user_id'           => $adminId,
-                'instalment_number' => 1,
-                'amount'            => $deposit,
-                'due_date'          => $today,
-                'status'            => 'confirmed',
-                'is_late'           => false,
-                'deposit_deferred'  => false,
-                'submitted_amount'  => $deposit,
-                'transaction_id'    => 'ADMIN-SETUP',
-                'payment_method'    => 'cash_slip',
-                'submitted_at'      => now(),
-                'confirmed_at'      => now(),
-                'confirmed_by'      => $adminId,
-                'deposited_at'      => now(),
-                'roi_eligible_from' => $today,
-            ]);
+    //         // 8. Create instalment #1 as confirmed
+    //         \App\Models\SavingInstalment::create([
+    //             'user_id'           => $adminId,
+    //             'instalment_number' => 1,
+    //             'amount'            => $deposit,
+    //             'due_date'          => $today,
+    //             'status'            => 'confirmed',
+    //             'is_late'           => false,
+    //             'deposit_deferred'  => false,
+    //             'submitted_amount'  => $deposit,
+    //             'transaction_id'    => 'ADMIN-SETUP',
+    //             'payment_method'    => 'cash_slip',
+    //             'submitted_at'      => now(),
+    //             'confirmed_at'      => now(),
+    //             'confirmed_by'      => $adminId,
+    //             'deposited_at'      => now(),
+    //             'roi_eligible_from' => $today,
+    //         ]);
 
-            // 9. Create instalments 2 – N as pending (monthly)
-            for ($i = 2; $i <= $planMonths; $i++) {
-                \App\Models\SavingInstalment::create([
-                    'user_id'           => $adminId,
-                    'instalment_number' => $i,
-                    'amount'            => $monthly,
-                    'due_date'          => now()->addMonths($i - 1)->toDateString(),
-                    'status'            => 'pending',
-                ]);
-            }
+    //         // 9. Create instalments 2 – N as pending (monthly)
+    //         for ($i = 2; $i <= $planMonths; $i++) {
+    //             \App\Models\SavingInstalment::create([
+    //                 'user_id'           => $adminId,
+    //                 'instalment_number' => $i,
+    //                 'amount'            => $monthly,
+    //                 'due_date'          => now()->addMonths($i - 1)->toDateString(),
+    //                 'status'            => 'pending',
+    //             ]);
+    //         }
 
-            // admin_11 is already designated as root via settings.saving_parent_user_id.
-            // No self-referencing tree entry needed — it would cause duplicates in the tree view.
-        });
+    //         // admin_11 is already designated as root via settings.saving_parent_user_id.
+    //         // No self-referencing tree entry needed — it would cause duplicates in the tree view.
+    //     });
 
-        return response()->json(['success' => true, 'message' => 'Saving plan reset complete. admin_11 is now the root saving user.']);
-    })->name('admin.saving.reset-setup-root');
+    //     return response()->json(['success' => true, 'message' => 'Saving plan reset complete. admin_11 is now the root saving user.']);
+    // })->name('admin.saving.reset-setup-root');
 
     // ── Storage media backup download ──────────────────────────────────────
     Route::get('/admin/storage/download-backup', function () {

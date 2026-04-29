@@ -360,20 +360,27 @@ class FrontEndController extends Controller
                 ->count();
 
             $savingData = [
-                'saving_enrolled'        => true,
-                'saving_deposit'         => $wallets->where('wallet_type', 'saving')->sum('balance'),
-                'saving_direct'          => Wallet::where('user_id', $user->id)
-                                                ->where('wallet_type', 'direct_indirect')
-                                                ->where('source_type', 'saving_instalment')
-                                                ->sum('direct_balance'),
-                'saving_indirect'        => Wallet::where('user_id', $user->id)
-                                                ->where('wallet_type', 'direct_indirect')
-                                                ->where('source_type', 'saving_instalment')
-                                                ->sum('indirect_balance'),
-                'saving_roi'             => $wallets->where('wallet_type', 'saving_roi')->sum('balance'),
-                'instalment_summary'     => $savingService->getInstalmentSummary($user),
-                'saving_plan_activated'  => true,
-                'user_saving_team_count' => $userSavingTeamCount,
+                'saving_enrolled'           => true,
+                'saving_deposit'            => $wallets->where('wallet_type', 'saving')->sum('balance'),
+                'saving_direct'             => Wallet::where('user_id', $user->id)
+                                                    ->where('wallet_type', 'direct_indirect')
+                                                    ->where('source_type', 'saving_instalment')
+                                                    ->sum('direct_balance'),
+                'saving_indirect'           => Wallet::where('user_id', $user->id)
+                                                    ->where('wallet_type', 'direct_indirect')
+                                                    ->where('source_type', 'saving_instalment')
+                                                    ->sum('indirect_balance'),
+                'saving_roi'                => $wallets->where('wallet_type', 'saving_roi')->sum('balance'),
+                'instalment_summary'        => $savingService->getInstalmentSummary($user),
+                'saving_plan_activated'     => true,
+                'user_saving_team_count'    => $userSavingTeamCount,
+                'saving_direct_team_count'  => DB::table('referral_trees')
+                                                    ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
+                                                    ->where('referral_trees.ancestor_id', $user->id)
+                                                    ->where('referral_trees.level', 1)
+                                                    ->where('referral_trees.tree_type', 'saving')
+                                                    ->where('users.saving_registration_completed', true)
+                                                    ->count(),
             ];
         }
 
@@ -476,15 +483,24 @@ class FrontEndController extends Controller
                                 ->where('wallet_type', 'direct_indirect')
                                 ->where('source_type', 'saving_instalment')
                                 ->sum('indirect_balance');
+
+            $savingDirectTeamCount = DB::table('referral_trees')
+                ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
+                ->where('referral_trees.ancestor_id', $user->id)
+                ->where('referral_trees.level', 1)
+                ->where('referral_trees.tree_type', 'saving')
+                ->where('users.saving_registration_completed', true)
+                ->count();
         } else {
-            $instalmentSummary = [];
-            $levelCounts       = collect(range(1, 7))->mapWithKeys(fn($l) => [$l => 0]);
-            $totalEarning      = 0;
-            $savingBalance     = 0;
-            $savingRoi         = 0;
-            $savingDirect      = 0;
-            $savingIndirect    = 0;
-            $roiStats          = $accountService->getRoiAccountStats($user);
+            $instalmentSummary     = [];
+            $levelCounts           = collect(range(1, 7))->mapWithKeys(fn($l) => [$l => 0]);
+            $totalEarning          = 0;
+            $savingBalance         = 0;
+            $savingRoi             = 0;
+            $savingDirect          = 0;
+            $savingIndirect        = 0;
+            $savingDirectTeamCount = 0;
+            $roiStats              = $accountService->getRoiAccountStats($user);
         }
 
         $data = [
@@ -512,11 +528,12 @@ class FrontEndController extends Controller
             'registration_complete' => $user->saving_registration_completed,
             'plan_activated'        => $user->can_login,
             // Saving card keys (shared with enrolled standard users)
-            'saving_enrolled'       => true,
-            'saving_deposit'        => $savingBalance,
-            'saving_roi'            => $savingRoi,
-            'saving_direct'         => $savingDirect,
-            'saving_indirect'       => $savingIndirect,
+            'saving_enrolled'           => true,
+            'saving_deposit'            => $savingBalance,
+            'saving_roi'                => $savingRoi,
+            'saving_direct'             => $savingDirect,
+            'saving_indirect'           => $savingIndirect,
+            'saving_direct_team_count'  => $savingDirectTeamCount,
         ];
 
         $reward = collect(); // saving users have no reward tree
