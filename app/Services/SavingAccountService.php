@@ -174,9 +174,12 @@ class SavingAccountService
             }
 
             // ROI base for this instalment starts:
-            //   - Early payment: from the originally scheduled due_date (not before)
+            //   - Early payment: from the day AFTER the due_date (due_date itself is the payment day,
+            //     ROI accrual begins the following day — e.g. due 20 May → ROI from 21 May)
             //   - On-time / late: from today (confirmation date)
-            $roiEligibleFrom = $isEarly ? $dueDate->toDateString() : $now->toDateString();
+            $roiEligibleFrom = $isEarly
+                ? $dueDate->copy()->addDay()->toDateString()
+                : $now->toDateString();
 
             $instalment->update([
                 'status'           => 'confirmed',
@@ -428,6 +431,19 @@ class SavingAccountService
 
         if (!$this->canReceiveSavingRoi($user)) {
             return ['success' => false, 'message' => 'Not eligible for saving ROI'];
+        }
+
+        // Suspend ROI if any instalment is overdue and not yet confirmed by admin.
+        // 'pending'   = user has not submitted anything yet.
+        // 'submitted' = user uploaded a receipt but admin has NOT confirmed it yet — treat same as unpaid
+        //               since the receipt could be fake and only admin confirmation makes it real.
+        $hasOverdue = SavingInstalment::where('user_id', $user->id)
+            ->whereIn('status', ['pending', 'submitted'])
+            ->whereDate('due_date', '<', $forDate->toDateString())
+            ->exists();
+
+        if ($hasOverdue) {
+            return ['success' => false, 'message' => 'ROI suspended: overdue instalment awaiting admin confirmation'];
         }
 
         // Block if ROI already exists for this specific date (prevents duplicates).
