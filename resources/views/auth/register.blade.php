@@ -578,8 +578,8 @@
                 badge.textContent = 'Pay in scheduled monthly instalments — 25 months';
             }
             if (infoPanel) infoPanel.classList.remove('d-none');
-            if (usdtInput) { usdtInput.min = savingFee; usdtInput.max = savingFull; }
-            if (usdtLabel) usdtLabel.innerHTML = `Equivalent in USDT <span style="font-size:0.68rem; color:#ef4444;">(Min. $${savingFee} — Max. $${savingFull})</span>`;
+            if (usdtInput) { usdtInput.min = savingFee; usdtInput.removeAttribute('max'); }
+            if (usdtLabel) usdtLabel.innerHTML = `Equivalent in USDT <span style="font-size:0.68rem; color:#ef4444;">(Min. $${savingFee})</span>`;
         }
     }
 
@@ -634,12 +634,7 @@
                     let usd = parseFloat((pkr / rate).toFixed(2));
                     const accountTypeEl = document.getElementById('account_type');
                     const currentType   = isSavingPage ? 'saving' : (accountTypeEl ? accountTypeEl.value : 'standard_investment');
-                    if (currentType === 'saving' && usd > savingFull) {
-                        usd = savingFull;
-                        if (usdInfo) usdInfo.textContent = `Capped at $${savingFull} maximum for Saving Account`;
-                    } else {
-                        if (usdInfo) usdInfo.textContent = `At PKR ${rate}/USD ≈ ${usd} USDT`;
-                    }
+                    if (usdInfo) usdInfo.textContent = `At PKR ${rate}/USD ≈ ${usd} USDT`;
                     usdOutput.value = usd;
                 } else {
                     usdOutput.value = '';
@@ -658,8 +653,7 @@
             switchUserType(oldUserType);
             const radios = document.querySelectorAll('input[name="user_type_toggle"]');
             radios.forEach(r => { if (r.value === oldUserType) r.checked = true; });
-            // Saving page always caps USDT
-            if (usdOutput) { usdOutput.min = savingFee; usdOutput.max = savingFull; }
+            if (usdOutput) { usdOutput.min = savingFee; usdOutput.removeAttribute('max'); }
         } else {
             // Restore account type badge (standard form)
             const accountTypeEl = document.getElementById('account_type');

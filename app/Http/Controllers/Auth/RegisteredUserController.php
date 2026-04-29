@@ -164,9 +164,9 @@ class RegisteredUserController extends Controller
             'amount_src'       => $request->payment_method === 'activation_code' ? 'nullable|image|mimes:jpg,jpeg,png|max:2048' : 'required|image|mimes:jpg,jpeg,png|max:2048',
             'activation_code'  => ['nullable', new ValidActivationCode($request->payment_method)],
             'transferred_amount' => 'required|numeric',
-            'usdt_amount'      => 'required|numeric|min:' . $minTotal . '|max:' . $fullTotal,
+            'usdt_amount'      => 'required|numeric|min:' . $minTotal,
         ]);
-        
+
 
         // Validate referral link belongs to the saving tree
         $referralLink = ReferralLink::where('link', $request->referral_link)
@@ -237,8 +237,10 @@ class RegisteredUserController extends Controller
                 $user->addMedia($request->file('amount_src'))->toMediaCollection('user_amount_source');
             }
 
-            // Build 25-month instalment schedule
-            $monthlyAmount = $setting->saving_monthly_instalment ?? 19;
+            // Build 25-month instalment schedule.
+            // Monthly amount mirrors the initial deposit so all instalments stay consistent.
+            // Falls back to the setting default only when the user paid the fee only ($0 net deposit).
+            $monthlyAmount = $netDeposit > 0 ? $netDeposit : ($setting->saving_monthly_instalment ?? 19);
             $this->savingAccountService->createInstalmentSchedule($user, $netDeposit, $monthlyAmount);
 
             if ($registrationComplete) {
@@ -295,7 +297,7 @@ class RegisteredUserController extends Controller
             'referral_link'      => ['required', 'string', 'exists:referral_links,link'],
             'amount_src'         => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'transferred_amount' => 'required|numeric',
-            'usdt_amount'        => 'required|numeric|min:' . $minTotal . '|max:' . $fullTotal,
+            'usdt_amount'        => 'required|numeric|min:' . $minTotal,
         ]);
 
         // Find the existing user by username or email
@@ -344,7 +346,7 @@ class RegisteredUserController extends Controller
                 $existingUser->addMedia($request->file('amount_src'))->toMediaCollection('saving_enrollment_proof');
             }
 
-            $monthlyAmount = $setting->saving_monthly_instalment ?? 19;
+            $monthlyAmount = $netDeposit > 0 ? $netDeposit : ($setting->saving_monthly_instalment ?? 19);
             $this->savingAccountService->createInstalmentSchedule($existingUser, $netDeposit, $monthlyAmount);
 
             if ($registrationComplete) {
