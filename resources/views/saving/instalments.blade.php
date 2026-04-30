@@ -193,13 +193,48 @@
                             <div class="row">
                                 <div class="col-md-4 mb-4">
                                     <label class="font-weight-bold">Payment Method</label>
-                                    <select name="payment_method" class="form-control" required>
+                                    <select name="payment_method" id="inst_payment_method" class="form-control" required onchange="toggleInstBankField(this.value)">
                                         <option value="">Select method</option>
-                                        <option value="bank">Bank Transfer</option>
-                                        <option value="usdt">USDT</option>
-                                        <option value="cash_slip">Cash Slip</option>
+                                        <option value="bank" {{ old('payment_method') == 'bank' ? 'selected' : '' }}>Bank Transfer</option>
+                                        <option value="usdt" {{ old('payment_method') == 'usdt' ? 'selected' : '' }}>USDT</option>
+                                        <option value="cash_slip" {{ old('payment_method') == 'cash_slip' ? 'selected' : '' }}>Cash Slip</option>
                                     </select>
                                     @error('payment_method')<div class="text-danger small">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="col-md-4 mb-4" id="inst_bank_field" style="{{ old('payment_method') === 'bank' ? '' : 'display:none;' }}">
+                                    <label class="font-weight-bold">Bank Name</label>
+                                    <select name="bank_name" id="inst_bank_name" class="form-control">
+                                        <option value="">Select bank</option>
+                                        <option value="Allied Bank Limited (ABL)" {{ old('bank_name') == 'Allied Bank Limited (ABL)' ? 'selected' : '' }}>Allied Bank Limited (ABL)</option>
+                                        <option value="Al Baraka Bank Pakistan Limited" {{ old('bank_name') == 'Al Baraka Bank Pakistan Limited' ? 'selected' : '' }}>Al Baraka Bank Pakistan Limited</option>
+                                        <option value="Askari Bank Limited" {{ old('bank_name') == 'Askari Bank Limited' ? 'selected' : '' }}>Askari Bank Limited</option>
+                                        <option value="Bank Alfalah Limited" {{ old('bank_name') == 'Bank Alfalah Limited' ? 'selected' : '' }}>Bank Alfalah Limited</option>
+                                        <option value="Bank Al-Habib Limited" {{ old('bank_name') == 'Bank Al-Habib Limited' ? 'selected' : '' }}>Bank Al-Habib Limited</option>
+                                        <option value="Bank Islami Pakistan Limited" {{ old('bank_name') == 'Bank Islami Pakistan Limited' ? 'selected' : '' }}>Bank Islami Pakistan Limited</option>
+                                        <option value="Bank of Khyber (BOK)" {{ old('bank_name') == 'Bank of Khyber (BOK)' ? 'selected' : '' }}>Bank of Khyber (BOK)</option>
+                                        <option value="Bank of Punjab (BOP)" {{ old('bank_name') == 'Bank of Punjab (BOP)' ? 'selected' : '' }}>Bank of Punjab (BOP)</option>
+                                        <option value="Dubai Islamic Bank Pakistan Limited" {{ old('bank_name') == 'Dubai Islamic Bank Pakistan Limited' ? 'selected' : '' }}>Dubai Islamic Bank Pakistan Limited</option>
+                                        <option value="Faysal Bank Limited" {{ old('bank_name') == 'Faysal Bank Limited' ? 'selected' : '' }}>Faysal Bank Limited</option>
+                                        <option value="First Women Bank Limited" {{ old('bank_name') == 'First Women Bank Limited' ? 'selected' : '' }}>First Women Bank Limited</option>
+                                        <option value="Habib Bank Limited (HBL)" {{ old('bank_name') == 'Habib Bank Limited (HBL)' ? 'selected' : '' }}>Habib Bank Limited (HBL)</option>
+                                        <option value="Habib Metropolitan Bank Limited" {{ old('bank_name') == 'Habib Metropolitan Bank Limited' ? 'selected' : '' }}>Habib Metropolitan Bank Limited</option>
+                                        <option value="JS Bank Limited" {{ old('bank_name') == 'JS Bank Limited' ? 'selected' : '' }}>JS Bank Limited</option>
+                                        <option value="MCB Bank Limited" {{ old('bank_name') == 'MCB Bank Limited' ? 'selected' : '' }}>MCB Bank Limited</option>
+                                        <option value="Meezan Bank Limited" {{ old('bank_name') == 'Meezan Bank Limited' ? 'selected' : '' }}>Meezan Bank Limited</option>
+                                        <option value="National Bank of Pakistan (NBP)" {{ old('bank_name') == 'National Bank of Pakistan (NBP)' ? 'selected' : '' }}>National Bank of Pakistan (NBP)</option>
+                                        <option value="Sindh Bank Limited" {{ old('bank_name') == 'Sindh Bank Limited' ? 'selected' : '' }}>Sindh Bank Limited</option>
+                                        <option value="Soneri Bank Limited" {{ old('bank_name') == 'Soneri Bank Limited' ? 'selected' : '' }}>Soneri Bank Limited</option>
+                                        <option value="Standard Chartered Bank Pakistan" {{ old('bank_name') == 'Standard Chartered Bank Pakistan' ? 'selected' : '' }}>Standard Chartered Bank Pakistan</option>
+                                        <option value="United Bank Limited (UBL)" {{ old('bank_name') == 'United Bank Limited (UBL)' ? 'selected' : '' }}>United Bank Limited (UBL)</option>
+                                        <option value="Zarai Taraqiati Bank Limited (ZTBL)" {{ old('bank_name') == 'Zarai Taraqiati Bank Limited (ZTBL)' ? 'selected' : '' }}>Zarai Taraqiati Bank Limited (ZTBL)</option>
+                                        <option value="Easypaisa" {{ old('bank_name') == 'Easypaisa' ? 'selected' : '' }}>Easypaisa</option>
+                                        <option value="Jazzcash" {{ old('bank_name') == 'Jazzcash' ? 'selected' : '' }}>Jazzcash</option>
+                                        <option value="Other" {{ old('bank_name') == 'Other' ? 'selected' : '' }}>Other</option>
+                                    </select>
+                                    <div id="inst_other_bank_div" class="mt-2" style="{{ old('bank_name') === 'Other' ? '' : 'display:none;' }}">
+                                        <input type="text" name="bank_name_other" id="inst_other_bank_input" class="form-control" placeholder="Enter bank name" value="{{ old('bank_name_other') }}">
+                                    </div>
+                                    @error('bank_name')<div class="text-danger small">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-4 mb-4">
                                     <label class="font-weight-bold">Transaction ID</label>
@@ -302,4 +337,48 @@
         </div>
     </div>
 </div>
+
+@section('page_js')
+<script>
+function toggleInstBankField(method) {
+    var bankField = document.getElementById('inst_bank_field');
+    var bankSelect = document.getElementById('inst_bank_name');
+    if (method === 'bank') {
+        bankField.style.display = '';
+        bankSelect.required = true;
+    } else {
+        bankField.style.display = 'none';
+        bankSelect.required = false;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var bankSelect  = document.getElementById('inst_bank_name');
+    var otherDiv    = document.getElementById('inst_other_bank_div');
+    var otherInput  = document.getElementById('inst_other_bank_input');
+
+    if (bankSelect) {
+        bankSelect.addEventListener('change', function() {
+            if (this.value === 'Other') {
+                otherDiv.style.display = '';
+                otherInput.required = true;
+            } else {
+                otherDiv.style.display = 'none';
+                otherInput.required = false;
+            }
+        });
+    }
+
+    // On submit: if "Other" chosen, overwrite the bank select value with typed text
+    var form = document.querySelector('form[action="{{ route('saving.user.submit') }}"]');
+    if (form) {
+        form.addEventListener('submit', function() {
+            if (bankSelect && bankSelect.value === 'Other' && otherInput && otherInput.value.trim()) {
+                bankSelect.value = otherInput.value.trim();
+            }
+        });
+    }
+});
+</script>
 @endsection
+

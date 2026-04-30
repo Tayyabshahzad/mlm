@@ -164,16 +164,11 @@
                                     <label class="col-xl-3 col-lg-3 col-form-label">Bank Name <span class="text-danger">*</span> </label>
                                     <div class="col-lg-9 col-xl-6">
 
-                                        <div id="other_bank_div" class="mt-2" style="display: none;">
-                                            <input type="text" name="bank_name" id="other_bank_name" 
-                                            class="form-control" placeholder="Enter Bank Name"  >
-                                        </div>
-
-
                                         <div class="input-group input-group-lg input-group-solid">
                                             <select name="bank_name" id="bank_name" class="form-control form-control-lg form-control-solid">
                                                 <option value="" selected disabled>Select Bank</option>
                                                 <option value="Allied Bank Limited (ABL)" {{ old('bank_name', $profile->bank_name ?? '') == 'Allied Bank Limited (ABL)' ? 'selected' : '' }}>Allied Bank Limited (ABL)</option>
+                                                <option value="Al Baraka Bank Pakistan Limited" {{ old('bank_name', $profile->bank_name ?? '') == 'Al Baraka Bank Pakistan Limited' ? 'selected' : '' }}>Al Baraka Bank Pakistan Limited</option>
                                                 <option value="Askari Bank Limited" {{ old('bank_name', $profile->bank_name ?? '') == 'Askari Bank Limited' ? 'selected' : '' }}>Askari Bank Limited</option>
                                                 <option value="Bank Alfalah Limited" {{ old('bank_name', $profile->bank_name ?? '') == 'Bank Alfalah Limited' ? 'selected' : '' }}>Bank Alfalah Limited</option>
                                                 <option value="Bank Al-Habib Limited" {{ old('bank_name', $profile->bank_name ?? '') == 'Bank Al-Habib Limited' ? 'selected' : '' }}>Bank Al-Habib Limited</option>
@@ -196,7 +191,13 @@
                                                 <option value="Zarai Taraqiati Bank Limited (ZTBL)" {{ old('bank_name', $profile->bank_name ?? '') == 'Zarai Taraqiati Bank Limited (ZTBL)' ? 'selected' : '' }}>Zarai Taraqiati Bank Limited (ZTBL)</option>
                                                 <option value="Easypaisa" {{ old('bank_name', $profile->bank_name ?? '') == 'Easypaisa' ? 'selected' : '' }}>Easypaisa</option>
                                                 <option value="Jazzcash" {{ old('bank_name', $profile->bank_name ?? '') == 'Jazzcash' ? 'selected' : '' }}>Jazzcash</option>
+                                                <option value="Other" {{ old('bank_name', $profile->bank_name ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
                                             </select>
+                                        </div>
+
+                                        <div id="other_bank_div" class="mt-2" style="display:none;">
+                                            <input type="text" name="other_bank_name_input" id="other_bank_name"
+                                            class="form-control" placeholder="Enter bank name">
                                         </div>
                                 
                                         
@@ -290,25 +291,30 @@ jQuery(document).ready(function() {
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        let bankSelect = document.getElementById('bank_name');
-        let otherBankDiv = document.getElementById('other_bank_div');
-        let otherBankInput = document.getElementById('other_bank_name');
+        var bankSelect   = document.getElementById('bank_name');
+        var otherBankDiv = document.getElementById('other_bank_div');
+        var otherInput   = document.getElementById('other_bank_name');
 
         function toggleOtherBank() {
             if (bankSelect.value === 'Other') {
                 otherBankDiv.style.display = 'block';
-                otherBankInput.required = true;
+                otherInput.required = true;
             } else {
                 otherBankDiv.style.display = 'none';
-                otherBankInput.required = false;
+                otherInput.required = false;
             }
         }
 
         bankSelect.addEventListener('change', toggleOtherBank);
 
-        // Check if "Other" was previously selected and show the input field
-        if (bankSelect.value === 'Other') {
-            otherBankDiv.style.display = 'block';
+        // Before form submit: if "Other" is selected, overwrite the select value with the typed bank name
+        var form = bankSelect.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (bankSelect.value === 'Other' && otherInput.value.trim()) {
+                    bankSelect.value = otherInput.value.trim();
+                }
+            });
         }
     });
 </script>

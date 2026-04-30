@@ -21,6 +21,7 @@ class SavingInstalment extends Model implements HasMedia
         'is_late',
         'deposit_deferred',
         'next_cycle_date',
+        'roi_eligible_from',
         'transaction_id',
         'payment_method',
         'submitted_amount',
@@ -32,15 +33,16 @@ class SavingInstalment extends Model implements HasMedia
     ];
 
     protected $casts = [
-        'due_date'       => 'date',
-        'submitted_at'   => 'datetime',
-        'confirmed_at'   => 'datetime',
-        'deposited_at'   => 'datetime',
-        'next_cycle_date'=> 'date',
-        'is_late'        => 'boolean',
-        'deposit_deferred' => 'boolean',
-        'amount'         => 'decimal:2',
-        'submitted_amount' => 'decimal:2',
+        'due_date'          => 'date',
+        'submitted_at'      => 'datetime',
+        'confirmed_at'      => 'datetime',
+        'deposited_at'      => 'datetime',
+        'next_cycle_date'   => 'date',
+        'roi_eligible_from' => 'date',
+        'is_late'           => 'boolean',
+        'deposit_deferred'  => 'boolean',
+        'amount'            => 'decimal:2',
+        'submitted_amount'  => 'decimal:2',
     ];
 
     public function user(): BelongsTo

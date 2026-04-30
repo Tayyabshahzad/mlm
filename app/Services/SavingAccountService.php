@@ -43,6 +43,12 @@ class SavingAccountService
      */
     public function createInstalmentSchedule(User $user, float $firstAmount, float $monthlyAmount): void
     {
+        // Prevent duplicate schedule if one already exists for this user.
+        if (SavingInstalment::where('user_id', $user->id)->exists()) {
+            Log::warning("createInstalmentSchedule called but user {$user->id} already has instalments — skipped.");
+            return;
+        }
+
         $startDate = Carbon::parse($user->saving_plan_start_date);
         $setting   = Setting::first();
         $months    = $setting->saving_plan_months ?? self::PLAN_MONTHS;
@@ -83,14 +89,15 @@ class SavingAccountService
         }
 
         $instalment->update([
-            'status'           => 'confirmed',
-            'transaction_id'   => $transactionId,
-            'submitted_at'     => now(),
-            'confirmed_at'     => now(),
-            'confirmed_by'     => $adminId,
-            'submitted_amount' => $instalment->amount,
-            'deposited_at'     => now(),
-            'is_late'          => false,
+            'status'            => 'confirmed',
+            'transaction_id'    => $transactionId,
+            'submitted_at'      => now(),
+            'confirmed_at'      => now(),
+            'confirmed_by'      => $adminId,
+            'submitted_amount'  => $instalment->amount,
+            'deposited_at'      => now(),
+            'is_late'           => false,
+            'roi_eligible_from' => $instalment->due_date,
         ]);
     }
 
@@ -174,12 +181,13 @@ class SavingAccountService
             }
 
             // ROI base for this instalment starts:
-            //   - Early payment: from the day AFTER the due_date (due_date itself is the payment day,
-            //     ROI accrual begins the following day — e.g. due 20 May → ROI from 21 May)
-            //   - On-time / late: from today (confirmation date)
-            $roiEligibleFrom = $isEarly
-                ? $dueDate->copy()->addDay()->toDateString()
-                : $now->toDateString();
+            //   - Early or on-time payment: from the due_date itself.
+            //     Paying a future instalment early never advances its ROI — the user
+            //     only enjoys that month's ROI once the scheduled due date arrives.
+            //   - Late payment: from today (no backdated ROI for missed months).
+            $roiEligibleFrom = $isLate
+                ? $now->toDateString()
+                : $dueDate->toDateString();
 
             $instalment->update([
                 'status'           => 'confirmed',
@@ -460,9 +468,17 @@ class SavingAccountService
         $dailyRate = (float) ($setting->saving_roi_daily_rate ?? 0.1);
 
         // ROI base = confirmed instalments whose roi_eligible_from has arrived by $forDate.
-        $eligibleBase = \App\Models\SavingInstalment::where('user_id', $user->id)
+        // For legacy records without roi_eligible_from (saved before the field was fillable),
+        // fall back to due_date so early-paid instalments aren't counted before their due month.
+        $eligibleBase = SavingInstalment::where('user_id', $user->id)
             ->where('status', 'confirmed')
-            ->where(fn($q) => $q->whereNull('roi_eligible_from')->orWhereDate('roi_eligible_from', '<=', $forDate->toDateString()))
+            ->where(function ($q) use ($forDate) {
+                $q->whereDate('roi_eligible_from', '<=', $forDate->toDateString())
+                  ->orWhere(function ($q2) use ($forDate) {
+                      $q2->whereNull('roi_eligible_from')
+                         ->whereDate('due_date', '<=', $forDate->toDateString());
+                  });
+            })
             ->sum('amount');
 
         $base = $eligibleBase > 0 ? (float) $eligibleBase : (float) $user->saving_total_deposited;

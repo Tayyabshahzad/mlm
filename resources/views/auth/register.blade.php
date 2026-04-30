@@ -408,6 +408,46 @@
             </div>
         </div>
 
+        <!-- Bank Name (shown when Bank is selected) -->
+        <div id="reg-bank-name-container" class="field-group d-none">
+            <label class="auth-label">Bank Name <span style="color:#ef4444;">*</span></label>
+            <div class="auth-input-wrap" style="flex-direction:column; align-items:stretch; gap:0.5rem;">
+                <select name="bank_name" id="reg_bank_name" class="auth-input auth-select">
+                    <option value="">Select your bank</option>
+                    <option value="Allied Bank Limited (ABL)" {{ old('bank_name') == 'Allied Bank Limited (ABL)' ? 'selected' : '' }}>Allied Bank Limited (ABL)</option>
+                    <option value="Al Baraka Bank Pakistan Limited" {{ old('bank_name') == 'Al Baraka Bank Pakistan Limited' ? 'selected' : '' }}>Al Baraka Bank Pakistan Limited</option>
+                    <option value="Askari Bank Limited" {{ old('bank_name') == 'Askari Bank Limited' ? 'selected' : '' }}>Askari Bank Limited</option>
+                    <option value="Bank Alfalah Limited" {{ old('bank_name') == 'Bank Alfalah Limited' ? 'selected' : '' }}>Bank Alfalah Limited</option>
+                    <option value="Bank Al-Habib Limited" {{ old('bank_name') == 'Bank Al-Habib Limited' ? 'selected' : '' }}>Bank Al-Habib Limited</option>
+                    <option value="Bank Islami Pakistan Limited" {{ old('bank_name') == 'Bank Islami Pakistan Limited' ? 'selected' : '' }}>Bank Islami Pakistan Limited</option>
+                    <option value="Bank of Khyber (BOK)" {{ old('bank_name') == 'Bank of Khyber (BOK)' ? 'selected' : '' }}>Bank of Khyber (BOK)</option>
+                    <option value="Bank of Punjab (BOP)" {{ old('bank_name') == 'Bank of Punjab (BOP)' ? 'selected' : '' }}>Bank of Punjab (BOP)</option>
+                    <option value="Dubai Islamic Bank Pakistan Limited" {{ old('bank_name') == 'Dubai Islamic Bank Pakistan Limited' ? 'selected' : '' }}>Dubai Islamic Bank Pakistan Limited</option>
+                    <option value="Faysal Bank Limited" {{ old('bank_name') == 'Faysal Bank Limited' ? 'selected' : '' }}>Faysal Bank Limited</option>
+                    <option value="First Women Bank Limited" {{ old('bank_name') == 'First Women Bank Limited' ? 'selected' : '' }}>First Women Bank Limited</option>
+                    <option value="Habib Bank Limited (HBL)" {{ old('bank_name') == 'Habib Bank Limited (HBL)' ? 'selected' : '' }}>Habib Bank Limited (HBL)</option>
+                    <option value="Habib Metropolitan Bank Limited" {{ old('bank_name') == 'Habib Metropolitan Bank Limited' ? 'selected' : '' }}>Habib Metropolitan Bank Limited</option>
+                    <option value="JS Bank Limited" {{ old('bank_name') == 'JS Bank Limited' ? 'selected' : '' }}>JS Bank Limited</option>
+                    <option value="MCB Bank Limited" {{ old('bank_name') == 'MCB Bank Limited' ? 'selected' : '' }}>MCB Bank Limited</option>
+                    <option value="Meezan Bank Limited" {{ old('bank_name') == 'Meezan Bank Limited' ? 'selected' : '' }}>Meezan Bank Limited</option>
+                    <option value="National Bank of Pakistan (NBP)" {{ old('bank_name') == 'National Bank of Pakistan (NBP)' ? 'selected' : '' }}>National Bank of Pakistan (NBP)</option>
+                    <option value="Sindh Bank Limited" {{ old('bank_name') == 'Sindh Bank Limited' ? 'selected' : '' }}>Sindh Bank Limited</option>
+                    <option value="Soneri Bank Limited" {{ old('bank_name') == 'Soneri Bank Limited' ? 'selected' : '' }}>Soneri Bank Limited</option>
+                    <option value="Standard Chartered Bank Pakistan" {{ old('bank_name') == 'Standard Chartered Bank Pakistan' ? 'selected' : '' }}>Standard Chartered Bank Pakistan</option>
+                    <option value="United Bank Limited (UBL)" {{ old('bank_name') == 'United Bank Limited (UBL)' ? 'selected' : '' }}>United Bank Limited (UBL)</option>
+                    <option value="Zarai Taraqiati Bank Limited (ZTBL)" {{ old('bank_name') == 'Zarai Taraqiati Bank Limited (ZTBL)' ? 'selected' : '' }}>Zarai Taraqiati Bank Limited (ZTBL)</option>
+                    <option value="Easypaisa" {{ old('bank_name') == 'Easypaisa' ? 'selected' : '' }}>Easypaisa</option>
+                    <option value="Jazzcash" {{ old('bank_name') == 'Jazzcash' ? 'selected' : '' }}>Jazzcash</option>
+                    <option value="Other" {{ old('bank_name') == 'Other' ? 'selected' : '' }}>Other</option>
+                </select>
+                <div id="reg-other-bank-div" class="{{ old('bank_name') === 'Other' ? '' : 'd-none' }}">
+                    <input class="mt-3 auth-input" type="text" name="bank_name_other" id="reg_other_bank_input"
+                           placeholder="Enter bank name" value="{{ old('bank_name_other') }}">
+                </div>
+            </div>
+            @error('bank_name') <div class="text-danger">{{ $message }}</div> @enderror
+        </div>
+
         <!-- USDT QR Panel -->
         <div id="referral-link-container" class="d-none">
             <div style="background:rgba(79,70,229,0.04); border:1.5px solid #e0e7ff; border-radius:12px; padding:1rem; margin-bottom:1rem;">
@@ -585,14 +625,18 @@
 
     // Payment method toggle
     function toggleReferralLink(method) {
-        const qrPanel       = document.getElementById('referral-link-container');
-        const codePanel     = document.getElementById('activation-code-container');
-        const codeInput     = document.getElementById('activation_code');
-        const proofContainer= document.getElementById('transaction-proof-container');
+        const qrPanel        = document.getElementById('referral-link-container');
+        const codePanel      = document.getElementById('activation-code-container');
+        const codeInput      = document.getElementById('activation_code');
+        const proofContainer = document.getElementById('transaction-proof-container');
+        const bankContainer  = document.getElementById('reg-bank-name-container');
+        const bankSelect     = document.getElementById('reg_bank_name');
 
         if (qrPanel)   qrPanel.classList.add('d-none');
         if (codePanel) codePanel.classList.add('d-none');
         if (codeInput) codeInput.removeAttribute('required');
+        if (bankContainer) bankContainer.classList.add('d-none');
+        if (bankSelect)    bankSelect.removeAttribute('required');
 
         if (method === 'activation_code') {
             if (codePanel) codePanel.classList.remove('d-none');
@@ -601,8 +645,46 @@
         } else {
             if (proofContainer) proofContainer.classList.remove('d-none');
             if (method === 'usdt' && qrPanel) qrPanel.classList.remove('d-none');
+            if (method === 'bank') {
+                if (bankContainer) bankContainer.classList.remove('d-none');
+                if (bankSelect)    bankSelect.setAttribute('required', 'required');
+            }
         }
     }
+
+    // Bank name "Other" toggle on register form
+    document.addEventListener('DOMContentLoaded', function() {
+        var regBankSelect = document.getElementById('reg_bank_name');
+        var regOtherDiv   = document.getElementById('reg-other-bank-div');
+        var regOtherInput = document.getElementById('reg_other_bank_input');
+
+        if (regBankSelect) {
+            regBankSelect.addEventListener('change', function() {
+                if (this.value === 'Other') {
+                    regOtherDiv.classList.remove('d-none');
+                    regOtherInput.required = true;
+                } else {
+                    regOtherDiv.classList.add('d-none');
+                    regOtherInput.required = false;
+                }
+            });
+        }
+
+        // On submit: overwrite select value with typed "Other" bank name
+        var regForm = document.querySelector('form[action="{{ route('register.user') }}"]');
+        if (regForm) {
+            regForm.addEventListener('submit', function() {
+                if (regBankSelect && regBankSelect.value === 'Other' && regOtherInput && regOtherInput.value.trim()) {
+                    regBankSelect.value = regOtherInput.value.trim();
+                }
+            });
+        }
+
+        // Restore bank container if old('payment_method') === 'bank'
+        @if(old('payment_method') === 'bank')
+        toggleReferralLink('bank');
+        @endif
+    });
 
     // File label update
     function updateFileLabel(input) {
