@@ -10,6 +10,7 @@ class ProcessSavingROI extends Command
 {
     protected $signature = 'roi:process-saving
                             {--user-id= : Process ROI for a specific saving user ID}
+                            {--date=    : Process ROI for a specific date (Y-m-d), e.g. 2026-05-02}
                             {--dry-run  : Preview eligible users without processing}';
 
     protected $description = 'Process daily saving account ROI for eligible saving users';
@@ -21,21 +22,26 @@ class ProcessSavingROI extends Command
 
     public function handle(): int
     {
-        $userId = $this->option('user-id');
-        $dryRun = $this->option('dry-run');
+        $userId  = $this->option('user-id');
+        $dryRun  = $this->option('dry-run');
+        $forDate = $this->option('date')
+            ? \Carbon\Carbon::parse($this->option('date'))->startOfDay()
+            : \Carbon\Carbon::today();
 
         if ($dryRun) {
             $this->warn('DRY RUN — no changes will be made.');
         }
 
+        $this->info('Processing saving ROI for: ' . $forDate->toDateString());
+
         if ($userId) {
-            return $this->processSingle((int) $userId, $dryRun);
+            return $this->processSingle((int) $userId, $dryRun, $forDate);
         }
 
-        return $this->processAll($dryRun);
+        return $this->processAll($dryRun, $forDate);
     }
 
-    private function processSingle(int $userId, bool $dryRun): int
+    private function processSingle(int $userId, bool $dryRun, \Carbon\Carbon $forDate): int
     {
         $user = User::find($userId);
 
@@ -60,13 +66,13 @@ class ProcessSavingROI extends Command
             return Command::SUCCESS;
         }
 
-        $result = $this->savingAccountService->processSavingRoi($user);
+        $result = $this->savingAccountService->processSavingRoi($user, $forDate);
         $this->printResult($user, $result);
 
         return Command::SUCCESS;
     }
 
-    private function processAll(bool $dryRun): int
+    private function processAll(bool $dryRun, \Carbon\Carbon $forDate): int
     {
         // Include both dedicated saving account users AND enrolled standard users
         // who actually signed up (saving_initial_payment > 0).
@@ -112,7 +118,7 @@ class ProcessSavingROI extends Command
         $total     = 0;
 
         foreach ($users as $user) {
-            $result = $this->savingAccountService->processSavingRoi($user);
+            $result = $this->savingAccountService->processSavingRoi($user, $forDate);
             $this->printResult($user, $result);
 
             if ($result['success']) {

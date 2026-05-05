@@ -15,12 +15,15 @@ use Illuminate\Support\Facades\Log;
 
 class GenerateWeeklyROI extends Command
 {
-    protected $signature = 'roi:generate-weekly';
+    protected $signature = 'roi:generate-weekly
+                            {--date=     : Process ROI for a specific date (Y-m-d), e.g. 2026-05-02}
+                            {--dry-run   : Preview eligible users without processing}';
     protected $description = 'Generate weekly ROI and distribute commissions for all eligible users';
 
     private AccountManagementService $accountService;
     private ROICommissionService $ROICommissionService;
-    private array $counters = ['processed' => 0, 'skipped' => 0, 'stopped' => 0]; 
+    private array $counters = ['processed' => 0, 'skipped' => 0, 'stopped' => 0];
+
     public function __construct(
         AccountManagementService $accountService,
         ROICommissionService $ROICommissionService
@@ -32,17 +35,41 @@ class GenerateWeeklyROI extends Command
 
     public function handle(): int
     {
-        $this->info('Starting Weekly ROI generation...');
-        
-        $week = $this->getWeekConfiguration(); 
+        $dryRun = $this->option('dry-run');
+
+        $forDate = $this->option('date')
+            ? Carbon::parse($this->option('date'))->startOfDay()
+            : Carbon::now();
+
+        if ($dryRun) {
+            $this->warn('DRY RUN — no changes will be made.');
+        }
+
+        $this->info('Starting Weekly ROI generation for: ' . $forDate->toDateString());
+
+        $week = $this->getWeekConfiguration();
         if (!$week) {
             return Command::FAILURE;
         }
 
         $users = $this->getEligibleUsers();
-        $todayDate = Carbon::now();
+
+        if ($dryRun) {
+            $this->table(
+                ['ID', 'Username', 'Investment', 'ROI %', 'Est. ROI', 'Already Paid'],
+                $users->map(function ($u) use ($week, $forDate) {
+                    $percentage = $week->getPercentageForUser($u);
+                    $investment = \App\Models\UserInvestment::where('user_id', $u->id)->where('roi_status', 'active')->sum('amount');
+                    $estimated  = round(($investment * $percentage) / 100, 2);
+                    $paid       = $this->wasRoiPaidForDate($u, $forDate) ? 'Yes' : 'No';
+                    return [$u->id, $u->username, '$' . number_format($investment, 2), $percentage . '%', '$' . number_format($estimated, 2), $paid];
+                })
+            );
+            return Command::SUCCESS;
+        }
+
         foreach ($users as $user) {
-            $this->processUser($user, $week, $todayDate);
+            $this->processUser($user, $week, $forDate);
         }
 
         $this->displaySummary();
@@ -75,12 +102,11 @@ class GenerateWeeklyROI extends Command
                 ->get();
     }
 
-    private function processUser(User $user, Week $week, $todayDate): void
+    private function processUser(User $user, Week $week, Carbon $forDate): void
     {
         try {
-            DB::beginTransaction(); 
-            // Early checks for account eligibility
-            if ($this->shouldSkipUser($user)) {
+            DB::beginTransaction();
+            if ($this->shouldSkipUser($user, $forDate)) {
                 DB::commit();
                 return;
             }
@@ -100,7 +126,7 @@ class GenerateWeeklyROI extends Command
          
             // Process the ROI payment
             $percentage = $week->getPercentageForUser($user);
-            $this->processRoiPayment($user, $roiPayment, $percentage,$todayDate);
+            $this->processRoiPayment($user, $roiPayment, $percentage, $forDate);
                
             // Generate commissions for upline
             $this->ROICommissionService->generateCommissions($user, $roiPayment); 
@@ -115,25 +141,22 @@ class GenerateWeeklyROI extends Command
         }
     }
 
-    private function shouldSkipUser(User $user): bool
+    private function shouldSkipUser(User $user, Carbon $forDate): bool
     {
-        // Check and stop if 2X limit reached
         if ($this->accountService->checkAndStopAccountAt2X($user)) {
             $this->logUserAction($user, 'stopped', 'Reached 2X limit');
             $this->counters['stopped']++;
             return true;
         }
 
-        // Check if user can receive ROI
         if (!$this->accountService->canReceiveRoi($user)) {
             $this->logUserAction($user, 'skipped', 'ROI disabled');
             $this->counters['skipped']++;
             return true;
         }
 
-        // Skip if already paid today
-        if ($this->wasRoiPaidToday($user)) {
-            $this->logUserAction($user, 'skipped', 'ROI already generated today');
+        if ($this->wasRoiPaidForDate($user, $forDate)) {
+            $this->logUserAction($user, 'skipped', 'ROI already generated for ' . $forDate->toDateString());
             $this->counters['skipped']++;
             return true;
         }
@@ -143,7 +166,14 @@ class GenerateWeeklyROI extends Command
 
     private function wasRoiPaidToday(User $user): bool
     {
-        return $user->last_roi_payment_date &&  Carbon::parse($user->last_roi_payment_date)->isToday();
+        return $this->wasRoiPaidForDate($user, Carbon::today());
+    }
+
+    private function wasRoiPaidForDate(User $user, Carbon $date): bool
+    {
+        return ROITransaction::where('user_id', $user->id)
+            ->whereDate('created_at', $date->toDateString())
+            ->exists();
     }
 
     private function initializeRoiDates(User $user): void
@@ -196,30 +226,33 @@ class GenerateWeeklyROI extends Command
         return $totalRoi;
     }
 
-    private function processRoiPayment(User $user, float $amount, float $percentage, $todayDate): void
+    private function processRoiPayment(User $user, float $amount, float $percentage, Carbon $forDate): void
     {
-        // Update user
+        $entryDate = $forDate->copy()->setTime(23, 40, 0);
+
         $user->increment('roi_wallet_balance', $amount);
-        $user->update(['last_roi_payment_date' => $todayDate]);
+        if (!$user->last_roi_payment_date || $forDate->gt(Carbon::parse($user->last_roi_payment_date))) {
+            $user->update(['last_roi_payment_date' => $forDate->toDateString()]);
+        }
 
-        // Create wallet entry
-        Wallet::create([
-            'user_id' => $user->id,
-            'wallet_type' => 'roi',
-            'balance' => $amount,
-            'level' => '-',
+        $wallet = Wallet::create([
+            'user_id'         => $user->id,
+            'wallet_type'     => 'roi',
+            'balance'         => $amount,
+            'level'           => '-',
             'commission_type' => 'Roi',
-            'total_amount' => $amount,
-            'percentage' => $percentage,
+            'total_amount'    => $amount,
+            'percentage'      => $percentage,
         ]);
+        $wallet->forceFill(['created_at' => $entryDate, 'updated_at' => $entryDate])->saveQuietly();
 
-        // Create transaction record
-        ROITransaction::create([
-            'user_id' => $user->id,
-            'amount' => $amount,
-            'percentage' => $percentage,
+        $transaction = ROITransaction::create([
+            'user_id'     => $user->id,
+            'amount'      => $amount,
+            'percentage'  => $percentage,
             'description' => 'Weekly ROI Generated',
         ]);
+        $transaction->forceFill(['created_at' => $entryDate, 'updated_at' => $entryDate])->saveQuietly();
 
         $this->logUserAction($user, 'processed', "Amount: {$amount}");
     }
