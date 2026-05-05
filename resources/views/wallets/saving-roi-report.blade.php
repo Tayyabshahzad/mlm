@@ -112,7 +112,7 @@
                             </tbody>
                         </table>
                     </div>
-                    {{ $entries->links() }}
+                    {{ $entries->links('pagination::bootstrap-5') }}
                     @endif
                 </div>
             </div>
