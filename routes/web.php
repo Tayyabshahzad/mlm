@@ -284,6 +284,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('/', 'adminIndex')->name('admin.saving.index');
         Route::get('/pending', 'adminPendingSubmissions')->name('admin.saving.pending');
         Route::get('/due-export', 'adminDueExport')->name('admin.saving.due.export');
+        Route::get('/due-preview', 'adminDuePreview')->name('admin.saving.due.preview');
         Route::get('/enrollments', 'adminEnrollments')->name('admin.saving.enrollments');
         Route::post('/enrollments/{user}/activate', 'activateEnrollment')->name('admin.saving.enrollments.activate');
         Route::get('/create-user', 'adminCreateUserForm')->name('admin.saving.create-user');

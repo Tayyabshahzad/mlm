@@ -37,8 +37,8 @@ class SavingDueInstalmentExport implements FromCollection, WithHeadings, WithMap
      */
     public function collection(): Collection
     {
+        // Include instalments within the range AND overdue ones before the start date
         $query = SavingInstalment::where('status', 'pending')
-            ->whereDate('due_date', '>=', $this->from)
             ->whereDate('due_date', '<=', $this->to);
 
         if ($this->userId) {
@@ -51,9 +51,8 @@ class SavingDueInstalmentExport implements FromCollection, WithHeadings, WithMap
             ->with([
                 'savingInstalments' => fn($q) => $q
                     ->where('status', 'pending')
-                    ->whereDate('due_date', '>=', $this->from)
                     ->whereDate('due_date', '<=', $this->to)
-                    ->orderBy('instalment_number'),
+                    ->orderBy('due_date'),
                 'savingSponsor',
             ])
             ->orderBy('name')
@@ -68,7 +67,10 @@ class SavingDueInstalmentExport implements FromCollection, WithHeadings, WithMap
             'Username',
             'Phone',
             'Parent / Sponsor',
-            'Pending Instalments',
+            'Overdue Instalments',
+            'In-Range Instalments',
+            'Overdue Amount ($)',
+            'In-Range Amount ($)',
             'Total Due Amount ($)',
             'Oldest Due Date',
             'Latest Due Date',
@@ -80,15 +82,12 @@ class SavingDueInstalmentExport implements FromCollection, WithHeadings, WithMap
         static $row = 0;
         $row++;
 
-        $dueInstalments = $user->savingInstalments; // already filtered in with()
+        $all     = $user->savingInstalments;
+        $overdue = $all->filter(fn($i) => Carbon::parse($i->due_date)->lt($this->from));
+        $inRange = $all->filter(fn($i) => !Carbon::parse($i->due_date)->lt($this->from));
 
         $sponsor     = $user->savingSponsor->first();
         $sponsorName = $sponsor ? $sponsor->name . ' (@' . $sponsor->username . ')' : '—';
-
-        $totalDue    = $dueInstalments->sum('amount');
-        $count       = $dueInstalments->count();
-        $oldestDue   = $dueInstalments->min('due_date');
-        $latestDue   = $dueInstalments->max('due_date');
 
         return [
             $row,
@@ -96,10 +95,13 @@ class SavingDueInstalmentExport implements FromCollection, WithHeadings, WithMap
             $user->username,
             $user->phone_number ?? '—',
             $sponsorName,
-            $count,
-            number_format($totalDue, 2),
-            $oldestDue  ? Carbon::parse($oldestDue)->format('d-m-Y')  : '—',
-            $latestDue  ? Carbon::parse($latestDue)->format('d-m-Y')  : '—',
+            $overdue->count(),
+            $inRange->count(),
+            number_format($overdue->sum('amount'), 2),
+            number_format($inRange->sum('amount'), 2),
+            number_format($all->sum('amount'), 2),
+            $all->min('due_date') ? Carbon::parse($all->min('due_date'))->format('d-m-Y') : '—',
+            $all->max('due_date') ? Carbon::parse($all->max('due_date'))->format('d-m-Y') : '—',
         ];
     }
 

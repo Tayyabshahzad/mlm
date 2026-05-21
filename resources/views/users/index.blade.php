@@ -383,67 +383,161 @@
     </div>
 </div>
 
-{{-- ── Due Instalment Export Modal ──────────────────────────────────── --}}
-<div class="modal fade" id="dueExportModal" tabindex="-1" role="dialog" aria-labelledby="dueExportModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header" style="background:#343a40;">
-                <h5 class="text-white modal-title font-weight-bold" id="dueExportModalLabel">
-                    <i class="mr-2 text-white fas fa-file-excel"></i> Download Due Instalment Sheet
-                </h5>
-                <button type="button" class="text-white close" data-dismiss="modal">
-                    <span>&times;</span>
+{{-- ── Due Instalment Filter Modal ──────────────────────────────────── --}}
+<div class="modal fade" id="dueExportModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:480px;">
+        <div class="modal-content" style="border:none; border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0 pb-2" style="background:linear-gradient(135deg,#1e2a38 0%,#2d3e50 100%); padding:1.25rem 1.5rem;">
+                <div>
+                    <h5 class="modal-title text-white font-weight-bold mb-0" style="font-size:1rem; letter-spacing:.3px;">
+                        <i class="fas fa-file-excel mr-2" style="color:#5bc65b;"></i> Due Instalment Sheet
+                    </h5>
+                    <p class="mb-0 mt-1" style="font-size:0.75rem; color:#8fa8c8;">Filter by date range &amp; member</p>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" style="opacity:.7;"><span>&times;</span></button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; background:#f8fafc;">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group mb-3">
+                            <label style="font-size:.75rem; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:.5px;">From Date</label>
+                            <input type="date" id="dueFrom" class="form-control" value="{{ date('Y-m-01') }}"
+                                   style="border-radius:8px; border:1.5px solid #d1dbe6; font-size:.875rem; height:38px;">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group mb-3">
+                            <label style="font-size:.75rem; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:.5px;">To Date</label>
+                            <input type="date" id="dueTo" class="form-control" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}"
+                                   style="border-radius:8px; border:1.5px solid #d1dbe6; font-size:.875rem; height:38px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group mb-0">
+                    <label style="font-size:.75rem; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:.5px;">Member</label>
+                    <select id="dueUserId" class="form-control" style="border-radius:8px; border:1.5px solid #d1dbe6; font-size:.875rem; height:38px;">
+                        <option value="">— All Members —</option>
+                        @foreach($savingUsers as $su)
+                            <option value="{{ $su->id }}">{{ $su->name }} (@{{ $su->username }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mt-3 p-2" style="background:#fff3cd; border-radius:8px; border-left:3px solid #f59e0b; font-size:.78rem; color:#7c5700;">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Also includes <strong>overdue instalments</strong> from before the start date.
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0" style="padding:1rem 1.5rem 1.25rem; background:#f8fafc; gap:.5rem;">
+                <button type="button" class="btn btn-light btn-sm" data-dismiss="modal" style="border-radius:8px; padding:.45rem 1rem;">Cancel</button>
+                <button type="button" class="btn btn-sm" id="duePreviewBtn"
+                        style="border-radius:8px; padding:.45rem 1.1rem; background:#2563eb; color:#fff; border:none;">
+                    <i class="fas fa-eye mr-1"></i> Preview
                 </button>
+                <a href="#" id="dueDownloadBtn" class="btn btn-sm"
+                   style="border-radius:8px; padding:.45rem 1.1rem; background:#1e2a38; color:#fff; border:none;">
+                    <i class="fas fa-download mr-1"></i> Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ── Due Instalment Preview Modal ─────────────────────────────────── --}}
+<div class="modal fade" id="duePreviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:min(96vw,1100px);">
+        <div class="modal-content" style="border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.10);">
+
+            {{-- Header --}}
+            <div class="modal-header" style="background:#fff; border-bottom:1px solid #f0f0f0; padding:1rem 1.4rem;">
+                <div>
+                    <h6 class="modal-title mb-0" style="font-size:.9rem; font-weight:700; color:#111827;">
+                        Due Instalments
+                    </h6>
+                    <p class="mb-0 mt-1" id="duePreviewTitle" style="font-size:.78rem; color:#6b7280;"></p>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" style="color:#9ca3af; opacity:1; font-size:1.2rem;"><span>&times;</span></button>
             </div>
 
-            <form method="GET" action="{{ route('admin.saving.due.export') }}">
-                <div class="modal-body">
-
-                    <p class="mb-5 text-muted font-size-sm">
-                        Downloads all <strong>pending / overdue</strong> instalments within the selected date range.
-                        Choose a specific member or leave on <em>All Members</em>.
-                    </p>
-
-                    {{-- Date Range --}}
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-group">
-                                <label class="font-weight-bold font-size-sm">From Date</label>
-                                <input type="date" name="from" class="form-control"
-                                       value="{{ date('Y-m-01') }}">
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-group">
-                                <label class="font-weight-bold font-size-sm">To Date</label>
-                                <input type="date" name="to" class="form-control"
-                                       value="{{ date('Y-m-d') }}"
-                                       max="{{ date('Y-m-d') }}">
-                            </div>
-                        </div>
-                    </div>
-                    <span class="mb-4 form-text text-muted mt-n3 d-block">Only pending instalments with due dates within this range will be included.</span>
-
-                    {{-- Member Select --}}
-                    <div class="mb-0 form-group">
-                        <label class="font-weight-bold font-size-sm">Member</label>
-                        <select name="user_id" class="form-control">
-                            <option value="">— All Members —</option>
-                            @foreach($savingUsers as $su)
-                                <option value="{{ $su->id }}">{{ $su->name }} (@ {{ $su->username }})</option>
-                            @endforeach
-                        </select>
-                        <span class="form-text text-muted">Select a specific member or leave blank for all.</span>
-                    </div>
-
+            {{-- Summary strip --}}
+            <div id="duePreviewSummary" style="display:none; background:#fafafa; border-bottom:1px solid #f0f0f0; padding:.6rem 1.4rem;">
+                <div style="display:flex; gap:2rem; flex-wrap:wrap; align-items:center;">
+                    <span style="font-size:.78rem; color:#374151;">
+                        <strong id="sumMembers" style="color:#111827; font-size:.92rem;">0</strong>
+                        <span style="color:#9ca3af; margin-left:3px;">Members</span>
+                    </span>
+                    <span style="font-size:.78rem; color:#374151;">
+                        Total Due: <strong id="sumTotal" style="color:#111827; font-size:.92rem;">$0.00</strong>
+                    </span>
+                    <span style="font-size:.78rem; color:#374151;">
+                        Overdue: <strong id="sumOverdue" style="color:#dc2626; font-size:.92rem;">0</strong>
+                    </span>
+                    <span style="font-size:.78rem; color:#374151;">
+                        In-range only: <strong id="sumInRange" style="color:#16a34a; font-size:.92rem;">0</strong>
+                    </span>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-dark">
-                        <i class="mr-1 fas fa-download"></i> Download Excel
+            </div>
+
+            {{-- Body --}}
+            <div class="modal-body p-0" style="background:#fff;">
+
+                {{-- Loading --}}
+                <div id="duePreviewLoading" class="text-center" style="padding:3rem 1rem;">
+                    <div class="spinner-border" role="status" style="color:#d1d5db; width:1.8rem; height:1.8rem; border-width:2px;"></div>
+                    <div style="margin-top:.75rem; font-size:.8rem; color:#9ca3af;">Loading…</div>
+                </div>
+
+                {{-- Empty --}}
+                <div id="duePreviewEmpty" style="display:none; text-align:center; padding:3rem 1rem;">
+                    <div style="font-size:.88rem; color:#6b7280; font-weight:500;">No pending instalments found.</div>
+                    <div style="font-size:.78rem; color:#9ca3af; margin-top:.3rem;">Try a different date range or member.</div>
+                </div>
+
+                {{-- Table --}}
+                <div id="duePreviewTableWrap" style="display:none; overflow-x:auto; max-height:52vh; overflow-y:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:.82rem;">
+                        <thead>
+                            <tr style="background:#f9fafb; position:sticky; top:0; z-index:2;">
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap; width:36px;">#</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Member</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Phone</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Sponsor</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#dc2626; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:center; white-space:nowrap;">Overdue</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#16a34a; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:center; white-space:nowrap;">In Range</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right; white-space:nowrap;">Overdue ($)</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right; white-space:nowrap;">In Range ($)</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right; white-space:nowrap;">Total ($)</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Oldest Due</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Latest Due</th>
+                            </tr>
+                        </thead>
+                        <tbody id="duePreviewBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Footer --}}
+            <div class="modal-footer" style="background:#fff; border-top:1px solid #f0f0f0; padding:.75rem 1.4rem; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                    <span style="font-size:.74rem; color:#9ca3af;">
+                        <span style="display:inline-block; width:8px; height:8px; background:#fee2e2; border-radius:50%; margin-right:4px; border:1px solid #fca5a5;"></span>Overdue
+                    </span>
+                    <span style="font-size:.74rem; color:#9ca3af;">
+                        <span style="display:inline-block; width:8px; height:8px; background:#f0fdf4; border-radius:50%; margin-right:4px; border:1px solid #bbf7d0;"></span>In range only
+                    </span>
+                    <span id="duePreviewFooterCount" style="font-size:.74rem; color:#9ca3af;"></span>
+                </div>
+                <div style="display:flex; gap:.5rem;">
+                    <button type="button" data-dismiss="modal"
+                            style="padding:.38rem .9rem; font-size:.8rem; border-radius:6px; border:1px solid #e5e7eb; background:#fff; color:#374151; cursor:pointer;">
+                        Back
                     </button>
+                    <a href="#" id="duePreviewDownloadBtn"
+                       style="padding:.38rem .9rem; font-size:.8rem; border-radius:6px; border:none; background:#111827; color:#fff; text-decoration:none; display:inline-flex; align-items:center; gap:5px;">
+                        <i class="fas fa-download" style="font-size:.72rem;"></i> Download Excel
+                    </a>
                 </div>
-            </form>
+            </div>
+
         </div>
     </div>
 </div>
@@ -637,5 +731,127 @@ $(document).ready(function () {
         });
     });
 });
+
+// ── Due Instalment Sheet ──────────────────────────────────────────────────
+(function () {
+    var previewUrl = "{{ route('admin.saving.due.preview') }}";
+    var exportUrl  = "{{ route('admin.saving.due.export') }}";
+
+    function buildQS() {
+        var from   = document.getElementById('dueFrom').value;
+        var to     = document.getElementById('dueTo').value;
+        var userId = document.getElementById('dueUserId').value;
+        var p = new URLSearchParams({ from: from, to: to });
+        if (userId) p.append('user_id', userId);
+        return p.toString();
+    }
+
+    function syncDownloadBtn() {
+        document.getElementById('dueDownloadBtn').href = exportUrl + '?' + buildQS();
+    }
+    syncDownloadBtn();
+    ['dueFrom','dueTo','dueUserId'].forEach(function(id){
+        document.getElementById(id).addEventListener('change', syncDownloadBtn);
+    });
+
+    document.getElementById('duePreviewBtn').addEventListener('click', function () {
+        var qs   = buildQS();
+        var from = document.getElementById('dueFrom').value;
+        var to   = document.getElementById('dueTo').value;
+
+        document.getElementById('duePreviewDownloadBtn').href = exportUrl + '?' + qs;
+        document.getElementById('duePreviewTitle').textContent = fmtDate(from) + '  →  ' + fmtDate(to);
+
+        $('#dueExportModal').modal('hide');
+        $('#duePreviewModal').modal('show');
+
+        // Reset
+        document.getElementById('duePreviewLoading').style.display   = 'block';
+        document.getElementById('duePreviewEmpty').style.display     = 'none';
+        document.getElementById('duePreviewTableWrap').style.display = 'none';
+        document.getElementById('duePreviewSummary').style.display   = 'none';
+        document.getElementById('duePreviewBody').innerHTML          = '';
+        document.getElementById('duePreviewFooterCount').textContent = '';
+
+        fetch(previewUrl + '?' + qs, { headers: {'X-Requested-With':'XMLHttpRequest'} })
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+            document.getElementById('duePreviewLoading').style.display = 'none';
+
+            if (!res.data || res.data.length === 0) {
+                document.getElementById('duePreviewEmpty').style.display = 'block';
+                return;
+            }
+
+            // Summary bar
+            document.getElementById('duePreviewSummary').style.display  = 'block';
+            document.getElementById('sumMembers').textContent  = res.total;
+            document.getElementById('sumTotal').textContent   = '$' + res.total_due;
+            document.getElementById('sumOverdue').textContent = res.overdue_users;
+            document.getElementById('sumInRange').textContent = res.total - res.overdue_users;
+
+            document.getElementById('duePreviewTableWrap').style.display = 'block';
+            document.getElementById('duePreviewFooterCount').textContent =
+                res.total + ' member' + (res.total !== 1 ? 's' : '') + ' — as of ' + fmtDate(to);
+
+            var tbody = document.getElementById('duePreviewBody');
+            res.data.forEach(function(row, i){
+                var isOverdue = row.has_overdue;
+                var rowBg     = isOverdue ? '#fffbfb' : '#fff';
+                var leftBorder= isOverdue ? '3px solid #fca5a5' : '3px solid transparent';
+
+                var overdueCell = row.overdue_count > 0
+                    ? '<span style="font-size:.8rem; font-weight:600; color:#dc2626;">' + row.overdue_count + '</span>'
+                    : '<span style="color:#d1d5db;">—</span>';
+
+                var inRangeCell = row.in_range_count > 0
+                    ? '<span style="font-size:.8rem; font-weight:600; color:#16a34a;">' + row.in_range_count + '</span>'
+                    : '<span style="color:#d1d5db;">—</span>';
+
+                var tr = document.createElement('tr');
+                tr.style.cssText = 'background:' + rowBg + '; border-left:' + leftBorder + ';';
+                tr.onmouseover = function(){ this.style.background = isOverdue ? '#fff5f5' : '#f9fafb'; };
+                tr.onmouseout  = function(){ this.style.background = rowBg; };
+
+                var td = 'padding:.65rem 1rem; border-bottom:1px solid #f3f4f6; white-space:nowrap; color:#374151;';
+
+                tr.innerHTML =
+                    '<td style="' + td + 'color:#9ca3af; font-size:.78rem; text-align:center; width:36px;">' + (i+1) + '</td>' +
+                    '<td style="' + td + '">' +
+                        '<div style="font-weight:600; color:#111827; font-size:.84rem;">' + esc(row.name) + '</div>' +
+                        '<div style="font-size:.74rem; color:#9ca3af; margin-top:1px;">@' + esc(row.username) + '</div>' +
+                    '</td>' +
+                    '<td style="' + td + 'font-size:.8rem;">' + esc(row.phone) + '</td>' +
+                    '<td style="' + td + 'font-size:.78rem; color:#6b7280; max-width:160px; overflow:hidden; text-overflow:ellipsis;">' + esc(row.sponsor) + '</td>' +
+                    '<td style="' + td + 'text-align:center;">' + overdueCell + '</td>' +
+                    '<td style="' + td + 'text-align:center;">' + inRangeCell + '</td>' +
+                    '<td style="' + td + 'text-align:right; font-size:.8rem; color:' + (row.overdue_count > 0 ? '#dc2626' : '#d1d5db') + ';">' +
+                        (row.overdue_count > 0 ? '$' + esc(row.overdue_amount) : '—') +
+                    '</td>' +
+                    '<td style="' + td + 'text-align:right; font-size:.8rem; color:#374151;">$' + esc(row.in_range_amount) + '</td>' +
+                    '<td style="' + td + 'text-align:right; font-weight:700; color:#111827;">$' + esc(row.total_due) + '</td>' +
+                    '<td style="' + td + 'font-size:.8rem; color:' + (isOverdue ? '#dc2626' : '#6b7280') + ';">' + esc(row.oldest_due) + '</td>' +
+                    '<td style="' + td + 'font-size:.8rem; color:#6b7280;">' + esc(row.latest_due) + '</td>';
+
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(function(){
+            document.getElementById('duePreviewLoading').style.display = 'none';
+            document.getElementById('duePreviewEmpty').style.display   = 'block';
+        });
+    });
+
+    function esc(str){
+        var d = document.createElement('div');
+        d.appendChild(document.createTextNode(str || ''));
+        return d.innerHTML;
+    }
+    function fmtDate(str){
+        if (!str) return '';
+        var d = new Date(str);
+        return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    }
+})();
 </script>
 @endsection

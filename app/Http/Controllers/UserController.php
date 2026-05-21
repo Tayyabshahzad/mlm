@@ -580,7 +580,7 @@ class UserController extends Controller
             'blocked'      => 1,
             'is_active'    => 0,
             'freez_wallet' => 1,
-            'roi_status'   => 'inactive',
+            'roi_status'   => 'stopped',
         ]);
 
         // Soft delete — sets deleted_at, keeps DB record intact, no cascade

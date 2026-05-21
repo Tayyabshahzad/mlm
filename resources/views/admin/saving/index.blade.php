@@ -218,61 +218,96 @@
 
 {{-- ── Due Instalment Export Modal ──────────────────────────────────── --}}
 <div class="modal fade" id="dueExportModal" tabindex="-1" role="dialog" aria-labelledby="dueExportModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header" style="background:#dc3545;">
                 <h5 class="modal-title text-white font-weight-bold" id="dueExportModalLabel">
-                    <i class="fas fa-file-excel mr-2 text-white"></i> Download Due Instalment Sheet
+                    <i class="fas fa-file-excel mr-2 text-white"></i> Due Instalment Sheet
                 </h5>
                 <button type="button" class="close text-white" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
 
-            <form method="GET" action="{{ route('admin.saving.due.export') }}">
+            <form id="dueExportForm" method="GET" action="{{ route('admin.saving.due.export') }}">
                 <div class="modal-body">
 
-                    <p class="text-muted font-size-sm mb-5">
-                        Downloads all <strong>pending / overdue</strong> instalments within the selected date range.
-                        Choose a specific member or leave on <em>All Members</em>.
+                    <p class="text-muted font-size-sm mb-4">
+                        Filter <strong>pending / overdue</strong> instalments by date range and member, preview the data, then download the Excel sheet.
                     </p>
 
-                    {{-- Date Range --}}
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-group">
-                                <label class="font-weight-bold font-size-sm">From Date</label>
-                                <input type="date" name="from" class="form-control"
-                                       value="{{ date('Y-m-01') }}">
-                            </div>
+                    {{-- Filters row --}}
+                    <div class="row align-items-end mb-3">
+                        <div class="col-md-3">
+                            <label class="font-weight-bold font-size-sm">From Date</label>
+                            <input type="date" name="from" id="dueFrom" class="form-control"
+                                   value="{{ date('Y-m-01') }}">
                         </div>
-                        <div class="col-6">
-                            <div class="form-group">
-                                <label class="font-weight-bold font-size-sm">To Date</label>
-                                <input type="date" name="to" class="form-control"
-                                       value="{{ date('Y-m-d') }}"
-                                       max="{{ date('Y-m-d') }}">
-                            </div>
+                        <div class="col-md-3">
+                            <label class="font-weight-bold font-size-sm">To Date</label>
+                            <input type="date" name="to" id="dueTo" class="form-control"
+                                   value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="font-weight-bold font-size-sm">Member</label>
+                            <select name="user_id" id="dueUserId" class="form-control">
+                                <option value="">— All Members —</option>
+                                @foreach($savingUsers as $su)
+                                    <option value="{{ $su->id }}">{{ $su->name }} (@{{ $su->username }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" id="duePreviewBtn" class="btn btn-primary btn-block">
+                                <i class="fas fa-eye mr-1"></i> Preview
+                            </button>
                         </div>
                     </div>
-                    <span class="form-text text-muted mt-n3 mb-4 d-block">Only pending instalments with due dates within this range will be included.</span>
+                    <span class="form-text text-muted mb-4 d-block">Only pending instalments with due dates within this range will be included.</span>
 
-                    {{-- Member Select --}}
-                    <div class="form-group mb-0">
-                        <label class="font-weight-bold font-size-sm">Member</label>
-                        <select name="user_id" class="form-control" id="dueExportUserSelect">
-                            <option value="">— All Members —</option>
-                            @foreach($savingUsers as $su)
-                                <option value="{{ $su->id }}">{{ $su->name }} (@{{ $su->username }})</option>
-                            @endforeach
-                        </select>
-                        <span class="form-text text-muted">Select a specific member or leave blank for all.</span>
+                    {{-- Preview Results --}}
+                    <div id="duePreviewSection" style="display:none;">
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="font-weight-bold mb-0">
+                                Preview — <span id="duePreviewCount">0</span> member(s) found
+                            </h6>
+                            <span class="badge badge-danger" id="duePreviewBadge"></span>
+                        </div>
+                        <div class="table-responsive" style="max-height:340px; overflow-y:auto;">
+                            <table class="table table-sm table-bordered table-hover mb-0">
+                                <thead class="thead-dark" style="position:sticky;top:0;">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Phone</th>
+                                        <th>Sponsor</th>
+                                        <th class="text-center">Pending</th>
+                                        <th class="text-right">Total Due ($)</th>
+                                        <th>Oldest Due</th>
+                                        <th>Latest Due</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="duePreviewBody">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="duePreviewEmpty" class="text-center text-muted py-4" style="display:none;">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i> No pending instalments found for the selected filters.
+                        </div>
+                    </div>
+
+                    {{-- Loading spinner --}}
+                    <div id="duePreviewLoading" class="text-center py-4" style="display:none;">
+                        <div class="spinner-border text-danger" role="status"></div>
+                        <div class="mt-2 text-muted font-size-sm">Loading preview…</div>
                     </div>
 
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">
+                    <button type="submit" class="btn btn-danger" id="dueDownloadBtn">
                         <i class="fas fa-download mr-1"></i> Download Excel
                     </button>
                 </div>
@@ -280,4 +315,79 @@
         </div>
     </div>
 </div>
+
+@section('page_js')
+<script>
+(function () {
+    var previewUrl = "{{ route('admin.saving.due.preview') }}";
+
+    document.getElementById('duePreviewBtn').addEventListener('click', function () {
+        var from   = document.getElementById('dueFrom').value;
+        var to     = document.getElementById('dueTo').value;
+        var userId = document.getElementById('dueUserId').value;
+
+        document.getElementById('duePreviewSection').style.display  = 'none';
+        document.getElementById('duePreviewLoading').style.display  = 'block';
+
+        var params = new URLSearchParams({ from: from, to: to });
+        if (userId) params.append('user_id', userId);
+
+        fetch(previewUrl + '?' + params.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            document.getElementById('duePreviewLoading').style.display = 'none';
+            document.getElementById('duePreviewSection').style.display = 'block';
+
+            var tbody = document.getElementById('duePreviewBody');
+            var empty = document.getElementById('duePreviewEmpty');
+            tbody.innerHTML = '';
+
+            document.getElementById('duePreviewCount').textContent = res.total;
+            document.getElementById('duePreviewBadge').textContent =
+                res.total > 0 ? (res.total + ' row' + (res.total > 1 ? 's' : '')) : '';
+
+            if (res.total === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+
+            res.data.forEach(function (row, i) {
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td class="font-weight-bold">' + escHtml(row.name) + '</td>' +
+                    '<td class="text-muted">@' + escHtml(row.username) + '</td>' +
+                    '<td>' + escHtml(row.phone) + '</td>' +
+                    '<td class="font-size-sm">' + escHtml(row.sponsor) + '</td>' +
+                    '<td class="text-center"><span class="badge badge-warning">' + row.pending_count + '</span></td>' +
+                    '<td class="text-right font-weight-bold">$' + escHtml(row.total_due) + '</td>' +
+                    '<td>' + escHtml(row.oldest_due) + '</td>' +
+                    '<td>' + escHtml(row.latest_due) + '</td>';
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(function () {
+            document.getElementById('duePreviewLoading').style.display = 'none';
+            alert('Failed to load preview. Please try again.');
+        });
+    });
+
+    function escHtml(str) {
+        var d = document.createElement('div');
+        d.appendChild(document.createTextNode(str || ''));
+        return d.innerHTML;
+    }
+
+    // Clear preview when modal closes
+    document.getElementById('dueExportModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('duePreviewSection').style.display = 'none';
+        document.getElementById('duePreviewBody').innerHTML = '';
+        document.getElementById('duePreviewCount').textContent = '0';
+    });
+})();
+</script>
+@endsection
 @endsection

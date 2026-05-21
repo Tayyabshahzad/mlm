@@ -521,6 +521,66 @@ class SavingInstalmentController extends Controller
         return Excel::download(new SavingDueInstalmentExport($from, $to, $userId ? (int) $userId : null), $filename);
     }
 
+    public function adminDuePreview(Request $request)
+    {
+        $from   = $request->get('from')    ?: now()->startOfMonth()->toDateString();
+        $to     = $request->get('to')      ?: now()->toDateString();
+        $userId = $request->get('user_id') ?: null;
+
+        // Include: instalments within the range AND overdue ones before the start date
+        $query = \App\Models\SavingInstalment::where('status', 'pending')
+            ->whereDate('due_date', '<=', $to);
+
+        if ($userId) {
+            $query->where('user_id', (int) $userId);
+        }
+
+        $userIds = $query->pluck('user_id')->unique();
+
+        $rows = \App\Models\User::whereIn('id', $userIds)
+            ->with([
+                'savingInstalments' => fn($q) => $q
+                    ->where('status', 'pending')
+                    ->whereDate('due_date', '<=', $to)
+                    ->orderBy('due_date'),
+                'savingSponsor',
+            ])
+            ->orderBy('name')
+            ->get()
+            ->map(function ($user) use ($from) {
+                $all      = $user->savingInstalments;
+                $overdue  = $all->filter(fn($i) => $i->due_date->lt(\Carbon\Carbon::parse($from)));
+                $inRange  = $all->filter(fn($i) => !$i->due_date->lt(\Carbon\Carbon::parse($from)));
+                $sponsor  = $user->savingSponsor->first();
+
+                return [
+                    'name'             => $user->name,
+                    'username'         => $user->username,
+                    'phone'            => $user->phone_number ?? '—',
+                    'sponsor'          => $sponsor ? $sponsor->name . ' (@' . $sponsor->username . ')' : '—',
+                    'overdue_count'    => $overdue->count(),
+                    'in_range_count'   => $inRange->count(),
+                    'total_pending'    => $all->count(),
+                    'overdue_amount'   => number_format($overdue->sum('amount'), 2),
+                    'in_range_amount'  => number_format($inRange->sum('amount'), 2),
+                    'total_due'        => number_format($all->sum('amount'), 2),
+                    'oldest_due'       => $all->min('due_date') ? \Carbon\Carbon::parse($all->min('due_date'))->format('d M Y') : '—',
+                    'latest_due'       => $all->max('due_date') ? \Carbon\Carbon::parse($all->max('due_date'))->format('d M Y') : '—',
+                    'has_overdue'      => $overdue->count() > 0,
+                ];
+            });
+
+        $totalDue     = $rows->sum(fn($r) => (float) str_replace(',', '', $r['total_due']));
+        $overdueUsers = $rows->where('has_overdue', true)->count();
+
+        return response()->json([
+            'data'          => $rows->values(),
+            'total'         => $rows->count(),
+            'total_due'     => number_format($totalDue, 2),
+            'overdue_users' => $overdueUsers,
+        ]);
+    }
+
     public function setSavingParent(Request $request): RedirectResponse
     {
         $request->validate([
