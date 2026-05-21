@@ -408,7 +408,7 @@
                     <div class="col-6">
                         <div class="form-group mb-3">
                             <label style="font-size:.75rem; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:.5px;">To Date</label>
-                            <input type="date" id="dueTo" class="form-control" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}"
+                            <input type="date" id="dueTo" class="form-control" value="{{ date('Y-m-d') }}"
                                    style="border-radius:8px; border:1.5px solid #d1dbe6; font-size:.875rem; height:38px;">
                         </div>
                     </div>
@@ -444,7 +444,7 @@
 
 {{-- ── Due Instalment Preview Modal ─────────────────────────────────── --}}
 <div class="modal fade" id="duePreviewModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:min(96vw,1100px);">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:min(98vw,1400px); width:98vw; margin:auto;">
         <div class="modal-content" style="border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.10);">
 
             {{-- Header --}}
@@ -493,21 +493,21 @@
                 </div>
 
                 {{-- Table --}}
-                <div id="duePreviewTableWrap" style="display:none; overflow-x:auto; max-height:52vh; overflow-y:auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:.82rem;">
+                <div id="duePreviewTableWrap" style="display:none; overflow-x:auto; max-height:60vh; overflow-y:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:.93rem;">
                         <thead>
                             <tr style="background:#f9fafb; position:sticky; top:0; z-index:2;">
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap; width:36px;">#</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Member</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Phone</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Sponsor</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#dc2626; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:center; white-space:nowrap;">Overdue</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#16a34a; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:center; white-space:nowrap;">In Range</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right; white-space:nowrap;">Overdue ($)</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right; white-space:nowrap;">In Range ($)</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right; white-space:nowrap;">Total ($)</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Oldest Due</th>
-                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Latest Due</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap; width:36px;">#</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Member</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Phone</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Sponsor</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#dc2626; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:center; white-space:nowrap;">Overdue</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#16a34a; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:center; white-space:nowrap;">In Range</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right; white-space:nowrap;">Overdue ($)</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right; white-space:nowrap;">In Range ($)</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right; white-space:nowrap;">Total ($)</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Oldest Due</th>
+                                <th style="padding:.65rem 1rem; font-size:.82rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">Latest Due</th>
                             </tr>
                         </thead>
                         <tbody id="duePreviewBody"></tbody>
@@ -801,11 +801,11 @@ $(document).ready(function () {
                 var leftBorder= isOverdue ? '3px solid #fca5a5' : '3px solid transparent';
 
                 var overdueCell = row.overdue_count > 0
-                    ? '<span style="font-size:.8rem; font-weight:600; color:#dc2626;">' + row.overdue_count + '</span>'
+                    ? '<span style="font-size:.93rem; font-weight:600; color:#dc2626;">' + row.overdue_count + '</span>'
                     : '<span style="color:#d1d5db;">—</span>';
 
                 var inRangeCell = row.in_range_count > 0
-                    ? '<span style="font-size:.8rem; font-weight:600; color:#16a34a;">' + row.in_range_count + '</span>'
+                    ? '<span style="font-size:.93rem; font-weight:600; color:#16a34a;">' + row.in_range_count + '</span>'
                     : '<span style="color:#d1d5db;">—</span>';
 
                 var tr = document.createElement('tr');
@@ -813,25 +813,25 @@ $(document).ready(function () {
                 tr.onmouseover = function(){ this.style.background = isOverdue ? '#fff5f5' : '#f9fafb'; };
                 tr.onmouseout  = function(){ this.style.background = rowBg; };
 
-                var td = 'padding:.65rem 1rem; border-bottom:1px solid #f3f4f6; white-space:nowrap; color:#374151;';
+                var td = 'padding:.75rem 1rem; border-bottom:1px solid #f3f4f6; white-space:nowrap; color:#374151; font-size:.93rem;';
 
                 tr.innerHTML =
-                    '<td style="' + td + 'color:#9ca3af; font-size:.78rem; text-align:center; width:36px;">' + (i+1) + '</td>' +
+                    '<td style="' + td + 'color:#9ca3af; text-align:center; width:36px;">' + (i+1) + '</td>' +
                     '<td style="' + td + '">' +
-                        '<div style="font-weight:600; color:#111827; font-size:.84rem;">' + esc(row.name) + '</div>' +
-                        '<div style="font-size:.74rem; color:#9ca3af; margin-top:1px;">@' + esc(row.username) + '</div>' +
+                        '<div style="font-weight:600; color:#111827; font-size:.95rem;">' + esc(row.name) + '</div>' +
+                        '<div style="font-size:.8rem; color:#9ca3af; margin-top:2px;">@' + esc(row.username) + '</div>' +
                     '</td>' +
-                    '<td style="' + td + 'font-size:.8rem;">' + esc(row.phone) + '</td>' +
-                    '<td style="' + td + 'font-size:.78rem; color:#6b7280; max-width:160px; overflow:hidden; text-overflow:ellipsis;">' + esc(row.sponsor) + '</td>' +
+                    '<td style="' + td + '">' + esc(row.phone) + '</td>' +
+                    '<td style="' + td + 'color:#6b7280; max-width:180px; overflow:hidden; text-overflow:ellipsis;">' + esc(row.sponsor) + '</td>' +
                     '<td style="' + td + 'text-align:center;">' + overdueCell + '</td>' +
                     '<td style="' + td + 'text-align:center;">' + inRangeCell + '</td>' +
-                    '<td style="' + td + 'text-align:right; font-size:.8rem; color:' + (row.overdue_count > 0 ? '#dc2626' : '#d1d5db') + ';">' +
+                    '<td style="' + td + 'text-align:right; color:' + (row.overdue_count > 0 ? '#dc2626' : '#d1d5db') + ';">' +
                         (row.overdue_count > 0 ? '$' + esc(row.overdue_amount) : '—') +
                     '</td>' +
-                    '<td style="' + td + 'text-align:right; font-size:.8rem; color:#374151;">$' + esc(row.in_range_amount) + '</td>' +
-                    '<td style="' + td + 'text-align:right; font-weight:700; color:#111827;">$' + esc(row.total_due) + '</td>' +
-                    '<td style="' + td + 'font-size:.8rem; color:' + (isOverdue ? '#dc2626' : '#6b7280') + ';">' + esc(row.oldest_due) + '</td>' +
-                    '<td style="' + td + 'font-size:.8rem; color:#6b7280;">' + esc(row.latest_due) + '</td>';
+                    '<td style="' + td + 'text-align:right; color:#374151;">$' + esc(row.in_range_amount) + '</td>' +
+                    '<td style="' + td + 'text-align:right; font-weight:700; color:#111827; font-size:.97rem;">$' + esc(row.total_due) + '</td>' +
+                    '<td style="' + td + 'color:' + (isOverdue ? '#dc2626' : '#6b7280') + ';">' + esc(row.oldest_due) + '</td>' +
+                    '<td style="' + td + 'color:#6b7280;">' + esc(row.latest_due) + '</td>';
 
                 tbody.appendChild(tr);
             });
