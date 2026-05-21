@@ -998,62 +998,76 @@
             </div>
         </div>
 
-        {{-- GOOD NEWS BANNER --}}
-        <div class="gn-banner">
+        {{-- EID UL ADHA BANNER --}}
+        <div class="gn-banner" style="background:linear-gradient(135deg,#0a0800 0%,#1a0f00 50%,#0a0800 100%); border-color:rgba(212,160,23,.25); box-shadow:0 0 0 1px rgba(212,160,23,.08),0 24px 64px rgba(0,0,0,.7);">
 
-            {{-- floating confetti dots --}}
+            {{-- glow override --}}
+            <div style="position:absolute;inset:0;pointer-events:none;
+                background:
+                    radial-gradient(ellipse 650px 380px at 8%  60%, rgba(180,110,0,.55) 0%, transparent 60%),
+                    radial-gradient(ellipse 450px 300px at 92% 10%, rgba(120,80,0,.45)  0%, transparent 58%),
+                    radial-gradient(ellipse 300px 240px at 50% 100%,rgba(200,150,20,.15) 0%, transparent 55%);"></div>
+
+            {{-- diagonal lines --}}
+            <div style="position:absolute;inset:0;pointer-events:none;
+                background-image:repeating-linear-gradient(55deg,rgba(255,200,50,.022) 0,rgba(255,200,50,.022) 1px,transparent 1px,transparent 28px),
+                                 repeating-linear-gradient(-55deg,rgba(255,200,50,.022) 0,rgba(255,200,50,.022) 1px,transparent 1px,transparent 28px);"></div>
+
+            {{-- floating dots — gold tones --}}
             <div class="gn-confetti">
-                <div class="gn-dot" style="left:5%;  top:55%; width:5px; height:5px; background:var(--cyan);   --dur:3.4s; --del:.0s"></div>
-                <div class="gn-dot" style="left:12%; top:30%; width:3px; height:3px; background:var(--purple); --dur:2.8s; --del:.6s"></div>
-                <div class="gn-dot" style="left:22%; top:68%; width:5px; height:5px; background:var(--pink);   --dur:3.9s; --del:1.1s"></div>
-                <div class="gn-dot" style="left:35%; top:20%; width:3px; height:3px; background:var(--green);  --dur:3.0s; --del:.3s"></div>
-                <div class="gn-dot" style="left:50%; top:75%; width:4px; height:4px; background:var(--cyan);   --dur:3.6s; --del:.9s"></div>
-                <div class="gn-dot" style="left:63%; top:40%; width:3px; height:3px; background:var(--amber);  --dur:4.2s; --del:.2s"></div>
-                <div class="gn-dot" style="left:74%; top:58%; width:5px; height:5px; background:var(--purple); --dur:3.1s; --del:1.4s"></div>
-                <div class="gn-dot" style="left:84%; top:25%; width:4px; height:4px; background:var(--pink);   --dur:2.7s; --del:.5s"></div>
-                <div class="gn-dot" style="left:92%; top:65%; width:3px; height:3px; background:var(--green);  --dur:3.7s; --del:1.0s"></div>
+                <div class="gn-dot" style="left:4%;  top:55%; width:5px;height:5px; background:#f5c518; --dur:3.4s;--del:.0s"></div>
+                <div class="gn-dot" style="left:13%; top:28%; width:3px;height:3px; background:#d4a017; --dur:2.8s;--del:.7s"></div>
+                <div class="gn-dot" style="left:23%; top:70%; width:5px;height:5px; background:#c8860a; --dur:3.9s;--del:1.2s"></div>
+                <div class="gn-dot" style="left:36%; top:18%; width:4px;height:4px; background:#f5c518; --dur:3.0s;--del:.4s"></div>
+                <div class="gn-dot" style="left:51%; top:78%; width:3px;height:3px; background:#d4a017; --dur:3.6s;--del:.9s"></div>
+                <div class="gn-dot" style="left:64%; top:38%; width:5px;height:5px; background:#c8860a; --dur:4.1s;--del:.2s"></div>
+                <div class="gn-dot" style="left:75%; top:60%; width:3px;height:3px; background:#f5c518; --dur:3.2s;--del:1.5s"></div>
+                <div class="gn-dot" style="left:85%; top:22%; width:4px;height:4px; background:#d4a017; --dur:2.6s;--del:.6s"></div>
+                <div class="gn-dot" style="left:93%; top:65%; width:3px;height:3px; background:#c8860a; --dur:3.7s;--del:1.0s"></div>
             </div>
 
             <div class="gn-inner">
 
                 {{-- Left: Text --}}
                 <div>
-                    <div class="gn-tag">
-                        <span class="gn-tag-pulse"></span>
-                        Now Live &nbsp;·&nbsp; GVI Welfare Program
+                    <div class="gn-tag" style="color:#f5c518; background:rgba(212,160,23,.12); border-color:rgba(212,160,23,.28);">
+                        <span class="gn-tag-pulse" style="background:#f5c518; box-shadow:0 0 8px #f5c518;"></span>
+                        Upcoming &nbsp;·&nbsp; Eid ul Adha 2026
                     </div>
 
-                    <div class="gn-headline">
-                        Alhamdulillah! 🌙<br>
-                        <span class="gn-hl-accent">Welfare Smart Savings Plan<br>Is Now Running!</span>
+                    <div class="gn-headline" style="font-size:2.2rem;">
+                        Eid Mubarak! 🐑<br>
+                        <span style="background:linear-gradient(135deg,#f5c518,#d4a017,#c8860a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                            Eid ul Adha Greetings<br>from GVI Family
+                        </span>
                     </div>
 
                     <div class="gn-body">
-                        Our <strong>Welfare Smart Savings Plan</strong> is officially live and already changing lives — Insha'Allah. 🤲<br><br>
-                        This plan is built on one simple belief: <strong>every family deserves financial security.</strong> Save a little each month, watch it appreciate, and build a future that takes care of you — even on the days you're not working. Your family matters. Your future matters. This plan is for both. 🌱
+                        On the blessed occasion of <strong style="color:rgba(255,255,255,.85);">Eid ul Adha</strong>, we extend our warmest wishes to all our members and their families. 🤲<br><br>
+                        May Allah accept your sacrifices, grant you prosperity, and bless your savings plan with abundant rewards — in this world and the next. <strong style="color:rgba(255,255,255,.85);">Taqabbal Allahu Minna Wa Minkum.</strong> 🌙
                     </div>
 
-                    <div class="gn-quote">
-                        🕌 &nbsp;"The best of people are those who bring the most benefit to others." &nbsp;— Now, let your savings do the same. ☀️
+                    <div class="gn-quote" style="border-left-color:#d4a017; color:rgba(255,200,80,.75);">
+                        🕌 &nbsp;"And complete the Hajj and Umrah for Allah…" &nbsp;— Quran 2:196 &nbsp;· &nbsp;Wishing you blessings of Eid ul Adha ☀️
                     </div>
                 </div>
 
                 {{-- Right: Art --}}
                 <div class="gn-art">
                     <div class="gn-emoji-stack">
-                        <div class="gn-emoji-ring"></div>
-                        <span class="gn-emoji-main">🤲</span>
+                        <div class="gn-emoji-ring" style="background:conic-gradient(#f5c518,#d4a017,#c8860a,#f5c518); box-shadow:0 0 32px rgba(212,160,23,.5);"></div>
+                        <span class="gn-emoji-main">🐑</span>
                     </div>
                     <div class="gn-badge-row">
-                        <span class="gn-badge">🌙 Welfare</span>
-                        <span class="gn-badge">📈 Grow</span>
-                        <span class="gn-badge">🏡 Secure</span>
+                        <span class="gn-badge" style="border-color:rgba(212,160,23,.35); color:#f5c518;">🕌 Eid Mubarak</span>
+                        <span class="gn-badge" style="border-color:rgba(212,160,23,.35); color:#f5c518;">🤲 Qurbani</span>
+                        <span class="gn-badge" style="border-color:rgba(212,160,23,.35); color:#f5c518;">🌙 Blessings</span>
                     </div>
                 </div>
 
             </div>
 
-            <div class="gn-shimmer-line"></div>
+            <div class="gn-shimmer-line" style="background:linear-gradient(90deg,transparent,rgba(212,160,23,.6),transparent);"></div>
         </div>
 
         {{-- ─── SECTION: Wallets ─────────────────────── --}}
