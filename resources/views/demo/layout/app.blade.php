@@ -3658,6 +3658,295 @@
     @section('page_js')
     @show
     <!--end::Page Scripts-->
+
+<!-- ═══════════════════════════════════════════════════════════
+     INVESTMENT CALCULATOR MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="calcModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:520px;">
+        <div class="modal-content" style="border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.12);">
+
+            <!-- Header -->
+            <div class="modal-header border-0" style="padding:1.1rem 1.4rem 0;">
+                <div>
+                    <h6 class="modal-title mb-0" style="font-size:.97rem; font-weight:700; color:#111827;">
+                        <i class="fas fa-calculator mr-2" style="color:#6366f1;"></i> Investment Calculator
+                    </h6>
+                    <p class="mb-0 mt-1" style="font-size:.75rem; color:#9ca3af;">25-Month Saving Plan</p>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" style="color:#9ca3af; opacity:1; margin-top:-8px;"><span>&times;</span></button>
+            </div>
+
+            <div class="modal-body" style="padding:1.2rem 1.4rem;">
+
+                <!-- Input row -->
+                <div style="display:flex; gap:.75rem; align-items:flex-end; margin-bottom:1rem;">
+                    <div style="flex:1;">
+                        <label style="font-size:.72rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:.35rem;">
+                            Invest Amount (Rs.)
+                        </label>
+                        <input type="number" id="calcAmount" min="1" placeholder="e.g. 4000"
+                               style="width:100%; padding:.5rem .75rem; border:1.5px solid #e5e7eb; border-radius:7px; font-size:.93rem; color:#111827; outline:none; transition:border .15s;"
+                               onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+                    </div>
+                    <button onclick="calcRun()" id="calcBtn"
+                            style="padding:.5rem 1.1rem; background:#6366f1; color:#fff; border:none; border-radius:7px; font-size:.85rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:background .15s;"
+                            onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">
+                        Calculate
+                    </button>
+                </div>
+
+                <!-- Options -->
+                <div style="display:flex; gap:1.2rem; margin-bottom:1.1rem; flex-wrap:wrap;">
+                    <label style="display:flex; align-items:center; gap:.4rem; font-size:.82rem; color:#374151; cursor:pointer;">
+                        <input type="checkbox" id="calcAdb" onchange="calcRun()" style="accent-color:#6366f1; width:14px; height:14px;">
+                        ADB Option <span style="color:#9ca3af; font-size:.75rem;">(Rs. 3/1000)</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:.4rem; font-size:.82rem; color:#374151; cursor:pointer;">
+                        <input type="checkbox" id="calcFisp" onchange="calcRun()" style="accent-color:#6366f1; width:14px; height:14px;">
+                        FISP Option <span style="color:#9ca3af; font-size:.75rem;">(Rs. 4/1000)</span>
+                    </label>
+                </div>
+
+                <!-- Results -->
+                <div id="calcResults" style="display:none;">
+                    <div style="border-top:1px solid #f3f4f6; padding-top:1rem; margin-bottom:1rem;">
+
+                        <!-- Summary cards row -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:.75rem;">
+                            <div style="background:#f5f3ff; border-radius:8px; padding:.7rem .9rem;">
+                                <div style="font-size:.7rem; color:#7c3aed; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:.2rem;">Sum Assured</div>
+                                <div id="rSumAssured" style="font-size:1.05rem; font-weight:700; color:#1e1b4b;"></div>
+                            </div>
+                            <div style="background:#f0fdf4; border-radius:8px; padding:.7rem .9rem;">
+                                <div style="font-size:.7rem; color:#15803d; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:.2rem;">Maturity</div>
+                                <div id="rMaturity" style="font-size:1.05rem; font-weight:700; color:#14532d;"></div>
+                            </div>
+                            <div style="background:#eff6ff; border-radius:8px; padding:.7rem .9rem;">
+                                <div style="font-size:.7rem; color:#1d4ed8; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:.2rem;">Natural Death Benefit</div>
+                                <div id="rNDB" style="font-size:1.05rem; font-weight:700; color:#1e3a8a;"></div>
+                            </div>
+                            <div style="background:#fef9c3; border-radius:8px; padding:.7rem .9rem;">
+                                <div style="font-size:.7rem; color:#a16207; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:.2rem;">Total Return</div>
+                                <div id="rTotal" style="font-size:1.05rem; font-weight:700; color:#713f12;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Breakdown -->
+                        <div style="background:#fafafa; border-radius:8px; padding:.7rem .9rem; font-size:.8rem;">
+                            <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f0f0f0;">
+                                <span style="color:#6b7280;">Invest Amount</span>
+                                <span id="rInvest" style="font-weight:600; color:#111827;"></span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f0f0f0;">
+                                <span style="color:#6b7280;">Processing Fee</span>
+                                <span style="font-weight:600; color:#111827;">$5</span>
+                            </div>
+                            <div id="rAdbRow" style="display:none; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f0f0f0;">
+                                <span style="color:#6b7280;">ADB Charge (Rs. 3/1000)</span>
+                                <span id="rAdbVal" style="font-weight:600; color:#111827;"></span>
+                            </div>
+                            <div id="rFispRow" style="display:none; justify-content:space-between; padding:.25rem 0;">
+                                <span style="color:#6b7280;">FISP Charge (Rs. 4/1000)</span>
+                                <span id="rFispVal" style="font-weight:600; color:#111827;"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- View Schedule button -->
+                    <div style="text-align:center;">
+                        <button onclick="calcShowSchedule()"
+                                style="width:100%; padding:.55rem; background:#fff; color:#6366f1; border:1.5px solid #6366f1; border-radius:7px; font-size:.85rem; font-weight:600; cursor:pointer; transition:all .15s;"
+                                onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background='#fff'">
+                            <i class="fas fa-table mr-1"></i> View 25-Month Payment Schedule
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAYMENT SCHEDULE MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="calcScheduleModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:min(96vw,680px);">
+        <div class="modal-content" style="border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.12);">
+
+            <div class="modal-header border-0" style="padding:1.1rem 1.4rem .5rem; display:flex; align-items:flex-start; justify-content:space-between;">
+                <div>
+                    <h6 class="modal-title mb-0" style="font-size:.97rem; font-weight:700; color:#111827;">
+                        <i class="fas fa-calendar-alt mr-2" style="color:#6366f1;"></i> 25-Month Payment Schedule
+                    </h6>
+                    <p id="schedSubtitle" class="mb-0 mt-1" style="font-size:.75rem; color:#9ca3af;"></p>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" style="color:#9ca3af; opacity:1; margin-top:-4px;"><span>&times;</span></button>
+            </div>
+
+            <div class="modal-body p-0">
+                <div style="overflow-x:auto; max-height:62vh; overflow-y:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:.87rem;">
+                        <thead>
+                            <tr style="background:#f9fafb; position:sticky; top:0; z-index:2;">
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:center; width:60px;">Month</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right;">Instalment</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right;">Extra Charges</th>
+                                <th style="padding:.65rem 1rem; font-size:.72rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; text-align:right;">Total Payable</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedBody"></tbody>
+                    </table>
+                </div>
+                <!-- Footer totals -->
+                <div id="schedFooter" style="padding:.75rem 1.1rem; background:#fafafa; border-top:1px solid #e5e7eb; font-size:.82rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem;">
+                </div>
+            </div>
+
+            <div class="modal-footer border-0" style="padding:.75rem 1.4rem;">
+                <button type="button" data-dismiss="modal"
+                        style="padding:.4rem .9rem; font-size:.82rem; border-radius:7px; border:1px solid #e5e7eb; background:#fff; color:#374151; cursor:pointer;">
+                    Close
+                </button>
+                <button onclick="$('#calcScheduleModal').modal('hide'); $('#calcModal').modal('show');"
+                        style="padding:.4rem .9rem; font-size:.82rem; border-radius:7px; border:none; background:#6366f1; color:#fff; cursor:pointer;">
+                    <i class="fas fa-arrow-left mr-1"></i> Back to Calculator
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var _amount = 0, _adb = false, _fisp = false;
+
+    function fmt(n) {
+        return 'Rs. ' + Number(n).toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    window.calcRun = function () {
+        var raw = parseFloat(document.getElementById('calcAmount').value);
+        if (!raw || raw <= 0) return;
+
+        _amount = raw;
+        _adb  = document.getElementById('calcAdb').checked;
+        _fisp = document.getElementById('calcFisp').checked;
+
+        var sumAssured = raw * 25;
+        var maturity   = sumAssured * 0.5;
+        var totalRet   = sumAssured + maturity;
+        var ndb        = raw * 25;
+        var adbCharge  = _adb  ? (raw / 1000) * 3 : 0;
+        var fispCharge = _fisp ? (raw / 1000) * 4 : 0;
+
+        document.getElementById('rSumAssured').textContent = fmt(sumAssured);
+        document.getElementById('rMaturity').textContent   = fmt(maturity);
+        document.getElementById('rTotal').textContent      = fmt(totalRet);
+        document.getElementById('rNDB').textContent        = fmt(ndb);
+        document.getElementById('rInvest').textContent     = fmt(raw);
+
+        var adbRow  = document.getElementById('rAdbRow');
+        var fispRow = document.getElementById('rFispRow');
+
+        if (_adb) {
+            adbRow.style.display = 'flex';
+            document.getElementById('rAdbVal').textContent = fmt(adbCharge);
+        } else {
+            adbRow.style.display = 'none';
+        }
+        if (_fisp) {
+            fispRow.style.display = 'flex';
+            document.getElementById('rFispVal').textContent = fmt(fispCharge);
+        } else {
+            fispRow.style.display = 'none';
+        }
+
+        document.getElementById('calcResults').style.display = 'block';
+    };
+
+    window.calcShowSchedule = function () {
+        if (_amount <= 0) return;
+
+        var adbCharge  = _adb  ? (_amount / 1000) * 3 : 0;
+        var fispCharge = _fisp ? (_amount / 1000) * 4 : 0;
+        var processingFee = 5;   // USD — shown as note
+        var extraMonth1 = adbCharge + fispCharge;
+
+        var subtitle = 'Monthly instalment: ' + fmt(_amount);
+        if (_adb || _fisp) {
+            var opts = [];
+            if (_adb)  opts.push('ADB ' + fmt(adbCharge));
+            if (_fisp) opts.push('FISP ' + fmt(fispCharge));
+            subtitle += ' · ' + opts.join(', ') + ' (Month 1 only)';
+        }
+        document.getElementById('schedSubtitle').textContent = subtitle;
+
+        var tbody = document.getElementById('schedBody');
+        tbody.innerHTML = '';
+
+        var grandTotal = 0;
+
+        for (var m = 1; m <= 25; m++) {
+            var instalment = _amount;
+            var extra      = 0;
+            var extraLabel = '—';
+
+            if (m === 1) {
+                extra = extraMonth1;
+                var parts = [];
+                if (processingFee) parts.push('Processing $' + processingFee);
+                if (_adb)  parts.push('ADB ' + fmt(adbCharge));
+                if (_fisp) parts.push('FISP ' + fmt(fispCharge));
+                extraLabel = parts.length ? parts.join(' + ') : '—';
+            }
+
+            var rowTotal = instalment + extra;
+            grandTotal  += rowTotal;
+
+            var isFirst = m === 1;
+            var rowBg   = isFirst ? '#f5f3ff' : (m % 2 === 0 ? '#fafafa' : '#fff');
+
+            var tr = document.createElement('tr');
+            tr.style.background = rowBg;
+
+            tr.innerHTML =
+                '<td style="padding:.6rem 1rem; border-bottom:1px solid #f3f4f6; text-align:center; font-weight:' + (isFirst ? '700' : '400') + '; color:' + (isFirst ? '#4f46e5' : '#6b7280') + ';">' + m + '</td>' +
+                '<td style="padding:.6rem 1rem; border-bottom:1px solid #f3f4f6; text-align:right; color:#111827; font-weight:500;">' + fmt(instalment) + '</td>' +
+                '<td style="padding:.6rem 1rem; border-bottom:1px solid #f3f4f6; text-align:right; font-size:.78rem; color:' + (isFirst && extra > 0 ? '#7c3aed' : '#9ca3af') + ';">' +
+                    (isFirst && extra > 0 ? extraLabel : '—') +
+                '</td>' +
+                '<td style="padding:.6rem 1rem; border-bottom:1px solid #f3f4f6; text-align:right; font-weight:' + (isFirst ? '700' : '600') + '; color:#111827;">' + fmt(rowTotal) + '</td>';
+
+            tbody.appendChild(tr);
+        }
+
+        // Footer
+        var footer = document.getElementById('schedFooter');
+        footer.innerHTML =
+            '<span style="color:#6b7280;">25 Instalments · Processing fee ($5) in Month 1</span>' +
+            '<span style="font-weight:700; color:#111827;">Grand Total: ' + fmt(grandTotal) + ' <span style="font-size:.74rem; color:#9ca3af; font-weight:400;">(+ $5 fee)</span></span>';
+
+        $('#calcModal').modal('hide');
+        $('#calcScheduleModal').modal('show');
+    };
+
+    // Allow Enter key to trigger calculate
+    document.getElementById('calcAmount').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') calcRun();
+    });
+
+    // Reset on modal close
+    document.getElementById('calcModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('calcResults').style.display = 'none';
+        document.getElementById('calcAmount').value = '';
+        document.getElementById('calcAdb').checked  = false;
+        document.getElementById('calcFisp').checked = false;
+        _amount = 0; _adb = false; _fisp = false;
+    });
+})();
+</script>
 </body>
 <!--end::Body-->
 

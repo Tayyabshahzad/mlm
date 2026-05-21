@@ -74,7 +74,7 @@ class SavingInstalmentController extends Controller
         $request->validate([
             'transaction_id'  => 'required|string|max:100',
             'payment_method'  => 'required|in:bank,usdt,cash_slip',
-            'submitted_amount'=> 'required|numeric|min:1',
+            'submitted_amount'=> 'required|numeric|min:0.01',
             'proof'           => 'required|image|mimes:jpg,jpeg,png|max:3072',
         ]);
 
@@ -86,6 +86,22 @@ class SavingInstalmentController extends Controller
 
         if ($instalment->status === 'submitted') {
             return back()->with('error', 'You have already submitted proof for this instalment. Please wait for admin confirmation.');
+        }
+
+        // Calculate total required = base + ADB + FISP charges
+        $adbFee        = $user->adb_option  ? round($instalment->amount * 0.003, 2) : 0;
+        $fispFee       = $user->fisp_option ? round($instalment->amount * 0.004, 2) : 0;
+        $totalRequired = round($instalment->amount + $adbFee + $fispFee, 2);
+        $submitted     = (float) $request->submitted_amount;
+
+        if ($submitted < $totalRequired) {
+            return back()->withInput()->with('error',
+                "Insufficient amount. You submitted $" . number_format($submitted, 2) .
+                " but the required amount is $" . number_format($totalRequired, 2) .
+                " (base $" . number_format($instalment->amount, 2) .
+                ($adbFee  > 0 ? " + ADB $" . number_format($adbFee, 2)  : '') .
+                ($fispFee > 0 ? " + FISP $" . number_format($fispFee, 2) : '') . ")."
+            );
         }
 
         // Early payment is allowed for any instalment.
@@ -197,6 +213,24 @@ class SavingInstalmentController extends Controller
         $request->validate([
             'notes' => 'nullable|string|max:500',
         ]);
+
+        // Validate submitted amount covers base + ADB + FISP
+        $user          = $instalment->user;
+        $adbFee        = $user->adb_option  ? round($instalment->amount * 0.003, 2) : 0;
+        $fispFee       = $user->fisp_option ? round($instalment->amount * 0.004, 2) : 0;
+        $totalRequired = round($instalment->amount + $adbFee + $fispFee, 2);
+        $submitted     = (float) ($instalment->submitted_amount ?? 0);
+
+        if ($submitted < $totalRequired) {
+            return back()->with('error',
+                "Cannot confirm — submitted amount $" . number_format($submitted, 2) .
+                " is less than the required $" . number_format($totalRequired, 2) .
+                " (base $" . number_format($instalment->amount, 2) .
+                ($adbFee  > 0 ? " + ADB $"  . number_format($adbFee, 2)  : '') .
+                ($fispFee > 0 ? " + FISP $" . number_format($fispFee, 2) : '') . "). " .
+                "Please reject and ask the member to resubmit the correct amount."
+            );
+        }
 
         try {
             $this->savingAccountService->confirmAndDeposit(

@@ -206,6 +206,7 @@
                                                     <th>Sponsor</th>
                                                     <th>Deposit Status</th>
                                                     <th>Admin Status</th>
+                                                    <th>Options</th>
                                                     <th>Instalments</th>
                                                     <th>Actions</th>
                                                     <th>Joined</th>
@@ -243,6 +244,17 @@
                                                             <span class="badge badge-success">Activated</span>
                                                         @else
                                                             <span class="badge badge-danger">Not Activated</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if($member->adb_option)
+                                                            <span class="badge badge-light-primary">ADB</span>
+                                                        @endif
+                                                        @if($member->fisp_option)
+                                                            <span class="badge badge-light-success">FISP</span>
+                                                        @endif
+                                                        @if(!$member->adb_option && !$member->fisp_option)
+                                                            <span class="text-muted" style="font-size:.8rem;">—</span>
                                                         @endif
                                                     </td>
                                                     <td>
@@ -635,13 +647,28 @@ $(document).ready(function () {
                     if (isSavingRelated) {
                         var totalPaid   = parseFloat(d.saving_initial_payment || 0);
                         var fee         = parseFloat(d.saving_initial_fee || 0);
-                        var netCredited = Math.max(0, parseFloat((totalPaid - fee).toFixed(2)));
+                        var rate        = parseFloat(d.usdt_rate || 0);
+                        var adbOn       = d.adb_option  === true;
+                        var fispOn      = d.fisp_option === true;
+
+                        // Step 1: gross after fee deduction
+                        var grossAfterFee = Math.max(0, totalPaid - fee);
+
+                        // Step 2: ADB/FISP monthly charges based on gross (0.3% and 0.4%)
+                        var adbCharge  = adbOn  ? parseFloat((grossAfterFee * 0.003).toFixed(4)) : 0;
+                        var fispCharge = fispOn ? parseFloat((grossAfterFee * 0.004).toFixed(4)) : 0;
+                        var totalDeductions = adbCharge + fispCharge;
+
+                        // Step 3: net credited = gross - deductions
+                        var netCredited = Math.max(0, parseFloat((grossAfterFee - totalDeductions).toFixed(4)));
 
                         var inst1Due      = d.signup_instalment ? parseFloat(d.signup_instalment.amount || 0) : 0;
                         var inst1Status   = d.signup_instalment ? d.signup_instalment.status : 'pending';
                         var inst1TxId     = (d.saving_transaction_id) || (d.signup_instalment && d.signup_instalment.transaction_id) || '—';
                         var inst1DueDate  = d.signup_instalment ? d.signup_instalment.due_date : '—';
-                        var stillOwed     = Math.max(0, inst1Due - netCredited);
+                        // Still Owed = based on gross paid (before ADB/FISP deductions)
+                        // ADB/FISP reduce the investment credit, NOT the instalment balance
+                        var stillOwed     = Math.max(0, parseFloat((inst1Due - grossAfterFee).toFixed(2)));
 
                         var statusMap = {
                             confirmed: '<span class="badge badge-success">Confirmed</span>',
@@ -651,20 +678,55 @@ $(document).ready(function () {
                         };
                         var inst1Badge = statusMap[inst1Status] || '<span class="badge badge-secondary">' + inst1Status + '</span>';
 
+                        // Helper: show USD + PKR equivalent
+                        function usdPkr(usd) {
+                            if (!rate || rate <= 0) return '$' + usd.toFixed(2);
+                            var pkr = (usd * rate).toFixed(0);
+                            return '$' + usd.toFixed(2) + ' <small class="text-muted">(PKR ' + parseInt(pkr).toLocaleString() + ')</small>';
+                        }
+
                         html += '<table class="table table-bordered table-sm">'
-                            + '<tr class="bg-light-success"><td colspan="2" class="text-center font-weight-bold">Saving Plan — Signup Payment</td></tr>'
-                            + '<tr><td width="50%"><strong>Instalment #1 Total Due</strong></td>'
-                            +     '<td><strong>$' + inst1Due.toFixed(2) + '</strong> &nbsp;' + inst1Badge + '</td></tr>'
+                            + '<tr class="bg-light-success"><td colspan="2" class="text-center font-weight-bold">Saving Plan — Signup Payment</td></tr>';
+
+                        // Rate info row
+                        if (rate > 0) {
+                            html += '<tr class="table-light"><td colspan="2" class="text-muted" style="font-size:.8rem;">Exchange rate used at registration: <strong>1 USD = PKR ' + rate + '</strong></td></tr>';
+                        }
+
+                        html += '<tr><td width="50%"><strong>Instalment #1 Total Due</strong></td>'
+                            +     '<td><strong>' + usdPkr(inst1Due) + '</strong> &nbsp;' + inst1Badge + '</td></tr>'
+
                             + '<tr><td>Amount Paid at Signup</td>'
-                            +     '<td class="text-primary font-weight-bold">$' + totalPaid.toFixed(2) + '</td></tr>'
+                            +     '<td class="text-primary font-weight-bold">' + usdPkr(totalPaid) + '</td></tr>'
+
                             + '<tr><td>Registration Fee (deducted)</td>'
-                            +     '<td class="text-danger">− $' + fee.toFixed(2) + '</td></tr>'
-                            + '<tr><td>Net Credited Toward Saving</td>'
-                            +     '<td class="text-success font-weight-bold">$' + netCredited.toFixed(2) + '</td></tr>'
+                            +     '<td class="text-danger">− ' + usdPkr(fee) + '</td></tr>'
+
+                            + '<tr style="background:#f8f9fa;"><td><strong>Gross After Fee</strong></td>'
+                            +     '<td class="font-weight-bold">' + usdPkr(grossAfterFee) + '</td></tr>';
+
+                        // ADB/FISP rows (only if selected)
+                        if (adbOn) {
+                            html += '<tr><td>ADB Option Charge (0.3% / month)</td>'
+                                +   '<td class="text-danger">− ' + usdPkr(adbCharge) + ' <small class="text-muted">per month × 25</small></td></tr>';
+                        }
+                        if (fispOn) {
+                            html += '<tr><td>FISP Option Charge (0.4% / month)</td>'
+                                +   '<td class="text-danger">− ' + usdPkr(fispCharge) + ' <small class="text-muted">per month × 25</small></td></tr>';
+                        }
+                        if (adbOn || fispOn) {
+                            html += '<tr class="table-warning"><td><strong>Total Insurance Charges</strong> <small class="text-muted d-block">(deducted from each instalment before crediting investment)</small></td>'
+                                +   '<td class="text-danger font-weight-bold">− ' + usdPkr(totalDeductions) + ' / month</td></tr>';
+                        }
+
+                        html += '<tr><td>Net Credited Toward Saving</td>'
+                            +     '<td class="text-success font-weight-bold">' + usdPkr(netCredited) + '</td></tr>'
+
                             + '<tr><td>Still Owed for Instalment #1</td>'
                             +     '<td class="' + (stillOwed > 0 ? 'text-warning font-weight-bold' : 'text-success') + '">'
-                            +     (stillOwed > 0 ? '$' + stillOwed.toFixed(2) : '<span class="badge badge-success">Fully Covered</span>')
+                            +     (stillOwed > 0 ? usdPkr(stillOwed) : '<span class="badge badge-success">Fully Covered</span>')
                             +     '</td></tr>'
+
                             + '<tr><td>Transaction ID</td><td>' + inst1TxId + '</td></tr>'
                             + '<tr><td>Instalment #1 Due Date</td><td>' + inst1DueDate + '</td></tr>'
                             + '</table>';

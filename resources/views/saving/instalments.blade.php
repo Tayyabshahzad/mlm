@@ -150,15 +150,24 @@
 
             {{-- Submit Next Instalment — shown for all pending instalments --}}
             @if($next_due && $next_due->status === 'pending')
+                @php
+                    $instUser     = auth()->user();
+                    $baseAmt      = $next_due->amount;
+                    $adbFee       = $instUser->adb_option  ? round($baseAmt * 0.003, 2) : 0;
+                    $fispFee      = $instUser->fisp_option ? round($baseAmt * 0.004, 2) : 0;
+                    $totalPayable = round($baseAmt + $adbFee + $fispFee, 2);
+                    // For instalment #1 partial logic
+                    $defaultSubmit = ($next_due->instalment_number === 1 && $inst1Remaining > 0)
+                        ? round($inst1Remaining + $adbFee + $fispFee, 2)
+                        : $totalPayable;
+                @endphp
                 <div class="card card-custom gutter-b">
                     <div class="card-header border-0 py-5">
                         <h3 class="card-title font-weight-bolder text-dark">
                             Pay Instalment #{{ $next_due->instalment_number }}
-                            @if($next_due->instalment_number === 1 && $partialDeposit > 0)
-                                <span class="badge badge-light-success ml-2">${{ number_format($partialDeposit, 2) }} already paid</span>
-                                <span class="badge badge-light-primary ml-1">${{ number_format($inst1Remaining, 2) }} remaining</span>
-                            @else
-                                <span class="badge badge-light-primary ml-2">${{ number_format($next_due->amount, 2) }}</span>
+                            <span class="badge badge-light-primary ml-2">${{ number_format($totalPayable, 2) }}</span>
+                            @if($instUser->adb_option || $instUser->fisp_option)
+                                <span class="badge badge-light-info ml-1" style="font-size:.75rem;">incl. ADB/FISP</span>
                             @endif
                         </h3>
                     </div>
@@ -166,19 +175,28 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <table class="table table-sm table-borderless">
-                                    <tr><td class="text-muted" width="160">Due Date</td><td class="font-weight-bold">{{ $next_due->due_date->format('d M Y') }}</td></tr>
+                                    <tr><td class="text-muted" width="180">Due Date</td><td class="font-weight-bold">{{ $next_due->due_date->format('d M Y') }}</td></tr>
                                     @if($next_due->instalment_number === 1 && $partialDeposit > 0)
                                         <tr><td class="text-muted">Paid at Registration</td><td class="font-weight-bold text-success">${{ number_format($partialDeposit, 2) }}</td></tr>
-                                        <tr><td class="text-muted">Remaining to Pay</td><td class="font-weight-bold text-primary">${{ number_format($inst1Remaining, 2) }}</td></tr>
+                                        <tr><td class="text-muted">Base Remaining</td><td class="font-weight-bold">${{ number_format($inst1Remaining, 2) }}</td></tr>
                                     @else
-                                        <tr><td class="text-muted">Amount Due</td><td class="font-weight-bold text-primary">${{ number_format($next_due->amount, 2) }}</td></tr>
+                                        <tr><td class="text-muted">Base Instalment</td><td class="font-weight-bold">${{ number_format($baseAmt, 2) }}</td></tr>
                                     @endif
+                                    @if($instUser->adb_option)
+                                        <tr><td class="text-muted">+ ADB Charge (0.3%)</td><td class="text-danger font-weight-bold">+${{ number_format($adbFee, 2) }}</td></tr>
+                                    @endif
+                                    @if($instUser->fisp_option)
+                                        <tr><td class="text-muted">+ FISP Charge (0.4%)</td><td class="text-warning font-weight-bold">+${{ number_format($fispFee, 2) }}</td></tr>
+                                    @endif
+                                    <tr style="border-top:2px solid #eee;">
+                                        <td class="font-weight-bolder">Total to Pay</td>
+                                        <td class="font-weight-bolder text-primary font-size-h6">${{ number_format($totalPayable, 2) }}</td>
+                                    </tr>
                                     <tr>
                                         <td class="text-muted">Status</td>
                                         <td>
                                             @if($next_due->isOverdue())
                                                 <span class="badge badge-light-danger">Overdue</span>
-                                                <small class="text-danger ml-1">(payment will be late — next cycle applies)</small>
                                             @else
                                                 <span class="badge badge-light-warning">Pending</span>
                                             @endif
@@ -242,15 +260,14 @@
                                     @error('transaction_id')<div class="text-danger small">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-4 mb-4">
-                                    <label class="font-weight-bold">Amount Submitted ($)</label>
-                                    @php
-                                        $defaultAmount = ($next_due->instalment_number === 1 && $inst1Remaining > 0)
-                                            ? $inst1Remaining
-                                            : $next_due->amount;
-                                    @endphp
+                                    <label class="font-weight-bold">
+                                        Amount Submitted ($)
+                                        <small class="text-muted">min: ${{ number_format($totalPayable, 2) }}</small>
+                                    </label>
                                     <input type="number" step="0.01" name="submitted_amount" class="form-control"
-                                           placeholder="{{ number_format($defaultAmount, 2) }}"
-                                           value="{{ old('submitted_amount', $defaultAmount) }}" required>
+                                           placeholder="{{ number_format($defaultSubmit, 2) }}"
+                                           min="{{ $totalPayable }}"
+                                           value="{{ old('submitted_amount', $defaultSubmit) }}" required>
                                     @error('submitted_amount')<div class="text-danger small">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-12 mb-4">
@@ -278,11 +295,20 @@
                 <div class="card-body pt-0">
                     <div class="table-responsive">
                         <table class="table table-hover table-head-custom table-vertical-center">
+                            @php
+                                $user       = auth()->user();
+                                $hasOptions = $user->adb_option || $user->fisp_option;
+                            @endphp
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Due Date</th>
-                                    <th>Amount</th>
+                                    <th>Base Amount</th>
+                                    @if($hasOptions)
+                                        @if($user->adb_option)<th class="text-danger">ADB Charge</th>@endif
+                                        @if($user->fisp_option)<th class="text-warning">FISP Charge</th>@endif
+                                        <th class="text-primary">Total Payable</th>
+                                    @endif
                                     <th>Status</th>
                                     <th>Paid On</th>
                                     <th>Deposited</th>
@@ -291,10 +317,24 @@
                             </thead>
                             <tbody>
                                 @foreach($instalments as $inst)
+                                @php
+                                    $adbCharge  = $user->adb_option  ? round($inst->amount * 0.003, 2) : 0;
+                                    $fispCharge = $user->fisp_option ? round($inst->amount * 0.004, 2) : 0;
+                                    $totalPayable = $inst->amount + $adbCharge + $fispCharge;
+                                @endphp
                                 <tr>
                                     <td><strong>{{ $inst->instalment_number }}</strong></td>
                                     <td>{{ $inst->due_date->format('d M Y') }}</td>
                                     <td>${{ number_format($inst->amount, 2) }}</td>
+                                    @if($hasOptions)
+                                        @if($user->adb_option)
+                                            <td class="text-danger font-weight-bold">+${{ number_format($adbCharge, 2) }}</td>
+                                        @endif
+                                        @if($user->fisp_option)
+                                            <td class="text-warning font-weight-bold">+${{ number_format($fispCharge, 2) }}</td>
+                                        @endif
+                                        <td><strong class="text-primary">${{ number_format($totalPayable, 2) }}</strong></td>
+                                    @endif
                                     <td>
                                         @switch($inst->status)
                                             @case('confirmed')

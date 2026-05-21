@@ -33,6 +33,7 @@ use App\Http\Middleware\{CheckUserStatus, CheckBlockedUser};
 Route::get('log-viewer', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index')->middleware('auth');
 
 Route::get('/', [FrontEndController::class, 'index'])->name('index');
+Route::get('/csrf-refresh', fn() => response()->json(['token' => csrf_token()]))->name('csrf.refresh');
 Route::get('api-test', [FrontEndController::class, 'apiTest'])->name('api-test');
 Route::get('api-test-get', [FrontEndController::class, 'apiTestGet'])->name('api-test-get');
 

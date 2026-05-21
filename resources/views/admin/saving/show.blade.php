@@ -275,14 +275,15 @@
                 </div>
                 <div class="card-body pt-0">
                     <div class="table-responsive">
-                        <table class="table table-hover table-head-custom table-vertical-center">
+                        @php $hasOpts = $savingUser->adb_option || $savingUser->fisp_option; @endphp
+                        <table class="table table-hover table-head-custom table-vertical-center" style="font-size:.88rem;">
                             <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th style="width:36px;">#</th>
                                     <th>Due Date</th>
                                     <th>Amount</th>
-                                    <th>Submitted Amt</th>
-                                    <th>Transaction ID</th>
+                                    <th>Submitted</th>
+                                    <th>Txn ID</th>
                                     <th>Status</th>
                                     <th>Submitted On</th>
                                     <th>Proof</th>
@@ -292,25 +293,50 @@
                             </thead>
                             <tbody>
                                 @foreach($instalments as $inst)
+                                @php
+                                    $adbC   = $savingUser->adb_option  ? round($inst->amount * 0.003, 2) : 0;
+                                    $fispC  = $savingUser->fisp_option ? round($inst->amount * 0.004, 2) : 0;
+                                    $totalP = $inst->amount + $adbC + $fispC;
+                                @endphp
                                 <tr class="{{ $inst->status === 'submitted' ? 'table-warning' : '' }}">
                                     <td><strong>{{ $inst->instalment_number }}</strong></td>
-                                    <td>{{ $inst->due_date->format('d M Y') }}</td>
-                                    <td>${{ number_format($inst->amount, 2) }}</td>
+                                    <td class="text-nowrap">{{ $inst->due_date->format('d M Y') }}</td>
+
+                                    {{-- Amount cell: base + ADB/FISP breakdown inline --}}
                                     <td>
-                                        @if($inst->submitted_amount)
-                                            ${{ number_format($inst->submitted_amount, 2) }}
-                                        @else —
+                                        <strong>${{ number_format($totalP, 2) }}</strong>
+                                        @if($hasOpts)
+                                        <div style="font-size:.75rem; line-height:1.4; margin-top:2px; color:#6b7280;">
+                                            <span>Base: ${{ number_format($inst->amount, 2) }}</span>
+                                            @if($adbC > 0)<span class="ml-1 text-danger">+ADB ${{ number_format($adbC, 2) }}</span>@endif
+                                            @if($fispC > 0)<span class="ml-1 text-warning">+FISP ${{ number_format($fispC, 2) }}</span>@endif
+                                        </div>
                                         @endif
                                     </td>
-                                    <td class="font-size-sm text-muted">{{ $inst->transaction_id ?? '—' }}</td>
+
+                                    <td>
+                                        @if($inst->submitted_amount)
+                                            <span class="{{ $inst->submitted_amount >= $totalP ? 'text-success' : 'text-danger' }} font-weight-bold">
+                                                ${{ number_format($inst->submitted_amount, 2) }}
+                                            </span>
+                                            @if($inst->submitted_amount < $totalP)
+                                                <div style="font-size:.72rem;" class="text-danger">Short by ${{ number_format($totalP - $inst->submitted_amount, 2) }}</div>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+
+                                    <td class="text-muted" style="font-size:.8rem;">{{ $inst->transaction_id ?? '—' }}</td>
+
                                     <td>
                                         @switch($inst->status)
                                             @case('confirmed')
                                                 <span class="badge badge-light-success">Confirmed</span>
-                                                @if($inst->is_late) <span class="badge badge-light-warning ml-1">Late</span> @endif
+                                                @if($inst->is_late)<span class="badge badge-light-warning ml-1">Late</span>@endif
                                                 @break
                                             @case('submitted')
-                                                <span class="badge badge-light-warning">Awaiting Confirmation</span>
+                                                <span class="badge badge-light-warning">Awaiting</span>
                                                 @break
                                             @case('missed')
                                                 <span class="badge badge-light-danger">Missed</span>
@@ -323,35 +349,36 @@
                                                 @endif
                                         @endswitch
                                     </td>
-                                    <td>{{ $inst->submitted_at?->format('d M Y H:i') ?? '—' }}</td>
+
+                                    <td class="text-nowrap" style="font-size:.8rem;">{{ $inst->submitted_at?->format('d M Y H:i') ?? '—' }}</td>
+
                                     <td>
                                         @if($inst->proofScreenshot())
-                                            <a href="{{ $inst->proofScreenshot() }}" target="_blank" class="btn btn-sm btn-light-primary">View</a>
-                                        @else —
+                                            <a href="{{ $inst->proofScreenshot() }}" target="_blank" class="btn btn-xs btn-light-primary">View</a>
+                                        @else <span class="text-muted">—</span>
                                         @endif
                                     </td>
-                                    <td>
+
+                                    <td class="text-nowrap" style="font-size:.8rem;">
                                         @if($inst->deposited_at)
                                             {{ $inst->deposited_at->format('d M Y') }}
                                         @elseif($inst->deposit_deferred && $inst->next_cycle_date)
-                                            <span class="text-warning small">Deferred: {{ $inst->next_cycle_date->format('d M Y') }}</span>
-                                        @else —
+                                            <span class="text-warning">Deferred<br>{{ $inst->next_cycle_date->format('d M Y') }}</span>
+                                        @else <span class="text-muted">—</span>
                                         @endif
                                     </td>
+
                                     <td>
                                         @if($inst->status === 'submitted')
-                                            {{-- Confirm form --}}
                                             <form method="POST" action="{{ route('admin.saving.confirm', $inst) }}" class="d-inline">
                                                 @csrf
-                                                <button type="submit" class="btn btn-sm btn-success"
-                                                    onclick="return confirm('Confirm instalment #{{ $inst->instalment_number }} and deposit ${{ number_format($inst->submitted_amount ?? $inst->amount, 2) }}?')">
+                                                <button type="submit" class="btn btn-sm btn-success rounded-0"
+                                                    onclick="return confirm('Confirm #{{ $inst->instalment_number }}?\nSubmitted: ${{ number_format($inst->submitted_amount ?? 0, 2) }}\nRequired: ${{ number_format($totalP, 2) }}')">
                                                     Confirm &amp; Deposit
                                                 </button>
                                             </form>
-                                            {{-- Reject form --}}
-                                            <button class="btn btn-sm btn-danger ml-1" data-toggle="modal" data-target="#rejectModal{{ $inst->id }}">Reject</button>
+                                            <button class="btn btn-sm btn-danger rounded-0 mt-1" data-toggle="modal" data-target="#rejectModal{{ $inst->id }}">Reject</button>
 
-                                            {{-- Reject Modal --}}
                                             <div class="modal fade" id="rejectModal{{ $inst->id }}" tabindex="-1">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
@@ -362,7 +389,7 @@
                                                                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                                                             </div>
                                                             <div class="modal-body">
-                                                                <label>Reason for rejection</label>
+                                                                <label>Reason</label>
                                                                 <textarea name="notes" class="form-control" rows="3" required></textarea>
                                                             </div>
                                                             <div class="modal-footer">

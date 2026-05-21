@@ -1,4 +1,4 @@
-@extends('demo.layout.guest')
+﻿@extends('demo.layout.guest')
 @section('title', 'Register')
 
 @section('nav_bar')
@@ -144,6 +144,12 @@
         <p class="auth-card-subtitle">Join Global Visioners International today</p>
     </div>
 
+    @if(session('error'))
+        <div style="background:#fef2f2; border-left:4px solid #ef4444; border-radius:6px; padding:.75rem 1rem; margin-bottom:1rem; font-size:.84rem; color:#b91c1c;">
+            <strong>âš </strong> {{ session('error') }}
+        </div>
+    @endif
+
     <!-- Form -->
     <form method="POST" action="{{ route('register.user') }}" enctype="multipart/form-data">
         @csrf
@@ -151,13 +157,13 @@
         {{-- Hidden flag so the controller knows which path to take --}}
         <input type="hidden" name="user_type" id="user_type" value="{{ old('user_type', 'new') }}" />
 
-        <!-- ── Account Type ──────────────────── -->
+        <!-- â”€â”€ Account Type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div class="field-group">
             @if($isSaving)
                 {{-- Savings Program link: account type is fixed --}}
                 <input type="hidden" name="account_type" value="saving" />
                 <div style="background:rgba(16,185,129,0.06); border:1.5px solid #6ee7b7; border-radius:10px; padding:0.9rem 1rem; font-size:0.82rem; color:#065f46; margin-bottom:0.5rem;">
-                    <strong>Savings Program — 25-Month Plan</strong><br>
+                    <strong>Savings Program â€” 25-Month Plan</strong><br>
                     Registration fee: <strong>${{ $setting->saving_registration_fee ?? 5 }}</strong> &nbsp;|&nbsp;
                     Initial deposit: <strong>${{ $setting->saving_min_deposit ?? 19 }}</strong> (optional at signup)<br>
                     Monthly instalment: <strong>${{ $setting->saving_monthly_instalment ?? 19 }}</strong> over 25 months<br>
@@ -187,7 +193,7 @@
                 </div>
                 <!-- Saving account info panel (standard form toggle) -->
                 <div id="saving-info-panel" class="d-none" style="margin-top:0.75rem; background:rgba(16,185,129,0.06); border:1.5px solid #6ee7b7; border-radius:10px; padding:0.9rem 1rem; font-size:0.82rem; color:#065f46;">
-                    <strong>Saving Account — 25-Month Plan</strong><br>
+                    <strong>Saving Account â€” 25-Month Plan</strong><br>
                     Registration fee: <strong>${{ $setting->saving_registration_fee ?? 5 }}</strong> &nbsp;|&nbsp;
                     Initial deposit: <strong>${{ $setting->saving_min_deposit ?? 19 }}</strong> (optional at signup)<br>
                     Monthly instalment: <strong>${{ $setting->saving_monthly_instalment ?? 19 }}</strong> over 25 months<br>
@@ -197,7 +203,7 @@
         </div>
 
         @if($isSaving)
-        <!-- ── Are you a new or existing user? (Savings Program only) ── -->
+        <!-- â”€â”€ Are you a new or existing user? (Savings Program only) â”€â”€ -->
         <div class="field-group" style="margin-top:0.75rem;">
             <label class="auth-label">Are you a new or existing member? <span style="color:#ef4444;">*</span></label>
             <div style="display:flex; gap:0.75rem; margin-top:0.3rem;">
@@ -213,9 +219,9 @@
         </div>
         @endif
 
-        <!-- ════════════════════════════════════════════
+        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
              NEW USER FIELDS (full registration form)
-             ════════════════════════════════════════════ -->
+             â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
         <div id="new-user-fields">
 
         <div class="section-divider">Personal Details</div>
@@ -338,14 +344,14 @@
 
         </div>{{-- end #new-user-fields --}}
 
-        <!-- ════════════════════════════════════════════
+        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
              EXISTING USER FIELDS (savings enrolment only)
-             ════════════════════════════════════════════ -->
+             â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
         <div id="existing-user-fields" class="d-none">
 
         <div class="section-divider">Identify Your Account</div>
         <div style="font-size:0.82rem; color:#64748b; margin-bottom:0.75rem;">
-            Enter your existing username or email address. Your account details remain unchanged — only your Savings Program membership is added.
+            Enter your existing username or email address. Your account details remain unchanged â€” only your Savings Program membership is added.
         </div>
 
         <div class="field-group">
@@ -379,6 +385,34 @@
             @error('referral_link') <div class="text-danger">{{ $message }}</div> @enderror
         </div>
 
+        @if($isSaving)
+        {{-- ADB / FISP options â€” only for saving plan registrations --}}
+        <div class="section-divider">Additional Options</div>
+        <div class="field-group">
+            <label class="auth-label" style="margin-bottom:.5rem;">Select Optional Covers</label>
+            <div style="display:flex; flex-direction:column; gap:.6rem;">
+                <label style="display:flex; align-items:flex-start; gap:.6rem; cursor:pointer; background:rgba(79,70,229,0.04); border:1.5px solid #e0e7ff; border-radius:9px; padding:.65rem .85rem;">
+                    <input type="checkbox" name="adb_option" value="1" id="reg_adb"
+                           {{ old('adb_option') ? 'checked' : '' }}
+                           style="accent-color:#4f46e5; width:16px; height:16px; margin-top:2px; flex-shrink:0;">
+                    <div>
+                        <div style="font-size:.86rem; font-weight:600; color:#111827;">ADB Option</div>
+                        <div style="font-size:.75rem; color:#6b7280; margin-top:2px;">Accidental Death Benefit â€” Rs. 3 per Rs. 1,000 invested &nbsp;(charged every month)</div>
+                    </div>
+                </label>
+                <label style="display:flex; align-items:flex-start; gap:.6rem; cursor:pointer; background:rgba(79,70,229,0.04); border:1.5px solid #e0e7ff; border-radius:9px; padding:.65rem .85rem;">
+                    <input type="checkbox" name="fisp_option" value="1" id="reg_fisp"
+                           {{ old('fisp_option') ? 'checked' : '' }}
+                           style="accent-color:#4f46e5; width:16px; height:16px; margin-top:2px; flex-shrink:0;">
+                    <div>
+                        <div style="font-size:.86rem; font-weight:600; color:#111827;">FISP Option</div>
+                        <div style="font-size:.75rem; color:#6b7280; margin-top:2px;">Family Income Support Plan â€” Rs. 4 per Rs. 1,000 invested &nbsp;(charged every month)</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+        @endif
+
         <div class="section-divider">Payment Details</div>
 
         <!-- Payment Method -->
@@ -407,47 +441,6 @@
                 </label>
             </div>
         </div>
-
-        <!-- Bank Name (shown when Bank is selected) -->
-        <div id="reg-bank-name-container" class="field-group d-none">
-            <label class="auth-label">Bank Name <span style="color:#ef4444;">*</span></label>
-            <div class="auth-input-wrap" style="flex-direction:column; align-items:stretch; gap:0.5rem;">
-                <select name="bank_name" id="reg_bank_name" class="auth-input auth-select">
-                    <option value="">Select your bank</option>
-                    <option value="Allied Bank Limited (ABL)" {{ old('bank_name') == 'Allied Bank Limited (ABL)' ? 'selected' : '' }}>Allied Bank Limited (ABL)</option>
-                    <option value="Al Baraka Bank Pakistan Limited" {{ old('bank_name') == 'Al Baraka Bank Pakistan Limited' ? 'selected' : '' }}>Al Baraka Bank Pakistan Limited</option>
-                    <option value="Askari Bank Limited" {{ old('bank_name') == 'Askari Bank Limited' ? 'selected' : '' }}>Askari Bank Limited</option>
-                    <option value="Bank Alfalah Limited" {{ old('bank_name') == 'Bank Alfalah Limited' ? 'selected' : '' }}>Bank Alfalah Limited</option>
-                    <option value="Bank Al-Habib Limited" {{ old('bank_name') == 'Bank Al-Habib Limited' ? 'selected' : '' }}>Bank Al-Habib Limited</option>
-                    <option value="Bank Islami Pakistan Limited" {{ old('bank_name') == 'Bank Islami Pakistan Limited' ? 'selected' : '' }}>Bank Islami Pakistan Limited</option>
-                    <option value="Bank of Khyber (BOK)" {{ old('bank_name') == 'Bank of Khyber (BOK)' ? 'selected' : '' }}>Bank of Khyber (BOK)</option>
-                    <option value="Bank of Punjab (BOP)" {{ old('bank_name') == 'Bank of Punjab (BOP)' ? 'selected' : '' }}>Bank of Punjab (BOP)</option>
-                    <option value="Dubai Islamic Bank Pakistan Limited" {{ old('bank_name') == 'Dubai Islamic Bank Pakistan Limited' ? 'selected' : '' }}>Dubai Islamic Bank Pakistan Limited</option>
-                    <option value="Faysal Bank Limited" {{ old('bank_name') == 'Faysal Bank Limited' ? 'selected' : '' }}>Faysal Bank Limited</option>
-                    <option value="First Women Bank Limited" {{ old('bank_name') == 'First Women Bank Limited' ? 'selected' : '' }}>First Women Bank Limited</option>
-                    <option value="Habib Bank Limited (HBL)" {{ old('bank_name') == 'Habib Bank Limited (HBL)' ? 'selected' : '' }}>Habib Bank Limited (HBL)</option>
-                    <option value="Habib Metropolitan Bank Limited" {{ old('bank_name') == 'Habib Metropolitan Bank Limited' ? 'selected' : '' }}>Habib Metropolitan Bank Limited</option>
-                    <option value="JS Bank Limited" {{ old('bank_name') == 'JS Bank Limited' ? 'selected' : '' }}>JS Bank Limited</option>
-                    <option value="MCB Bank Limited" {{ old('bank_name') == 'MCB Bank Limited' ? 'selected' : '' }}>MCB Bank Limited</option>
-                    <option value="Meezan Bank Limited" {{ old('bank_name') == 'Meezan Bank Limited' ? 'selected' : '' }}>Meezan Bank Limited</option>
-                    <option value="National Bank of Pakistan (NBP)" {{ old('bank_name') == 'National Bank of Pakistan (NBP)' ? 'selected' : '' }}>National Bank of Pakistan (NBP)</option>
-                    <option value="Sindh Bank Limited" {{ old('bank_name') == 'Sindh Bank Limited' ? 'selected' : '' }}>Sindh Bank Limited</option>
-                    <option value="Soneri Bank Limited" {{ old('bank_name') == 'Soneri Bank Limited' ? 'selected' : '' }}>Soneri Bank Limited</option>
-                    <option value="Standard Chartered Bank Pakistan" {{ old('bank_name') == 'Standard Chartered Bank Pakistan' ? 'selected' : '' }}>Standard Chartered Bank Pakistan</option>
-                    <option value="United Bank Limited (UBL)" {{ old('bank_name') == 'United Bank Limited (UBL)' ? 'selected' : '' }}>United Bank Limited (UBL)</option>
-                    <option value="Zarai Taraqiati Bank Limited (ZTBL)" {{ old('bank_name') == 'Zarai Taraqiati Bank Limited (ZTBL)' ? 'selected' : '' }}>Zarai Taraqiati Bank Limited (ZTBL)</option>
-                    <option value="Easypaisa" {{ old('bank_name') == 'Easypaisa' ? 'selected' : '' }}>Easypaisa</option>
-                    <option value="Jazzcash" {{ old('bank_name') == 'Jazzcash' ? 'selected' : '' }}>Jazzcash</option>
-                    <option value="Other" {{ old('bank_name') == 'Other' ? 'selected' : '' }}>Other</option>
-                </select>
-                <div id="reg-other-bank-div" class="{{ old('bank_name') === 'Other' ? '' : 'd-none' }}">
-                    <input class="mt-3 auth-input" type="text" name="bank_name_other" id="reg_other_bank_input"
-                           placeholder="Enter bank name" value="{{ old('bank_name_other') }}">
-                </div>
-            </div>
-            @error('bank_name') <div class="text-danger">{{ $message }}</div> @enderror
-        </div>
-
         <!-- USDT QR Panel -->
         <div id="referral-link-container" class="d-none">
             <div style="background:rgba(79,70,229,0.04); border:1.5px solid #e0e7ff; border-radius:12px; padding:1rem; margin-bottom:1rem;">
@@ -570,7 +563,7 @@
     const savingFull    = savingFee + savingDeposit;
     const isSavingPage  = {{ $isSaving ? 'true' : 'false' }};
 
-    // ── Savings Program: toggle between new / existing member ──────────────────
+    // â”€â”€ Savings Program: toggle between new / existing member â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function switchUserType(type) {
         const newFields      = document.getElementById('new-user-fields');
         const existingFields = document.getElementById('existing-user-fields');
@@ -615,7 +608,7 @@
         } else {
             if (badge) {
                 badge.className = 'account-badge badge-installment';
-                badge.textContent = 'Pay in scheduled monthly instalments — 25 months';
+                badge.textContent = 'Pay in scheduled monthly instalments â€” 25 months';
             }
             if (infoPanel) infoPanel.classList.remove('d-none');
             if (usdtInput) { usdtInput.min = savingFee; usdtInput.removeAttribute('max'); }
@@ -629,14 +622,10 @@
         const codePanel      = document.getElementById('activation-code-container');
         const codeInput      = document.getElementById('activation_code');
         const proofContainer = document.getElementById('transaction-proof-container');
-        const bankContainer  = document.getElementById('reg-bank-name-container');
-        const bankSelect     = document.getElementById('reg_bank_name');
 
         if (qrPanel)   qrPanel.classList.add('d-none');
         if (codePanel) codePanel.classList.add('d-none');
         if (codeInput) codeInput.removeAttribute('required');
-        if (bankContainer) bankContainer.classList.add('d-none');
-        if (bankSelect)    bankSelect.removeAttribute('required');
 
         if (method === 'activation_code') {
             if (codePanel) codePanel.classList.remove('d-none');
@@ -645,46 +634,8 @@
         } else {
             if (proofContainer) proofContainer.classList.remove('d-none');
             if (method === 'usdt' && qrPanel) qrPanel.classList.remove('d-none');
-            if (method === 'bank') {
-                if (bankContainer) bankContainer.classList.remove('d-none');
-                if (bankSelect)    bankSelect.setAttribute('required', 'required');
-            }
         }
     }
-
-    // Bank name "Other" toggle on register form
-    document.addEventListener('DOMContentLoaded', function() {
-        var regBankSelect = document.getElementById('reg_bank_name');
-        var regOtherDiv   = document.getElementById('reg-other-bank-div');
-        var regOtherInput = document.getElementById('reg_other_bank_input');
-
-        if (regBankSelect) {
-            regBankSelect.addEventListener('change', function() {
-                if (this.value === 'Other') {
-                    regOtherDiv.classList.remove('d-none');
-                    regOtherInput.required = true;
-                } else {
-                    regOtherDiv.classList.add('d-none');
-                    regOtherInput.required = false;
-                }
-            });
-        }
-
-        // On submit: overwrite select value with typed "Other" bank name
-        var regForm = document.querySelector('form[action="{{ route('register.user') }}"]');
-        if (regForm) {
-            regForm.addEventListener('submit', function() {
-                if (regBankSelect && regBankSelect.value === 'Other' && regOtherInput && regOtherInput.value.trim()) {
-                    regBankSelect.value = regOtherInput.value.trim();
-                }
-            });
-        }
-
-        // Restore bank container if old('payment_method') === 'bank'
-        @if(old('payment_method') === 'bank')
-        toggleReferralLink('bank');
-        @endif
-    });
 
     // File label update
     function updateFileLabel(input) {
@@ -702,27 +653,28 @@
         });
     }
 
-    // PKR → USDT conversion
+    // PKR â†’ USDT conversion
     document.addEventListener('DOMContentLoaded', function () {
         const rate      = {{ $setting->usd ?? 281.10 }};
         const pkrInput  = document.getElementById('transferred_amount');
         const usdOutput = document.getElementById('usdt_amount');
         const usdInfo   = document.getElementById('usdInfo');
 
+        function calcConversion() {
+            const pkr = parseFloat(pkrInput.value);
+            if (!isNaN(pkr) && pkr > 0) {
+                let usd = parseFloat((pkr / rate).toFixed(2));
+                if (usdInfo) usdInfo.textContent = `1 USD = PKR ${rate}  â†’  PKR ${pkr.toLocaleString()} â‰ˆ $${usd} USD`;
+                usdOutput.value = usd;
+            } else {
+                usdOutput.value = '';
+                if (usdInfo) usdInfo.textContent = '';
+            }
+        }
+
         if (pkrInput) {
-            pkrInput.addEventListener('blur', function () {
-                const pkr = parseFloat(pkrInput.value);
-                if (!isNaN(pkr) && pkr > 0) {
-                    let usd = parseFloat((pkr / rate).toFixed(2));
-                    const accountTypeEl = document.getElementById('account_type');
-                    const currentType   = isSavingPage ? 'saving' : (accountTypeEl ? accountTypeEl.value : 'standard_investment');
-                    if (usdInfo) usdInfo.textContent = `At PKR ${rate}/USD ≈ ${usd} USDT`;
-                    usdOutput.value = usd;
-                } else {
-                    usdOutput.value = '';
-                    if (usdInfo) usdInfo.textContent = '';
-                }
-            });
+            pkrInput.addEventListener('input', calcConversion);
+            pkrInput.addEventListener('blur',  calcConversion);
         }
 
         // Restore old payment method on page reload
@@ -747,5 +699,32 @@
             }
         }
     });
+
+    // Refresh CSRF token before every form submit to prevent 419
+    (function () {
+        var form = document.querySelector('form[action="{{ route('register.user') }}"]');
+        if (!form) return;
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var self = this;
+
+            fetch('{{ route('csrf.refresh') }}', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                // Update ALL _token fields in the form
+                form.querySelectorAll('input[name="_token"]').forEach(function (el) {
+                    el.value = data.token;
+                });
+                self.submit();
+            })
+            .catch(function () {
+                // If fetch fails, submit anyway
+                self.submit();
+            });
+        }, true); // capture phase so it runs before other submit handlers
+    })();
 </script>
 @endsection

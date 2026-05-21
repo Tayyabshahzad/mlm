@@ -169,7 +169,6 @@ class SavingAccountService
             $now     = Carbon::now();
             $dueDate = Carbon::parse($instalment->due_date);
             $isLate  = $now->gt($dueDate->copy()->endOfDay());
-            $isEarly = $now->lt($dueDate->copy()->startOfDay());
 
             // Determine next cycle date if late
             $nextCycleDate = null;
@@ -224,20 +223,33 @@ class SavingAccountService
         $amount = $instalment->submitted_amount ?? $instalment->amount;
 
         // For instalment #1: also credit the partial deposit the user paid at registration
-        // (amount beyond the saving fee that was never yet credited to saving_total_deposited).
-        // Use saving_initial_payment / saving_initial_fee — these are set for both dedicated
-        // saving users and enrolled standard users. Do NOT use converted_usdt_amount or
-        // fee_deducted, which belong to the standard investment plan.
         $registrationPartial = 0.0;
         if ($instalment->instalment_number === 1 && $user->saving_total_deposited == 0) {
-            $savingFee   = (float) ($user->saving_initial_fee ?? 0);
-            $savingPaid  = (float) ($user->saving_initial_payment ?? 0);
+            $savingFee           = (float) ($user->saving_initial_fee ?? 0);
+            $savingPaid          = (float) ($user->saving_initial_payment ?? 0);
             $registrationPartial = max(0.0, $savingPaid - $savingFee);
         }
 
         $totalCredit = $amount + $registrationPartial;
 
-        // Credit saving wallet for the confirmed instalment amount
+        // ── ADB / FISP charges ──────────────────────────────────────────────
+        // Calculated on the BASE instalment amount only (not registration partial).
+        // ADB = 0.3% (Rs. 3 per Rs. 1000), FISP = 0.4% (Rs. 4 per Rs. 1000).
+        // These are insurance premiums — deducted before crediting ROI-eligible amount.
+        $baseForCharges = $instalment->amount; // always use scheduled base amount
+        $adbCharge  = $user->adb_option  ? round($baseForCharges * 0.003, 4) : 0.0;
+        $fispCharge = $user->fisp_option ? round($baseForCharges * 0.004, 4) : 0.0;
+        $totalDeductions = $adbCharge + $fispCharge;
+        $netCredit  = round($totalCredit - $totalDeductions, 4);
+
+        // Store deduction details on the instalment record
+        $instalment->update([
+            'adb_charge'  => $adbCharge,
+            'fisp_charge' => $fispCharge,
+            'net_credited'=> $netCredit,
+        ]);
+
+        // Credit saving wallet for the gross instalment amount
         Wallet::create([
             'user_id'         => $user->id,
             'wallet_type'     => 'saving',
@@ -250,6 +262,37 @@ class SavingAccountService
             'description'     => "Saving instalment #{$instalment->instalment_number} deposited",
             'transaction_type'=> 'credit',
         ]);
+
+        // Debit ADB/FISP charges from saving wallet if applicable
+        if ($totalDeductions > 0) {
+            $desc = implode(' + ', array_filter([
+                $adbCharge  > 0 ? "ADB \${$adbCharge}"  : null,
+                $fispCharge > 0 ? "FISP \${$fispCharge}" : null,
+            ]));
+            Wallet::create([
+                'user_id'         => $user->id,
+                'wallet_type'     => 'saving',
+                'balance'         => -$totalDeductions,
+                'commission_type' => 'saving_charge',
+                'level'           => '-',
+                'total_amount'    => $totalDeductions,
+                'wallet_src'      => 'saving_instalment',
+                'source_type'     => 'saving',
+                'description'     => "Option charges (instalment #{$instalment->instalment_number}): {$desc}",
+                'transaction_type'=> 'debit',
+            ]);
+
+            TransactionLog::create([
+                'user_id'          => $user->id,
+                'from_wallet_type' => 'saving',
+                'to_wallet_type'   => 'saving_charge',
+                'charge'           => $totalDeductions,
+                'amount'           => $totalCredit,
+                'final_amount'     => $netCredit,
+                'description'      => "ADB/FISP charges — instalment #{$instalment->instalment_number}: {$desc}",
+                'status'           => 'debit',
+            ]);
+        }
 
         // Credit the registration partial deposit as a separate wallet entry if applicable
         if ($registrationPartial > 0) {
@@ -278,9 +321,9 @@ class SavingAccountService
             ]);
         }
 
-        // Update user's saving total and roi_eligible_investment_amount (combined)
+        // Update user's saving total (gross) and roi_eligible_investment_amount (net after ADB/FISP)
         $user->increment('saving_total_deposited', $totalCredit);
-        $user->increment('roi_eligible_investment_amount', $totalCredit);
+        $user->increment('roi_eligible_investment_amount', $netCredit);
 
         // Mark registration complete when instalment #1 is deposited.
         // NOTE: can_login is intentionally NOT set here — that is admin's job via

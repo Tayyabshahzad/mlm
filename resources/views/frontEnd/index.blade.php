@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -39,10 +39,18 @@
           <li><a href="#contact">Contact</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-      </nav>
-
-      <a class="btn-getstarted" style=""  href="{{ route('login') }}">Login</a>
-
+       
+      </nav> 
+      <div class="d-flex align-items-center gap-2">
+        <a class="btn-getstarted" data-bs-toggle="modal" data-bs-target="#calcModal"
+           href="#" onclick="return false;"
+           style="background:transparent; border:2px solid #DFC82E; color:#DFC82E; margin:0;">
+            <i class="bi bi-calculator" style="margin-right:4px;"></i> Calculator
+        </a>
+        <a class="btn-getstarted" href="{{ route('login') }}" style="margin:0; background:transparent; border:2px solid #DFC82E; color:#DFC82E;">
+            <i class="bi bi-box-arrow-in-right" style="margin-right:4px;"></i> Login
+        </a>
+      </div>
     </div>
   </header>
 
@@ -56,10 +64,11 @@
       <div class="container">
         <div class="row">
          
-          <div class="col-lg-12 text-center">
-            <div class="col-lg-12 text-center">
+          <div class="text-center col-lg-12">
+            <div class="text-center col-lg-12">
               <img  data-aos="fade-up" data-aos-delay="100" src="{{ asset('append-template/images/education-logo.png')}}" alt="" style="width:60%;position:inherit;display:inline"/>
             </div>
+            
             <br>
             {{-- <h2 data-aos="fade-up" data-aos-delay="100">Welcome to Global Visioners International</h2>
             <p data-aos="fade-up" data-aos-delay="200">E-Commerce and Affiliate Marketing</p> --}}
@@ -122,21 +131,21 @@
         <div class="row gy-4">
 
           <div class="col-lg-4 col-md-6">
-            <div class="stats-item text-center w-100 h-100">
+            <div class="text-center stats-item w-100 h-100">
               <span data-purecounter-start="0" data-purecounter-end="232" data-purecounter-duration="1" class="purecounter"></span>
               <p>Partners</p>
             </div>
           </div><!-- End Stats Item -->
 
           <div class="col-lg-4 col-md-6">
-            <div class="stats-item text-center w-100 h-100">
+            <div class="text-center stats-item w-100 h-100">
               <span data-purecounter-start="0" data-purecounter-end="6" data-purecounter-duration="1" class="purecounter"></span>
               <p>Projects</p>
             </div>
           </div><!-- End Stats Item -->
 
           <div class="col-lg-4 col-md-6">
-            <div class="stats-item text-center w-100 h-100">
+            <div class="text-center stats-item w-100 h-100">
               <span data-purecounter-start="0" data-purecounter-end="5" data-purecounter-duration="1" class="purecounter"></span>
               <p>Countries Served:</p>
             </div>
@@ -165,7 +174,7 @@
       <div class="container">
 
         <div class="row gy-4 align-items-center features-item">
-          <div class="col-lg-12 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
+          <div class="order-2 col-lg-12 order-lg-1" data-aos="fade-up" data-aos-delay="200">
             
             <p>
               At Global Visioners International, we are committed to driving innovation and success in e-commerce, affiliate marketing, and the real estate industry. Our platform empowers businesses and entrepreneurs worldwide by connecting them to new opportunities and markets. <br/><br/>
@@ -268,7 +277,7 @@
                       </div>
                     </div>
                     <p>
-                      <img src="{{ asset('append-template/images/certificate-1-500x500.png')}}" class=" " alt="">
+                      <img src="{{ asset('append-template/images/certificate-1-500x500.png')}}" class="" alt="">
                     </p>
                   </div>
                 </div><!-- End testimonial item -->
@@ -283,7 +292,7 @@
                       </div>
                     </div>
                     <p>
-                      <img src="{{ asset('append-template/images/certificate-1-500x500.png')}}" class=" " alt="">
+                      <img src="{{ asset('append-template/images/certificate-1-500x500.png')}}" class="" alt="">
                     </p>
                   </div>
                 </div><!-- End testimonial item -->
@@ -298,7 +307,7 @@
                       </div>
                     </div>
                     <p>
-                      <img src="{{ asset('append-template/images/certificate-1-500x500.png')}}" class=" " alt="">
+                      <img src="{{ asset('append-template/images/certificate-1-500x500.png')}}" class="" alt="">
                     </p>
                   </div>
                 </div><!-- End testimonial item -->
@@ -312,7 +321,7 @@
                       </div>
                     </div>
                     <p>
-                      <img src="{{ asset('append-template/images/certificate-1-500x500.png')}}" class=" " alt="">
+                      <img src="{{ asset('append-template/images/certificate-1-500x500.png')}}" class="" alt="">
                     </p>
                   </div>
                 </div><!-- End testimonial item -->
@@ -409,7 +418,7 @@
                   <textarea class="form-control" name="message" rows="6" placeholder="Message" required=""></textarea>
                 </div>
 
-                <div class="col-12 text-center">
+                <div class="text-center col-12">
                   <div class="loading">Loading</div>
                   <div class="error-message"></div>
                   <div class="sent-message">Your message has been sent. Thank you!</div>
@@ -438,7 +447,7 @@
             <span class="sitename">Global Visioners International</span>
           </a>
           <p>Explore Our Projects and See How We Drive Success! Discover the innovative solutions and impactful results we deliver across e-commerce, affiliate marketing, and real estate, empowering businesses to grow and thrive in the digital age.</p>
-          <div class="social-links d-flex mt-4">
+          <div class="mt-4 social-links d-flex">
             <a href="https://www.snapchat.com/Alawan,s786">  <i class="bi bi-snapchat"></i></a>
             <a href="https://www.facebook.com/Al Awan Visioners"><i class="bi bi-facebook"></i></a>
             <a href="https://www.tiktok.com/en/Al Awan Visioners">  <i class="bi bi-tiktok"></i> </a>
@@ -459,7 +468,7 @@
 
         
 
-        <div class="col-lg-5 col-md-12 footer-contact text-center text-md-start">
+        <div class="text-center col-lg-5 col-md-12 footer-contact text-md-start">
           <h4>Contact Us</h4> 
           <p>New York, NY 535022</p>
           <p>United States</p>
@@ -471,7 +480,7 @@
       </div>
     </div>
 
-    <div class="container copyright text-center mt-4">
+    <div class="container mt-4 text-center copyright">
       <p>© <span>Copyright</span> <strong class="sitename">Global Visioners International</strong> <span>All Rights Reserved</span></p>
       <div class="credits"> 
         Designed by <a href="">Dev 97</a>
@@ -497,6 +506,283 @@
   <script src="{{ asset('append-template/assets/vendor/swiper/swiper-bundle.min.js')}}"></script> 
   <!-- Main JS File -->
   <script src="{{ asset('append-template/assets/js/main.js')}}"></script>
+
+<!-- ── Calculator Modal ──────────────────────────────── -->
+<div class="modal fade" id="calcModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:680px;">
+    <div class="modal-content" style="border:none; border-radius:0; overflow:hidden; box-shadow:0 24px 64px rgba(0,0,0,0.65); background:#0e1015;">
+
+      <!-- Header -->
+      <div style="background:#DFC82E; padding:1rem 1.4rem; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:.6rem;">
+          <i class="bi bi-calculator-fill" style="font-size:1.1rem; color:#000;"></i>
+          <div>
+            <div style="font-size:.97rem; font-weight:800; color:#000; line-height:1.2;">Investment Calculator</div>
+            <div style="font-size:.7rem; color:#3a2f00; font-weight:600; letter-spacing:.4px;">25-MONTH SAVING PLAN</div>
+          </div>
+        </div>
+        <button type="button" data-bs-dismiss="modal"
+                style="background:rgba(0,0,0,0.15); border:none; color:#000; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:1rem; cursor:pointer; border-radius:0; font-weight:700; line-height:1;">
+          &times;
+        </button>
+      </div>
+
+      <div style="padding:1.4rem 1.5rem 1.5rem;">
+
+        <!-- Input row -->
+        <div style="margin-bottom:1rem;">
+          <label style="font-size:.68rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.7px; display:block; margin-bottom:.35rem;">
+            Invest Amount (Rs.)
+          </label>
+          <div style="display:flex; height:46px;">
+            <input type="number" id="calcAmount" min="1" placeholder="e.g. 4000"
+                   style="flex:1; height:100%; padding:0 1rem; background:#1a1d24; border:1.5px solid #2a2d36; border-right:none; border-radius:0; font-size:1rem; color:#fff; outline:none; transition:border-color .15s; box-sizing:border-box;"
+                   onfocus="this.style.borderColor='#DFC82E'"
+                   onblur="this.style.borderColor='#2a2d36'"
+                   onkeydown="if(event.key==='Enter') calcRun()">
+            <button onclick="calcRun()"
+                    style="height:100%; padding:0 1.5rem; background:#DFC82E; color:#000; border:none; border-radius:0; font-size:.88rem; font-weight:800; cursor:pointer; white-space:nowrap; letter-spacing:.3px; transition:background .15s;"
+                    onmouseover="this.style.background='#c9b428'" onmouseout="this.style.background='#DFC82E'">
+              CALCULATE
+            </button>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div style="display:flex; gap:1.5rem; margin-bottom:1.1rem; flex-wrap:wrap; padding:.65rem .9rem; background:#1a1d24; border-left:3px solid #DFC82E;">
+          <label style="display:flex; align-items:center; gap:.45rem; font-size:.84rem; color:#d1d5db; cursor:pointer; margin:0;">
+            <input type="checkbox" id="calcAdb" onchange="calcRun()" style="accent-color:#DFC82E; width:15px; height:15px; border-radius:0;">
+            ADB Option <span style="color:#DFC82E; font-size:.75rem; font-weight:600;">(Rs. 3 / 1000)</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:.45rem; font-size:.84rem; color:#d1d5db; cursor:pointer; margin:0;">
+            <input type="checkbox" id="calcFisp" onchange="calcRun()" style="accent-color:#DFC82E; width:15px; height:15px; border-radius:0;">
+            FISP Option <span style="color:#DFC82E; font-size:.75rem; font-weight:600;">(Rs. 4 / 1000)</span>
+          </label>
+        </div>
+
+        <!-- Results -->
+        <div id="calcResults" style="display:none;">
+
+          <!-- 4 cards -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; margin-bottom:1rem; background:#2a2d36;">
+            <div style="background:#0e1015; padding:.85rem 1rem; border-left:3px solid #DFC82E;">
+              <div style="font-size:.65rem; color:#DFC82E; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.3rem;">Sum Assured</div>
+              <div id="rSumAssured" style="font-size:1.05rem; font-weight:700; color:#fff;"></div>
+            </div>
+            <div style="background:#0e1015; padding:.85rem 1rem; border-left:3px solid #4ade80;">
+              <div style="font-size:.65rem; color:#4ade80; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.3rem;">Maturity Amount</div>
+              <div id="rMaturity" style="font-size:1.05rem; font-weight:700; color:#fff;"></div>
+            </div>
+            <div style="background:#0e1015; padding:.85rem 1rem; border-left:3px solid #60a5fa;">
+              <div style="font-size:.65rem; color:#60a5fa; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.3rem;">Death Benefit</div>
+              <div id="rNDB" style="font-size:1.05rem; font-weight:700; color:#fff;"></div>
+            </div>
+            <div style="background:#1a1500; padding:.85rem 1rem; border-left:3px solid #DFC82E;">
+              <div style="font-size:.65rem; color:#DFC82E; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.3rem;">Total Return</div>
+              <div id="rTotal" style="font-size:1.05rem; font-weight:700; color:#DFC82E;"></div>
+            </div>
+          </div>
+
+          <!-- Breakdown -->
+          <div style="background:#1a1d24; border-left:3px solid #2a2d36; padding:.7rem 1rem; font-size:.8rem; margin-bottom:1rem;">
+            <div style="display:flex; justify-content:space-between; padding:.28rem 0; border-bottom:1px solid #2a2d36;">
+              <span style="color:#6b7280;">Invest Amount</span>
+              <span id="rInvest" style="font-weight:600; color:#e5e7eb;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:.28rem 0; border-bottom:1px solid #2a2d36; align-items:center;">
+              <span style="color:#6b7280;">Processing Fee <span style="font-size:.7rem;">(Month 1 only)</span></span>
+              <span id="rProcessingFee" style="font-weight:600; color:#e5e7eb;"></span>
+            </div>
+            <div id="rAdbRow" style="display:none; justify-content:space-between; padding:.28rem 0; border-bottom:1px solid #2a2d36;">
+              <span style="color:#6b7280;">ADB <span style="font-size:.7rem;">× 25 months</span></span>
+              <span id="rAdbVal" style="font-weight:600; color:#e5e7eb;"></span>
+            </div>
+            <div id="rFispRow" style="display:none; justify-content:space-between; padding:.28rem 0;">
+              <span style="color:#6b7280;">FISP <span style="font-size:.7rem;">× 25 months</span></span>
+              <span id="rFispVal" style="font-weight:600; color:#e5e7eb;"></span>
+            </div>
+          </div>
+
+          <!-- Schedule button -->
+          <button onclick="calcShowSchedule()"
+                  style="width:100%; padding:.6rem; background:transparent; color:#DFC82E; border:1.5px solid #DFC82E; border-radius:0; font-size:.87rem; font-weight:700; cursor:pointer; letter-spacing:.3px; transition:all .15s;"
+                  onmouseover="this.style.background='#DFC82E'; this.style.color='#000';"
+                  onmouseout="this.style.background='transparent'; this.style.color='#DFC82E';">
+            <i class="bi bi-calendar3" style="margin-right:6px;"></i> VIEW 25-MONTH PAYMENT SCHEDULE
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Payment Schedule Modal ─────────────────────────── -->
+<div class="modal fade" id="calcScheduleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:min(96vw,700px);">
+    <div class="modal-content" style="border:none; border-radius:14px; overflow:hidden; box-shadow:0 24px 64px rgba(0,0,0,0.55); background:#111318;">
+
+      <div style="padding:1.2rem 1.5rem .5rem; display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <div style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:.45rem;">
+            <span style="background:#DFC82E; color:#000; border-radius:6px; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:.8rem;">
+              <i class="bi bi-calendar3"></i>
+            </span>
+            25-Month Payment Schedule
+          </div>
+          <div id="schedSubtitle" style="font-size:.74rem; color:#6b7280; margin-top:.3rem; padding-left:37px;"></div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" style="opacity:.5;"></button>
+      </div>
+
+      <div style="height:1px; background:linear-gradient(90deg,#DFC82E33,#DFC82E88,#DFC82E33); margin:0 1.5rem .15rem;"></div>
+
+      <div style="overflow-x:auto; max-height:58vh; overflow-y:auto; margin:.5rem 0;">
+        <table style="width:100%; border-collapse:collapse; font-size:.87rem;">
+          <thead>
+            <tr style="background:#1c1f26; position:sticky; top:0; z-index:2;">
+              <th style="padding:.65rem 1rem; font-size:.7rem; font-weight:700; color:#DFC82E; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #2a2d36; text-align:center; width:70px;">Month</th>
+              <th style="padding:.65rem 1rem; font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #2a2d36; text-align:right;">Instalment</th>
+              <th style="padding:.65rem 1rem; font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #2a2d36;">Extra Charges</th>
+              <th style="padding:.65rem 1rem; font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #2a2d36; text-align:right;">Total Payable</th>
+            </tr>
+          </thead>
+          <tbody id="schedBody"></tbody>
+        </table>
+      </div>
+
+      <div style="height:1px; background:#2a2d36; margin:0 1.5rem;"></div>
+      <div id="schedFooter" style="padding:.75rem 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.4rem; font-size:.81rem;"></div>
+
+      <div style="padding:.85rem 1.5rem 1.2rem; display:flex; gap:.5rem; justify-content:flex-end; border-top:1px solid #2a2d36;">
+        <button type="button" data-bs-dismiss="modal"
+                style="padding:.4rem .9rem; font-size:.82rem; border-radius:7px; border:1px solid #2a2d36; background:transparent; color:#9ca3af; cursor:pointer;">
+          Close
+        </button>
+        <button onclick="bootstrap.Modal.getInstance(document.getElementById('calcScheduleModal')).hide(); new bootstrap.Modal(document.getElementById('calcModal')).show();"
+                style="padding:.4rem .9rem; font-size:.82rem; border-radius:7px; border:1.5px solid #DFC82E; background:transparent; color:#DFC82E; cursor:pointer; font-weight:600;">
+          <i class="bi bi-arrow-left" style="margin-right:4px;"></i> Back to Calculator
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var _amt = 0, _adb = false, _fisp = false;
+
+  // Rate and fee from settings
+  var USD_RATE    = {{ (float)($setting->usd ?? 278) }};          // PKR per $1
+  var FEE_USD     = {{ (float)($setting->saving_registration_fee ?? 5) }};  // $5
+  var FEE_PKR     = USD_RATE * FEE_USD;                           // e.g. Rs. 1,390
+
+  function fmt(n) {
+    return 'Rs. ' + Number(n).toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  function fmtFee() {
+    return fmt(FEE_PKR) + ' <span style="color:#6b7280; font-size:.74rem;">(= $' + FEE_USD + ')</span>';
+  }
+
+  window.calcRun = function () {
+    var raw = parseFloat(document.getElementById('calcAmount').value);
+    if (!raw || raw <= 0) return;
+    _amt  = raw;
+    _adb  = document.getElementById('calcAdb').checked;
+    _fisp = document.getElementById('calcFisp').checked;
+
+    var sa  = raw * 25;
+    var mat = sa * 0.5;
+    var adbC  = _adb  ? (raw / 1000) * 3 : 0;
+    var fispC = _fisp ? (raw / 1000) * 4 : 0;
+
+    document.getElementById('rSumAssured').textContent  = fmt(sa);
+    document.getElementById('rMaturity').textContent    = fmt(mat);
+    document.getElementById('rTotal').textContent       = fmt(sa + mat);
+    document.getElementById('rNDB').textContent         = fmt(sa);
+    document.getElementById('rInvest').textContent      = fmt(raw);
+    document.getElementById('rProcessingFee').innerHTML = fmtFee();
+
+    var aRow = document.getElementById('rAdbRow');
+    var fRow = document.getElementById('rFispRow');
+    if (_adb)  { aRow.style.display = 'flex'; document.getElementById('rAdbVal').innerHTML  = fmt(adbC) + ' <span style="color:#6b7280;font-size:.72rem;">/mo = ' + fmt(adbC * 25) + ' total</span>';  }
+    else         aRow.style.display = 'none';
+    if (_fisp) { fRow.style.display = 'flex'; document.getElementById('rFispVal').innerHTML = fmt(fispC) + ' <span style="color:#6b7280;font-size:.72rem;">/mo = ' + fmt(fispC * 25) + ' total</span>'; }
+    else         fRow.style.display = 'none';
+
+    document.getElementById('calcResults').style.display = 'block';
+  };
+
+  window.calcShowSchedule = function () {
+    if (_amt <= 0) return;
+    // ADB & FISP are charged every single month for all 25 months
+    var adbC         = _adb  ? (_amt / 1000) * 3 : 0;
+    var fispC        = _fisp ? (_amt / 1000) * 4 : 0;
+    var monthlyExtra = adbC + fispC;  // recurring every month
+
+    var sub = 'Monthly instalment: ' + fmt(_amt);
+    if (_adb || _fisp) {
+      var opts = [];
+      if (_adb)  opts.push('ADB ' + fmt(adbC) + '/mo');
+      if (_fisp) opts.push('FISP ' + fmt(fispC) + '/mo');
+      sub += '  ·  ' + opts.join(' + ') + ' (all 25 months)';
+    }
+    document.getElementById('schedSubtitle').textContent = sub;
+
+    var tbody = document.getElementById('schedBody');
+    tbody.innerHTML = '';
+    var grand = 0;
+
+    for (var m = 1; m <= 25; m++) {
+      var isFirst  = m === 1;
+      // Processing fee only Month 1 — ADB/FISP every month
+      var extra    = monthlyExtra + (isFirst ? FEE_PKR : 0);
+      var rowTotal = _amt + extra;
+      grand       += rowTotal;
+      var bg       = isFirst ? '#1c1f26' : (m % 2 === 0 ? '#161820' : '#111318');
+
+      var parts = [];
+      if (isFirst) parts.push(fmt(FEE_PKR) + ' <span style="font-size:.71rem;color:#9ca3af;">(=$' + FEE_USD + ' fee)</span>');
+      if (_adb)    parts.push('ADB ' + fmt(adbC));
+      if (_fisp)   parts.push('FISP ' + fmt(fispC));
+      var extraText = parts.length
+        ? '<span style="color:#DFC82E;">' + parts.join(' + ') + '</span>'
+        : '<span style="color:#374151;">—</span>';
+
+      var tr = document.createElement('tr');
+      tr.style.background = bg;
+      tr.innerHTML =
+        '<td style="padding:.62rem 1rem; border-bottom:1px solid #1e2028; text-align:center; font-weight:' + (isFirst?'700':'400') + '; color:' + (isFirst?'#DFC82E':'#4b5563') + ';">' + m + '</td>' +
+        '<td style="padding:.62rem 1rem; border-bottom:1px solid #1e2028; text-align:right; color:#d1d5db; font-weight:500;">' + fmt(_amt) + '</td>' +
+        '<td style="padding:.62rem 1rem; border-bottom:1px solid #1e2028; font-size:.8rem;">' + extraText + '</td>' +
+        '<td style="padding:.62rem 1rem; border-bottom:1px solid #1e2028; text-align:right; font-weight:' + (isFirst?'700':'600') + '; color:' + (isFirst?'#DFC82E':'#e5e7eb') + ';">' + fmt(rowTotal) + '</td>';
+      tbody.appendChild(tr);
+    }
+
+    var note = '25 instalments';
+    if (_adb || _fisp) note += '  ·  ADB/FISP applied every month';
+    note += '  ·  Processing fee ' + fmt(FEE_PKR) + ' (=$' + FEE_USD + ') in Month 1 only';
+
+    document.getElementById('schedFooter').innerHTML =
+      '<span style="color:#4b5563; font-size:.78rem;">' + note + '</span>' +
+      '<span style="font-weight:700; color:#DFC82E;">Grand Total: ' + fmt(grand) + '</span>';
+
+    bootstrap.Modal.getInstance(document.getElementById('calcModal')).hide();
+    new bootstrap.Modal(document.getElementById('calcScheduleModal')).show();
+  };
+
+  // Reset on close
+  document.getElementById('calcModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('calcResults').style.display = 'none';
+    document.getElementById('calcAmount').value = '';
+    document.getElementById('calcAdb').checked  = false;
+    document.getElementById('calcFisp').checked = false;
+    _amt = 0; _adb = false; _fisp = false;
+  });
+})();
+</script>
 
 </body>
 

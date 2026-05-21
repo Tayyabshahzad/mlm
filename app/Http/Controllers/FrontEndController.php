@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Profile;
 use App\Models\Subscription;
 use App\Models\TransactionLog;
+use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -31,8 +32,9 @@ use Illuminate\Support\Facades\Log;
 class FrontEndController extends Controller
 {
     public function index(){
-        $endDate = Carbon::now()->addMonth()->startOfMonth()->addDays(4)->setTime(12, 0, 0); 
-        return view('frontEnd.index',compact('endDate'));
+        $endDate = Carbon::now()->addMonth()->startOfMonth()->addDays(4)->setTime(12, 0, 0);
+        $setting = Setting::first();
+        return view('frontEnd.index', compact('endDate', 'setting'));
     }
 
     private function getAccessToken(): ?string

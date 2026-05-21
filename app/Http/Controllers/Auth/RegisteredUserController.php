@@ -224,6 +224,8 @@ class RegisteredUserController extends Controller
                 'saving_total_deposited'         => $registrationComplete ? $netDeposit : 0,
                 'saving_initial_payment'         => $request->usdt_amount,
                 'saving_initial_fee'             => $savingFee,
+                'adb_option'                     => $request->boolean('adb_option'),
+                'fisp_option'                    => $request->boolean('fisp_option'),
             ]);
 
             $this->handleActivationCode($request, $user);

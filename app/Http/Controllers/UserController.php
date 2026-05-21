@@ -394,6 +394,9 @@ class UserController extends Controller
                 //  to their standard investment, not their saving enrollment payment.)
                 $data['saving_initial_payment'] = $user->saving_initial_payment;
                 $data['saving_initial_fee']     = $user->saving_initial_fee;
+                $data['adb_option']             = (bool) $user->adb_option;
+                $data['fisp_option']            = (bool) $user->fisp_option;
+                $data['usdt_rate']              = $user->usdt_rate;
 
                 // Saving Plan sponsor: level-1 ancestor in the SAVING referral tree only.
                 // No fallback to the standard-plan parent — they are different trees.
