@@ -1,4 +1,4 @@
-@extends('demo.layout.app')
+extends('demo.layout.app')
 @section('title','Members')
 @section('custom_css')
 <style>
@@ -655,8 +655,8 @@ $(document).ready(function () {
                         var grossAfterFee = Math.max(0, totalPaid - fee);
 
                         // Step 2: ADB/FISP monthly charges based on gross (0.3% and 0.4%)
-                        var adbCharge  = adbOn  ? parseFloat((grossAfterFee * 0.003).toFixed(4)) : 0;
-                        var fispCharge = fispOn ? parseFloat((grossAfterFee * 0.004).toFixed(4)) : 0;
+                        var adbCharge  = adbOn  ? parseFloat((grossAfterFee * 0.075).toFixed(4)) : 0;
+                        var fispCharge = fispOn ? parseFloat((grossAfterFee * 0.1).toFixed(4)) : 0;
                         var totalDeductions = adbCharge + fispCharge;
 
                         // Step 3: net credited = gross - deductions
@@ -917,3 +917,4 @@ $(document).ready(function () {
 })();
 </script>
 @endsection
+

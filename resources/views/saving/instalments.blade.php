@@ -1,4 +1,4 @@
-@extends('demo.layout.app')
+extends('demo.layout.app')
 @section('title', 'My Saving Plan')
 
 @section('content')
@@ -153,8 +153,8 @@
                 @php
                     $instUser     = auth()->user();
                     $baseAmt      = $next_due->amount;
-                    $adbFee       = $instUser->adb_option  ? round($baseAmt * 0.003, 2) : 0;
-                    $fispFee      = $instUser->fisp_option ? round($baseAmt * 0.004, 2) : 0;
+                    $adbFee       = $instUser->adb_option  ? round($baseAmt * 0.075, 2) : 0;
+                    $fispFee      = $instUser->fisp_option ? round($baseAmt * 0.1, 2) : 0;
                     $totalPayable = round($baseAmt + $adbFee + $fispFee, 2);
                     // For instalment #1 partial logic
                     $defaultSubmit = ($next_due->instalment_number === 1 && $inst1Remaining > 0)
@@ -183,10 +183,10 @@
                                         <tr><td class="text-muted">Base Instalment</td><td class="font-weight-bold">${{ number_format($baseAmt, 2) }}</td></tr>
                                     @endif
                                     @if($instUser->adb_option)
-                                        <tr><td class="text-muted">+ ADB Charge (0.3%)</td><td class="text-danger font-weight-bold">+${{ number_format($adbFee, 2) }}</td></tr>
+                                        <tr><td class="text-muted">+ ADB (Rs.3 per Rs.1,000 of Sum Assured)</td><td class="text-danger font-weight-bold">+${{ number_format($adbFee, 2) }}</td></tr>
                                     @endif
                                     @if($instUser->fisp_option)
-                                        <tr><td class="text-muted">+ FISP Charge (0.4%)</td><td class="text-warning font-weight-bold">+${{ number_format($fispFee, 2) }}</td></tr>
+                                        <tr><td class="text-muted">+ FISP (Rs.4 per Rs.1,000 of Sum Assured)</td><td class="text-warning font-weight-bold">+${{ number_format($fispFee, 2) }}</td></tr>
                                     @endif
                                     <tr style="border-top:2px solid #eee;">
                                         <td class="font-weight-bolder">Total to Pay</td>
@@ -318,8 +318,8 @@
                             <tbody>
                                 @foreach($instalments as $inst)
                                 @php
-                                    $adbCharge  = $user->adb_option  ? round($inst->amount * 0.003, 2) : 0;
-                                    $fispCharge = $user->fisp_option ? round($inst->amount * 0.004, 2) : 0;
+                                    $adbCharge  = $user->adb_option  ? round($inst->amount * 0.075, 2) : 0;
+                                    $fispCharge = $user->fisp_option ? round($inst->amount * 0.1, 2) : 0;
                                     $totalPayable = $inst->amount + $adbCharge + $fispCharge;
                                 @endphp
                                 <tr>
@@ -421,4 +421,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+
 

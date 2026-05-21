@@ -1,4 +1,4 @@
-@extends('demo.layout.app')
+extends('demo.layout.app')
 @section('title', 'Saving Account — ' . $savingUser->name)
 
 @section('content')
@@ -294,8 +294,8 @@
                             <tbody>
                                 @foreach($instalments as $inst)
                                 @php
-                                    $adbC   = $savingUser->adb_option  ? round($inst->amount * 0.003, 2) : 0;
-                                    $fispC  = $savingUser->fisp_option ? round($inst->amount * 0.004, 2) : 0;
+                                    $adbC   = $savingUser->adb_option  ? round($inst->amount * 0.075, 2) : 0;
+                                    $fispC  = $savingUser->fisp_option ? round($inst->amount * 0.1, 2) : 0;
                                     $totalP = $inst->amount + $adbC + $fispC;
                                 @endphp
                                 <tr class="{{ $inst->status === 'submitted' ? 'table-warning' : '' }}">
@@ -416,3 +416,4 @@
     </div>
 </div>
 @endsection
+

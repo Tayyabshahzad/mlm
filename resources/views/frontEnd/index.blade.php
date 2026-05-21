@@ -570,7 +570,7 @@
               <div id="rSumAssured" style="font-size:1.05rem; font-weight:700; color:#fff;"></div>
             </div>
             <div style="background:#0e1015; padding:.85rem 1rem; border-left:3px solid #4ade80;">
-              <div style="font-size:.65rem; color:#4ade80; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.3rem;">Maturity Amount</div>
+              <div style="font-size:.65rem; color:#4ade80; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.3rem;">Approximate Profit</div>
               <div id="rMaturity" style="font-size:1.05rem; font-weight:700; color:#fff;"></div>
             </div>
             <div style="background:#0e1015; padding:.85rem 1rem; border-left:3px solid #60a5fa;">
@@ -597,9 +597,16 @@
               <span style="color:#6b7280;">ADB <span style="font-size:.7rem;">× 25 months</span></span>
               <span id="rAdbVal" style="font-weight:600; color:#e5e7eb;"></span>
             </div>
-            <div id="rFispRow" style="display:none; justify-content:space-between; padding:.28rem 0;">
+            <div id="rFispRow" style="display:none; justify-content:space-between; padding:.28rem 0; border-bottom:1px solid #2a2d36;">
               <span style="color:#6b7280;">FISP <span style="font-size:.7rem;">× 25 months</span></span>
               <span id="rFispVal" style="font-weight:600; color:#e5e7eb;"></span>
+            </div>
+            <div style="margin-top:.5rem; padding:.5rem .9rem; background:#DFC82E18; border:1px solid #DFC82E44; display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:#DFC82E; font-weight:700; font-size:.82rem; letter-spacing:.3px;">
+                GRAND TOTAL
+                <span style="font-size:.68rem; color:#6b7280; font-weight:400; display:block; margin-top:1px;">Invest + Fee + ADB + FISP</span>
+              </span>
+              <span id="rGrandTotal" style="font-weight:800; color:#DFC82E; font-size:1rem;"></span>
             </div>
           </div>
 
@@ -693,10 +700,12 @@
     _adb  = document.getElementById('calcAdb').checked;
     _fisp = document.getElementById('calcFisp').checked;
 
-    var sa  = raw * 25;
-    var mat = sa * 0.5;
-    var adbC  = _adb  ? (raw / 1000) * 3 : 0;
-    var fispC = _fisp ? (raw / 1000) * 4 : 0;
+    var sa    = raw * 25;           // Sum Assured = monthly × 25
+    var mat   = sa * 0.5;           // Approximate Profit = 50% of Sum Assured
+    var units = sa / 1000;          // units of 1000 in Sum Assured
+    // Correct formula: based on units of 1000 in Sum Assured (not monthly amount)
+    var adbC  = _adb  ? units * 3 : 0;   // ADB = units × Rs.3
+    var fispC = _fisp ? units * 4 : 0;   // FISP = units × Rs.4
 
     document.getElementById('rSumAssured').textContent  = fmt(sa);
     document.getElementById('rMaturity').textContent    = fmt(mat);
@@ -707,19 +716,24 @@
 
     var aRow = document.getElementById('rAdbRow');
     var fRow = document.getElementById('rFispRow');
-    if (_adb)  { aRow.style.display = 'flex'; document.getElementById('rAdbVal').innerHTML  = fmt(adbC) + ' <span style="color:#6b7280;font-size:.72rem;">/mo = ' + fmt(adbC * 25) + ' total</span>';  }
+    if (_adb)  { aRow.style.display = 'flex'; document.getElementById('rAdbVal').innerHTML  = fmt(adbC) + ' <span style="color:#6b7280;font-size:.72rem;">/mo &nbsp;= ' + fmt(adbC * 25) + ' total</span>';  }
     else         aRow.style.display = 'none';
-    if (_fisp) { fRow.style.display = 'flex'; document.getElementById('rFispVal').innerHTML = fmt(fispC) + ' <span style="color:#6b7280;font-size:.72rem;">/mo = ' + fmt(fispC * 25) + ' total</span>'; }
+    if (_fisp) { fRow.style.display = 'flex'; document.getElementById('rFispVal').innerHTML = fmt(fispC) + ' <span style="color:#6b7280;font-size:.72rem;">/mo &nbsp;= ' + fmt(fispC * 25) + ' total</span>'; }
     else         fRow.style.display = 'none';
+
+    // Grand total = Invest Amount + Processing Fee + ADB (monthly) + FISP (monthly)
+    var grandTotal = raw + FEE_PKR + adbC + fispC;
+    document.getElementById('rGrandTotal').textContent = fmt(grandTotal);
 
     document.getElementById('calcResults').style.display = 'block';
   };
 
   window.calcShowSchedule = function () {
     if (_amt <= 0) return;
-    // ADB & FISP are charged every single month for all 25 months
-    var adbC         = _adb  ? (_amt / 1000) * 3 : 0;
-    var fispC        = _fisp ? (_amt / 1000) * 4 : 0;
+    // ADB & FISP based on units of 1000 in Sum Assured (sum_assured = _amt × 25)
+    var _units       = (_amt * 25) / 1000;
+    var adbC         = _adb  ? _units * 3 : 0;
+    var fispC        = _fisp ? _units * 4 : 0;
     var monthlyExtra = adbC + fispC;  // recurring every month
 
     var sub = 'Monthly instalment: ' + fmt(_amt);

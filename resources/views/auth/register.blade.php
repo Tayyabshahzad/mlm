@@ -386,29 +386,52 @@
         </div>
 
         @if($isSaving)
-        {{-- ADB / FISP options â€” only for saving plan registrations --}}
-        <div class="section-divider">Additional Options</div>
-        <div class="field-group">
-            <label class="auth-label" style="margin-bottom:.5rem;">Select Optional Covers</label>
-            <div style="display:flex; flex-direction:column; gap:.6rem;">
-                <label style="display:flex; align-items:flex-start; gap:.6rem; cursor:pointer; background:rgba(79,70,229,0.04); border:1.5px solid #e0e7ff; border-radius:9px; padding:.65rem .85rem;">
-                    <input type="checkbox" name="adb_option" value="1" id="reg_adb"
+        {{-- ADB / FISP options — only for saving plan registrations --}}
+        <div class=”section-divider”>Additional Options</div>
+        <div class=”field-group”>
+            <label class=”auth-label” style=”margin-bottom:.5rem;”>Select Optional Covers</label>
+            <div style=”display:flex; flex-direction:column; gap:.6rem;”>
+
+                {{-- ADB --}}
+                <label style=”display:flex; align-items:flex-start; gap:.6rem; cursor:pointer; background:rgba(79,70,229,0.04); border:1.5px solid #e0e7ff; border-radius:9px; padding:.65rem .85rem;”>
+                    <input type=”checkbox” name=”adb_option” value=”1” id=”reg_adb”
                            {{ old('adb_option') ? 'checked' : '' }}
-                           style="accent-color:#4f46e5; width:16px; height:16px; margin-top:2px; flex-shrink:0;">
-                    <div>
-                        <div style="font-size:.86rem; font-weight:600; color:#111827;">ADB Option</div>
-                        <div style="font-size:.75rem; color:#6b7280; margin-top:2px;">Accidental Death Benefit â€” Rs. 3 per Rs. 1,000 invested &nbsp;(charged every month)</div>
+                           onchange=”calcRegOptions()”
+                           style=”accent-color:#4f46e5; width:16px; height:16px; margin-top:2px; flex-shrink:0;”>
+                    <div style=”flex:1;”>
+                        <div style=”display:flex; justify-content:space-between; align-items:center;”>
+                            <span style=”font-size:.86rem; font-weight:600; color:#111827;”>ADB Option</span>
+                            <span id=”reg_adb_charge” style=”font-size:.78rem; font-weight:700; color:#4f46e5; display:none;”></span>
+                        </div>
+                        <div style=”font-size:.75rem; color:#6b7280; margin-top:2px;”>
+                            Accidental Death Benefit &mdash; Rs. 3 per Rs. 1,000 of Sum Assured &nbsp;(charged every month)
+                        </div>
                     </div>
                 </label>
-                <label style="display:flex; align-items:flex-start; gap:.6rem; cursor:pointer; background:rgba(79,70,229,0.04); border:1.5px solid #e0e7ff; border-radius:9px; padding:.65rem .85rem;">
-                    <input type="checkbox" name="fisp_option" value="1" id="reg_fisp"
+
+                {{-- FISP --}}
+                <label style=”display:flex; align-items:flex-start; gap:.6rem; cursor:pointer; background:rgba(79,70,229,0.04); border:1.5px solid #e0e7ff; border-radius:9px; padding:.65rem .85rem;”>
+                    <input type=”checkbox” name=”fisp_option” value=”1” id=”reg_fisp”
                            {{ old('fisp_option') ? 'checked' : '' }}
-                           style="accent-color:#4f46e5; width:16px; height:16px; margin-top:2px; flex-shrink:0;">
-                    <div>
-                        <div style="font-size:.86rem; font-weight:600; color:#111827;">FISP Option</div>
-                        <div style="font-size:.75rem; color:#6b7280; margin-top:2px;">Family Income Support Plan â€” Rs. 4 per Rs. 1,000 invested &nbsp;(charged every month)</div>
+                           onchange=”calcRegOptions()”
+                           style=”accent-color:#4f46e5; width:16px; height:16px; margin-top:2px; flex-shrink:0;”>
+                    <div style=”flex:1;”>
+                        <div style=”display:flex; justify-content:space-between; align-items:center;”>
+                            <span style=”font-size:.86rem; font-weight:600; color:#111827;”>FISP Option</span>
+                            <span id=”reg_fisp_charge” style=”font-size:.78rem; font-weight:700; color:#4f46e5; display:none;”></span>
+                        </div>
+                        <div style=”font-size:.75rem; color:#6b7280; margin-top:2px;”>
+                            Family Income Support Plan &mdash; Rs. 4 per Rs. 1,000 of Sum Assured &nbsp;(charged every month)
+                        </div>
                     </div>
                 </label>
+
+                {{-- Charge summary (shown when any option checked and amount entered) --}}
+                <div id=”reg_options_summary” style=”display:none; background:#f0f4ff; border:1px solid #c7d2fe; border-radius:8px; padding:.6rem .85rem; font-size:.78rem;”>
+                    <div style=”font-weight:600; color:#3730a3; margin-bottom:.3rem;”>Monthly Charge Breakdown</div>
+                    <div id=”reg_options_detail” style=”color:#4338ca; line-height:1.7;”></div>
+                </div>
+
             </div>
         </div>
         @endif
@@ -562,6 +585,81 @@
     const savingDeposit = {{ $setting->saving_min_deposit ?? 19 }};
     const savingFull    = savingFee + savingDeposit;
     const isSavingPage  = {{ $isSaving ? 'true' : 'false' }};
+    const usdRate       = {{ (float)($setting->usd ?? 278) }};
+
+    // Live ADB/FISP charge preview on registration form
+    function calcRegOptions() {
+        var usdAmt  = parseFloat(document.getElementById('usdt_amount')?.value || 0);
+        var netUsd  = Math.max(0, usdAmt - savingFee);   // net investment after fee
+        var adbEl   = document.getElementById('reg_adb');
+        var fispEl  = document.getElementById('reg_fisp');
+        var summDiv = document.getElementById('reg_options_summary');
+        var adbBadge  = document.getElementById('reg_adb_charge');
+        var fispBadge = document.getElementById('reg_fisp_charge');
+
+        if (!adbEl || !fispEl) return;
+
+        var adbOn  = adbEl.checked;
+        var fispOn = fispEl.checked;
+
+        if (netUsd <= 0 || (!adbOn && !fispOn)) {
+            if (summDiv) summDiv.style.display = 'none';
+            if (adbBadge)  adbBadge.style.display  = 'none';
+            if (fispBadge) fispBadge.style.display = 'none';
+            return;
+        }
+
+        // Sum Assured = net monthly × 25; charges per unit of 1000
+        var sumAssured = netUsd * 25;
+        var units      = sumAssured / 1000;
+        var adbUsd     = adbOn  ? units * 3 : 0;   // $ per month
+        var fispUsd    = fispOn ? units * 4 : 0;   // $ per month
+        var adbPkr     = adbUsd  * usdRate;
+        var fispPkr    = fispUsd * usdRate;
+
+        function fmt(n) {
+            return 'Rs. ' + Math.round(n).toLocaleString('en-PK');
+        }
+
+        // Badge on each option
+        if (adbBadge) {
+            if (adbOn && netUsd > 0) {
+                adbBadge.textContent  = fmt(adbPkr) + '/mo';
+                adbBadge.style.display = 'inline';
+            } else {
+                adbBadge.style.display = 'none';
+            }
+        }
+        if (fispBadge) {
+            if (fispOn && netUsd > 0) {
+                fispBadge.textContent  = fmt(fispPkr) + '/mo';
+                fispBadge.style.display = 'inline';
+            } else {
+                fispBadge.style.display = 'none';
+            }
+        }
+
+        // Summary box
+        var lines = [];
+        lines.push('Sum Assured = $' + netUsd.toFixed(2) + ' × 25 = <strong>$' + (netUsd*25).toFixed(2) + '</strong> (' + Math.round(units) + ' units of $1000)');
+        if (adbOn)  lines.push('ADB  = ' + Math.round(units) + ' × $3 = <strong>$' + adbUsd.toFixed(2) + '/mo</strong> (' + fmt(adbPkr) + '/mo)');
+        if (fispOn) lines.push('FISP = ' + Math.round(units) + ' × $4 = <strong>$' + fispUsd.toFixed(2) + '/mo</strong> (' + fmt(fispPkr) + '/mo)');
+        if (adbOn && fispOn) lines.push('<strong>Total: $' + (adbUsd+fispUsd).toFixed(2) + '/mo (' + fmt(adbPkr+fispPkr) + '/mo)</strong>');
+
+        document.getElementById('reg_options_detail').innerHTML = lines.join('<br>');
+        if (summDiv) summDiv.style.display = 'block';
+    }
+
+    // Recalculate when usdt_amount changes
+    document.addEventListener('DOMContentLoaded', function() {
+        var usdtEl = document.getElementById('usdt_amount');
+        if (usdtEl) {
+            usdtEl.addEventListener('input', calcRegOptions);
+            usdtEl.addEventListener('change', calcRegOptions);
+        }
+        // Run once if values pre-filled (on validation error reload)
+        calcRegOptions();
+    });
 
     // â”€â”€ Savings Program: toggle between new / existing member â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function switchUserType(type) {

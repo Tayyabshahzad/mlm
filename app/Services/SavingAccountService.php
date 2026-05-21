@@ -237,8 +237,8 @@ class SavingAccountService
         // ADB = 0.3% (Rs. 3 per Rs. 1000), FISP = 0.4% (Rs. 4 per Rs. 1000).
         // These are insurance premiums — deducted before crediting ROI-eligible amount.
         $baseForCharges = $instalment->amount; // always use scheduled base amount
-        $adbCharge  = $user->adb_option  ? round($baseForCharges * 0.003, 4) : 0.0;
-        $fispCharge = $user->fisp_option ? round($baseForCharges * 0.004, 4) : 0.0;
+        $adbCharge  = $user->adb_option  ? round($baseForCharges * 0.075 /* ADB: sum_assured/1000 * 3 */, 4) : 0.0;
+        $fispCharge = $user->fisp_option ? round($baseForCharges * 0.1   /* FISP: sum_assured/1000 * 4 */, 4) : 0.0;
         $totalDeductions = $adbCharge + $fispCharge;
         $netCredit  = round($totalCredit - $totalDeductions, 4);
 
@@ -629,3 +629,4 @@ class SavingAccountService
         return $rates;
     }
 }
+

@@ -7,7 +7,8 @@
       "Bash(ls \"d:\\\\laragon\\\\www\\\\mlm\\\\public\\\\assets\\\\plugins\\\\global\\\\\" 2>/dev/null | grep -i select || find \"d:/laragon/www/mlm/public/assets\" -name \"*.js\" 2>/dev/null | grep -i select | head -10)",
       "Bash(php -r \"echo date\\('Y_m_d_His'\\);\")",
       "Bash(php -r \"require 'vendor/autoload.php'; echo 'OK';\")",
-      "Bash(php -r \"echo 'post_max_size: ' . ini_get\\('post_max_size'\\) . PHP_EOL; echo 'upload_max_filesize: ' . ini_get\\('upload_max_filesize'\\) . PHP_EOL; echo 'max_execution_time: ' . ini_get\\('max_execution_time'\\) . PHP_EOL;\")"
+      "Bash(php -r \"echo 'post_max_size: ' . ini_get\\('post_max_size'\\) . PHP_EOL; echo 'upload_max_filesize: ' . ini_get\\('upload_max_filesize'\\) . PHP_EOL; echo 'max_execution_time: ' . ini_get\\('max_execution_time'\\) . PHP_EOL;\")",
+      "Bash(php -r ' *)"
     ],
     "deny": [],
     "ask": []

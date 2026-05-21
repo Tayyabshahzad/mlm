@@ -89,8 +89,8 @@ class SavingInstalmentController extends Controller
         }
 
         // Calculate total required = base + ADB + FISP charges
-        $adbFee        = $user->adb_option  ? round($instalment->amount * 0.003, 2) : 0;
-        $fispFee       = $user->fisp_option ? round($instalment->amount * 0.004, 2) : 0;
+        $adbFee        = $user->adb_option  ? round($instalment->amount * 0.075 /* ADB: sum_assured/1000 * 3 */, 2) : 0;
+        $fispFee       = $user->fisp_option ? round($instalment->amount * 0.1   /* FISP: sum_assured/1000 * 4 */, 2) : 0;
         $totalRequired = round($instalment->amount + $adbFee + $fispFee, 2);
         $submitted     = (float) $request->submitted_amount;
 
@@ -216,8 +216,8 @@ class SavingInstalmentController extends Controller
 
         // Validate submitted amount covers base + ADB + FISP
         $user          = $instalment->user;
-        $adbFee        = $user->adb_option  ? round($instalment->amount * 0.003, 2) : 0;
-        $fispFee       = $user->fisp_option ? round($instalment->amount * 0.004, 2) : 0;
+        $adbFee        = $user->adb_option  ? round($instalment->amount * 0.075 /* ADB: sum_assured/1000 * 3 */, 2) : 0;
+        $fispFee       = $user->fisp_option ? round($instalment->amount * 0.1   /* FISP: sum_assured/1000 * 4 */, 2) : 0;
         $totalRequired = round($instalment->amount + $adbFee + $fispFee, 2);
         $submitted     = (float) ($instalment->submitted_amount ?? 0);
 
@@ -632,3 +632,4 @@ class SavingInstalmentController extends Controller
         return back()->with('success', "'{$user->name}' set as the Saving Account parent user.");
     }
 }
+
