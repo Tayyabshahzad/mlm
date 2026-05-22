@@ -34,7 +34,7 @@
     <link href="{{ asset('assets/css/themes/layout/brand/dark.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/themes/layout/aside/dark.css') }}" rel="stylesheet" type="text/css" />
     <link rel="shortcut icon" href="{{ asset('assets/custom-images/gvi-icon.png') }}" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.9/go.js" defer></script>
     <style>
         .second-div {
             transform: translateX(-100%);
@@ -1185,7 +1185,7 @@
                                                 <span class="menu-text">
                                                     Saving Enrollments
                                                     @if($pendingEnrollments > 0)
-                                                        <span class="badge badge-pill badge-warning ml-1">{{ $pendingEnrollments }}</span>
+                                                        <span class="ml-1 badge badge-pill badge-warning">{{ $pendingEnrollments }}</span>
                                                     @endif
                                                 </span>
                                             </a>
@@ -2230,7 +2230,7 @@
                 <div class="py-2 subheader py-lg-4 subheader-solid" id="kt_subheader2">
                     <div class="container-fluid align-items-center justify-content-between ">
                         <!--begin::Info-->
-                        <div class="mr-2 align-items-center d-flex flex-wrap" style="gap:1rem;">
+                        <div class="flex-wrap mr-2 align-items-center d-flex" style="gap:1rem;">
                             <!-- Standard referral link -->
                             <p class="mt-2 mb-2 ml-5 text-dark font-weight-bold" style="cursor:pointer;" onclick="copyToClipboard()" title="Copy standard referral link">
                                 {{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link }}
@@ -2241,7 +2241,7 @@
                             <p class="mt-2 mb-2 text-success font-weight-bold" style="cursor:pointer;" onclick="copySavingLinkToClipboard()" title="Copy Savings Program link">
                                 {{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link . '?type=saving' }}
                                 <i class="la la-copy"></i>
-                                <span class="badge badge-success ml-1" style="font-size:0.7rem;">Savings</span>
+                                <span class="ml-1 badge badge-success" style="font-size:0.7rem;">Savings</span>
                             </p>
                             @endif
                         </div>
@@ -3667,12 +3667,12 @@
         <div class="modal-content" style="border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.12);">
 
             <!-- Header -->
-            <div class="modal-header border-0" style="padding:1.1rem 1.4rem 0;">
+            <div class="border-0 modal-header" style="padding:1.1rem 1.4rem 0;">
                 <div>
-                    <h6 class="modal-title mb-0" style="font-size:.97rem; font-weight:700; color:#111827;">
-                        <i class="fas fa-calculator mr-2" style="color:#6366f1;"></i> Investment Calculator
+                    <h6 class="mb-0 modal-title" style="font-size:.97rem; font-weight:700; color:#111827;">
+                        <i class="mr-2 fas fa-calculator" style="color:#6366f1;"></i> Investment Calculator
                     </h6>
-                    <p class="mb-0 mt-1" style="font-size:.75rem; color:#9ca3af;">25-Month Saving Plan</p>
+                    <p class="mt-1 mb-0" style="font-size:.75rem; color:#9ca3af;">25-Month Saving Plan</p>
                 </div>
                 <button type="button" class="close" data-dismiss="modal" style="color:#9ca3af; opacity:1; margin-top:-8px;"><span>&times;</span></button>
             </div>
@@ -3758,7 +3758,7 @@
                         <button onclick="calcShowSchedule()"
                                 style="width:100%; padding:.55rem; background:#fff; color:#6366f1; border:1.5px solid #6366f1; border-radius:7px; font-size:.85rem; font-weight:600; cursor:pointer; transition:all .15s;"
                                 onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background='#fff'">
-                            <i class="fas fa-table mr-1"></i> View 25-Month Payment Schedule
+                            <i class="mr-1 fas fa-table"></i> View 25-Month Payment Schedule
                         </button>
                     </div>
                 </div>
@@ -3775,17 +3775,17 @@
     <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:min(96vw,680px);">
         <div class="modal-content" style="border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.12);">
 
-            <div class="modal-header border-0" style="padding:1.1rem 1.4rem .5rem; display:flex; align-items:flex-start; justify-content:space-between;">
+            <div class="border-0 modal-header" style="padding:1.1rem 1.4rem .5rem; display:flex; align-items:flex-start; justify-content:space-between;">
                 <div>
-                    <h6 class="modal-title mb-0" style="font-size:.97rem; font-weight:700; color:#111827;">
-                        <i class="fas fa-calendar-alt mr-2" style="color:#6366f1;"></i> 25-Month Payment Schedule
+                    <h6 class="mb-0 modal-title" style="font-size:.97rem; font-weight:700; color:#111827;">
+                        <i class="mr-2 fas fa-calendar-alt" style="color:#6366f1;"></i> 25-Month Payment Schedule
                     </h6>
-                    <p id="schedSubtitle" class="mb-0 mt-1" style="font-size:.75rem; color:#9ca3af;"></p>
+                    <p id="schedSubtitle" class="mt-1 mb-0" style="font-size:.75rem; color:#9ca3af;"></p>
                 </div>
                 <button type="button" class="close" data-dismiss="modal" style="color:#9ca3af; opacity:1; margin-top:-4px;"><span>&times;</span></button>
             </div>
 
-            <div class="modal-body p-0">
+            <div class="p-0 modal-body">
                 <div style="overflow-x:auto; max-height:62vh; overflow-y:auto;">
                     <table style="width:100%; border-collapse:collapse; font-size:.87rem;">
                         <thead>
@@ -3804,14 +3804,14 @@
                 </div>
             </div>
 
-            <div class="modal-footer border-0" style="padding:.75rem 1.4rem;">
+            <div class="border-0 modal-footer" style="padding:.75rem 1.4rem;">
                 <button type="button" data-dismiss="modal"
                         style="padding:.4rem .9rem; font-size:.82rem; border-radius:7px; border:1px solid #e5e7eb; background:#fff; color:#374151; cursor:pointer;">
                     Close
                 </button>
                 <button onclick="$('#calcScheduleModal').modal('hide'); $('#calcModal').modal('show');"
                         style="padding:.4rem .9rem; font-size:.82rem; border-radius:7px; border:none; background:#6366f1; color:#fff; cursor:pointer;">
-                    <i class="fas fa-arrow-left mr-1"></i> Back to Calculator
+                    <i class="mr-1 fas fa-arrow-left"></i> Back to Calculator
                 </button>
             </div>
         </div>
