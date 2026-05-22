@@ -321,23 +321,26 @@ class FrontEndController extends Controller
 
         $roiStats = $accountService->getRoiAccountStats($user);
 
-        $missedRoiCount = 0;
-        if ($user->hasRole('admin')) {
-            $missedRoiCount = User::where('roi_eligible_investment_amount', '>', 0)
-                ->where('blocked', false)
-                ->where('can_login', true)
-                ->where('account_type', 'standard_investment')
-                ->where('freez_wallet', false)
-                ->where(function ($query) {
-                    $query->whereNull('roi_status')
-                        ->orWhere('roi_status', 'active');
-                })
-                ->where(function ($query) {
-                    $query->whereNull('last_roi_payment_date')
-                        ->orWhereDate('last_roi_payment_date', '<', now()->toDateString());
-                })
-                ->count();
-        }
+        // ── DISABLED: ROI alert section is commented out in the blade ──────────
+        // Uncomment this block when the alert section is re-enabled in dashboard.blade.php
+        // $missedRoiCount = 0;
+        // if ($user->hasRole('admin')) {
+        //     $missedRoiCount = User::where('roi_eligible_investment_amount', '>', 0)
+        //         ->where('blocked', false)
+        //         ->where('can_login', true)
+        //         ->where('account_type', 'standard_investment')
+        //         ->where('freez_wallet', false)
+        //         ->where(function ($query) {
+        //             $query->whereNull('roi_status')
+        //                 ->orWhere('roi_status', 'active');
+        //         })
+        //         ->where(function ($query) {
+        //             $query->whereNull('last_roi_payment_date')
+        //                 ->orWhereDate('last_roi_payment_date', '<', now()->toDateString());
+        //         })
+        //         ->count();
+        // }
+        $missedRoiCount = 0; // section disabled — no DB query fired
 
         // ── Saving Program wallet totals (for saving_enrolled standard users) ──
         // Only fetch if the account is fully activated by admin (saving_enrollment_activated).

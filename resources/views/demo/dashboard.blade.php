@@ -633,6 +633,8 @@
    ROI METERS  (right panel)
 ═══════════════════════════════════════════════════════════ */
 .roi-side { display: flex; flex-direction: column; gap: 1.1rem; }
+.roi-full-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; margin-bottom: 1.8rem; }
+@media (max-width: 768px) { .roi-full-grid { grid-template-columns: 1fr; } }
 
 .roi-meter-card {
     background: var(--card);
@@ -957,7 +959,7 @@
 
         {{-- Admin Alert --}}
         @role('admin')
-        @if($data['missed_roi_count'] > 0)
+        {{-- @if($data['missed_roi_count'] > 0)
         <a href="{{ route('roi.submission.monitoring') }}" class="admin-alert">
             <div class="aa-icon">⚠️</div>
             <div class="aa-msg">
@@ -966,11 +968,11 @@
             </div>
             <div class="aa-count">{{ $data['missed_roi_count'] }} Users</div>
         </a>
-        @endif
+        @endif --}}
         @endrole
 
         {{-- KPI Bar --}}
-        <div class="kpi-bar">
+        {{-- <div class="kpi-bar">
             <div class="kpi-tile" style="--accent:var(--purple)">
                 <div class="kpi-t-label">Total Earnings</div>
                 <div class="kpi-t-val">${{ number_format($data['total_earning'], 2) }}</div>
@@ -996,7 +998,7 @@
                 <div class="kpi-t-val">${{ number_format($data['direct_indirect'], 2) }}</div>
                 <div class="kpi-t-sub"><span class="dot" style="background:var(--pink);box-shadow:0 0 6px var(--pink)"></span> Direct / Indirect</div>
             </div>
-        </div>
+        </div> --}}
 
         {{-- EID UL ADHA BANNER --}}
         <div class="gn-banner" style="background:linear-gradient(135deg,#0a0800 0%,#1a0f00 50%,#0a0800 100%); border-color:rgba(212,160,23,.25); box-shadow:0 0 0 1px rgba(212,160,23,.08),0 24px 64px rgba(0,0,0,.7);">
@@ -1320,28 +1322,9 @@
             <div class="sec-head-label">Analytics &amp; ROI Control</div>
         </div>
 
-        <div class="main-grid">
-            {{-- Chart panel --}}
-            <div class="glass-card">
-                <div class="glass-card-head">
-                    <div>
-                        <div class="gc-title">Performance Overview</div>
-                        <div class="gc-subtitle">Earnings &amp; team growth trend</div>
-                    </div>
-                    <div class="ftabs">
-                        <button class="ftab active" data-period="7d">7D</button>
-                        <button class="ftab" data-period="30d">30D</button>
-                        <button class="ftab" data-period="90d">3M</button>
-                        <button class="ftab" data-period="1y">1Y</button>
-                    </div>
-                </div>
-                <div class="glass-card-body">
-                    <div id="businessChart" style="min-height:340px;"></div>
-                </div>
-            </div>
-
-            {{-- ROI side meters --}}
-            <div class="roi-side">
+        {{-- ROI meters — full width, side by side --}}
+        <div class="roi-full-grid">
+            <div class="roi-side" style="flex-direction:unset; display:contents;">
                 {{-- 2X --}}
                 <div class="roi-meter-card" style="--roi-accent: linear-gradient(90deg, var(--purple), var(--cyan));">
                     <div class="rm-head">

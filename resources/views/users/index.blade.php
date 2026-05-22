@@ -1,4 +1,4 @@
-extends('demo.layout.app')
+@extends('demo.layout.app')
 @section('title','Members')
 @section('custom_css')
 <style>
@@ -399,33 +399,33 @@ extends('demo.layout.app')
 <div class="modal fade" id="dueExportModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:480px;">
         <div class="modal-content" style="border:none; border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-            <div class="modal-header border-0 pb-2" style="background:linear-gradient(135deg,#1e2a38 0%,#2d3e50 100%); padding:1.25rem 1.5rem;">
+            <div class="pb-2 border-0 modal-header" style="background:linear-gradient(135deg,#1e2a38 0%,#2d3e50 100%); padding:1.25rem 1.5rem;">
                 <div>
-                    <h5 class="modal-title text-white font-weight-bold mb-0" style="font-size:1rem; letter-spacing:.3px;">
-                        <i class="fas fa-file-excel mr-2" style="color:#5bc65b;"></i> Due Instalment Sheet
+                    <h5 class="mb-0 text-white modal-title font-weight-bold" style="font-size:1rem; letter-spacing:.3px;">
+                        <i class="mr-2 fas fa-file-excel" style="color:#5bc65b;"></i> Due Instalment Sheet
                     </h5>
-                    <p class="mb-0 mt-1" style="font-size:0.75rem; color:#8fa8c8;">Filter by date range &amp; member</p>
+                    <p class="mt-1 mb-0" style="font-size:0.75rem; color:#8fa8c8;">Filter by date range &amp; member</p>
                 </div>
-                <button type="button" class="close text-white" data-dismiss="modal" style="opacity:.7;"><span>&times;</span></button>
+                <button type="button" class="text-white close" data-dismiss="modal" style="opacity:.7;"><span>&times;</span></button>
             </div>
             <div class="modal-body" style="padding:1.5rem; background:#f8fafc;">
                 <div class="row">
                     <div class="col-6">
-                        <div class="form-group mb-3">
+                        <div class="mb-3 form-group">
                             <label style="font-size:.75rem; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:.5px;">From Date</label>
                             <input type="date" id="dueFrom" class="form-control" value="{{ date('Y-m-01') }}"
                                    style="border-radius:8px; border:1.5px solid #d1dbe6; font-size:.875rem; height:38px;">
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="form-group mb-3">
+                        <div class="mb-3 form-group">
                             <label style="font-size:.75rem; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:.5px;">To Date</label>
                             <input type="date" id="dueTo" class="form-control" value="{{ date('Y-m-d') }}"
                                    style="border-radius:8px; border:1.5px solid #d1dbe6; font-size:.875rem; height:38px;">
                         </div>
                     </div>
                 </div>
-                <div class="form-group mb-0">
+                <div class="mb-0 form-group">
                     <label style="font-size:.75rem; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:.5px;">Member</label>
                     <select id="dueUserId" class="form-control" style="border-radius:8px; border:1.5px solid #d1dbe6; font-size:.875rem; height:38px;">
                         <option value="">— All Members —</option>
@@ -434,20 +434,20 @@ extends('demo.layout.app')
                         @endforeach
                     </select>
                 </div>
-                <div class="mt-3 p-2" style="background:#fff3cd; border-radius:8px; border-left:3px solid #f59e0b; font-size:.78rem; color:#7c5700;">
-                    <i class="fas fa-info-circle mr-1"></i>
+                <div class="p-2 mt-3" style="background:#fff3cd; border-radius:8px; border-left:3px solid #f59e0b; font-size:.78rem; color:#7c5700;">
+                    <i class="mr-1 fas fa-info-circle"></i>
                     Also includes <strong>overdue instalments</strong> from before the start date.
                 </div>
             </div>
-            <div class="modal-footer border-0 pt-0" style="padding:1rem 1.5rem 1.25rem; background:#f8fafc; gap:.5rem;">
+            <div class="pt-0 border-0 modal-footer" style="padding:1rem 1.5rem 1.25rem; background:#f8fafc; gap:.5rem;">
                 <button type="button" class="btn btn-light btn-sm" data-dismiss="modal" style="border-radius:8px; padding:.45rem 1rem;">Cancel</button>
                 <button type="button" class="btn btn-sm" id="duePreviewBtn"
                         style="border-radius:8px; padding:.45rem 1.1rem; background:#2563eb; color:#fff; border:none;">
-                    <i class="fas fa-eye mr-1"></i> Preview
+                    <i class="mr-1 fas fa-eye"></i> Preview
                 </button>
                 <a href="#" id="dueDownloadBtn" class="btn btn-sm"
                    style="border-radius:8px; padding:.45rem 1.1rem; background:#1e2a38; color:#fff; border:none;">
-                    <i class="fas fa-download mr-1"></i> Download
+                    <i class="mr-1 fas fa-download"></i> Download
                 </a>
             </div>
         </div>
@@ -462,10 +462,10 @@ extends('demo.layout.app')
             {{-- Header --}}
             <div class="modal-header" style="background:#fff; border-bottom:1px solid #f0f0f0; padding:1rem 1.4rem;">
                 <div>
-                    <h6 class="modal-title mb-0" style="font-size:.9rem; font-weight:700; color:#111827;">
+                    <h6 class="mb-0 modal-title" style="font-size:.9rem; font-weight:700; color:#111827;">
                         Due Instalments
                     </h6>
-                    <p class="mb-0 mt-1" id="duePreviewTitle" style="font-size:.78rem; color:#6b7280;"></p>
+                    <p class="mt-1 mb-0" id="duePreviewTitle" style="font-size:.78rem; color:#6b7280;"></p>
                 </div>
                 <button type="button" class="close" data-dismiss="modal" style="color:#9ca3af; opacity:1; font-size:1.2rem;"><span>&times;</span></button>
             </div>
@@ -490,7 +490,7 @@ extends('demo.layout.app')
             </div>
 
             {{-- Body --}}
-            <div class="modal-body p-0" style="background:#fff;">
+            <div class="p-0 modal-body" style="background:#fff;">
 
                 {{-- Loading --}}
                 <div id="duePreviewLoading" class="text-center" style="padding:3rem 1rem;">
