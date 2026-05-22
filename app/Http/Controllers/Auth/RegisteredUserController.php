@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use App\Rules\ValidActivationCode;
 use Carbon\Carbon;
@@ -64,11 +65,11 @@ class RegisteredUserController extends Controller
 
         $request->validate([
             'name'             => 'required|string|max:255',
-            'username'         => 'required|string|max:255|unique:' . User::class,
-            'email'            => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'username'         => ['required', 'string', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
+            'email'            => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
             'password'         => ['required', 'confirmed', Rules\Password::defaults()],
-            'transaction_id'   => 'required|max:50|string|unique:' . User::class,
-            'phone_number'     => 'required|unique:' . User::class,
+            'transaction_id'   => ['required', 'max:50', 'string', Rule::unique('users')->whereNull('deleted_at')],
+            'phone_number'     => ['required', Rule::unique('users')->whereNull('deleted_at')],
             'cc'               => 'required',
             'payment_method'   => 'required|in:usdt,bank,cash_slip,activation_code',
             'referral_link'    => ['required', 'string', 'exists:referral_links,link'],
@@ -153,11 +154,11 @@ class RegisteredUserController extends Controller
 
         $request->validate([
             'name'             => 'required|string|max:255',
-            'username'         => 'required|string|max:255|unique:' . User::class,
-            'email'            => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'username'         => ['required', 'string', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
+            'email'            => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
             'password'         => ['required', 'confirmed', Rules\Password::defaults()],
-            'transaction_id'   => 'required|max:50|string|unique:' . User::class,
-            'phone_number'     => 'required|unique:' . User::class,
+            'transaction_id'   => ['required', 'max:50', 'string', Rule::unique('users')->whereNull('deleted_at')],
+            'phone_number'     => ['required', Rule::unique('users')->whereNull('deleted_at')],
             'cc'               => 'required',
             'payment_method'   => 'required|in:usdt,bank,cash_slip,activation_code',
             'referral_link'    => ['required', 'string', 'exists:referral_links,link'],

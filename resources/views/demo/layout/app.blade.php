@@ -105,7 +105,7 @@
 
 
     @php
-        $inactiveUsersAre = \DB::table('users')->where('can_login', 0)->count();
+        $inactiveUsersAre = \DB::table('users')->where('can_login', 0)->whereNull('deleted_at')->count();
     @endphp
 
     @section('custom_css')
