@@ -1,4 +1,4 @@
-extends('demo.layout.app')
+@extends('demo.layout.app')
 @section('title', 'My Saving Plan')
 
 @section('content')
@@ -23,59 +23,59 @@ extends('demo.layout.app')
         <div class="container">
 
             @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <div class="mb-4 alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
                     <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
                 </div>
             @endif
             @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <div class="mb-4 alert alert-danger alert-dismissible fade show" role="alert">
                     {{ session('error') }}
                     <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
                 </div>
             @endif
 
             {{-- Summary Cards --}}
-            <div class="row mb-6">
+            <div class="mb-6 row">
                 <div class="col-md-3">
-                    <div class="card card-custom bg-primary text-white">
-                        <div class="card-body py-5 text-center">
+                    <div class="text-white card card-custom bg-primary">
+                        <div class="py-5 text-center card-body">
                             <div style="font-size:1.6rem; font-weight:700;">${{ number_format($paid_amount, 2) }}</div>
-                            <div class="font-size-sm mt-1">Total Deposited</div>
+                            <div class="mt-1 font-size-sm">Total Deposited</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card card-custom bg-warning text-white">
-                        <div class="card-body py-5 text-center">
+                    <div class="text-white card card-custom bg-warning">
+                        <div class="py-5 text-center card-body">
                             <div style="font-size:1.6rem; font-weight:700;">${{ number_format($remaining, 2) }}</div>
-                            <div class="font-size-sm mt-1">Remaining</div>
+                            <div class="mt-1 font-size-sm">Remaining</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card card-custom bg-success text-white">
-                        <div class="card-body py-5 text-center">
+                    <div class="text-white card card-custom bg-success">
+                        <div class="py-5 text-center card-body">
                             <div style="font-size:1.6rem; font-weight:700;">{{ $paid_count }} / {{ $total_count }}</div>
-                            <div class="font-size-sm mt-1">Instalments Paid</div>
+                            <div class="mt-1 font-size-sm">Instalments Paid</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card card-custom {{ $plan_complete ? 'bg-success' : 'bg-info' }} text-white">
-                        <div class="card-body py-5 text-center">
+                        <div class="py-5 text-center card-body">
                             @if($plan_complete)
                                 <div style="font-size:1.6rem; font-weight:700;">&#10003; Done</div>
-                                <div class="font-size-sm mt-1">Plan Complete!</div>
+                                <div class="mt-1 font-size-sm">Plan Complete!</div>
                             @elseif($next_due)
                                 <div style="font-size:1.1rem; font-weight:700;">
                                     #{{ $next_due->instalment_number }}<br>
                                     {{ $next_due->due_date->format('d M Y') }}
                                 </div>
-                                <div class="font-size-sm mt-1">Next Due Date</div>
+                                <div class="mt-1 font-size-sm">Next Due Date</div>
                             @else
                                 <div style="font-size:1rem;">—</div>
-                                <div class="font-size-sm mt-1">No pending</div>
+                                <div class="mt-1 font-size-sm">No pending</div>
                             @endif
                         </div>
                     </div>
@@ -84,14 +84,14 @@ extends('demo.layout.app')
 
             {{-- Registration Payment Breakdown --}}
             <div class="card card-custom gutter-b border-left-primary">
-                <div class="card-header border-0 py-4">
+                <div class="py-4 border-0 card-header">
                     <h3 class="card-title font-weight-bolder text-dark">Registration Payment Summary</h3>
                 </div>
-                <div class="card-body pt-0">
+                <div class="pt-0 card-body">
                     <div class="row">
                         <div class="col-md-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="svg-icon svg-icon-primary mr-3">
+                            <div class="mb-3 d-flex align-items-center">
+                                <span class="mr-3 svg-icon svg-icon-primary">
                                     <i class="fas fa-money-bill-wave text-primary" style="font-size:1.4rem;"></i>
                                 </span>
                                 <div>
@@ -101,8 +101,8 @@ extends('demo.layout.app')
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="svg-icon svg-icon-warning mr-3">
+                            <div class="mb-3 d-flex align-items-center">
+                                <span class="mr-3 svg-icon svg-icon-warning">
                                     <i class="fas fa-receipt text-warning" style="font-size:1.4rem;"></i>
                                 </span>
                                 <div>
@@ -112,8 +112,8 @@ extends('demo.layout.app')
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="svg-icon svg-icon-success mr-3">
+                            <div class="mb-3 d-flex align-items-center">
+                                <span class="mr-3 svg-icon svg-icon-success">
                                     <i class="fas fa-piggy-bank text-success" style="font-size:1.4rem;"></i>
                                 </span>
                                 <div>
@@ -125,13 +125,13 @@ extends('demo.layout.app')
                     </div>
 
                     @if(!auth()->user()->saving_registration_completed)
-                        <div class="alert alert-warning mt-2 mb-0">
+                        <div class="mt-2 mb-0 alert alert-warning">
                             <strong>Registration Incomplete.</strong>
                             You paid ${{ number_format($paidAtReg, 2) }} at registration (${{ number_format($regFee, 2) }} fee + ${{ number_format($partialDeposit, 2) }} toward deposit).
                             You still need to deposit <strong>${{ number_format($inst1Remaining, 2) }}</strong> to complete Instalment #1 and activate your account.
                         </div>
                     @else
-                        <div class="alert alert-success mt-2 mb-0">
+                        <div class="mt-2 mb-0 alert alert-success">
                             <strong>Registration Complete.</strong> Your saving account is fully activated.
                         </div>
                     @endif
@@ -140,8 +140,8 @@ extends('demo.layout.app')
 
             {{-- Early payment notice --}}
             @if($next_due && $next_due->status === 'pending' && $next_due->instalment_number > 1 && \Carbon\Carbon::today()->lt($next_due->due_date))
-                <div class="alert alert-info mb-6">
-                    <i class="fas fa-info-circle mr-1"></i>
+                <div class="mb-6 alert alert-info">
+                    <i class="mr-1 fas fa-info-circle"></i>
                     <strong>Early Payment:</strong> Instalment #{{ $next_due->instalment_number }} is scheduled for
                     <strong>{{ $next_due->due_date->format('d M Y') }}</strong>.
                     You can pay now — ROI for this instalment will begin from its scheduled date.
@@ -162,17 +162,17 @@ extends('demo.layout.app')
                         : $totalPayable;
                 @endphp
                 <div class="card card-custom gutter-b">
-                    <div class="card-header border-0 py-5">
+                    <div class="py-5 border-0 card-header">
                         <h3 class="card-title font-weight-bolder text-dark">
                             Pay Instalment #{{ $next_due->instalment_number }}
-                            <span class="badge badge-light-primary ml-2">${{ number_format($totalPayable, 2) }}</span>
+                            <span class="ml-2 badge badge-light-primary">${{ number_format($totalPayable, 2) }}</span>
                             @if($instUser->adb_option || $instUser->fisp_option)
-                                <span class="badge badge-light-info ml-1" style="font-size:.75rem;">incl. ADB/FISP</span>
+                                <span class="ml-1 badge badge-light-info" style="font-size:.75rem;">incl. ADB/FISP</span>
                             @endif
                         </h3>
                     </div>
                     <div class="card-body">
-                        <div class="row mb-4">
+                        <div class="mb-4 row">
                             <div class="col-md-6">
                                 <table class="table table-sm table-borderless">
                                     <tr><td class="text-muted" width="180">Due Date</td><td class="font-weight-bold">{{ $next_due->due_date->format('d M Y') }}</td></tr>
@@ -209,7 +209,7 @@ extends('demo.layout.app')
                         <form method="POST" action="{{ route('saving.user.submit') }}" enctype="multipart/form-data">
                             @csrf
                             <div class="row">
-                                <div class="col-md-4 mb-4">
+                                <div class="mb-4 col-md-4">
                                     <label class="font-weight-bold">Payment Method</label>
                                     <select name="payment_method" id="inst_payment_method" class="form-control" required onchange="toggleInstBankField(this.value)">
                                         <option value="">Select method</option>
@@ -219,7 +219,7 @@ extends('demo.layout.app')
                                     </select>
                                     @error('payment_method')<div class="text-danger small">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-4 mb-4" id="inst_bank_field" style="{{ old('payment_method') === 'bank' ? '' : 'display:none;' }}">
+                                <div class="mb-4 col-md-4" id="inst_bank_field" style="{{ old('payment_method') === 'bank' ? '' : 'display:none;' }}">
                                     <label class="font-weight-bold">Bank Name</label>
                                     <select name="bank_name" id="inst_bank_name" class="form-control">
                                         <option value="">Select bank</option>
@@ -254,12 +254,12 @@ extends('demo.layout.app')
                                     </div>
                                     @error('bank_name')<div class="text-danger small">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-4 mb-4">
+                                <div class="mb-4 col-md-4">
                                     <label class="font-weight-bold">Transaction ID</label>
                                     <input type="text" name="transaction_id" class="form-control" placeholder="Your transaction ID" required value="{{ old('transaction_id') }}">
                                     @error('transaction_id')<div class="text-danger small">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-4 mb-4">
+                                <div class="mb-4 col-md-4">
                                     <label class="font-weight-bold">
                                         Amount Submitted ($)
                                         <small class="text-muted">min: ${{ number_format($totalPayable, 2) }}</small>
@@ -270,7 +270,7 @@ extends('demo.layout.app')
                                            value="{{ old('submitted_amount', $defaultSubmit) }}" required>
                                     @error('submitted_amount')<div class="text-danger small">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-12 mb-4">
+                                <div class="mb-4 col-md-12">
                                     <label class="font-weight-bold">Payment Proof Screenshot</label>
                                     <input type="file" name="proof" class="form-control-file" accept="image/*" required>
                                     @error('proof')<div class="text-danger small">{{ $message }}</div>@enderror
@@ -281,7 +281,7 @@ extends('demo.layout.app')
                     </div>
                 </div>
             @elseif($next_due && $next_due->status === 'submitted')
-                <div class="alert alert-info mb-6">
+                <div class="mb-6 alert alert-info">
                     <strong>Instalment #{{ $next_due->instalment_number }} submitted</strong> on {{ $next_due->submitted_at?->format('d M Y H:i') }}.
                     Awaiting admin confirmation.
                 </div>
@@ -289,10 +289,10 @@ extends('demo.layout.app')
 
             {{-- Full Instalment History --}}
             <div class="card card-custom gutter-b">
-                <div class="card-header border-0 py-5">
+                <div class="py-5 border-0 card-header">
                     <h3 class="card-title font-weight-bolder text-dark">Instalment Schedule (25 Months)</h3>
                 </div>
-                <div class="card-body pt-0">
+                <div class="pt-0 card-body">
                     <div class="table-responsive">
                         <table class="table table-hover table-head-custom table-vertical-center">
                             @php
@@ -339,7 +339,7 @@ extends('demo.layout.app')
                                         @switch($inst->status)
                                             @case('confirmed')
                                                 <span class="badge badge-light-success">Confirmed</span>
-                                                @if($inst->is_late) <span class="badge badge-light-warning ml-1">Late</span> @endif
+                                                @if($inst->is_late) <span class="ml-1 badge badge-light-warning">Late</span> @endif
                                                 @break
                                             @case('submitted')
                                                 <span class="badge badge-light-info">Awaiting Confirmation</span>
