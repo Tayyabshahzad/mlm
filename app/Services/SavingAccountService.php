@@ -205,6 +205,20 @@ class SavingAccountService
                 $user->update(['saving_registration_completed' => true]);
             }
 
+            // Auto-activate enrolled standard users on instalment #1 confirmation.
+            // Without this flag, commission is silently skipped in creditDepositToWallet().
+            if ($instalment->instalment_number === 1
+                && $user->account_type !== 'saving'
+                && $user->saving_enrolled
+                && !$user->saving_enrollment_activated) {
+                $user->update([
+                    'saving_enrollment_activated'    => true,
+                    'saving_enrollment_activated_at' => $now,
+                    'saving_enrollment_activated_by' => $adminId,
+                ]);
+                $user->refresh();
+            }
+
             if (!$deferred) {
                 $this->creditDepositToWallet($instalment);
             } else {

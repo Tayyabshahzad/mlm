@@ -122,12 +122,10 @@
                                     <td>   <span class="text-dark-75 font-weight-bolder d-block font-size-sm"> {{ ucfirst($wallet->commission_type) }} </span>    </td>
                                     <td>
                                         <span class="text-dark-75 font-weight-bolder d-block font-size-sm">
-                                            @if($wallet->source_type == 'topup')
-                                                <span class="badge badge-primary">{{ ucfirst($wallet->source_type) }}</span>
-                                            @elseif($wallet->source_type == 'investment')
-                                                <span class="badge badge-success">{{ ucfirst($wallet->source_type) }}</span>
+                                            @if($wallet->source_type == 'saving_instalment')
+                                                <span class="badge badge-warning text-dark">Saving Portal</span>
                                             @else
-                                                <span class="badge badge-secondary">{{ $wallet->source_type ? ucfirst($wallet->source_type) : 'N/A' }}</span>
+                                                <span class="badge badge-success">Standard Portal</span>
                                             @endif
                                         </span>
                                     </td>
