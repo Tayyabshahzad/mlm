@@ -562,6 +562,5 @@ Route::get('/create-saving-admin', function () {
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Auth Routes
-Auth::routes(['verify' => true]);
+// Auth Routes (all defined in auth.php and above web.php password routes)
 require __DIR__ . '/auth.php';
