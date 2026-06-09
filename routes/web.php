@@ -127,6 +127,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::post('submit/roi/payments', 'submitRoiPayments')->name('submit.roi.payments');
         Route::get('info/{id}', 'userInfo')->name('user.info');
         Route::get('{id}/wallet-overview', 'adminUserWallets')->name('admin.user.wallets');
+        Route::get('{id}/overview', [\App\Http\Controllers\Admin\UserOverviewController::class, 'show'])->name('admin.user.overview');
         Route::put('info/{user}/update', 'userInfoUpdate')->name('user.info.update');
         Route::get('team/{id}', 'adminUserTeam')->name('admin.user.team');
         Route::post('user/delete', 'userDelete')->name('user.delete');
@@ -281,20 +282,34 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::post('saving-roi-report/manual-run', [SavingRoiReportController::class, 'manualRun'])->name('admin.saving.roi.manual.run');
 
     // Saving Account — admin management (specific routes before wildcard)
-    Route::prefix('saving-accounts')->controller(SavingInstalmentController::class)->group(function () {
-        Route::get('/', 'adminIndex')->name('admin.saving.index');
-        Route::get('/pending', 'adminPendingSubmissions')->name('admin.saving.pending');
-        Route::get('/due-export', 'adminDueExport')->name('admin.saving.due.export');
-        Route::get('/due-preview', 'adminDuePreview')->name('admin.saving.due.preview');
-        Route::get('/enrollments', 'adminEnrollments')->name('admin.saving.enrollments');
-        Route::post('/enrollments/{user}/activate', 'activateEnrollment')->name('admin.saving.enrollments.activate');
-        Route::get('/create-user', 'adminCreateUserForm')->name('admin.saving.create-user');
-        Route::post('/create-user', 'adminCreateUser')->name('admin.saving.create-user.store');
-        Route::post('/set-parent', 'setSavingParent')->name('admin.saving.set-parent');
-        Route::post('/instalment/{instalment}/confirm', 'adminConfirm')->name('admin.saving.confirm');
-        Route::post('/instalment/{instalment}/reject', 'adminReject')->name('admin.saving.reject');
-        Route::post('/{user}/activate', 'adminActivate')->name('admin.saving.activate');
-        Route::get('/{user}', 'adminShow')->name('admin.saving.show');
+    Route::prefix('saving-accounts')->group(function () {
+
+        // ── Instalment Commissions (must be before /{user} wildcard) ──────────
+        Route::prefix('instalment-commissions')
+             ->controller(App\Http\Controllers\Admin\SavingInstalmentCommissionController::class)
+             ->group(function () {
+                 Route::get('/', 'index')->name('admin.saving.instalment-commissions');
+                 Route::post('/send-all', 'sendAll')->name('admin.saving.commissions.send-all');
+                 Route::post('/user/{user}/send', 'sendForUser')->name('admin.saving.commissions.send-for-user');
+                 Route::post('/{commission}/send', 'sendSingle')->name('admin.saving.commissions.send-single');
+             });
+
+        // ── Main saving-account routes ────────────────────────────────────────
+        Route::controller(SavingInstalmentController::class)->group(function () {
+            Route::get('/', 'adminIndex')->name('admin.saving.index');
+            Route::get('/pending', 'adminPendingSubmissions')->name('admin.saving.pending');
+            Route::get('/due-export', 'adminDueExport')->name('admin.saving.due.export');
+            Route::get('/due-preview', 'adminDuePreview')->name('admin.saving.due.preview');
+            Route::get('/enrollments', 'adminEnrollments')->name('admin.saving.enrollments');
+            Route::post('/enrollments/{user}/activate', 'activateEnrollment')->name('admin.saving.enrollments.activate');
+            Route::get('/create-user', 'adminCreateUserForm')->name('admin.saving.create-user');
+            Route::post('/create-user', 'adminCreateUser')->name('admin.saving.create-user.store');
+            Route::post('/set-parent', 'setSavingParent')->name('admin.saving.set-parent');
+            Route::post('/instalment/{instalment}/confirm', 'adminConfirm')->name('admin.saving.confirm');
+            Route::post('/instalment/{instalment}/reject', 'adminReject')->name('admin.saving.reject');
+            Route::post('/{user}/activate', 'adminActivate')->name('admin.saving.activate');
+            Route::get('/{user}', 'adminShow')->name('admin.saving.show');  // wildcard — must stay last
+        });
     });
 
     // ── One-time: reset saving plan and set admin_11 as root ──────────────

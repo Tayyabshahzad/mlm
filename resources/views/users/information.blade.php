@@ -35,6 +35,9 @@
                         <a href="{{ route('admin.user.team', $user->id) }}" class="rounded-0 btn btn-info font-weight-bold btn-sm px-3 font-size-base mr-2">
                             <i class="fas fa-users"></i> View Team
                         </a>
+                        <a href="{{ route('admin.user.overview', $user->id) }}" class="rounded-0 btn btn-dark font-weight-bold btn-sm px-3 font-size-base mr-2">
+                            <i class="fas fa-chart-pie"></i> Full Overview
+                        </a>
                         <button  type="submit" class="rounded-0 btn btn-primary font-weight-bold btn-sm px-3 font-size-base">
                             Save Changes
                         </button>

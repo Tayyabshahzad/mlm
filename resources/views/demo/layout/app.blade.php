@@ -1207,6 +1207,20 @@
                                             </a>
                                         </li>
 
+                                        @php($pendingInstalmentCommissions = \App\Models\SavingInstalmentCommission::where('status','pending')->count())
+                                        <li class="menu-item menu-item-submenu @if(request()->is('saving-accounts/instalment-commissions*')) menu-item-active @endif" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('admin.saving.instalment-commissions') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">
+                                                    Instalment Commissions
+                                                    @if($pendingInstalmentCommissions > 0)
+                                                        <span class="ml-1 badge badge-pill badge-warning">{{ $pendingInstalmentCommissions }}</span>
+                                                    @endif
+                                                </span>
+                                            </a>
+                                        </li>
+
                                         <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                             data-menu-toggle="hover">
                                             <a href="{{ route('admin.roi-settings.user-plans') }}" class="menu-link menu-toggle">

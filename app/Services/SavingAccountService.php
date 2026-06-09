@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\SavingInstalment;
+use App\Models\SavingInstalmentCommission;
 use App\Models\Setting;
 use App\Models\TransactionLog;
 use App\Models\User;
@@ -361,24 +362,15 @@ class SavingAccountService
             'status'           => 'credit',
         ]);
 
-        // Commission fires ONLY on instalment #1, on the FULL deposit total
-        // (submitted amount + any partial paid at registration), guarded against double-fire.
-        // For enrolled standard users, also require saving_enrollment_activated.
+        // Commissions fire for EVERY confirmed instalment once the account is active.
+        // Deduplication is enforced by the unique constraint in saving_instalment_commissions.
         $isEligibleForCommission = $user->saving_registration_completed && (
             ($user->account_type === 'saving' && $user->can_login) ||
             ($user->saving_enrolled && $user->saving_enrollment_activated)
         );
 
-        if ($instalment->instalment_number === 1 && $isEligibleForCommission) {
-            $alreadyFired = DB::table('wallets')
-                ->where('user_id', $user->id)
-                ->where('wallet_type', 'direct_indirect')
-                ->where('source_type', 'saving_instalment')
-                ->exists();
-
-            if (!$alreadyFired) {
-                $this->assignSavingCommissions($user, $totalCredit);
-            }
+        if ($isEligibleForCommission) {
+            $this->assignSavingCommissions($user, $totalCredit, $instalment);
         }
 
         Log::info("Saving deposit credited: user={$user->id}, amount={$amount}, instalment={$instalment->instalment_number}");
@@ -406,7 +398,18 @@ class SavingAccountService
     // Saving Account Commissions
     // -------------------------------------------------------------------------
 
-    public function assignSavingCommissions(User $user, float $amount): void
+    /**
+     * Distribute saving-tree commissions for a single instalment payment.
+     *
+     * When $instalment is provided every paid commission is recorded in
+     * saving_instalment_commissions with a unique constraint on
+     * (saving_instalment_id, ancestor_id, level) so the method is fully
+     * idempotent — calling it twice for the same instalment is safe.
+     *
+     * When $instalment is null (legacy activation paths) the method falls back
+     * to the previous wallet-existence check so older callers keep working.
+     */
+    public function assignSavingCommissions(User $user, float $amount, ?SavingInstalment $instalment = null): void
     {
         $setting = Setting::first();
 
@@ -425,14 +428,10 @@ class SavingAccountService
                 continue;
             }
 
-            // Saving account ancestors must have completed their own registration deposit
             if ($ancestorUser->account_type === 'saving' && !$ancestorUser->saving_registration_completed) {
                 continue;
             }
 
-            // 7x7 rule: ancestor must have at least N direct referrals in the saving tree
-            // to receive commission at level N.
-            // Example: need 1 direct for level 1, 2 directs for level 2, etc.
             if (!$this->qualifiesForSavingLevel($ancestorUser, $ancestor->level)) {
                 Log::info("Saving commission skipped: user {$ancestorUser->id} has insufficient saving directs for level {$ancestor->level}");
                 continue;
@@ -447,17 +446,78 @@ class SavingAccountService
                 continue;
             }
 
-            $commissionAmount = round(($amount * $percentage) / 100, 2);
+            $commissionAmount = round(($amount * $percentage) / 100, 4);
+            $type             = $ancestor->level === 1 ? 'direct' : 'indirect';
 
-            $this->walletService->assignCommission(
-                userId: $ancestorUser->id,
-                amount: $commissionAmount,
-                type: $ancestor->level === 1 ? 'direct' : 'indirect',
-                sourceUser: $user,
-                level: $ancestor->level,
-                percentage: $percentage,
-                sourceType: 'saving_instalment'
-            );
+            if ($instalment) {
+                // ── Idempotent path: track every commission in saving_instalment_commissions ──
+                $alreadyExists = DB::table('saving_instalment_commissions')
+                    ->where('saving_instalment_id', $instalment->id)
+                    ->where('ancestor_id', $ancestorUser->id)
+                    ->where('level', $ancestor->level)
+                    ->exists();
+
+                if ($alreadyExists) {
+                    continue;
+                }
+
+                $wallet = $this->walletService->assignCommission(
+                    userId: $ancestorUser->id,
+                    amount: $commissionAmount,
+                    type: $type,
+                    sourceUser: $user,
+                    level: $ancestor->level,
+                    percentage: $percentage,
+                    sourceType: 'saving_instalment'
+                );
+
+                try {
+                    DB::table('saving_instalment_commissions')->insert([
+                        'saving_instalment_id' => $instalment->id,
+                        'user_id'              => $user->id,
+                        'ancestor_id'          => $ancestorUser->id,
+                        'level'                => $ancestor->level,
+                        'instalment_number'    => $instalment->instalment_number,
+                        'commission_amount'    => $commissionAmount,
+                        'percentage'           => $percentage,
+                        'commission_type'      => $type,
+                        'status'               => 'paid',
+                        'wallet_id'            => $wallet?->id,
+                        'processed_at'         => now(),
+                        'created_at'           => now(),
+                        'updated_at'           => now(),
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Unique-constraint race — another process already inserted this record; safe to skip.
+                    if ($e->errorInfo[1] == 1062) {
+                        Log::info("Saving commission race-condition skip: instalment={$instalment->id} ancestor={$ancestorUser->id} level={$ancestor->level}");
+                        continue;
+                    }
+                    throw $e;
+                }
+            } else {
+                // ── Legacy path: no instalment object (old activation callers) ──────────────
+                // Guard against re-firing using old wallet-existence check.
+                $alreadyFired = DB::table('wallets')
+                    ->where('user_id', $user->id)
+                    ->where('wallet_type', 'direct_indirect')
+                    ->where('source_type', 'saving_instalment')
+                    ->exists();
+
+                if ($alreadyFired) {
+                    break; // all levels will also have been paid; stop looping
+                }
+
+                $this->walletService->assignCommission(
+                    userId: $ancestorUser->id,
+                    amount: $commissionAmount,
+                    type: $type,
+                    sourceUser: $user,
+                    level: $ancestor->level,
+                    percentage: $percentage,
+                    sourceType: 'saving_instalment'
+                );
+            }
         }
     }
 

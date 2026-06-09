@@ -195,9 +195,18 @@ class SavingInstalmentController extends Controller
         $summary = $this->savingAccountService->getInstalmentSummary($user);
         $setting = Setting::first();
 
+        // Pending instalment commissions for this user (as payer)
+        $pendingCommissions = \App\Models\SavingInstalmentCommission::with('ancestor:id,name,username')
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->orderBy('instalment_number')
+            ->orderBy('level')
+            ->get();
+
         return view('admin.saving.show', array_merge($summary, [
-            'savingUser' => $user,
-            'setting'    => $setting,
+            'savingUser'         => $user,
+            'setting'            => $setting,
+            'pendingCommissions' => $pendingCommissions,
         ]));
     }
 
@@ -427,22 +436,22 @@ class SavingInstalmentController extends Controller
             $this->savingAccountService->autoEnrollSponsor($sponsor);
         }
 
-        // Check whether inst #1 has been fully deposited (confirmed + deposited_at set)
-        $inst1Deposited = $user->savingInstalments()
-            ->where('instalment_number', 1)
+        // Fire commissions for every deposited instalment that has not already been tracked.
+        // assignSavingCommissions is idempotent per-instalment via the unique constraint.
+        $depositedInstalments = $user->savingInstalments()
+            ->where('status', 'confirmed')
             ->whereNotNull('deposited_at')
-            ->exists();
+            ->orderBy('instalment_number')
+            ->get();
 
-        // Only fire commissions if inst #1 is fully deposited — never on a partial/pending payment
-        if ($inst1Deposited && $user->saving_total_deposited > 0) {
-            $alreadyFired = \App\Models\Wallet::where('user_id', $user->id)
-                ->where('wallet_type', 'direct_indirect')
-                ->where('source_type', 'saving_instalment')
-                ->exists();
-
-            if (!$alreadyFired) {
-                $this->savingAccountService->assignSavingCommissions($user, $user->saving_total_deposited);
+        foreach ($depositedInstalments as $inst) {
+            $baseAmount = (float) ($inst->submitted_amount ?? $inst->amount);
+            if ($inst->instalment_number === 1) {
+                $savingFee  = (float) ($user->saving_initial_fee ?? 0);
+                $savingPaid = (float) ($user->saving_initial_payment ?? 0);
+                $baseAmount += max(0.0, $savingPaid - $savingFee);
             }
+            $this->savingAccountService->assignSavingCommissions($user, $baseAmount, $inst);
         }
 
         // Build a success message that accurately reflects what was enabled
@@ -517,19 +526,21 @@ class SavingInstalmentController extends Controller
             $this->savingAccountService->autoEnrollSponsor($sponsor);
         }
 
-        // Fire commissions if instalment #1 has been deposited and commissions not already sent
-        $inst1 = $user->savingInstalments()
-            ->where('instalment_number', 1)
+        // Fire commissions for every deposited instalment (idempotent per-instalment).
+        $depositedInstalments = $user->savingInstalments()
+            ->where('status', 'confirmed')
             ->whereNotNull('deposited_at')
-            ->first();
+            ->orderBy('instalment_number')
+            ->get();
 
-        $alreadyFired = \App\Models\Wallet::where('user_id', $user->id)
-            ->where('wallet_type', 'direct_indirect')
-            ->where('source_type', 'saving_instalment')
-            ->exists();
-
-        if ($inst1 && !$alreadyFired && $user->saving_total_deposited > 0) {
-            $this->savingAccountService->assignSavingCommissions($user, $user->saving_total_deposited);
+        foreach ($depositedInstalments as $inst) {
+            $baseAmount = (float) ($inst->submitted_amount ?? $inst->amount);
+            if ($inst->instalment_number === 1) {
+                $savingFee  = (float) ($user->saving_initial_fee ?? 0);
+                $savingPaid = (float) ($user->saving_initial_payment ?? 0);
+                $baseAmount += max(0.0, $savingPaid - $savingFee);
+            }
+            $this->savingAccountService->assignSavingCommissions($user, $baseAmount, $inst);
         }
 
         return back()->with('success', "'{$user->name}' Savings Program enrollment activated. ROI and commissions are now enabled.");

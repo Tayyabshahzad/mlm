@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Log;
 
 class WalletService
 {
-    public function assignCommission(int $userId, float $amount, string $type, User $sourceUser, int $level, float $percentage, string $sourceType = 'investment'): void 
+    public function assignCommission(int $userId, float $amount, string $type, User $sourceUser, int $level, float $percentage, string $sourceType = 'investment'): ?Wallet
     {
         if ($amount <= 0) {
             Log::warning("Attempted to assign non-positive commission amount: {$amount}");
-            return;
+            return null;
         }
 
-        try { 
+        try {
             $wallet = Wallet::create([
                 'user_id' => $userId,
                 'wallet_type' => 'direct_indirect',
@@ -34,7 +34,9 @@ class WalletService
             ]);
 
             Log::info("Commission assigned successfully: Wallet ID {$wallet->id}, Amount: {$amount}");
-            
+
+            return $wallet;
+
         } catch (\Exception $e) {
             Log::error("Failed to assign commission: " . $e->getMessage());
             throw $e;

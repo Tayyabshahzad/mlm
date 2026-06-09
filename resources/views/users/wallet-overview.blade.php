@@ -18,8 +18,11 @@
                 <a href="{{ route('user.info', $user->id) }}" class="mr-2 btn btn-sm btn-light-primary rounded-0">
                     <i class="mr-1 fas fa-user"></i> User Info
                 </a>
-                <a href="{{ route('admin.user.team', $user->id) }}" class="btn btn-sm btn-light-success rounded-0">
+                <a href="{{ route('admin.user.team', $user->id) }}" class="mr-2 btn btn-sm btn-light-success rounded-0">
                     <i class="mr-1 fas fa-sitemap"></i> View Team
+                </a>
+                <a href="{{ route('admin.user.overview', $user->id) }}" class="btn btn-sm btn-light-dark rounded-0">
+                    <i class="mr-1 fas fa-chart-pie"></i> Full Overview
                 </a>
             </div>
         </div>

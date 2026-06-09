@@ -9,7 +9,16 @@
       "Bash(php -r \"require 'vendor/autoload.php'; echo 'OK';\")",
       "Bash(php -r \"echo 'post_max_size: ' . ini_get\\('post_max_size'\\) . PHP_EOL; echo 'upload_max_filesize: ' . ini_get\\('upload_max_filesize'\\) . PHP_EOL; echo 'max_execution_time: ' . ini_get\\('max_execution_time'\\) . PHP_EOL;\")",
       "Bash(php -r ' *)",
-      "PowerShell(Get-ChildItem -Path \"d:\\\\laragon\\\\www\\\\mlm\\\\database\\\\migrations\" | Where-Object {$_.Name -match \"\\(commission|wallet\\)\"} | Select-Object Name)"
+      "PowerShell(Get-ChildItem -Path \"d:\\\\laragon\\\\www\\\\mlm\\\\database\\\\migrations\" | Where-Object {$_.Name -match \"\\(commission|wallet\\)\"} | Select-Object Name)",
+      "Bash(Get-ChildItem -Path \"d:\\\\laragon\\\\www\\\\mlm\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(xargs basename -a)",
+      "Bash(2>&1)",
+      "Bash(not exist *)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"d:\\\\laragon\\\\www\\\\mlm\\\\resources\\\\views\\\\admin\\\\users\")",
+      "Bash(Out-Null)",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"d:\\\\laragon\\\\www\\\\mlm\\\\resources\\\\views\\\\admin\\\\users\")",
+      "Bash(php -r \"echo count\\(file\\('d:/laragon/www/mlm/resources/views/admin/saving/show.blade.php'\\)\\);\")"
     ],
     "deny": [],
     "ask": []
