@@ -256,6 +256,28 @@ class SavingInstalmentController extends Controller
     }
 
     /**
+     * Admin force-processes a deferred instalment (confirmed but wallet not yet credited).
+     */
+    public function adminForceDeposit(SavingInstalment $instalment): RedirectResponse
+    {
+        if ($instalment->status !== 'confirmed' || !$instalment->deposit_deferred || $instalment->deposited_at) {
+            return back()->with('error', 'This instalment is not in a deferred-pending state.');
+        }
+
+        try {
+            DB::transaction(function () use ($instalment) {
+                $instalment->update(['deposit_deferred' => false, 'next_cycle_date' => null]);
+                $this->savingAccountService->creditDepositToWallet($instalment);
+            });
+
+            return back()->with('success', "Instalment #{$instalment->instalment_number} deposit processed and wallet credited.");
+        } catch (\Exception $e) {
+            Log::error("Force deposit failed for instalment {$instalment->id}: " . $e->getMessage());
+            return back()->with('error', 'Force deposit failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Admin rejects a submitted instalment (sends it back to pending).
      */
     public function adminReject(Request $request, SavingInstalment $instalment): RedirectResponse

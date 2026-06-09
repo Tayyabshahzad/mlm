@@ -161,7 +161,12 @@ class SavingAccountService
     // -------------------------------------------------------------------------
 
     /**
-     * Confirm a submitted instalment, apply late/deferred logic, then deposit.
+     * Confirm a submitted instalment and immediately credit the wallet.
+     *
+     * Late payments are penalised via roi_eligible_from = today (not backdated),
+     * but the wallet deposit always happens immediately on admin confirmation —
+     * the previous "deposit_deferred" mechanic was never wired to a scheduler
+     * and left confirmed instalments in limbo indefinitely.
      */
     public function confirmAndDeposit(SavingInstalment $instalment, int $adminId, ?string $notes = null): void
     {
@@ -171,20 +176,9 @@ class SavingAccountService
             $dueDate = Carbon::parse($instalment->due_date);
             $isLate  = $now->gt($dueDate->copy()->endOfDay());
 
-            // Determine next cycle date if late
-            $nextCycleDate = null;
-            $deferred      = false;
-            if ($isLate) {
-                // Next cycle = same day-of-month next month
-                $nextCycleDate = $dueDate->copy()->addMonth();
-                $deferred      = true;
-            }
-
             // ROI base for this instalment starts:
             //   - Early or on-time payment: from the due_date itself.
-            //     Paying a future instalment early never advances its ROI — the user
-            //     only enjoys that month's ROI once the scheduled due date arrives.
-            //   - Late payment: from today (no backdated ROI for missed months).
+            //   - Late payment: from today — no backdated ROI for the missed period.
             $roiEligibleFrom = $isLate
                 ? $now->toDateString()
                 : $dueDate->toDateString();
@@ -194,20 +188,18 @@ class SavingAccountService
                 'confirmed_at'     => $now,
                 'confirmed_by'     => $adminId,
                 'is_late'          => $isLate,
-                'deposit_deferred' => $deferred,
-                'next_cycle_date'  => $nextCycleDate,
+                'deposit_deferred' => false,
+                'next_cycle_date'  => null,
                 'roi_eligible_from'=> $roiEligibleFrom,
                 'notes'            => $notes,
             ]);
 
-            // Always mark registration complete when instalment #1 is confirmed,
-            // even if the wallet deposit is deferred due to late payment.
+            // Mark registration complete when instalment #1 is confirmed.
             if ($instalment->instalment_number === 1 && !$user->saving_registration_completed) {
                 $user->update(['saving_registration_completed' => true]);
             }
 
             // Auto-activate enrolled standard users on instalment #1 confirmation.
-            // Without this flag, commission is silently skipped in creditDepositToWallet().
             if ($instalment->instalment_number === 1
                 && $user->account_type !== 'saving'
                 && $user->saving_enrolled
@@ -220,11 +212,7 @@ class SavingAccountService
                 $user->refresh();
             }
 
-            if (!$deferred) {
-                $this->creditDepositToWallet($instalment);
-            } else {
-                Log::info("Saving instalment {$instalment->id} confirmed late — deposit deferred to {$nextCycleDate}");
-            }
+            $this->creditDepositToWallet($instalment);
         });
     }
 

@@ -378,6 +378,14 @@
                                                 </button>
                                             </form>
                                             <button class="mt-1 btn btn-sm btn-danger rounded-0" data-toggle="modal" data-target="#rejectModal{{ $inst->id }}">Reject</button>
+                                        @elseif($inst->status === 'confirmed' && $inst->deposit_deferred && !$inst->deposited_at)
+                                            <form method="POST" action="{{ route('admin.saving.force-deposit', $inst) }}" class="d-inline"
+                                                  onsubmit="return confirm('Process deferred deposit for Instalment #{{ $inst->instalment_number }}? This will credit the wallet now.')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-warning rounded-0 text-dark">
+                                                    <i class="fas fa-bolt mr-1"></i> Process Now
+                                                </button>
+                                            </form>
 
                                             <div class="modal fade" id="rejectModal{{ $inst->id }}" tabindex="-1">
                                                 <div class="modal-dialog">
