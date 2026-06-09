@@ -314,10 +314,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   EID BANNER  (dark gold glass version)
-═══════════════════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════════════════
-   GOOD NEWS BANNER
+   GVI NETWORK BANNER
 ═══════════════════════════════════════════════════════════ */
 .gn-banner {
     position: relative; overflow: hidden;
@@ -1000,76 +997,142 @@
             </div>
         </div> --}}
 
-        {{-- EID UL ADHA BANNER --}}
-        <div class="gn-banner" style="background:linear-gradient(135deg,#0a0800 0%,#1a0f00 50%,#0a0800 100%); border-color:rgba(212,160,23,.25); box-shadow:0 0 0 1px rgba(212,160,23,.08),0 24px 64px rgba(0,0,0,.7);">
+        {{-- GVI NETWORK BANNER --}}
+        <div class="gn-banner">
 
-            {{-- glow override --}}
+            {{-- layered glow: cyan left, purple right, green bottom --}}
             <div style="position:absolute;inset:0;pointer-events:none;
                 background:
-                    radial-gradient(ellipse 650px 380px at 8%  60%, rgba(180,110,0,.55) 0%, transparent 60%),
-                    radial-gradient(ellipse 450px 300px at 92% 10%, rgba(120,80,0,.45)  0%, transparent 58%),
-                    radial-gradient(ellipse 300px 240px at 50% 100%,rgba(200,150,20,.15) 0%, transparent 55%);"></div>
+                    radial-gradient(ellipse 680px 400px at 5%  62%, rgba(0,100,220,.50) 0%, transparent 60%),
+                    radial-gradient(ellipse 520px 330px at 93% 8%,  rgba(155,89,255,.42) 0%, transparent 58%),
+                    radial-gradient(ellipse 380px 280px at 50% 108%,rgba(0,230,152,.14) 0%, transparent 55%);"></div>
 
-            {{-- diagonal lines --}}
+            {{-- subtle grid overlay --}}
             <div style="position:absolute;inset:0;pointer-events:none;
-                background-image:repeating-linear-gradient(55deg,rgba(255,200,50,.022) 0,rgba(255,200,50,.022) 1px,transparent 1px,transparent 28px),
-                                 repeating-linear-gradient(-55deg,rgba(255,200,50,.022) 0,rgba(255,200,50,.022) 1px,transparent 1px,transparent 28px);"></div>
+                background-image:
+                    repeating-linear-gradient(60deg, rgba(0,210,255,.018) 0,rgba(0,210,255,.018) 1px,transparent 1px,transparent 28px),
+                    repeating-linear-gradient(-60deg,rgba(155,89,255,.018) 0,rgba(155,89,255,.018) 1px,transparent 1px,transparent 28px);"></div>
 
-            {{-- floating dots — gold tones --}}
+            {{-- floating particles: cyan / purple / green --}}
             <div class="gn-confetti">
-                <div class="gn-dot" style="left:4%;  top:55%; width:5px;height:5px; background:#f5c518; --dur:3.4s;--del:.0s"></div>
-                <div class="gn-dot" style="left:13%; top:28%; width:3px;height:3px; background:#d4a017; --dur:2.8s;--del:.7s"></div>
-                <div class="gn-dot" style="left:23%; top:70%; width:5px;height:5px; background:#c8860a; --dur:3.9s;--del:1.2s"></div>
-                <div class="gn-dot" style="left:36%; top:18%; width:4px;height:4px; background:#f5c518; --dur:3.0s;--del:.4s"></div>
-                <div class="gn-dot" style="left:51%; top:78%; width:3px;height:3px; background:#d4a017; --dur:3.6s;--del:.9s"></div>
-                <div class="gn-dot" style="left:64%; top:38%; width:5px;height:5px; background:#c8860a; --dur:4.1s;--del:.2s"></div>
-                <div class="gn-dot" style="left:75%; top:60%; width:3px;height:3px; background:#f5c518; --dur:3.2s;--del:1.5s"></div>
-                <div class="gn-dot" style="left:85%; top:22%; width:4px;height:4px; background:#d4a017; --dur:2.6s;--del:.6s"></div>
-                <div class="gn-dot" style="left:93%; top:65%; width:3px;height:3px; background:#c8860a; --dur:3.7s;--del:1.0s"></div>
+                <div class="gn-dot" style="left:4%;  top:52%; width:5px;height:5px; background:#00d2ff; --dur:3.4s;--del:.0s"></div>
+                <div class="gn-dot" style="left:14%; top:26%; width:3px;height:3px; background:#9b59ff; --dur:2.8s;--del:.7s"></div>
+                <div class="gn-dot" style="left:24%; top:71%; width:5px;height:5px; background:#00e698; --dur:3.9s;--del:1.2s"></div>
+                <div class="gn-dot" style="left:37%; top:17%; width:4px;height:4px; background:#00d2ff; --dur:3.0s;--del:.4s"></div>
+                <div class="gn-dot" style="left:52%; top:79%; width:3px;height:3px; background:#9b59ff; --dur:3.6s;--del:.9s"></div>
+                <div class="gn-dot" style="left:63%; top:36%; width:5px;height:5px; background:#4f8fff; --dur:4.1s;--del:.2s"></div>
+                <div class="gn-dot" style="left:76%; top:61%; width:3px;height:3px; background:#00e698; --dur:3.2s;--del:1.5s"></div>
+                <div class="gn-dot" style="left:85%; top:21%; width:4px;height:4px; background:#00d2ff; --dur:2.6s;--del:.6s"></div>
+                <div class="gn-dot" style="left:94%; top:67%; width:3px;height:3px; background:#9b59ff; --dur:3.7s;--del:1.0s"></div>
             </div>
 
             <div class="gn-inner">
 
                 {{-- Left: Text --}}
                 <div>
-                    <div class="gn-tag" style="color:#f5c518; background:rgba(212,160,23,.12); border-color:rgba(212,160,23,.28);">
-                        <span class="gn-tag-pulse" style="background:#f5c518; box-shadow:0 0 8px #f5c518;"></span>
-                        Upcoming &nbsp;·&nbsp; Eid ul Adha 2026
+                    <div class="gn-tag">
+                        <span class="gn-tag-pulse"></span>
+                        Live &nbsp;·&nbsp; Global Visioners International
                     </div>
 
-                    <div class="gn-headline" style="font-size:2.2rem;">
-                        Eid Mubarak! 🐑<br>
-                        <span style="background:linear-gradient(135deg,#f5c518,#d4a017,#c8860a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                            Eid ul Adha Greetings<br>from GVI Family
-                        </span>
+                    <div class="gn-headline">
+                        Build Your Network.<br>
+                        <span class="gn-hl-accent">Grow Your Wealth.</span>
                     </div>
 
                     <div class="gn-body">
-                        On the blessed occasion of <strong style="color:rgba(255,255,255,.85);">Eid ul Adha</strong>, we extend our warmest wishes to all our members and their families. 🤲<br><br>
-                        May Allah accept your sacrifices, grant you prosperity, and bless your savings plan with abundant rewards — in this world and the next. <strong style="color:rgba(255,255,255,.85);">Taqabbal Allahu Minna Wa Minkum.</strong> 🌙
+                        Welcome to <strong>GVI</strong> — your gateway to financial freedom through smart monthly savings and a powerful
+                        <strong>7-level referral network</strong>. Every instalment you confirm grows your capital, earns
+                        <strong>daily ROI</strong>, and automatically rewards every upline level in your chain.<br><br>
+                        Refer, grow, and let your <strong>network work for you</strong> — every single day.
                     </div>
 
-                    <div class="gn-quote" style="border-left-color:#d4a017; color:rgba(255,200,80,.75);">
-                        🕌 &nbsp;"And complete the Hajj and Umrah for Allah…" &nbsp;— Quran 2:196 &nbsp;· &nbsp;Wishing you blessings of Eid ul Adha ☀️
+                    <div class="gn-quote">
+                        ✦ &nbsp;"Your network is your net worth — invest in both." &nbsp;·&nbsp; GVI Saving Plan
                     </div>
                 </div>
 
-                {{-- Right: Art --}}
+                {{-- Right: Network Node Art --}}
                 <div class="gn-art">
-                    <div class="gn-emoji-stack">
-                        <div class="gn-emoji-ring" style="background:conic-gradient(#f5c518,#d4a017,#c8860a,#f5c518); box-shadow:0 0 32px rgba(212,160,23,.5);"></div>
-                        <span class="gn-emoji-main">🐑</span>
+                    <div style="position:relative; width:138px; height:138px; display:flex; align-items:center; justify-content:center;">
+
+                        {{-- spinning outer ring --}}
+                        <div style="position:absolute; inset:-10px; border-radius:50%;
+                             border:1.5px dashed rgba(0,210,255,.22);
+                             animation:gn-spin 14s linear infinite;"></div>
+
+                        {{-- conic glow ring --}}
+                        <div style="position:absolute; inset:0; border-radius:50%;
+                             background:conic-gradient(rgba(0,210,255,.10),rgba(155,89,255,.12),rgba(0,230,152,.08),rgba(0,210,255,.10));
+                             animation:gn-spin 9s linear infinite;"></div>
+
+                        {{-- center node --}}
+                        <div style="position:relative; z-index:3; width:68px; height:68px; border-radius:50%;
+                             background:rgba(0,210,255,.08); border:2px solid rgba(0,210,255,.45);
+                             box-shadow:0 0 0 8px rgba(0,210,255,.06),0 0 32px rgba(0,210,255,.38);
+                             display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-globe-americas" style="font-size:1.9rem;color:#00d2ff;filter:drop-shadow(0 0 8px #00d2ff);"></i>
+                        </div>
+
+                        {{-- satellite user nodes --}}
+                        <div style="position:absolute;top:2px;left:50%;transform:translateX(-50%);
+                             width:28px;height:28px;border-radius:50%;
+                             background:rgba(155,89,255,.14);border:1px solid rgba(155,89,255,.42);
+                             box-shadow:0 0 10px rgba(155,89,255,.28);
+                             display:flex;align-items:center;justify-content:center;color:#9b59ff;font-size:.65rem;z-index:2;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div style="position:absolute;top:22%;right:2px;
+                             width:28px;height:28px;border-radius:50%;
+                             background:rgba(0,230,152,.12);border:1px solid rgba(0,230,152,.38);
+                             box-shadow:0 0 10px rgba(0,230,152,.25);
+                             display:flex;align-items:center;justify-content:center;color:#00e698;font-size:.65rem;z-index:2;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div style="position:absolute;bottom:22%;right:2px;
+                             width:28px;height:28px;border-radius:50%;
+                             background:rgba(79,143,255,.13);border:1px solid rgba(79,143,255,.38);
+                             box-shadow:0 0 10px rgba(79,143,255,.25);
+                             display:flex;align-items:center;justify-content:center;color:#4f8fff;font-size:.65rem;z-index:2;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
+                             width:28px;height:28px;border-radius:50%;
+                             background:rgba(255,182,0,.12);border:1px solid rgba(255,182,0,.38);
+                             box-shadow:0 0 10px rgba(255,182,0,.25);
+                             display:flex;align-items:center;justify-content:center;color:#ffb600;font-size:.65rem;z-index:2;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div style="position:absolute;bottom:22%;left:2px;
+                             width:28px;height:28px;border-radius:50%;
+                             background:rgba(255,79,163,.12);border:1px solid rgba(255,79,163,.35);
+                             box-shadow:0 0 10px rgba(255,79,163,.22);
+                             display:flex;align-items:center;justify-content:center;color:#ff4fa3;font-size:.65rem;z-index:2;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div style="position:absolute;top:22%;left:2px;
+                             width:28px;height:28px;border-radius:50%;
+                             background:rgba(0,210,255,.12);border:1px solid rgba(0,210,255,.35);
+                             box-shadow:0 0 10px rgba(0,210,255,.22);
+                             display:flex;align-items:center;justify-content:center;color:#00d2ff;font-size:.65rem;z-index:2;">
+                            <i class="fas fa-user"></i>
+                        </div>
+
                     </div>
-                    <div class="gn-badge-row">
-                        <span class="gn-badge" style="border-color:rgba(212,160,23,.35); color:#f5c518;">🕌 Eid Mubarak</span>
-                        <span class="gn-badge" style="border-color:rgba(212,160,23,.35); color:#f5c518;">🤲 Qurbani</span>
-                        <span class="gn-badge" style="border-color:rgba(212,160,23,.35); color:#f5c518;">🌙 Blessings</span>
+
+                    <div class="gn-badge-row mt-2">
+                        <span class="gn-badge" style="border-color:rgba(0,210,255,.35);color:#00d2ff;">⬡ 7-Level Network</span>
+                        <span class="gn-badge" style="border-color:rgba(155,89,255,.35);color:#9b59ff;">◈ Saving Plan</span>
+                    </div>
+                    <div class="gn-badge-row mt-1">
+                        <span class="gn-badge" style="border-color:rgba(0,230,152,.35);color:#00e698;">↑ Daily ROI</span>
+                        <span class="gn-badge" style="border-color:rgba(255,182,0,.35);color:#ffb600;">✦ Commissions</span>
                     </div>
                 </div>
 
             </div>
 
-            <div class="gn-shimmer-line" style="background:linear-gradient(90deg,transparent,rgba(212,160,23,.6),transparent);"></div>
+            <div class="gn-shimmer-line"></div>
         </div>
 
         {{-- ─── SECTION: Wallets ─────────────────────── --}}
