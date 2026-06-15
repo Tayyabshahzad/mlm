@@ -1294,10 +1294,10 @@
                                 <div class="flex-wrap mb-4 d-flex align-items-center" style="gap:0.5rem;">
                                     <!-- Hidden links for JS reference -->
                                     <span id="refLink"
-                                        style="display: none;">{{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link }}</span>
+                                        style="display: none;"> {{ url('/register/ref/' . Auth::user()->reflink->link) }}</span>
                                     @if(Auth::user()->canSeeSavingLink())
                                     <span id="refLinkSaving"
-                                        style="display: none;">{{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link . '?type=saving' }}</span>
+                                        style="display: none;"> {{ url('/register/ref/' . Auth::user()->reflink->link . '?type=saving') }}</span>
                                     @endif
 
                                     <!-- Standard referral link -->
@@ -2247,13 +2247,13 @@
                         <div class="flex-wrap mr-2 align-items-center d-flex" style="gap:1rem;">
                             <!-- Standard referral link -->
                             <p class="mt-2 mb-2 ml-5 text-dark font-weight-bold" style="cursor:pointer;" onclick="copyToClipboard()" title="Copy standard referral link">
-                                {{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link }}
+                                {{ url('/register/ref/' . Auth::user()->reflink->link) }}
                                 <i class="la la-copy"></i>
                             </p>
                             @if(Auth::user()->canSeeSavingLink())
                             <!-- Savings Program referral link -->
                             <p class="mt-2 mb-2 text-success font-weight-bold" style="cursor:pointer;" onclick="copySavingLinkToClipboard()" title="Copy Savings Program link">
-                                {{ env('APP_URL') . '/register/ref/' . Auth::user()->reflink->link . '?type=saving' }}
+                                {{ url('/register/ref/' . Auth::user()->reflink->link . '?type=saving') }}
                                 <i class="la la-copy"></i>
                                 <span class="ml-1 badge badge-success" style="font-size:0.7rem;">Savings</span>
                             </p>
