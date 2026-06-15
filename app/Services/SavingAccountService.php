@@ -538,43 +538,46 @@ class SavingAccountService
      * Process daily saving ROI for a single user.
      * Only fires if instalment #1 is deposited and account is within the 25-month plan.
      */
-    public function processSavingRoi(User $user, ?Carbon $forDate = null): array
-    {
+    public function processSavingRoi(
+        User $user,
+        ?Carbon $forDate = null,
+        ?float $customRate = null,
+        ?string $customDescription = null,
+        bool $forceManual = false
+    ): array {
         $forDate = $forDate ?? Carbon::today();
 
-        if (!$this->canReceiveSavingRoi($user)) {
+        if (!$forceManual && !$this->canReceiveSavingRoi($user)) {
             return ['success' => false, 'message' => 'Not eligible for saving ROI'];
         }
 
-        // Suspend ROI if any instalment is overdue and not yet confirmed by admin.
-        // 'pending'   = user has not submitted anything yet.
-        // 'submitted' = user uploaded a receipt but admin has NOT confirmed it yet — treat same as unpaid
-        //               since the receipt could be fake and only admin confirmation makes it real.
-        $hasOverdue = SavingInstalment::where('user_id', $user->id)
-            ->whereIn('status', ['pending', 'submitted'])
-            ->whereDate('due_date', '<', $forDate->toDateString())
-            ->exists();
+        if (!$forceManual) {
+            // 'pending'   = user has not submitted anything yet.
+            // 'submitted' = user uploaded a receipt but admin has NOT confirmed it yet.
+            $hasOverdue = SavingInstalment::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'submitted'])
+                ->whereDate('due_date', '<', $forDate->toDateString())
+                ->exists();
 
-        if ($hasOverdue) {
-            return ['success' => false, 'message' => 'ROI suspended: overdue instalment awaiting admin confirmation'];
-        }
+            if ($hasOverdue) {
+                return ['success' => false, 'message' => 'ROI suspended: overdue instalment awaiting admin confirmation'];
+            }
 
-        // Block if ROI already exists for this specific date (prevents duplicates).
-        $alreadyPaid = Wallet::where('user_id', $user->id)
-            ->where('wallet_type', 'saving_roi')
-            ->whereDate('created_at', $forDate->toDateString())
-            ->exists();
+            $alreadyPaid = Wallet::where('user_id', $user->id)
+                ->where('wallet_type', 'saving_roi')
+                ->whereDate('created_at', $forDate->toDateString())
+                ->exists();
 
-        if ($alreadyPaid) {
-            return ['success' => false, 'message' => 'ROI already processed for ' . $forDate->format('d M Y')];
+            if ($alreadyPaid) {
+                return ['success' => false, 'message' => 'ROI already processed for ' . $forDate->format('d M Y')];
+            }
         }
 
         $setting   = Setting::first();
-        $dailyRate = (float) ($setting->saving_roi_daily_rate ?? 0.1);
+        $dailyRate = $customRate ?? (float) ($setting->saving_roi_daily_rate ?? 0.1);
 
         // ROI base = confirmed instalments whose roi_eligible_from has arrived by $forDate.
-        // For legacy records without roi_eligible_from (saved before the field was fillable),
-        // fall back to due_date so early-paid instalments aren't counted before their due month.
+        // For legacy records without roi_eligible_from, fall back to due_date.
         $eligibleBase = SavingInstalment::where('user_id', $user->id)
             ->where('status', 'confirmed')
             ->where(function ($q) use ($forDate) {
@@ -586,7 +589,9 @@ class SavingAccountService
             })
             ->sum('amount');
 
-        $base = $eligibleBase > 0 ? (float) $eligibleBase : (float) $user->saving_total_deposited;
+        $base = $eligibleBase > 0
+            ? (float) $eligibleBase
+            : max((float) $user->saving_total_deposited, (float) $user->roi_eligible_investment_amount);
 
         if ($base <= 0 || $dailyRate <= 0) {
             return ['success' => false, 'message' => 'No deposit base or rate'];
@@ -597,7 +602,9 @@ class SavingAccountService
             return ['success' => false, 'message' => 'Calculated ROI is zero'];
         }
 
-        DB::transaction(function () use ($user, $amount, $forDate) {
+        $desc = $customDescription ?? 'Daily saving account ROI (' . $forDate->format('d M Y') . ')';
+
+        DB::transaction(function () use ($user, $amount, $forDate, $desc) {
             $entryDate = $forDate->copy()->setTime(23, 59, 0);
 
             $wallet = Wallet::create([
@@ -609,16 +616,16 @@ class SavingAccountService
                 'total_amount'     => $amount,
                 'wallet_src'       => 'saving_roi',
                 'source_type'      => 'saving',
-                'description'      => 'Daily saving account ROI (' . $forDate->format('d M Y') . ')',
+                'description'      => $desc,
                 'transaction_type' => 'credit',
             ]);
 
-            // Stamp the entry with the target date so reports show the correct day
+            // Stamp the entry with the target date so reports show the correct day.
             $wallet->forceFill(['created_at' => $entryDate, 'updated_at' => $entryDate])->saveQuietly();
 
             $user->increment('roi_wallet_balance', $amount);
 
-            // Only advance last_saving_roi_payment_date if this date is more recent
+            // Only advance last_saving_roi_payment_date if this date is more recent.
             if (!$user->last_saving_roi_payment_date ||
                 $forDate->gt(Carbon::parse($user->last_saving_roi_payment_date))) {
                 $user->update(['last_saving_roi_payment_date' => $forDate->toDateString()]);
@@ -631,7 +638,64 @@ class SavingAccountService
                 'charge'           => 0,
                 'amount'           => $amount,
                 'final_amount'     => $amount,
-                'description'      => 'Daily saving ROI (' . $forDate->format('d M Y') . ')',
+                'description'      => $desc,
+                'status'           => 'credit',
+            ]);
+        });
+
+        return ['success' => true, 'amount' => $amount];
+    }
+
+    /**
+     * Directly credit ROI to any user — no eligibility, overdue, or duplicate checks.
+     * Supports both saving_roi (saving plan wallet) and roi (standard plan wallet).
+     */
+    public function manualCreditRoi(
+        User $user,
+        float $amount,
+        Carbon $forDate,
+        string $description,
+        string $walletType = 'saving_roi'
+    ): array {
+        $isSaving = ($walletType === 'saving_roi');
+
+        DB::transaction(function () use ($user, $amount, $forDate, $description, $walletType, $isSaving) {
+            $entryDate = $forDate->copy()->setTime(23, 59, 0);
+
+            $wallet = Wallet::create([
+                'user_id'          => $user->id,
+                'wallet_type'      => $walletType,
+                'balance'          => $amount,
+                'commission_type'  => $isSaving ? 'saving_roi' : 'Roi',
+                'level'            => '-',
+                'total_amount'     => $amount,
+                'wallet_src'       => $walletType,
+                'source_type'      => $isSaving ? 'saving' : 'roi',
+                'description'      => $description,
+                'transaction_type' => 'credit',
+            ]);
+
+            $wallet->forceFill(['created_at' => $entryDate, 'updated_at' => $entryDate])->saveQuietly();
+
+            $user->increment('roi_wallet_balance', $amount);
+
+            if ($isSaving) {
+                if (!$user->last_saving_roi_payment_date ||
+                    $forDate->gt(Carbon::parse($user->last_saving_roi_payment_date))) {
+                    $user->update(['last_saving_roi_payment_date' => $forDate->toDateString()]);
+                }
+            } else {
+                $user->update(['last_roi_payment_date' => $forDate->toDateString()]);
+            }
+
+            TransactionLog::create([
+                'user_id'          => $user->id,
+                'from_wallet_type' => $walletType,
+                'to_wallet_type'   => $walletType,
+                'charge'           => 0,
+                'amount'           => $amount,
+                'final_amount'     => $amount,
+                'description'      => $description,
                 'status'           => 'credit',
             ]);
         });

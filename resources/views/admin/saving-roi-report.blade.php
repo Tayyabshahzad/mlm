@@ -15,6 +15,12 @@
                     <li class="breadcrumb-item"><a href="#" class="text-muted">ROI Report</a></li>
                 </ul>
             </div>
+            <div class="d-flex align-items-center">
+                <button type="button" class="btn btn-warning font-weight-bold btn-sm"
+                        data-toggle="modal" data-target="#assignRoiModal">
+                    <i class="la la-plus-circle mr-1"></i> Assign Manual ROI to User
+                </button>
+            </div>
         </div>
     </div>
 
@@ -326,6 +332,165 @@
     </div>
 </div>
 
+{{-- ═══════════════════════════════════════════════════════════════════
+     Assign Manual ROI to User — Modal
+═══════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="assignRoiModal" tabindex="-1" role="dialog" aria-labelledby="assignRoiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#FFF3CD;">
+                <h5 class="modal-title font-weight-bold text-dark" id="assignRoiModalLabel">
+                    <i class="la la-plus-circle text-warning mr-2" style="font-size:1.3rem;"></i>
+                    Assign Manual ROI to User
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="la la-times"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('admin.saving.roi.manual.run') }}" id="assignRoiForm">
+                @csrf
+                <div class="modal-body">
+
+                    <div class="alert alert-info py-2 mb-4" style="font-size:0.9rem;">
+                        <i class="la la-info-circle mr-1"></i>
+                        <strong>Duplicate entries are allowed.</strong>
+                        If ROI was already assigned for the selected date, a new entry will be added without removing the old one.
+                    </div>
+
+                    {{-- ROI Type Radio --}}
+                    <div class="form-group">
+                        <label class="font-weight-bold font-size-sm">
+                            ROI Type <span class="text-danger">*</span>
+                        </label>
+                        <div class="d-flex align-items-center mt-1">
+                            <label class="radio radio-warning mr-6 mb-0">
+                                <input type="radio" name="roi_type" value="saving_roi" checked>
+                                <span></span>
+                                <span class="ml-2 font-weight-bold text-warning">Saving Plan ROI</span>
+                            </label>
+                            <label class="radio radio-primary mb-0">
+                                <input type="radio" name="roi_type" value="roi">
+                                <span></span>
+                                <span class="ml-2 font-weight-bold text-primary">Standard Plan ROI</span>
+                            </label>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                            <span class="text-warning font-weight-bold">Saving Plan</span> → credits <code>saving_roi</code> wallet &nbsp;|&nbsp;
+                            <span class="text-primary font-weight-bold">Standard Plan</span> → credits <code>roi</code> wallet
+                        </small>
+                    </div>
+
+                    {{-- User Select --}}
+                    <div class="form-group">
+                        <label class="font-weight-bold font-size-sm">
+                            Select User <span class="text-danger">*</span>
+                            <span class="badge badge-light-primary ml-2 font-size-xs">All active users</span>
+                        </label>
+                        <input type="text" id="modalUserSearch"
+                               class="form-control form-control-solid form-control-sm mb-2"
+                               placeholder="&#128269; Type username or name to filter...">
+                        <select name="user_ids[]" id="modalUserSelect"
+                                class="form-control form-control-solid"
+                                required size="7"
+                                style="border-radius:4px;">
+                            @foreach($allSavingUsers as $u)
+                                @php
+                                    $uBase    = max((float)$u->saving_total_deposited, (float)$u->roi_eligible_investment_amount);
+                                    $uTypeTag = $u->account_type === 'saving' ? 'Saving' : 'Standard';
+                                    $uBaseStr = $uBase > 0 ? '| Base: $' . number_format($uBase, 2) : '| No base';
+                                @endphp
+                                <option value="{{ $u->id }}"
+                                        data-search="{{ strtolower($u->username . ' ' . $u->name) }}"
+                                        data-type="{{ $u->account_type }}">
+                                    [{{ $uTypeTag }}] {{ $u->username }} - {{ $u->name }} {{ $uBaseStr }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Click a row to select. Showing all active users (saving + standard).</small>
+                    </div>
+
+                    <div class="row">
+                        {{-- ROI Date --}}
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold font-size-sm">
+                                    ROI Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" name="roi_date" id="modalRoiDate"
+                                       class="form-control form-control-solid"
+                                       value="{{ now()->format('Y-m-d') }}"
+                                       max="{{ now()->format('Y-m-d') }}"
+                                       required>
+                                <small class="text-muted">Cannot be a future date.</small>
+                            </div>
+                        </div>
+
+                        {{-- Percentage --}}
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold font-size-sm">
+                                    Percentage
+                                    <span class="text-muted font-size-xs">(optional)</span>
+                                </label>
+                                <div class="input-group input-group-solid">
+                                    <input type="number" name="custom_rate" id="modalRate"
+                                           class="form-control form-control-solid"
+                                           step="0.001" min="0.001" max="100"
+                                           placeholder="e.g. 0.1">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Applied on deposit base. Leave blank = system default.</small>
+                            </div>
+                        </div>
+
+                        {{-- Fixed Amount --}}
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold font-size-sm">
+                                    Fixed Amount
+                                    <span class="text-muted font-size-xs">(optional)</span>
+                                </label>
+                                <div class="input-group input-group-solid">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input type="number" name="fixed_amount" id="modalFixed"
+                                           class="form-control form-control-solid"
+                                           step="0.01" min="0.01"
+                                           placeholder="e.g. 5.00">
+                                </div>
+                                <small class="text-muted">If entered, this exact $ is credited (overrides %).</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Description --}}
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold font-size-sm">
+                            Description
+                            <span class="text-muted font-size-xs">(optional)</span>
+                        </label>
+                        <input type="text" name="description" id="modalDesc"
+                               class="form-control form-control-solid"
+                               maxlength="300"
+                               placeholder="e.g. Manual ROI — March bonus">
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light font-weight-bold" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning font-weight-bold" id="assignRoiSubmitBtn">
+                        <i class="la la-check mr-1"></i> Assign ROI
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section('page_js')
 <script>
 (function () {
@@ -381,6 +546,84 @@
     }
 
     updateState();
+})();
+
+// ── Assign ROI Modal ──────────────────────────────────────────────
+(function () {
+    const searchInput = document.getElementById('modalUserSearch');
+    const userSelect  = document.getElementById('modalUserSelect');
+    const assignForm  = document.getElementById('assignRoiForm');
+
+    // Live filter
+    if (searchInput && userSelect) {
+        searchInput.addEventListener('input', function () {
+            const q = this.value.toLowerCase().trim();
+            let firstVisible = null;
+            Array.from(userSelect.options).forEach(function (opt) {
+                const match = !q || (opt.dataset.search && opt.dataset.search.includes(q));
+                opt.hidden = !match;
+                if (!match && opt.selected) {
+                    opt.selected = false;
+                }
+                if (match && !firstVisible) firstVisible = opt;
+            });
+        });
+    }
+
+    // Confirm on submit
+    if (assignForm) {
+        assignForm.addEventListener('submit', function (e) {
+            if (!userSelect || !userSelect.value) {
+                e.preventDefault();
+                alert('Please select a user from the list.');
+                return;
+            }
+            const selectedText = userSelect.options[userSelect.selectedIndex]
+                ? userSelect.options[userSelect.selectedIndex].text.trim()
+                : '(unknown)';
+            const date    = document.getElementById('modalRoiDate')?.value || '';
+            const rate    = document.getElementById('modalRate')?.value;
+            const fixed   = document.getElementById('modalFixed')?.value;
+            const desc    = document.getElementById('modalDesc')?.value;
+            const roiType = assignForm.querySelector('input[name="roi_type"]:checked')?.value || 'saving_roi';
+            const typeLabel = roiType === 'saving_roi' ? 'Saving Plan ROI (saving_roi wallet)' : 'Standard Plan ROI (roi wallet)';
+
+            let modeStr = fixed ? 'Fixed: $' + parseFloat(fixed).toFixed(2)
+                        : rate  ? rate + '% of deposit base'
+                        :         'system default rate';
+
+            let msg = 'Assign ROI to:\n' + selectedText
+                    + '\n\nDate: ' + date
+                    + '\nType: ' + typeLabel
+                    + '\nMode: ' + modeStr;
+            if (desc) msg += '\nDescription: ' + desc;
+            msg += '\n\n⚠ Duplicate entries ARE allowed — a new record will be created even if ROI already exists for this date.\n\nProceed?';
+
+            if (!confirm(msg)) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Reset modal fields on open
+    const modalEl = document.getElementById('assignRoiModal');
+    if (modalEl) {
+        modalEl.addEventListener('show.bs.modal', function () {
+            if (searchInput) searchInput.value = '';
+            if (userSelect) {
+                Array.from(userSelect.options).forEach(function (opt) {
+                    opt.hidden = false;
+                    opt.selected = false;
+                });
+            }
+            const rate  = document.getElementById('modalRate');
+            const fixed = document.getElementById('modalFixed');
+            const desc  = document.getElementById('modalDesc');
+            if (rate)  rate.value  = '';
+            if (fixed) fixed.value = '';
+            if (desc)  desc.value  = '';
+        });
+    }
 })();
 
 // ── Chart ─────────────────────────────────────────────────────────

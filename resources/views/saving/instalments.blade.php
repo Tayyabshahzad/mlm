@@ -265,8 +265,7 @@
                                         <small class="text-muted">min: ${{ number_format($totalPayable, 2) }}</small>
                                     </label>
                                     <input type="number" step="0.01" name="submitted_amount" class="form-control"
-                                           placeholder="{{ number_format($defaultSubmit, 2) }}"
-                                           min="{{ $totalPayable }}"
+                                           placeholder="{{ number_format($defaultSubmit, 2) }}" 
                                            value="{{ old('submitted_amount', $defaultSubmit) }}" required>
                                     @error('submitted_amount')<div class="text-danger small">{{ $message }}</div>@enderror
                                 </div>

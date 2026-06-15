@@ -155,43 +155,84 @@ class SavingRoiReportController extends Controller
     public function manualRun(Request $request, SavingAccountService $savingAccountService)
     {
         $request->validate([
-            'user_ids'   => 'required|array|min:1',
-            'user_ids.*' => 'integer|exists:users,id',
-            'roi_date'   => 'required|date|before_or_equal:today',
+            'user_ids'     => 'required|array|min:1',
+            'user_ids.*'   => 'integer|exists:users,id',
+            'roi_date'     => 'required|date|before_or_equal:today',
+            'roi_type'     => 'required|in:saving_roi,roi',
+            'custom_rate'  => 'nullable|numeric|min:0.001|max:100',
+            'fixed_amount' => 'nullable|numeric|min:0.01',
+            'description'  => 'nullable|string|max:300',
         ]);
 
-        $forDate = \Carbon\Carbon::parse($request->roi_date);
-        $results = ['processed' => [], 'skipped' => [], 'failed' => []];
+        $forDate     = \Carbon\Carbon::parse($request->roi_date);
+        $roiType     = $request->roi_type;
+        $customRate  = $request->filled('custom_rate')  ? (float) $request->custom_rate  : null;
+        $fixedAmount = $request->filled('fixed_amount') ? (float) $request->fixed_amount : null;
+        $description = $request->filled('description')  ? trim($request->description)    : null;
+        $useFixed    = $fixedAmount !== null;
+        $results     = ['processed' => [], 'skipped' => [], 'failed' => []];
         $totalAmount = 0;
 
         foreach ($request->user_ids as $userId) {
             $user = User::find($userId);
-
             if (!$user) {
                 $results['failed'][] = ['id' => $userId, 'reason' => 'User not found'];
                 continue;
             }
 
-            $result = $savingAccountService->processSavingRoi($user, $forDate);
+            $typeLabel    = $roiType === 'saving_roi' ? 'Saving ROI' : 'Standard ROI';
+            $fallbackDesc = "{$typeLabel} — Manual ({$forDate->format('d M Y')})";
+
+            if ($useFixed) {
+                // Exact dollar amount — any wallet type, no eligibility checks
+                $result = $savingAccountService->manualCreditRoi(
+                    $user, $fixedAmount, $forDate,
+                    $description ?? $fallbackDesc,
+                    $roiType
+                );
+            } elseif ($roiType === 'saving_roi') {
+                // Saving ROI via % — forceManual bypasses eligibility & duplicate checks
+                $result = $savingAccountService->processSavingRoi(
+                    $user, $forDate, $customRate,
+                    $description ?? $fallbackDesc,
+                    forceManual: true
+                );
+            } else {
+                // Standard ROI via % — use roi_eligible_investment_amount as base
+                $base = max((float) $user->roi_eligible_investment_amount, (float) $user->saving_total_deposited);
+                if ($base <= 0) {
+                    $results['skipped'][] = ['username' => $user->username, 'reason' => 'No investment base for Standard ROI'];
+                    continue;
+                }
+                $rate   = $customRate ?? 0.1;
+                $amount = round(($base * $rate) / 100, 2);
+                if ($amount <= 0) {
+                    $results['skipped'][] = ['username' => $user->username, 'reason' => 'Calculated ROI is zero'];
+                    continue;
+                }
+                $desc   = $description ?? "Standard ROI {$rate}% of \${$base} ({$forDate->format('d M Y')})";
+                $result = $savingAccountService->manualCreditRoi($user, $amount, $forDate, $desc, 'roi');
+            }
 
             if ($result['success']) {
-                $results['processed'][] = [
-                    'username' => $user->username,
-                    'amount'   => $result['amount'],
-                ];
+                $results['processed'][] = ['username' => $user->username, 'amount' => $result['amount']];
                 $totalAmount += $result['amount'];
             } else {
-                $results['skipped'][] = [
-                    'username' => $user->username,
-                    'reason'   => $result['message'],
-                ];
+                $results['skipped'][] = ['username' => $user->username, 'reason' => $result['message']];
             }
         }
 
         $processedCount = count($results['processed']);
         $skippedCount   = count($results['skipped']);
 
-        $message = "Done for {$forDate->format('d M Y')}. Processed: {$processedCount} | Skipped: {$skippedCount} | Total ROI: $" . number_format($totalAmount, 2);
+        $typeLabel = $roiType === 'saving_roi' ? 'Saving ROI' : 'Standard ROI';
+        if ($useFixed) {
+            $modeStr = '$' . number_format($fixedAmount, 2) . ' fixed per user';
+        } else {
+            $modeStr = ($customRate ? "{$customRate}%" : 'default rate') . ' of base';
+        }
+
+        $message = "[{$typeLabel}] {$forDate->format('d M Y')} [{$modeStr}] — Processed: {$processedCount} | Skipped: {$skippedCount} | Total: $" . number_format($totalAmount, 2);
 
         if ($processedCount > 0) {
             return back()->with('roi_success', $message)->with('roi_results', $results);
