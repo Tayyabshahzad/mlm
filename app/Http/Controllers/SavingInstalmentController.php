@@ -466,12 +466,14 @@ class SavingInstalmentController extends Controller
             ->orderBy('instalment_number')
             ->get();
 
+        $inst1Deposited = false;
         foreach ($depositedInstalments as $inst) {
             $baseAmount = (float) ($inst->submitted_amount ?? $inst->amount);
             if ($inst->instalment_number === 1) {
                 $savingFee  = (float) ($user->saving_initial_fee ?? 0);
                 $savingPaid = (float) ($user->saving_initial_payment ?? 0);
                 $baseAmount += max(0.0, $savingPaid - $savingFee);
+                $inst1Deposited = true;
             }
             $this->savingAccountService->assignSavingCommissions($user, $baseAmount, $inst);
         }
