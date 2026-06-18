@@ -431,9 +431,21 @@ class SavingInstalmentController extends Controller
     // ADMIN — activate a saving account user
     // =========================================================================
 
-    public function adminActivate(User $user): RedirectResponse
+    public function adminActivate(Request $request, User $user): RedirectResponse
     {
         abort_unless($user->account_type === 'saving' || $user->saving_enrolled, 404);
+
+        $request->validate([
+            'monthly_amount' => 'nullable|numeric|min:0.01',
+        ]);
+
+        // Update all pending instalments to the admin-specified monthly amount
+        $monthlyAmount = $request->filled('monthly_amount') ? (float) $request->monthly_amount : null;
+        if ($monthlyAmount) {
+            $user->savingInstalments()
+                ->where('status', 'pending')
+                ->update(['amount' => $monthlyAmount]);
+        }
 
         if ($user->account_type === 'saving') {
             // Dedicated saving account user — enable login

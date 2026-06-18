@@ -114,20 +114,18 @@
                             @endif
 
                             @if(!$isFullyActive)
+                                @php
+                                    $defaultMonthly = $instalments->where('status', 'pending')->where('instalment_number', '>', 1)->first()?->amount
+                                        ?? $instalments->where('status', 'pending')->first()?->amount
+                                        ?? ($setting->saving_monthly_instalment ?? 10);
+                                @endphp
                                 <div class="mt-4">
-                                    @php
-                                        $confirmMsg = $inst1Confirmed
-                                            ? 'Activate account for ' . addslashes($savingUser->name) . '? First instalment is confirmed — ROI and commissions will start immediately.'
-                                            : 'Activate login access for ' . addslashes($savingUser->name) . '? NOTE: ROI and commissions will NOT start until the first instalment ($' . number_format($inst1Amount ?? 19, 2) . ') is fully confirmed.';
-                                    @endphp
-                                    <form method="POST" action="{{ route('admin.saving.activate', $savingUser) }}"
-                                          onsubmit="return confirm('{{ $confirmMsg }}')">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm font-weight-bold px-5 {{ $inst1Confirmed ? 'btn-success' : 'btn-warning' }}">
-                                            <i class="mr-1 fas fa-check"></i>
-                                            {{ $isEnrolled ? 'Activate Savings Enrollment' : 'Activate Account' }}
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            class="btn btn-sm font-weight-bold px-5 {{ $inst1Confirmed ? 'btn-success' : 'btn-warning' }}"
+                                            data-toggle="modal" data-target="#activateModal">
+                                        <i class="mr-1 fas fa-check"></i>
+                                        {{ $isEnrolled ? 'Activate Savings Enrollment' : 'Activate Account' }}
+                                    </button>
                                 </div>
                             @endif
                         </div>
@@ -509,5 +507,65 @@
         </div>
     </div>
 </div>
+
+{{-- ── Activate Modal ─────────────────────────────────────────────────── --}}
+@if(!$isFullyActive)
+<div class="modal fade" id="activateModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#FFF3CD;">
+                <h5 class="modal-title font-weight-bold text-dark">
+                    <i class="fas fa-check-circle text-warning mr-2"></i>
+                    {{ $isEnrolled ? 'Activate Savings Enrollment' : 'Activate Account' }}
+                </h5>
+                <button type="button" class="close" data-dismiss="modal"><i class="la la-times"></i></button>
+            </div>
+            <form method="POST" action="{{ route('admin.saving.activate', $savingUser) }}">
+                @csrf
+                <div class="modal-body">
+
+                    <div class="alert alert-warning py-2 mb-4" style="font-size:0.88rem;">
+                        <strong>Activating:</strong> {{ $savingUser->name }} ({{ $savingUser->username }})
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold font-size-sm">
+                            Monthly Instalment Amount <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group input-group-solid">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="number" name="monthly_amount"
+                                   class="form-control form-control-solid"
+                                   step="0.01" min="0.01"
+                                   value="{{ number_format((float)$defaultMonthly, 2, '.', '') }}"
+                                   required>
+                        </div>
+                        <small class="text-muted">
+                            All <strong>pending</strong> instalments will be updated to this fixed amount (confirmed instalments are not changed).
+                        </small>
+                    </div>
+
+                    @if(!$inst1Confirmed)
+                        <div class="alert alert-info py-2 mb-0" style="font-size:0.85rem;">
+                            <i class="la la-info-circle"></i>
+                            ROI and commissions will <strong>not</strong> start until instalment #1 is fully confirmed.
+                        </div>
+                    @endif
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light font-weight-bold" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn font-weight-bold {{ $inst1Confirmed ? 'btn-success' : 'btn-warning' }}">
+                        <i class="fas fa-check mr-1"></i> Confirm Activation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 @endsection
 

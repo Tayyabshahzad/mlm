@@ -810,7 +810,12 @@ class UserController extends Controller
                           ->orWhere('email', 'like', "%{$search}%");
                     });
                 })
-                ->orderBy('can_login', 'asc')
+                ->when($accountType === 'saving', function ($q) {
+                    // Pending activation (saving_registration_completed=0) always on top
+                    $q->orderBy('saving_registration_completed', 'asc');
+                }, function ($q) {
+                    $q->orderBy('can_login', 'asc');
+                })
                 ->orderBy('created_at', 'desc');
         };
 
