@@ -270,6 +270,21 @@
             <div class="card card-custom gutter-b">
                 <div class="py-5 border-0 card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title font-weight-bolder text-dark">Instalment Schedule</h3>
+                    @if($isFullyActive && !$inst1Confirmed)
+                        @php
+                            $editDefaultMonthly = $instalments->where('status', 'pending')->where('instalment_number', '>', 1)->first()?->amount
+                                ?? $instalments->where('status', 'pending')->first()?->amount
+                                ?? ($setting->saving_monthly_instalment ?? 10);
+                        @endphp
+                        <button type="button" class="btn btn-sm btn-light-primary font-weight-bold"
+                                data-toggle="modal" data-target="#editPlanModal">
+                            <i class="la la-edit mr-1"></i> Edit Plan Amount
+                        </button>
+                    @elseif($isFullyActive && $inst1Confirmed)
+                        <span class="badge badge-light-success font-size-sm px-3 py-2">
+                            <i class="la la-lock mr-1"></i> Plan Locked — Instalment #1 Paid
+                        </span>
+                    @endif
                 </div>
                 <div class="pt-0 card-body">
                     <div class="table-responsive">
@@ -376,15 +391,8 @@
                                                 </button>
                                             </form>
                                             <button class="mt-1 btn btn-sm btn-danger rounded-0" data-toggle="modal" data-target="#rejectModal{{ $inst->id }}">Reject</button>
-                                        @elseif($inst->status === 'confirmed' && $inst->deposit_deferred && !$inst->deposited_at)
-                                            <form method="POST" action="{{ route('admin.saving.force-deposit', $inst) }}" class="d-inline"
-                                                  onsubmit="return confirm('Process deferred deposit for Instalment #{{ $inst->instalment_number }}? This will credit the wallet now.')">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-warning rounded-0 text-dark">
-                                                    <i class="fas fa-bolt mr-1"></i> Process Now
-                                                </button>
-                                            </form>
 
+                                            {{-- Reject modal lives here, inside the submitted block --}}
                                             <div class="modal fade" id="rejectModal{{ $inst->id }}" tabindex="-1">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
@@ -406,6 +414,14 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                        @elseif($inst->status === 'confirmed' && $inst->deposit_deferred && !$inst->deposited_at)
+                                            <form method="POST" action="{{ route('admin.saving.force-deposit', $inst) }}" class="d-inline"
+                                                  onsubmit="return confirm('Process deferred deposit for Instalment #{{ $inst->instalment_number }}? This will credit the wallet now.')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-warning rounded-0 text-dark">
+                                                    <i class="fas fa-bolt mr-1"></i> Process Now
+                                                </button>
+                                            </form>
                                         @else
                                             <span class="text-muted">—</span>
                                         @endif
@@ -509,6 +525,60 @@
 </div>
 
 {{-- ── Activate Modal ─────────────────────────────────────────────────── --}}
+{{-- ── Edit Instalment Plan Modal (active user, inst#1 not yet paid) ──── --}}
+@if($isFullyActive && !$inst1Confirmed)
+<div class="modal fade" id="editPlanModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#E8F5E9;">
+                <h5 class="modal-title font-weight-bold text-dark">
+                    <i class="la la-edit text-success mr-2"></i>
+                    Edit Monthly Instalment Amount
+                </h5>
+                <button type="button" class="close" data-dismiss="modal"><i class="la la-times"></i></button>
+            </div>
+            <form method="POST" action="{{ route('admin.saving.update-schedule', $savingUser) }}">
+                @csrf
+                <div class="modal-body">
+
+                    <div class="alert alert-info py-2 mb-4" style="font-size:0.88rem;">
+                        <i class="la la-info-circle mr-1"></i>
+                        Only <strong>pending</strong> instalments will be updated to the new amount.<br>
+                        Any instalment the user has already submitted proof for will <strong>not</strong> be changed —
+                        confirm or reject it at the amount the user actually paid, then all future instalments will use the new amount.
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold font-size-sm">
+                            New Monthly Amount <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group input-group-solid">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="number" name="monthly_amount"
+                                   class="form-control form-control-solid"
+                                   step="0.01" min="0.01"
+                                   value="{{ number_format((float)$editDefaultMonthly, 2, '.', '') }}"
+                                   required>
+                        </div>
+                        <small class="text-muted">All pending instalments will be set to this fixed amount.</small>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light font-weight-bold" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary font-weight-bold"
+                            onclick="return confirm('Update all pending instalments for {{ addslashes($savingUser->name) }} to the new amount?')">
+                        <i class="la la-check mr-1"></i> Update Plan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 @if(!$isFullyActive)
 <div class="modal fade" id="activateModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-md" role="document">
@@ -543,7 +613,7 @@
                                    required>
                         </div>
                         <small class="text-muted">
-                            All <strong>pending</strong> instalments will be updated to this fixed amount (confirmed instalments are not changed).
+                            All <strong>pending</strong> instalments will be set to this amount. Already-submitted instalments are not changed — confirm or reject them at the amount the user actually paid.
                         </small>
                     </div>
 

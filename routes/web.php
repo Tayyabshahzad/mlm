@@ -309,6 +309,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
             Route::post('/instalment/{instalment}/reject', 'adminReject')->name('admin.saving.reject');
             Route::post('/instalment/{instalment}/force-deposit', 'adminForceDeposit')->name('admin.saving.force-deposit');
             Route::post('/{user}/activate', 'adminActivate')->name('admin.saving.activate');
+            Route::post('/{user}/update-schedule', 'adminUpdateSchedule')->name('admin.saving.update-schedule');
             Route::get('/{user}', 'adminShow')->name('admin.saving.show');  // wildcard — must stay last
         });
     });

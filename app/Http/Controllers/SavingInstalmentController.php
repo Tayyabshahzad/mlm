@@ -299,6 +299,17 @@ class SavingInstalmentController extends Controller
             'notes'            => 'Rejected: ' . $request->notes,
         ]);
 
+        // Sync amount to current plan — if admin changed the plan while this instalment
+        // was in 'submitted' state, it missed the bulk update. Align it now.
+        $currentPlanAmount = SavingInstalment::where('user_id', $instalment->user_id)
+            ->where('status', 'pending')
+            ->where('id', '!=', $instalment->id)
+            ->value('amount');
+
+        if ($currentPlanAmount && $currentPlanAmount != $instalment->amount) {
+            $instalment->update(['amount' => $currentPlanAmount]);
+        }
+
         // Remove proof media
         $instalment->clearMediaCollection('instalment_proof');
 
@@ -442,6 +453,8 @@ class SavingInstalmentController extends Controller
         // Update all pending instalments to the admin-specified monthly amount
         $monthlyAmount = $request->filled('monthly_amount') ? (float) $request->monthly_amount : null;
         if ($monthlyAmount) {
+            // Only update pending instalments — submitted ones keep their original amount
+            // so the admin can still confirm/reject at what the user actually paid.
             $user->savingInstalments()
                 ->where('status', 'pending')
                 ->update(['amount' => $monthlyAmount]);
@@ -500,6 +513,37 @@ class SavingInstalmentController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+
+    // =========================================================================
+    // ADMIN — update instalment schedule for an already-activated user
+    //         Only allowed while instalment #1 has not yet been confirmed.
+    // =========================================================================
+
+    public function adminUpdateSchedule(Request $request, User $user): RedirectResponse
+    {
+        abort_unless($user->account_type === 'saving' || $user->saving_enrolled, 404);
+
+        $request->validate([
+            'monthly_amount' => 'required|numeric|min:0.01',
+        ]);
+
+        // Block if instalment #1 is already confirmed — plan is locked
+        $inst1Confirmed = $user->savingInstalments()
+            ->where('instalment_number', 1)
+            ->where('status', 'confirmed')
+            ->exists();
+
+        if ($inst1Confirmed) {
+            return back()->with('error', 'Instalment plan cannot be changed — instalment #1 has already been paid.');
+        }
+
+        $monthlyAmount = (float) $request->monthly_amount;
+        $updated = $user->savingInstalments()
+            ->where('status', 'pending')
+            ->update(['amount' => $monthlyAmount]);
+
+        return back()->with('success', "Instalment plan updated — {$updated} pending instalment(s) set to \${$monthlyAmount}.");
     }
 
     // =========================================================================
