@@ -358,34 +358,34 @@
                         If ROI was already assigned for the selected date, a new entry will be added without removing the old one.
                     </div>
 
-                    {{-- ROI Type Radio --}}
+                    {{-- ROI Type --}}
                     <div class="form-group">
-                        <label class="font-weight-bold font-size-sm">
-                            ROI Type <span class="text-danger">*</span>
-                        </label>
-                        <div class="d-flex align-items-center mt-1">
-                            <label class="radio radio-warning mr-6 mb-0">
-                                <input type="radio" name="roi_type" value="saving_roi" checked>
-                                <span></span>
-                                <span class="ml-2 font-weight-bold text-warning">Saving Plan ROI</span>
+                        <label class="font-weight-bold font-size-sm">ROI Type <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-3 mt-2" style="gap:12px;">
+                            <label id="labelSavingRoi"
+                                   style="cursor:pointer;flex:1;border:2px solid #FFA800;background:#FFF8E7;border-radius:8px;padding:10px 16px;display:flex;align-items:center;">
+                                <input type="radio" name="roi_type" value="saving_roi" id="roiTypeSaving" checked style="margin-right:10px;">
+                                <div>
+                                    <div class="font-weight-bold text-warning" style="font-size:0.95rem;">Saving Plan ROI</div>
+                                    <small class="text-muted">Credits <code>saving_roi</code> wallet</small>
+                                </div>
                             </label>
-                            <label class="radio radio-primary mb-0">
-                                <input type="radio" name="roi_type" value="roi">
-                                <span></span>
-                                <span class="ml-2 font-weight-bold text-primary">Standard Plan ROI</span>
+                            <label id="labelStandardRoi"
+                                   style="cursor:pointer;flex:1;border:2px solid #dee2e6;background:#fff;border-radius:8px;padding:10px 16px;display:flex;align-items:center;">
+                                <input type="radio" name="roi_type" value="roi" id="roiTypeStandard" style="margin-right:10px;">
+                                <div>
+                                    <div class="font-weight-bold text-primary" style="font-size:0.95rem;">Standard Plan ROI</div>
+                                    <small class="text-muted">Credits <code>roi</code> wallet</small>
+                                </div>
                             </label>
                         </div>
-                        <small class="text-muted mt-1 d-block">
-                            <span class="text-warning font-weight-bold">Saving Plan</span> → credits <code>saving_roi</code> wallet &nbsp;|&nbsp;
-                            <span class="text-primary font-weight-bold">Standard Plan</span> → credits <code>roi</code> wallet
-                        </small>
                     </div>
 
                     {{-- User Select --}}
                     <div class="form-group">
                         <label class="font-weight-bold font-size-sm">
                             Select User <span class="text-danger">*</span>
-                            <span class="badge badge-light-primary ml-2 font-size-xs">All active users</span>
+                            <span id="userTypeBadge" class="badge badge-light-warning ml-2 font-size-xs">Saving account users</span>
                         </label>
                         <input type="text" id="modalUserSearch"
                                class="form-control form-control-solid form-control-sm mb-2"
@@ -396,18 +396,29 @@
                                 style="border-radius:4px;">
                             @foreach($allSavingUsers as $u)
                                 @php
-                                    $uBase    = max((float)$u->saving_total_deposited, (float)$u->roi_eligible_investment_amount);
-                                    $uTypeTag = $u->account_type === 'saving' ? 'Saving' : 'Standard';
+                                    $uBase    = (float)$u->saving_total_deposited;
                                     $uBaseStr = $uBase > 0 ? '| Base: $' . number_format($uBase, 2) : '| No base';
                                 @endphp
                                 <option value="{{ $u->id }}"
                                         data-search="{{ strtolower($u->username . ' ' . $u->name) }}"
-                                        data-type="{{ $u->account_type }}">
-                                    [{{ $uTypeTag }}] {{ $u->username }} - {{ $u->name }} {{ $uBaseStr }}
+                                        data-type="saving">
+                                    {{ $u->username }} - {{ $u->name }} {{ $uBaseStr }}
+                                </option>
+                            @endforeach
+                            @foreach($standardRoiUsers as $u)
+                                @php
+                                    $uBase    = max((float)$u->roi_eligible_investment_amount, (float)$u->saving_total_deposited);
+                                    $uBaseStr = $uBase > 0 ? '| Base: $' . number_format($uBase, 2) : '| No base';
+                                @endphp
+                                <option value="{{ $u->id }}"
+                                        data-search="{{ strtolower($u->username . ' ' . $u->name) }}"
+                                        data-type="standard"
+                                        hidden>
+                                    {{ $u->username }} - {{ $u->name }} {{ $uBaseStr }}
                                 </option>
                             @endforeach
                         </select>
-                        <small class="text-muted">Click a row to select. Showing all active users (saving + standard).</small>
+                        <small class="text-muted" id="userSelectHint">Click a row to select. Showing saving account users.</small>
                     </div>
 
                     <div class="row">
@@ -550,22 +561,65 @@
 
 // ── Assign ROI Modal ──────────────────────────────────────────────
 (function () {
-    const searchInput = document.getElementById('modalUserSearch');
-    const userSelect  = document.getElementById('modalUserSelect');
-    const assignForm  = document.getElementById('assignRoiForm');
+    const searchInput    = document.getElementById('modalUserSearch');
+    const userSelect     = document.getElementById('modalUserSelect');
+    const assignForm     = document.getElementById('assignRoiForm');
+    const userTypeBadge  = document.getElementById('userTypeBadge');
+    const userSelectHint = document.getElementById('userSelectHint');
+    const labelSaving    = document.getElementById('labelSavingRoi');
+    const labelStandard  = document.getElementById('labelStandardRoi');
 
-    // Live filter
+    // ── Filter users by ROI type ──────────────────────────────────
+    function applyTypeFilter() {
+        const selectedType = assignForm
+            ? (assignForm.querySelector('input[name="roi_type"]:checked')?.value || 'saving_roi')
+            : 'saving_roi';
+        const wantDataType = selectedType === 'saving_roi' ? 'saving' : 'standard';
+
+        // Reset search
+        if (searchInput) searchInput.value = '';
+
+        Array.from(userSelect.options).forEach(function (opt) {
+            const typeMatch = opt.dataset.type === wantDataType;
+            opt.hidden   = !typeMatch;
+            opt.selected = false;
+        });
+
+        // Badge and hint text
+        if (selectedType === 'saving_roi') {
+            if (userTypeBadge)  { userTypeBadge.textContent = 'Saving account users'; userTypeBadge.className = 'badge badge-light-warning ml-2 font-size-xs'; }
+            if (userSelectHint) userSelectHint.textContent = 'Click a row to select. Showing saving account users.';
+            if (labelSaving)    { labelSaving.style.borderColor = '#FFA800'; labelSaving.style.background = '#FFF8E7'; }
+            if (labelStandard)  { labelStandard.style.borderColor = '#dee2e6'; labelStandard.style.background = '#fff'; }
+        } else {
+            if (userTypeBadge)  { userTypeBadge.textContent = 'Standard plan users'; userTypeBadge.className = 'badge badge-light-primary ml-2 font-size-xs'; }
+            if (userSelectHint) userSelectHint.textContent = 'Click a row to select. Showing standard plan users.';
+            if (labelStandard)  { labelStandard.style.borderColor = '#3699FF'; labelStandard.style.background = '#EEF3FF'; }
+            if (labelSaving)    { labelSaving.style.borderColor = '#dee2e6'; labelSaving.style.background = '#fff'; }
+        }
+    }
+
+    // Listen to roi_type radio changes
+    if (assignForm) {
+        assignForm.querySelectorAll('input[name="roi_type"]').forEach(function (radio) {
+            radio.addEventListener('change', applyTypeFilter);
+        });
+    }
+
+    // Live search filter (respects current type)
     if (searchInput && userSelect) {
         searchInput.addEventListener('input', function () {
             const q = this.value.toLowerCase().trim();
-            let firstVisible = null;
+            const selectedType = assignForm
+                ? (assignForm.querySelector('input[name="roi_type"]:checked')?.value || 'saving_roi')
+                : 'saving_roi';
+            const wantDataType = selectedType === 'saving_roi' ? 'saving' : 'standard';
+
             Array.from(userSelect.options).forEach(function (opt) {
-                const match = !q || (opt.dataset.search && opt.dataset.search.includes(q));
-                opt.hidden = !match;
-                if (!match && opt.selected) {
-                    opt.selected = false;
-                }
-                if (match && !firstVisible) firstVisible = opt;
+                const typeMatch   = opt.dataset.type === wantDataType;
+                const searchMatch = !q || (opt.dataset.search && opt.dataset.search.includes(q));
+                opt.hidden = !(typeMatch && searchMatch);
+                if (opt.hidden && opt.selected) opt.selected = false;
             });
         });
     }
@@ -599,31 +653,32 @@
             if (desc) msg += '\nDescription: ' + desc;
             msg += '\n\n⚠ Duplicate entries ARE allowed — a new record will be created even if ROI already exists for this date.\n\nProceed?';
 
-            if (!confirm(msg)) {
-                e.preventDefault();
-            }
+            if (!confirm(msg)) e.preventDefault();
         });
     }
 
-    // Reset modal fields on open
+    // Reset modal on open
     const modalEl = document.getElementById('assignRoiModal');
     if (modalEl) {
         modalEl.addEventListener('show.bs.modal', function () {
-            if (searchInput) searchInput.value = '';
-            if (userSelect) {
-                Array.from(userSelect.options).forEach(function (opt) {
-                    opt.hidden = false;
-                    opt.selected = false;
-                });
-            }
+            // Reset radio to saving_roi
+            const savingRadio = document.getElementById('roiTypeSaving');
+            if (savingRadio) savingRadio.checked = true;
+
             const rate  = document.getElementById('modalRate');
             const fixed = document.getElementById('modalFixed');
             const desc  = document.getElementById('modalDesc');
             if (rate)  rate.value  = '';
             if (fixed) fixed.value = '';
             if (desc)  desc.value  = '';
+
+            // Apply filter for default type
+            applyTypeFilter();
         });
     }
+
+    // Run on page load to set initial state
+    applyTypeFilter();
 })();
 
 // ── Chart ─────────────────────────────────────────────────────────

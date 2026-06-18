@@ -67,13 +67,21 @@ class SavingRoiReportController extends Controller
                   ->orWhere(fn($q2) => $q2->where('saving_enrolled', true)->where('saving_enrollment_activated', true));
             })
             ->orderBy('username')
-            ->get(['id', 'username', 'name', 'last_saving_roi_payment_date']);
+            ->get(['id', 'username', 'name', 'account_type', 'saving_total_deposited', 'last_saving_roi_payment_date']);
+
+        // Standard plan users eligible for manual standard ROI (for modal dropdown)
+        $standardRoiUsers = User::where('account_type', '!=', 'saving')
+            ->where('roi_eligible_investment_amount', '>', 0)
+            ->where('blocked', false)
+            ->where('can_login', true)
+            ->orderBy('username')
+            ->get(['id', 'username', 'name', 'account_type', 'roi_eligible_investment_amount', 'saving_total_deposited']);
 
         $totalRoi     = array_sum($chartTotals);
         $totalEntries = $userTotals->sum('days_paid');
 
         return view('admin.saving-roi-report', compact(
-            'entries', 'userTotals', 'savingUsers', 'allSavingUsers',
+            'entries', 'userTotals', 'savingUsers', 'allSavingUsers', 'standardRoiUsers',
             'chartDates', 'chartTotals',
             'startDate', 'endDate', 'userId',
             'totalRoi', 'totalEntries'
@@ -198,8 +206,8 @@ class SavingRoiReportController extends Controller
                     forceManual: true
                 );
             } else {
-                // Standard ROI via % — use roi_eligible_investment_amount as base
-                $base = max((float) $user->roi_eligible_investment_amount, (float) $user->saving_total_deposited);
+                // Standard ROI via % — use roi_eligible_investment_amount only (not saving deposits)
+                $base = (float) $user->roi_eligible_investment_amount;
                 if ($base <= 0) {
                     $results['skipped'][] = ['username' => $user->username, 'reason' => 'No investment base for Standard ROI'];
                     continue;
