@@ -45,17 +45,26 @@ class UserOverviewController extends Controller
         // ── Wallet summary ────────────────────────────────────────────────────
         $wallets = Wallet::where('user_id', $user->id)->get();
 
+        // Segregate saving_instalment commissions from standard direct/indirect so
+        // both totals are accurate and not mixed on the admin overview card.
+        $regularDI = $wallets->where('wallet_type', 'direct_indirect')
+            ->filter(fn ($w) => is_null($w->source_type) || $w->source_type !== 'saving_instalment');
+
+        $savingCommDI = $wallets->where('wallet_type', 'direct_indirect')
+            ->filter(fn ($w) => $w->source_type === 'saving_instalment');
+
         $walletSummary = [
             'online'                => (float) $wallets->where('wallet_type', 'online')->sum('balance'),
-            'direct_indirect'       => (float) $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
-            'direct_balance'        => (float) $wallets->where('wallet_type', 'direct_indirect')->sum('direct_balance'),
-            'indirect_balance'      => (float) $wallets->where('wallet_type', 'direct_indirect')->sum('indirect_balance'),
+            'direct_indirect'       => (float) $regularDI->sum('balance'),
+            'direct_balance'        => (float) $regularDI->sum('direct_balance'),
+            'indirect_balance'      => (float) $regularDI->sum('indirect_balance'),
             'roi'                   => (float) $wallets->whereIn('wallet_type', ['roi', 'saving_roi'])->sum('balance'),
             'reward'                => (float) $wallets->where('wallet_type', 'reward')->sum('balance'),
             'profit_share'          => (float) $wallets->where('wallet_type', 'profit_share')->sum('balance'),
             'designation_incentive' => (float) $wallets->where('wallet_type', 'designation_incentive')->sum('balance'),
             'saving_deposit'        => (float) $wallets->where('wallet_type', 'saving')->sum('balance'),
             'saving_roi'            => (float) $wallets->where('wallet_type', 'saving_roi')->sum('balance'),
+            'saving_commission'     => (float) $savingCommDI->sum('balance'),
         ];
 
         $walletSummary['total_earnings'] = array_sum([
@@ -65,6 +74,7 @@ class UserOverviewController extends Controller
             $walletSummary['profit_share'],
             $walletSummary['designation_incentive'],
             $walletSummary['saving_roi'],
+            $walletSummary['saving_commission'],
         ]);
 
         // Saving-specific commission split

@@ -63,11 +63,19 @@ class WalletController extends Controller
         // Get all earning wallets (not online wallet which is for spending)
         $earningWalletTypes = ['direct_indirect', 'reward', 'roi', 'profit_share', 'binary'];
 
-        // Calculate breakdown by wallet type
+        // Calculate breakdown by wallet type.
+        // For direct_indirect, exclude saving_instalment commissions — those belong
+        // to the saving plan section and are tracked separately.
         $walletBreakdown = [];
         foreach ($earningWalletTypes as $walletType) {
             $walletBreakdown[$walletType] = Wallet::where('user_id', $userId)
                 ->where('wallet_type', $walletType)
+                ->when($walletType === 'direct_indirect', fn ($q) =>
+                    $q->where(fn ($i) =>
+                        $i->whereNull('source_type')
+                          ->orWhere('source_type', '!=', 'saving_instalment')
+                    )
+                )
                 ->sum('balance');
         }
 
@@ -98,8 +106,14 @@ class WalletController extends Controller
     }
 
     public function directIndirect(){
-        $walletQuery = Wallet::where('wallet_type','direct_indirect')
-            ->where('user_id', auth()->user()->id);
+        // Exclude saving_instalment commissions — they are shown on the dedicated
+        // saving-direct-indirect page and must not appear here.
+        $walletQuery = Wallet::where('wallet_type', 'direct_indirect')
+            ->where('user_id', auth()->user()->id)
+            ->where(fn ($q) =>
+                $q->whereNull('source_type')
+                  ->orWhere('source_type', '!=', 'saving_instalment')
+            );
         $totalEarning   = $walletQuery->sum('total_amount');
         $currentBalance = $walletQuery->sum('balance');
         $wallets = $walletQuery->orderBy('id', 'desc')
@@ -227,15 +241,24 @@ class WalletController extends Controller
             $wallet_type = $request->wallet_type;
         }
 
+        // Saving instalment commissions are a segregated pool managed by the saving
+        // commission transfer (transferSavingCommissionToOnline). Exclude them here so
+        // a regular direct/indirect transfer cannot drain the saving commission balance.
         $wallets = Wallet::where('user_id', $userId)
                     ->where('wallet_type', $wallet_type)
-                    ->get();  
+                    ->when($wallet_type === 'direct_indirect', fn ($q) =>
+                        $q->where(fn ($i) =>
+                            $i->whereNull('source_type')
+                              ->orWhere('source_type', '!=', 'saving_instalment')
+                        )
+                    )
+                    ->get();
 
-        $totalBalance = $wallets->sum('balance'); 
+        $totalBalance = $wallets->sum('balance');
 
         if ($totalBalance < $amountToTransfer) {
             return redirect()->back()->with('error', 'Insufficient balance in your '.$wallet_type.' wallet.');
-        }  
+        }
 
         DB::beginTransaction(); // Start DB transaction
         try {

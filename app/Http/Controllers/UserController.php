@@ -658,12 +658,16 @@ class UserController extends Controller
 
         $wallets = \App\Models\Wallet::where('user_id', $id)->get();
 
-        // Standard wallet summaries
+        // Standard wallet summaries — saving_instalment commissions are excluded from
+        // direct_indirect so they are not double-counted with the savingSummary below.
+        $regularDI = $wallets->where('wallet_type', 'direct_indirect')
+            ->filter(fn ($w) => is_null($w->source_type) || $w->source_type !== 'saving_instalment');
+
         $summary = [
             'online'               => $wallets->where('wallet_type', 'online')->sum('balance'),
-            'direct_indirect'      => $wallets->where('wallet_type', 'direct_indirect')->sum('balance'),
-            'direct_balance'       => $wallets->where('wallet_type', 'direct_indirect')->sum('direct_balance'),
-            'indirect_balance'     => $wallets->where('wallet_type', 'direct_indirect')->sum('indirect_balance'),
+            'direct_indirect'      => $regularDI->sum('balance'),
+            'direct_balance'       => $regularDI->sum('direct_balance'),
+            'indirect_balance'     => $regularDI->sum('indirect_balance'),
             'roi'                  => $wallets->where('wallet_type', 'roi')->sum('balance'),
             'reward'               => $wallets->where('wallet_type', 'reward')->sum('balance'),
             'profit_share'         => $wallets->where('wallet_type', 'profit_share')->sum('balance'),
