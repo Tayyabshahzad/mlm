@@ -732,7 +732,7 @@
                                 Amount <span class="text-danger">*</span>
                             </label>
                             <input type="number" class="mb-2 form-control form-control-sm form-control-solid"
-                             name="topUp_amount" min="5" max="{{ $onlineWallets->sum('balance') }}" step="0.01"
+                             name="topUp_amount" min="10" max="{{ $onlineWallets->sum('balance') }}" step="0.01"
                              required
                              placeholder="Enter Amount"
                              >
