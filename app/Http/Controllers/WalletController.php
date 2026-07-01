@@ -262,22 +262,22 @@ class WalletController extends Controller
 
         DB::beginTransaction(); // Start DB transaction
         try {
-            $chargePercentage = 5;
-            $chargeAmount = ($chargePercentage / 100) * $amountToTransfer;  
-            $finalTransferAmount = $amountToTransfer - $chargeAmount; 
+            $chargePercentage = 0; // Set to 0 to disable charge; change to e.g. 5 to re-enable a 5% fee
+            $chargeAmount = ($chargePercentage / 100) * $amountToTransfer;
+            $finalTransferAmount = $amountToTransfer - $chargeAmount;
 
             if ($finalTransferAmount <= 0) {
                 throw new \Exception('Transfer amount is too small after applying charges.');
-            }  
+            }
 
-            $remainingAmount = $amountToTransfer; 
+            $remainingAmount = $amountToTransfer;
             foreach ($wallets as $wallet) {
-                if ($remainingAmount <= 0) break; 
+                if ($remainingAmount <= 0) break;
                 $deductAmount = min($wallet->balance, $remainingAmount);
                 $wallet->balance -= $deductAmount;
-                $wallet->save(); 
+                $wallet->save();
                 $remainingAmount -= $deductAmount;
-            } 
+            }
 
             $onlineWallet = Wallet::firstOrCreate(
                 ['user_id' => $userId, 'wallet_type' => 'online', 'commission_type' => 'online', 'level' => 'online'],
@@ -285,31 +285,31 @@ class WalletController extends Controller
             );
 
             $onlineWallet->balance += $finalTransferAmount;
-            $onlineWallet->save(); 
+            $onlineWallet->save();
 
             $userName = Auth::user()->username;
 
-            $this->logTransaction( 
+            $this->logTransaction(
                 $userId,
                 'online',
                 $wallet_type,
                 $amountToTransfer,
                 $finalTransferAmount,
-                "You transferred {$amountToTransfer} PV (5% charge applied) from your {$wallet_type} Wallet to your Online Wallet via self-transfer.",  
+                "You transferred {$amountToTransfer} PV from your {$wallet_type} Wallet to your Online Wallet via self-transfer.",
                 'debit',
                 $chargeAmount
-            ); 
+            );
 
-            $this->logTransaction( 
-                $userId, 
+            $this->logTransaction(
+                $userId,
                 $wallet_type,
                 'online',
                 $amountToTransfer,
                 $finalTransferAmount,
-                "You have received {$finalTransferAmount} PV in your Online Wallet from your {$wallet_type} Wallet via online transfer.", 
+                "You have received {$finalTransferAmount} PV in your Online Wallet from your {$wallet_type} Wallet via online transfer.",
                 'credit',
                 $chargeAmount
-            ); 
+            );
 
             DB::commit(); // Commit all changes
             return redirect()->back()->with('success', "Funds transferred to Online Wallet! Transfer Amount: $amountToTransfer PV, Charge: $chargeAmount PV, Final Transferred: $finalTransferAmount PV");
@@ -365,7 +365,7 @@ class WalletController extends Controller
 
         DB::beginTransaction();
         try {
-            $chargePercent = 5;
+            $chargePercent = 0; // Set to 0 to disable charge; change to e.g. 5 to re-enable a 5% fee
             $chargeAmount  = round(($chargePercent / 100) * $amount, 2);
             $finalAmount   = round($amount - $chargeAmount, 2);
 
@@ -390,7 +390,7 @@ class WalletController extends Controller
             $onlineWallet->increment('balance', $finalAmount);
 
             $this->logTransaction($user->id, 'online', 'saving_commission', $amount, $finalAmount,
-                "Saving commission transfer to Online Wallet (5% charge applied)", 'debit', $chargeAmount);
+                "Saving commission transfer to Online Wallet", 'debit', $chargeAmount);
 
             $this->logTransaction($user->id, 'saving_commission', 'online', $amount, $finalAmount,
                 "Received \${$finalAmount} in Online Wallet from Saving Commissions", 'credit', $chargeAmount);
