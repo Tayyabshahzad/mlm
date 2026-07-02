@@ -85,7 +85,7 @@
                     data-toggle="modal" data-target="#savingCommissionTransferModal">
                     <i class="la la-exchange-alt"></i> Transfer to Online Wallet
                 </button>
-                <span class="text-muted font-size-sm ml-3">Minimum transfer: ${{ number_format($setting->saving_commission_min_transfer ?? 10.70, 2) }} &nbsp;|&nbsp; 5% charge applies</span>
+                <span class="text-muted font-size-sm ml-3">Minimum transfer: ${{ number_format($setting->saving_commission_min_transfer ?? 10.70, 2) }}</span>
             </div>
             @endif
 
@@ -137,7 +137,7 @@
                                         @endif
                                     </td>
                                     <td>Level {{ $entry->level }}</td>
-                                    <td class="font-weight-bold text-primary">${{ number_format($entry->balance, 2) }}</td>
+                                    <td class="font-weight-bold text-primary">${{ number_format($entry->direct_balance + $entry->indirect_balance, 2) }}</td>
                                     <td class="text-muted">
                                         {{ optional(\App\Models\User::find($entry->wallet_from))->username ?? '—' }}
                                     </td>
@@ -165,8 +165,6 @@
                     <button type="button" class="close" data-dismiss="modal"><i class="ki ki-close"></i></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-danger text-center font-weight-bold">5% charge applies on every transfer.</p>
-
                     <div class="form-group">
                         <label class="font-weight-bold">Transfer Amount ($)</label>
                         <input type="number" name="amount" id="transferAmount"
@@ -184,7 +182,6 @@
                     <div class="alert alert-light-info mt-3" id="transferPreview" style="display:none;">
                         <table class="table table-sm mb-0">
                             <tr><td class="text-muted">Transfer Amount</td><td class="font-weight-bold" id="previewAmount">—</td></tr>
-                            <tr><td class="text-muted">5% Charge</td><td class="text-danger" id="previewCharge">—</td></tr>
                             <tr><td class="text-muted font-weight-bold">You Receive</td><td class="text-success font-weight-bold" id="previewFinal">—</td></tr>
                         </table>
                     </div>
@@ -204,11 +201,8 @@ document.getElementById('transferAmount')?.addEventListener('input', function ()
     const amount = parseFloat(this.value);
     const preview = document.getElementById('transferPreview');
     if (!isNaN(amount) && amount > 0) {
-        const charge = Math.round(amount * 0.05 * 100) / 100;
-        const final  = Math.round((amount - charge) * 100) / 100;
         document.getElementById('previewAmount').textContent = '$' + amount.toFixed(2);
-        document.getElementById('previewCharge').textContent = '-$' + charge.toFixed(2);
-        document.getElementById('previewFinal').textContent  = '$' + final.toFixed(2);
+        document.getElementById('previewFinal').textContent  = '$' + amount.toFixed(2);
         preview.style.display = 'block';
     } else {
         preview.style.display = 'none';
