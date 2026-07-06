@@ -13,36 +13,52 @@ use Carbon\Carbon;
 
 class WithdrawalReportExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
-    protected $startDate;
-    protected $endDate;
-    protected $month;
-    protected $year;
+    protected $fromDate;
+    protected $toDate;
+    protected $username;
+    protected $minAmount;
+    protected $maxAmount;
     protected $status;
 
-    public function __construct($startDate = null, $endDate = null, $month = null, $year = null, $status = null)
-    {
-        $this->startDate = $startDate;
-        $this->endDate = $endDate;
-        $this->month = $month;
-        $this->year = $year;
-        $this->status = $status;
+    public function __construct(
+        $fromDate  = null,
+        $toDate    = null,
+        $username  = null,
+        $minAmount = null,
+        $maxAmount = null,
+        $status    = null
+    ) {
+        $this->fromDate  = $fromDate;
+        $this->toDate    = $toDate;
+        $this->username  = $username;
+        $this->minAmount = $minAmount;
+        $this->maxAmount = $maxAmount;
+        $this->status    = $status;
     }
 
     public function collection()
     {
-        $query = WithDrawalequest::with(['user', 'user.profile'])
+        $query = WithDrawalequest::with(['user', 'user.profile', 'user.parent'])
             ->orderBy('created_at', 'desc');
 
-        if ($this->startDate && $this->endDate) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($this->startDate)->startOfDay(),
-                Carbon::parse($this->endDate)->endOfDay()
-            ]);
-        } elseif ($this->month && $this->year) {
-            $query->whereMonth('created_at', $this->month)
-                  ->whereYear('created_at', $this->year);
+        if ($this->fromDate) {
+            $query->whereDate('created_at', '>=', $this->fromDate);
         }
-
+        if ($this->toDate) {
+            $query->whereDate('created_at', '<=', $this->toDate);
+        }
+        if ($this->username) {
+            $query->whereHas('user', fn ($q) =>
+                $q->where('username', 'like', '%'.$this->username.'%')
+                  ->orWhere('name', 'like', '%'.$this->username.'%')
+            );
+        }
+        if ($this->minAmount !== null && $this->minAmount !== '') {
+            $query->where('amount', '>=', (float) $this->minAmount);
+        }
+        if ($this->maxAmount !== null && $this->maxAmount !== '') {
+            $query->where('amount', '<=', (float) $this->maxAmount);
+        }
         if ($this->status && $this->status !== 'all') {
             $query->where('status', $this->status);
         }
@@ -54,23 +70,19 @@ class WithdrawalReportExport implements FromCollection, WithHeadings, WithMappin
     {
         return [
             'S#',
-            'User ID',
             'Username',
             'Full Name',
-            'Email',
             'Phone',
-            'Amount ($)',
-            'Transfer Fee',
-            'Net Amount',
-            'Request Type',
-            'Status',
             'Bank Name',
             'Account Title',
-            'Account Number',
-            'IBAN',
-            'CNIC',
+            'IBAN / Account No',
+            'USDT Address',
+            'Amount ($)',
+            'Request Type',
+            'Status',
+            'Sponsor (Parent)',
+            'Sponsor Username',
             'Request Date',
-            'Time',
         ];
     }
 
@@ -79,27 +91,24 @@ class WithdrawalReportExport implements FromCollection, WithHeadings, WithMappin
         static $counter = 0;
         $counter++;
 
-        $netAmount = $withdrawal->amount - ($withdrawal->transfer_fee ?? 0);
+        $profile = $withdrawal->user->profile;
+        $sponsor = $withdrawal->user->parent;
 
         return [
             $counter,
-            $withdrawal->user->id ?? 'N/A',
             $withdrawal->user->username ?? 'N/A',
             $withdrawal->user->name ?? 'N/A',
-            $withdrawal->user->email ?? 'N/A',
-            $withdrawal->user->profile->phone ?? 'N/A',
+            $profile->phone ?? 'N/A',
+            $profile->bank_name ?? 'N/A',
+            $profile->account_title ?? 'N/A',
+            $profile->ibn_number ?? 'N/A',
+            $profile->account_number ?? 'N/A',
             number_format($withdrawal->amount, 2),
-            number_format($withdrawal->transfer_fee ?? 0, 2),
-            number_format($netAmount, 2),
             ucfirst($withdrawal->request_type ?? 'N/A'),
             ucfirst($withdrawal->status),
-            $withdrawal->user->profile->bank_name ?? 'N/A',
-            $withdrawal->user->profile->account_title ?? 'N/A',
-            $withdrawal->user->profile->account_number ?? 'N/A',
-            $withdrawal->user->profile->ibn_number ?? 'N/A',
-            $withdrawal->user->profile->cnic ?? 'N/A',
-            Carbon::parse($withdrawal->created_at)->format('Y-m-d'),
-            Carbon::parse($withdrawal->created_at)->format('H:i:s'),
+            $sponsor->name ?? 'N/A',
+            $sponsor->username ?? 'N/A',
+            Carbon::parse($withdrawal->created_at)->format('Y-m-d H:i'),
         ];
     }
 
@@ -107,10 +116,10 @@ class WithdrawalReportExport implements FromCollection, WithHeadings, WithMappin
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
+                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => 'E74C3C']
+                    'startColor' => ['rgb' => '2C3E50'],
                 ],
             ],
         ];

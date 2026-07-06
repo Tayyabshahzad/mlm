@@ -227,19 +227,50 @@ class WithdrawalRequestController extends Controller
 
     public function requests(Request $request)
     {
-        $search = $request->get('search');
+        $username  = trim($request->get('username', ''));
+        $fromDate  = $request->get('from_date');
+        $toDate    = $request->get('to_date');
+        $minAmount = $request->get('min_amount');
+        $maxAmount = $request->get('max_amount');
+        $status    = $request->get('status');
 
-        $query = WithDrawalequest::with('user')
+        $query = WithDrawalequest::with(['user', 'user.profile', 'user.parent'])
             ->orderBy('created_at', 'desc');
 
-        if ($search) {
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('username', 'like', '%' . $search . '%');
-            });
+        if ($username) {
+            $query->whereHas('user', fn ($q) =>
+                $q->where('username', 'like', '%'.$username.'%')
+                  ->orWhere('name', 'like', '%'.$username.'%')
+            );
+        }
+        if ($fromDate) {
+            $query->whereDate('created_at', '>=', $fromDate);
+        }
+        if ($toDate) {
+            $query->whereDate('created_at', '<=', $toDate);
+        }
+        if ($minAmount !== null && $minAmount !== '') {
+            $query->where('amount', '>=', (float) $minAmount);
+        }
+        if ($maxAmount !== null && $maxAmount !== '') {
+            $query->where('amount', '<=', (float) $maxAmount);
+        }
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
         }
 
         $withDrawsRequests = $query->get();
-        return view('users.widthdrawls-request', compact('withDrawsRequests', 'search'));
+
+        $filters = [
+            'username'   => $username,
+            'from_date'  => $fromDate,
+            'to_date'    => $toDate,
+            'min_amount' => $minAmount,
+            'max_amount' => $maxAmount,
+            'status'     => $status,
+        ];
+
+        return view('users.widthdrawls-request', compact('withDrawsRequests', 'filters'));
     }
 
     public function getWithdrawalRequest($id)
@@ -402,25 +433,27 @@ class WithdrawalRequestController extends Controller
 
     public function exportWithdrawals(Request $request)
     {
-        $startDate = $request->get('start_date');
-        $endDate = $request->get('end_date');
-        $month = $request->get('month');
-        $year = $request->get('year');
-        $status = $request->get('status');
+        $fromDate  = $request->get('from_date');
+        $toDate    = $request->get('to_date');
+        $username  = $request->get('username');
+        $minAmount = $request->get('min_amount');
+        $maxAmount = $request->get('max_amount');
+        $status    = $request->get('status');
 
-        $filename = 'withdrawal_report_';
-
-        if ($startDate && $endDate) {
-            $filename .= Carbon::parse($startDate)->format('Ymd') . '_to_' . Carbon::parse($endDate)->format('Ymd');
-        } elseif ($month && $year) {
-            $filename .= Carbon::createFromDate($year, $month, 1)->format('F_Y');
+        $filename = 'withdrawals_';
+        if ($fromDate && $toDate) {
+            $filename .= Carbon::parse($fromDate)->format('Ymd') . '_to_' . Carbon::parse($toDate)->format('Ymd');
+        } elseif ($fromDate) {
+            $filename .= 'from_' . Carbon::parse($fromDate)->format('Ymd');
         } else {
             $filename .= Carbon::now()->format('Ymd_His');
         }
-
         $filename .= '.xlsx';
 
-        return Excel::download(new WithdrawalReportExport($startDate, $endDate, $month, $year, $status), $filename);
+        return Excel::download(
+            new WithdrawalReportExport($fromDate, $toDate, $username, $minAmount, $maxAmount, $status),
+            $filename
+        );
     }
 
     private function getWithdrawalMonthlyStats($month, $year)
