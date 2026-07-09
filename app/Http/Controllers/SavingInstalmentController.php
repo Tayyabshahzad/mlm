@@ -547,6 +547,74 @@ class SavingInstalmentController extends Controller
     }
 
     // =========================================================================
+    // ADMIN — adjust instalment plan AFTER instalments 1 & 2 are confirmed
+    // =========================================================================
+
+    public function showAdjustPlan(Request $request)
+    {
+        $selectedUser    = null;
+        $instalments     = collect();
+        $confirmedCount  = 0;
+
+        if ($request->filled('username')) {
+            $selectedUser = User::where('username', $request->username)
+                ->where(fn ($q) => $q->where('account_type', 'saving')->orWhere('saving_enrolled', true))
+                ->first();
+
+            if ($selectedUser) {
+                $instalments    = $selectedUser->savingInstalments()->orderBy('instalment_number')->get();
+                $confirmedCount = $instalments->whereIn('status', ['confirmed'])->count();
+            }
+        }
+
+        return view('admin.saving.adjust-plan', compact('selectedUser', 'instalments', 'confirmedCount'));
+    }
+
+    public function applyAdjustPlan(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'user_id'      => 'required|exists:users,id',
+            'add_to_inst1' => 'required|numeric|min:0',
+            'add_to_inst2' => 'required|numeric|min:0',
+            'admin_notes'  => 'nullable|string|max:500',
+        ], [
+            'add_to_inst1.min' => 'Instalment 1 addition must be 0 or greater.',
+            'add_to_inst2.min' => 'Instalment 2 addition must be 0 or greater.',
+        ]);
+
+        if ((float)$request->add_to_inst1 <= 0 && (float)$request->add_to_inst2 <= 0) {
+            return back()->with('error', 'At least one adjustment amount must be greater than zero.')->withInput();
+        }
+
+        $user = User::find($request->user_id);
+
+        try {
+            $result = $this->savingService->adjustInstalmentPlan(
+                user: $user,
+                addToInst1: (float) $request->add_to_inst1,
+                addToInst2: (float) $request->add_to_inst2,
+                adminNotes: $request->admin_notes ?? ''
+            );
+
+            $msg = implode(' | ', [
+                "Plan adjusted for {$user->username}.",
+                "Additional credited: \${$result['total_additional']}",
+                "New monthly rate: \${$result['new_monthly_amount']}",
+                "Future instalments updated: {$result['future_rows_updated']}",
+                "Commissions distributed to {$result['commissions_paid']} upline(s)",
+            ]);
+
+            return redirect()->route('admin.saving.show', $user)->with('success', $msg);
+
+        } catch (\InvalidArgumentException|\RuntimeException $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        } catch (\Throwable $e) {
+            \Log::error("adjustInstalmentPlan failed for user {$user->id}: " . $e->getMessage());
+            return back()->with('error', 'An unexpected error occurred. Please check the logs.')->withInput();
+        }
+    }
+
+    // =========================================================================
     // ADMIN — list enrolled standard users pending saving activation
     // =========================================================================
 

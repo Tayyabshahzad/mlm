@@ -509,6 +509,200 @@ class SavingAccountService
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Admin: Instalment Plan Adjustment
+    // -------------------------------------------------------------------------
+
+    /**
+     * Adjust the saving instalment plan for a user after instalments 1 and 2 are confirmed.
+     *
+     * Operation (inside a single DB transaction):
+     *  1. Update instalment 1 and 2 amounts (and submitted_amount / net_credited) by adding the
+     *     supplied per-instalment deltas.
+     *  2. Credit a saving wallet entry for the combined additional amount.
+     *  3. Increment saving_total_deposited and roi_eligible_investment_amount on the user.
+     *  4. Regenerate the scheduled amounts for all future (uncofirmed) instalments to the new
+     *     monthly rate (= new instalment-2 amount after adjustment).
+     *  5. Distribute upline commissions for the total additional credit.
+     *
+     * @param  User   $user
+     * @param  float  $addToInst1   Additional amount to add to instalment #1
+     * @param  float  $addToInst2   Additional amount to add to instalment #2
+     * @param  string $adminNotes
+     * @return array  Summary of changes made
+     */
+    public function adjustInstalmentPlan(
+        User $user,
+        float $addToInst1,
+        float $addToInst2,
+        string $adminNotes = ''
+    ): array {
+        if ($addToInst1 <= 0 && $addToInst2 <= 0) {
+            throw new \InvalidArgumentException('At least one adjustment amount must be greater than zero.');
+        }
+
+        $inst1 = SavingInstalment::where('user_id', $user->id)->where('instalment_number', 1)->first();
+        $inst2 = SavingInstalment::where('user_id', $user->id)->where('instalment_number', 2)->first();
+
+        if (!$inst1 || $inst1->status !== 'confirmed') {
+            throw new \RuntimeException('Instalment #1 must be confirmed before adjusting the plan.');
+        }
+        if (!$inst2 || $inst2->status !== 'confirmed') {
+            throw new \RuntimeException('Instalment #2 must be confirmed before adjusting the plan.');
+        }
+
+        $addToInst1 = round($addToInst1, 4);
+        $addToInst2 = round($addToInst2, 4);
+        $totalAdditional = round($addToInst1 + $addToInst2, 4);
+
+        // New monthly rate for future instalments = current inst2 amount + delta2
+        $newMonthlyAmount = round($inst2->amount + $addToInst2, 4);
+
+        return DB::transaction(function () use (
+            $user, $inst1, $inst2,
+            $addToInst1, $addToInst2,
+            $totalAdditional, $newMonthlyAmount, $adminNotes
+        ) {
+            // ── 1. Update confirmed instalment amounts ─────────────────────────
+            $this->applyInstalmentAmountAdjustment($inst1, $addToInst1);
+            $this->applyInstalmentAmountAdjustment($inst2, $addToInst2);
+
+            // ── 2. Credit saving wallet for the combined additional amount ─────
+            Wallet::create([
+                'user_id'         => $user->id,
+                'wallet_type'     => 'saving',
+                'balance'         => $totalAdditional,
+                'commission_type' => 'saving_deposit',
+                'level'           => '-',
+                'total_amount'    => $totalAdditional,
+                'wallet_src'      => 'saving_instalment',
+                'source_type'     => 'saving',
+                'description'     => "Admin plan adjustment: +\${$addToInst1} (inst#1), +\${$addToInst2} (inst#2). " . $adminNotes,
+                'transaction_type'=> 'credit',
+            ]);
+
+            // ── 3. Update user investment totals ───────────────────────────────
+            $user->increment('saving_total_deposited', $totalAdditional);
+            $user->increment('roi_eligible_investment_amount', $totalAdditional);
+
+            // ── 4. Regenerate future instalment amounts ────────────────────────
+            $futureCount = SavingInstalment::where('user_id', $user->id)
+                ->where('instalment_number', '>', 2)
+                ->whereNotIn('status', ['confirmed'])
+                ->update(['amount' => $newMonthlyAmount]);
+
+            // ── 5. Transaction log ─────────────────────────────────────────────
+            TransactionLog::create([
+                'user_id'          => $user->id,
+                'from_wallet_type' => 'admin_adjustment',
+                'to_wallet_type'   => 'saving',
+                'charge'           => 0,
+                'amount'           => $totalAdditional,
+                'final_amount'     => $totalAdditional,
+                'description'      => "Admin saving plan adjustment: +\${$addToInst1} (inst#1) + \${$addToInst2} (inst#2) = \${$totalAdditional} total. New monthly rate: \${$newMonthlyAmount}. {$adminNotes}",
+                'status'           => 'credit',
+            ]);
+
+            // ── 6. Distribute upline commissions for the additional amount ─────
+            $commissionsDistributed = $this->distributeAdjustmentCommissions(
+                $user, $totalAdditional,
+                "Plan adjustment commission (+\${$totalAdditional})"
+            );
+
+            Log::info("Saving plan adjusted: user={$user->id} username={$user->username} +inst1={$addToInst1} +inst2={$addToInst2} total={$totalAdditional} new_monthly={$newMonthlyAmount} future_rows_updated={$futureCount}");
+
+            return [
+                'old_inst1_amount'       => round($inst1->amount - $addToInst1, 4),
+                'old_inst2_amount'       => round($inst2->amount - $addToInst2, 4),
+                'new_inst1_amount'       => $inst1->fresh()->amount,
+                'new_inst2_amount'       => $inst2->fresh()->amount,
+                'new_monthly_amount'     => $newMonthlyAmount,
+                'total_additional'       => $totalAdditional,
+                'future_rows_updated'    => $futureCount,
+                'commissions_paid'       => $commissionsDistributed,
+            ];
+        });
+    }
+
+    /**
+     * Apply a delta to a single confirmed instalment's stored amounts.
+     */
+    private function applyInstalmentAmountAdjustment(SavingInstalment $instalment, float $delta): void
+    {
+        $instalment->update([
+            'amount'           => round($instalment->amount + $delta, 4),
+            'submitted_amount' => round(($instalment->submitted_amount ?? $instalment->amount) + $delta, 4),
+            'net_credited'     => round(($instalment->net_credited ?? $instalment->submitted_amount ?? $instalment->amount) + $delta, 4),
+        ]);
+    }
+
+    /**
+     * Distribute saving-tree commissions for an admin adjustment (not tied to any instalment row).
+     * Uses the same qualification rules and rates as the regular commission path.
+     * Returns the number of ancestors credited.
+     */
+    public function distributeAdjustmentCommissions(User $user, float $amount, string $reason = ''): int
+    {
+        $isEligible = $user->saving_registration_completed && (
+            ($user->account_type === 'saving' && $user->can_login) ||
+            ($user->saving_enrolled && $user->saving_enrollment_activated)
+        );
+
+        if (!$isEligible || $amount <= 0) {
+            return 0;
+        }
+
+        $setting   = Setting::first();
+        $ancestors = DB::table('referral_trees')
+            ->select('ancestor_id', 'level')
+            ->where('descendant_id', $user->id)
+            ->where('tree_type', 'saving')
+            ->whereBetween('level', [1, 7])
+            ->orderBy('level')
+            ->get();
+
+        $credited = 0;
+
+        foreach ($ancestors as $ancestor) {
+            $ancestorUser = User::where('blocked', false)->find($ancestor->ancestor_id);
+            if (!$ancestorUser) {
+                continue;
+            }
+            if ($ancestorUser->account_type === 'saving' && !$ancestorUser->saving_registration_completed) {
+                continue;
+            }
+            if (!$this->qualifiesForSavingLevel($ancestorUser, $ancestor->level)) {
+                continue;
+            }
+
+            $fieldName  = "saving_commission_l{$ancestor->level}";
+            $percentage = ($setting && isset($setting->$fieldName))
+                ? (float) $setting->$fieldName
+                : (self::SAVING_COMMISSION_RATES[$ancestor->level] ?? 0);
+
+            if ($percentage <= 0) {
+                continue;
+            }
+
+            $commissionAmount = round(($amount * $percentage) / 100, 4);
+            $type             = $ancestor->level === 1 ? 'direct' : 'indirect';
+
+            $this->walletService->assignCommission(
+                userId: $ancestorUser->id,
+                amount: $commissionAmount,
+                type: $type,
+                sourceUser: $user,
+                level: $ancestor->level,
+                percentage: $percentage,
+                sourceType: 'saving_instalment'
+            );
+
+            $credited++;
+        }
+
+        return $credited;
+    }
+
     /**
      * 7x7 check for saving commissions.
      * Returns true if the user has enough direct saving referrals to unlock commission at $level.

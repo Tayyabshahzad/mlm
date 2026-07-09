@@ -1221,6 +1221,14 @@
                                             </a>
                                         </li>
 
+                                        <li class="menu-item menu-item-submenu @if(request()->is('admin/saving-accounts/adjust-plan*')) menu-item-active @endif" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('admin.saving.adjust-plan') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Adjust Instalment Plan</span>
+                                            </a>
+                                        </li>
+
                                         <li class="menu-item menu-item-submenu" aria-haspopup="true"
                                             data-menu-toggle="hover">
                                             <a href="{{ route('admin.roi-settings.user-plans') }}" class="menu-link menu-toggle">
