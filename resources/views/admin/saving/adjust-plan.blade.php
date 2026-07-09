@@ -5,11 +5,11 @@
 <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
 
     {{-- Subheader --}}
-    <div class="subheader py-2 py-lg-6 subheader-solid" id="kt_subheader">
-        <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
-            <div class="d-flex align-items-baseline mr-5">
-                <h5 class="text-dark font-weight-bold my-1 mr-5">Adjust Instalment Plan</h5>
-                <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 my-2 font-size-sm">
+    <div class="py-2 subheader py-lg-6 subheader-solid" id="kt_subheader">
+        <div class="flex-wrap container-fluid d-flex align-items-center justify-content-between flex-sm-nowrap">
+            <div class="mr-5 d-flex align-items-baseline">
+                <h5 class="my-1 mr-5 text-dark font-weight-bold">Adjust Instalment Plan</h5>
+                <ul class="p-0 my-2 breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold font-size-sm">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-muted">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.saving.index') }}" class="text-muted">Saving Accounts</a></li>
                     <li class="breadcrumb-item"><a href="#" class="text-muted">Adjust Plan</a></li>
@@ -39,10 +39,10 @@
                 {{-- Step 1: User Search --}}
                 <div class="col-xl-4">
                     <div class="card card-custom gutter-b">
-                        <div class="card-header border-0 py-4">
+                        <div class="py-4 border-0 card-header">
                             <h3 class="card-title font-weight-bolder">Step 1 — Select User</h3>
                         </div>
-                        <div class="card-body pt-0">
+                        <div class="pt-0 card-body">
                             <form method="GET" action="{{ route('admin.saving.adjust-plan') }}">
                                 <div class="form-group">
                                     <label class="font-weight-bold">Username</label>
@@ -51,7 +51,7 @@
                                         value="{{ request('username') }}" autofocus>
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fas fa-search mr-1"></i> Load User
+                                    <i class="mr-1 fas fa-search"></i> Load User
                                 </button>
                             </form>
                         </div>
@@ -59,9 +59,9 @@
 
                     {{-- Info box --}}
                     <div class="card card-custom gutter-b bg-light-info">
-                        <div class="card-body py-4 px-5">
-                            <h6 class="font-weight-bold text-info mb-3"><i class="fas fa-info-circle mr-1"></i> How it works</h6>
-                            <ul class="font-size-sm text-dark mb-0" style="padding-left:1.1rem;">
+                        <div class="px-5 py-4 card-body">
+                            <h6 class="mb-3 font-weight-bold text-info"><i class="mr-1 fas fa-info-circle"></i> How it works</h6>
+                            <ul class="mb-0 font-size-sm text-dark" style="padding-left:1.1rem;">
                                 <li>Both instalments <strong>#1 and #2</strong> must be <strong>confirmed</strong>.</li>
                                 <li>Enter the <strong>additional amount</strong> to add to each paid instalment.</li>
                                 <li>All <strong>future pending instalments</strong> (3–25) will be regenerated at the new rate.</li>
@@ -77,8 +77,8 @@
                 <div class="col-xl-8">
                     @if(!$selectedUser && !request('username'))
                         <div class="card card-custom gutter-b">
-                            <div class="card-body py-10 text-center text-muted">
-                                <i class="fas fa-user-circle fa-3x mb-3 text-muted"></i>
+                            <div class="py-10 text-center card-body text-muted">
+                                <i class="mb-3 fas fa-user-circle fa-3x text-muted"></i>
                                 <p>Enter a username on the left to load the user's instalment plan.</p>
                             </div>
                         </div>
@@ -91,33 +91,33 @@
                     @else
                         {{-- Current plan overview --}}
                         <div class="card card-custom gutter-b">
-                            <div class="card-header border-0 py-4">
+                            <div class="py-4 border-0 card-header">
                                 <h3 class="card-title font-weight-bolder">
-                                    Current Plan — {{ $selectedUser->name }}
-                                    <small class="text-muted font-size-sm ml-2">(@{{ $selectedUser->username }})</small>
+                                    Current Plan —  {{ $selectedUser->name }}
+                                    <small class="ml-2 text-muted font-size-sm">(@ {{ $selectedUser->username }})</small>
                                 </h3>
                                 <div class="card-toolbar">
                                     <a href="{{ route('admin.saving.show', $selectedUser) }}" class="btn btn-sm btn-light-primary">
-                                        <i class="fas fa-external-link-alt mr-1"></i> View Profile
+                                        <i class="mr-1 fas fa-external-link-alt"></i> View Profile
                                     </a>
                                 </div>
                             </div>
-                            <div class="card-body pt-0">
-                                <div class="row mb-5">
+                            <div class="pt-0 card-body">
+                                <div class="mb-5 row">
                                     <div class="col-md-4">
-                                        <div class="p-3 rounded bg-light-success text-center">
+                                        <div class="p-3 text-center rounded bg-light-success">
                                             <div class="font-size-h4 font-weight-bold text-success">${{ number_format($selectedUser->saving_total_deposited, 2) }}</div>
                                             <div class="text-muted font-size-sm">Total Deposited</div>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="p-3 rounded bg-light-primary text-center">
+                                        <div class="p-3 text-center rounded bg-light-primary">
                                             <div class="font-size-h4 font-weight-bold text-primary">${{ number_format($selectedUser->roi_eligible_investment_amount, 2) }}</div>
                                             <div class="text-muted font-size-sm">ROI Eligible Amount</div>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="p-3 rounded bg-light-warning text-center">
+                                        <div class="p-3 text-center rounded bg-light-warning">
                                             <div class="font-size-h4 font-weight-bold text-warning">{{ $confirmedCount }}</div>
                                             <div class="text-muted font-size-sm">Confirmed Instalments</div>
                                         </div>
@@ -171,7 +171,7 @@
 
                         @if(!$canAdjust)
                             <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <i class="mr-2 fas fa-exclamation-triangle"></i>
                                 Instalments #1 and #2 must both be <strong>confirmed</strong> before an adjustment can be made.
                                 <br>
                                 Status — Inst #1: <strong>{{ ucfirst($inst1?->status ?? 'not found') }}</strong>,
@@ -179,12 +179,12 @@
                             </div>
                         @else
                         <div class="card card-custom gutter-b">
-                            <div class="card-header border-0 py-4">
+                            <div class="py-4 border-0 card-header">
                                 <h3 class="card-title font-weight-bolder text-primary">
-                                    <i class="fas fa-edit text-primary mr-2"></i> Step 2 — Enter Adjustment
+                                    <i class="mr-2 fas fa-edit text-primary"></i> Step 2 — Enter Adjustment
                                 </h3>
                             </div>
-                            <div class="card-body pt-0">
+                            <div class="pt-0 card-body">
                                 <form method="POST" action="{{ route('admin.saving.adjust-plan.apply') }}" id="adjustForm">
                                     @csrf
                                     <input type="hidden" name="user_id" value="{{ $selectedUser->id }}">
@@ -234,9 +234,9 @@
                                     </div>
 
                                     {{-- Live preview --}}
-                                    <div class="alert alert-light-primary border border-primary mt-4" id="previewBox">
-                                        <h6 class="font-weight-bold mb-3"><i class="fas fa-calculator mr-1"></i> Preview</h6>
-                                        <div class="row text-center">
+                                    <div class="mt-4 border alert alert-light-primary border-primary" id="previewBox">
+                                        <h6 class="mb-3 font-weight-bold"><i class="mr-1 fas fa-calculator"></i> Preview</h6>
+                                        <div class="text-center row">
                                             <div class="col">
                                                 <div class="font-size-sm text-muted">New Inst #1</div>
                                                 <div class="font-size-h5 font-weight-bold text-primary" id="prevInst1">
@@ -270,12 +270,12 @@
                                         </div>
                                     </div>
 
-                                    <div class="d-flex justify-content-end mt-5">
-                                        <a href="{{ route('admin.saving.adjust-plan') }}" class="btn btn-light mr-3">
+                                    <div class="mt-5 d-flex justify-content-end">
+                                        <a href="{{ route('admin.saving.adjust-plan') }}" class="mr-3 btn btn-light">
                                             Cancel
                                         </a>
                                         <button type="submit" class="btn btn-danger font-weight-bold" id="submitBtn">
-                                            <i class="fas fa-check mr-1"></i> Apply Adjustment
+                                            <i class="mr-1 fas fa-check"></i> Apply Adjustment
                                         </button>
                                     </div>
                                 </form>

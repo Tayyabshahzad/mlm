@@ -589,7 +589,7 @@ class SavingInstalmentController extends Controller
         $user = User::find($request->user_id);
 
         try {
-            $result = $this->savingService->adjustInstalmentPlan(
+            $result = $this->savingAccountService->adjustInstalmentPlan(
                 user: $user,
                 addToInst1: (float) $request->add_to_inst1,
                 addToInst2: (float) $request->add_to_inst2,
