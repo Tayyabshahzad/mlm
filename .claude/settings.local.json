@@ -19,7 +19,9 @@
       "Bash(Out-Null)",
       "PowerShell(New-Item -ItemType Directory -Force -Path \"d:\\\\laragon\\\\www\\\\mlm\\\\resources\\\\views\\\\admin\\\\users\")",
       "Bash(php -r \"echo count\\(file\\('d:/laragon/www/mlm/resources/views/admin/saving/show.blade.php'\\)\\);\")",
-      "Bash(php -r \"require 'd:/laragon/www/mlm/vendor/autoload.php'; echo 'autoload ok';\")"
+      "Bash(php -r \"require 'd:/laragon/www/mlm/vendor/autoload.php'; echo 'autoload ok';\")",
+      "Bash(php artisan tinker '--execute= *)",
+      "Bash(php artisan *)"
     ],
     "deny": [],
     "ask": []

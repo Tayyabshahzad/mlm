@@ -434,6 +434,80 @@
                 </div>
             </div>
 
+            {{-- ── Payment Proof Screenshot Gallery ────────────────────────── --}}
+            @php
+                $instalmentWithProofs = $instalments->filter(fn($i) => $i->proofScreenshot());
+            @endphp
+            @if($instalmentWithProofs->isNotEmpty())
+            <div class="card card-custom gutter-b">
+                <div class="py-5 border-0 card-header">
+                    <h3 class="card-title font-weight-bolder text-dark">
+                        <i class="fas fa-images text-primary mr-2"></i>
+                        Payment Proof Gallery
+                        <span class="ml-2 badge badge-light-primary">{{ $instalmentWithProofs->count() }} screenshot{{ $instalmentWithProofs->count() > 1 ? 's' : '' }}</span>
+                    </h3>
+                </div>
+                <div class="pt-0 card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-head-custom table-vertical-center" style="font-size:.88rem;">
+                            <thead>
+                                <tr>
+                                    <th style="width:50px;">#</th>
+                                    <th>Due Date</th>
+                                    <th>Submitted</th>
+                                    <th>Confirmed On</th>
+                                    <th>Status</th>
+                                    <th>Screenshot</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($instalmentWithProofs as $pi)
+                                <tr>
+                                    <td><strong>{{ $pi->instalment_number }}</strong></td>
+                                    <td class="text-nowrap">{{ $pi->due_date->format('d M Y') }}</td>
+                                    <td>
+                                        @if($pi->submitted_amount)
+                                            <span class="font-weight-bold">${{ number_format($pi->submitted_amount, 2) }}</span>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-nowrap text-muted" style="font-size:.8rem;">
+                                        {{ $pi->confirmed_at?->format('d M Y H:i') ?? '—' }}
+                                    </td>
+                                    <td>
+                                        @switch($pi->status)
+                                            @case('confirmed') <span class="badge badge-light-success">Confirmed</span> @break
+                                            @case('submitted') <span class="badge badge-light-warning">Awaiting</span> @break
+                                            @default           <span class="badge badge-light-secondary">{{ ucfirst($pi->status) }}</span>
+                                        @endswitch
+                                    </td>
+                                    <td>
+                                        <a href="{{ $pi->proofScreenshot() }}" data-lightbox="proof-gallery"
+                                           data-title="Instalment #{{ $pi->instalment_number }} — ${{ number_format($pi->submitted_amount ?? 0, 2) }}"
+                                           target="_blank">
+                                            <img src="{{ $pi->proofScreenshot() }}"
+                                                 style="height:56px;width:80px;object-fit:cover;border-radius:4px;border:1px solid #e4e6ef;cursor:pointer;"
+                                                 title="Click to view full size"
+                                                 onerror="this.style.display='none'">
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ $pi->proofScreenshot() }}" target="_blank"
+                                           class="btn btn-sm btn-light-primary">
+                                            <i class="fas fa-expand-alt mr-1"></i> View Full
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- ── Pending Instalment Commissions ──────────────────────────── --}}
             @if($pendingCommissions->isNotEmpty())
             <div class="card card-custom gutter-b">

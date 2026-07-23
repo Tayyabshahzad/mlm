@@ -104,6 +104,13 @@ class SavingInstalmentController extends Controller
             );
         }
 
+        if ($submitted > $totalRequired) {
+            return back()->withInput()->with('error',
+                "Amount too high. You entered $" . number_format($submitted, 2) .
+                " but the exact required amount is $" . number_format($totalRequired, 2) . ". Please enter the correct amount."
+            );
+        }
+
         // Early payment is allowed for any instalment.
         // ROI for early-paid instalments will only start from their original due_date
         // (handled by roi_eligible_from in confirmAndDeposit).

@@ -262,11 +262,17 @@
                                 <div class="mb-4 col-md-4">
                                     <label class="font-weight-bold">
                                         Amount Submitted ($)
-                                        <small class="text-muted">min: ${{ number_format($totalPayable, 2) }}</small>
+                                        <span class="badge badge-light-primary ml-1">Required: ${{ number_format($totalPayable, 2) }}</span>
                                     </label>
                                     <input type="number" step="0.01" name="submitted_amount" class="form-control"
-                                           placeholder="{{ number_format($defaultSubmit, 2) }}" 
+                                           placeholder="{{ number_format($totalPayable, 2) }}"
+                                           min="{{ $totalPayable }}"
+                                           max="{{ $totalPayable }}"
                                            value="{{ old('submitted_amount', $defaultSubmit) }}" required>
+                                    <div class="mt-1 text-muted font-size-sm">
+                                        <i class="fas fa-lock fa-xs mr-1"></i>
+                                        Exact amount required — no more, no less.
+                                    </div>
                                     @error('submitted_amount')<div class="text-danger small">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="mb-4 col-md-12">
