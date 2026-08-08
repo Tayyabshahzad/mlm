@@ -319,18 +319,18 @@
 .gn-banner {
     position: relative; overflow: hidden;
     border-radius: var(--r3); margin-bottom: 1.8rem;
-    background: #06010f;
-    border: 1px solid rgba(0,210,255,.18);
-    box-shadow: 0 0 0 1px rgba(0,210,255,.05), 0 24px 64px rgba(0,0,0,.65);
+    background: #010f04;
+    border: 1px solid rgba(0,165,80,.30);
+    box-shadow: 0 0 0 1px rgba(0,165,80,.08), 0 24px 64px rgba(0,0,0,.65);
 }
 /* layered glow */
 .gn-banner::before {
     content: '';
     position: absolute; inset: 0;
     background:
-        radial-gradient(ellipse 700px 420px at 10% 60%, rgba(79,0,180,.72) 0%, transparent 62%),
-        radial-gradient(ellipse 500px 320px at 95% 5%,  rgba(0,140,200,.55) 0%, transparent 58%),
-        radial-gradient(ellipse 350px 280px at 50% 100%,rgba(0,210,150,.18) 0%, transparent 55%);
+        radial-gradient(ellipse 700px 420px at 10% 60%, rgba(0,100,40,.80) 0%, transparent 62%),
+        radial-gradient(ellipse 500px 320px at 95% 5%,  rgba(0,165,80,.45) 0%, transparent 58%),
+        radial-gradient(ellipse 350px 280px at 50% 100%,rgba(255,255,255,.06) 0%, transparent 55%);
     pointer-events: none;
 }
 /* subtle diagonal lines */
@@ -366,14 +366,14 @@
 .gn-tag {
     display: inline-flex; align-items: center; gap: .45rem;
     font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--cyan);
-    background: rgba(0,210,255,.1); border: 1px solid rgba(0,210,255,.22);
+    color: #4ade80;
+    background: rgba(0,165,80,.14); border: 1px solid rgba(0,165,80,.35);
     border-radius: 50px; padding: .3rem .9rem;
     margin-bottom: .85rem;
 }
 .gn-tag-pulse {
     width: 7px; height: 7px; border-radius: 50%;
-    background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+    background: #4ade80; box-shadow: 0 0 8px #4ade80;
     animation: gn-pulse 1.6s ease infinite;
 }
 @keyframes gn-pulse {
@@ -388,7 +388,7 @@
     color: var(--t1); margin-bottom: .75rem;
 }
 .gn-headline .gn-hl-accent {
-    background: linear-gradient(135deg, var(--cyan), var(--purple), var(--pink));
+    background: linear-gradient(135deg, #4ade80, #86efac, #ffffff);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
 }
@@ -411,12 +411,43 @@
     border-radius: var(--r1); padding: .5rem 1rem; line-height: 1.5;
 }
 
-/* right art — piggy bank emoji art */
+/* right art */
 .gn-art {
     flex-shrink: 0;
     display: flex; flex-direction: column;
     align-items: center; gap: .8rem;
     position: relative;
+}
+
+/* ── Pakistan Flag ───────────────────────────────── */
+.pak-flag-wrap {
+    display: flex; align-items: flex-start; gap: 0;
+    filter: drop-shadow(0 8px 28px rgba(0,0,0,.55)) drop-shadow(0 0 20px rgba(0,165,80,.30));
+}
+.pak-pole {
+    width: 5px;
+    height: 132px;
+    background: linear-gradient(180deg, #d4af37 0%, #b8960c 40%, #d4af37 70%, #b8960c 100%);
+    border-radius: 3px 3px 2px 2px;
+    box-shadow: 1px 0 3px rgba(0,0,0,.40);
+    flex-shrink: 0;
+}
+.pak-flag-svg {
+    width: 160px; height: 107px;
+    transform-origin: left center;
+    animation: pak-wave 2.8s ease-in-out infinite;
+}
+@keyframes pak-wave {
+    0%   { transform: perspective(400px) rotateY(0deg)   skewY(.4deg); }
+    25%  { transform: perspective(400px) rotateY(4deg)   skewY(-.6deg); }
+    50%  { transform: perspective(400px) rotateY(0deg)   skewY(.5deg); }
+    75%  { transform: perspective(400px) rotateY(-3deg)  skewY(-.4deg); }
+    100% { transform: perspective(400px) rotateY(0deg)   skewY(.4deg); }
+}
+.pak-flag-label {
+    font-size: .68rem; font-weight: 700; color: rgba(255,255,255,.50);
+    letter-spacing: .10em; text-transform: uppercase; text-align: center;
+    margin-top: .2rem;
 }
 .gn-emoji-stack {
     position: relative; width: 120px; height: 120px;
@@ -710,34 +741,34 @@
     position: relative; overflow: hidden;
     border-radius: var(--r3); padding: 2.2rem 2.5rem;
     margin-bottom: 1.8rem;
-    background: linear-gradient(135deg, #0e0028, #180040, #0a002e);
-    border: 1px solid rgba(155,89,255,.25);
-    box-shadow: var(--glow-purple), var(--s3);
+    background: linear-gradient(135deg, #010f04, #022b0e, #010f04);
+    border: 1px solid rgba(0,165,80,.30);
+    box-shadow: 0 0 0 1px rgba(0,165,80,.06), 0 20px 60px rgba(0,0,0,.60);
 }
 .ann-card::before {
     content: '';
     position: absolute; inset: 0;
     background:
-        radial-gradient(ellipse 600px 300px at 100% 50%, rgba(155,89,255,.2) 0%, transparent 65%),
-        radial-gradient(ellipse 300px 250px at 0% 0%,    rgba(0,210,255,.12) 0%, transparent 55%);
+        radial-gradient(ellipse 600px 300px at 100% 50%, rgba(0,165,80,.18) 0%, transparent 65%),
+        radial-gradient(ellipse 300px 250px at 0% 0%,    rgba(255,255,255,.05) 0%, transparent 55%);
     pointer-events: none;
 }
 .ann-card::after {
-    content: '🎯';
+    content: '🇵🇰';
     position: absolute; right: 2.5rem; top: 50%;
     transform: translateY(-50%);
-    font-size: 7rem; opacity: .07; pointer-events: none;
+    font-size: 7rem; opacity: .15; pointer-events: none;
 }
 .ann-inner { position: relative; z-index: 1; }
 .ann-eyebrow {
     font-size: .62rem; font-weight: 700; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--purple);
+    text-transform: uppercase; color: #4ade80;
     margin-bottom: .6rem;
     display: flex; align-items: center; gap: .4rem;
 }
 .ann-eyebrow::before {
     content: ''; width: 16px; height: 2px;
-    background: var(--purple); border-radius: 2px;
+    background: #4ade80; border-radius: 2px;
 }
 .ann-title {
     font-size: 1.55rem; font-weight: 900; color: var(--t1);
@@ -759,7 +790,7 @@
 .ann-chip:hover { background: rgba(255,255,255,.1); }
 .ann-chip-val { font-size: 1.35rem; font-weight: 900; color: var(--t1); letter-spacing: -.02em; }
 .ann-chip-lbl { font-size: .62rem; color: var(--t2); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-top: .25rem; }
-.ann-chip.hi .ann-chip-val { color: var(--gold); text-shadow: 0 0 16px rgba(255,213,96,.4); }
+.ann-chip.hi .ann-chip-val { color: #4ade80; text-shadow: 0 0 16px rgba(74,222,128,.4); }
 
 /* ═══════════════════════════════════════════════════════════
    TARGETS GRID  (circular progress)
@@ -1000,30 +1031,30 @@
         {{-- GVI NETWORK BANNER --}}
         <div class="gn-banner">
 
-            {{-- layered glow: cyan left, purple right, green bottom --}}
+            {{-- layered glow: green left, light-green right, white bottom --}}
             <div style="position:absolute;inset:0;pointer-events:none;
                 background:
-                    radial-gradient(ellipse 680px 400px at 5%  62%, rgba(0,100,220,.50) 0%, transparent 60%),
-                    radial-gradient(ellipse 520px 330px at 93% 8%,  rgba(155,89,255,.42) 0%, transparent 58%),
-                    radial-gradient(ellipse 380px 280px at 50% 108%,rgba(0,230,152,.14) 0%, transparent 55%);"></div>
+                    radial-gradient(ellipse 680px 400px at 5%  62%, rgba(0,120,50,.55) 0%, transparent 60%),
+                    radial-gradient(ellipse 520px 330px at 93% 8%,  rgba(0,165,80,.38) 0%, transparent 58%),
+                    radial-gradient(ellipse 380px 280px at 50% 108%,rgba(255,255,255,.06) 0%, transparent 55%);"></div>
 
             {{-- subtle grid overlay --}}
             <div style="position:absolute;inset:0;pointer-events:none;
                 background-image:
-                    repeating-linear-gradient(60deg, rgba(0,210,255,.018) 0,rgba(0,210,255,.018) 1px,transparent 1px,transparent 28px),
-                    repeating-linear-gradient(-60deg,rgba(155,89,255,.018) 0,rgba(155,89,255,.018) 1px,transparent 1px,transparent 28px);"></div>
+                    repeating-linear-gradient(60deg, rgba(0,165,80,.022) 0,rgba(0,165,80,.022) 1px,transparent 1px,transparent 28px),
+                    repeating-linear-gradient(-60deg,rgba(255,255,255,.014) 0,rgba(255,255,255,.014) 1px,transparent 1px,transparent 28px);"></div>
 
-            {{-- floating particles: cyan / purple / green --}}
+            {{-- floating particles: green / white --}}
             <div class="gn-confetti">
-                <div class="gn-dot" style="left:4%;  top:52%; width:5px;height:5px; background:#00d2ff; --dur:3.4s;--del:.0s"></div>
-                <div class="gn-dot" style="left:14%; top:26%; width:3px;height:3px; background:#9b59ff; --dur:2.8s;--del:.7s"></div>
-                <div class="gn-dot" style="left:24%; top:71%; width:5px;height:5px; background:#00e698; --dur:3.9s;--del:1.2s"></div>
-                <div class="gn-dot" style="left:37%; top:17%; width:4px;height:4px; background:#00d2ff; --dur:3.0s;--del:.4s"></div>
-                <div class="gn-dot" style="left:52%; top:79%; width:3px;height:3px; background:#9b59ff; --dur:3.6s;--del:.9s"></div>
-                <div class="gn-dot" style="left:63%; top:36%; width:5px;height:5px; background:#4f8fff; --dur:4.1s;--del:.2s"></div>
-                <div class="gn-dot" style="left:76%; top:61%; width:3px;height:3px; background:#00e698; --dur:3.2s;--del:1.5s"></div>
-                <div class="gn-dot" style="left:85%; top:21%; width:4px;height:4px; background:#00d2ff; --dur:2.6s;--del:.6s"></div>
-                <div class="gn-dot" style="left:94%; top:67%; width:3px;height:3px; background:#9b59ff; --dur:3.7s;--del:1.0s"></div>
+                <div class="gn-dot" style="left:4%;  top:52%; width:5px;height:5px; background:#4ade80; --dur:3.4s;--del:.0s"></div>
+                <div class="gn-dot" style="left:14%; top:26%; width:3px;height:3px; background:#ffffff; --dur:2.8s;--del:.7s"></div>
+                <div class="gn-dot" style="left:24%; top:71%; width:5px;height:5px; background:#00a550; --dur:3.9s;--del:1.2s"></div>
+                <div class="gn-dot" style="left:37%; top:17%; width:4px;height:4px; background:#4ade80; --dur:3.0s;--del:.4s"></div>
+                <div class="gn-dot" style="left:52%; top:79%; width:3px;height:3px; background:#ffffff; --dur:3.6s;--del:.9s"></div>
+                <div class="gn-dot" style="left:63%; top:36%; width:5px;height:5px; background:#00a550; --dur:4.1s;--del:.2s"></div>
+                <div class="gn-dot" style="left:76%; top:61%; width:3px;height:3px; background:#86efac; --dur:3.2s;--del:1.5s"></div>
+                <div class="gn-dot" style="left:85%; top:21%; width:4px;height:4px; background:#ffffff; --dur:2.6s;--del:.6s"></div>
+                <div class="gn-dot" style="left:94%; top:67%; width:3px;height:3px; background:#4ade80; --dur:3.7s;--del:1.0s"></div>
             </div>
 
             <div class="gn-inner">
@@ -1032,97 +1063,75 @@
                 <div>
                     <div class="gn-tag">
                         <span class="gn-tag-pulse"></span>
-                        Live &nbsp;·&nbsp; Global Visioners International
+                        79th Independence Day &nbsp;·&nbsp; 14 August 2026
                     </div>
 
                     <div class="gn-headline">
-                        Build Your Network.<br>
-                        <span class="gn-hl-accent">Grow Your Wealth.</span>
+                        Pakistan Zindabad! ☪<br>
+                        <span class="gn-hl-accent">Jashn-e-Azadi Mubarak.</span>
                     </div>
 
                     <div class="gn-body">
-                        Welcome to <strong>GVI</strong> — your gateway to financial freedom through smart monthly savings and a powerful
-                        <strong>7-level referral network</strong>. Every instalment you confirm grows your capital, earns
-                        <strong>daily ROI</strong>, and automatically rewards every upline level in your chain.<br><br>
-                        Refer, grow, and let your <strong>network work for you</strong> — every single day.
+                        <strong>GVI</strong> ki taraf se tamam members ko <strong>79ویں یومِ آزادی</strong> ki dil ki gehraiyon se mubarakbaad!
+                        Pakistan ki tarah <strong>GVI</strong> ka safar bhi umeed, mehnat aur yaqeen ki buniyad par qaim hai.<br><br>
+                        Is mubarak mauke par aap apne <strong>saving plan</strong> ko mazboot karein aur apni <strong>network team</strong>
+                        ko inspire karein — milkar ham sab ka mustaqbil roshan hai.
                     </div>
 
                     <div class="gn-quote">
-                        ✦ &nbsp;"Your network is your net worth — invest in both." &nbsp;·&nbsp; GVI Saving Plan
+                        ☪ &nbsp;"Aik qaum, aik manzil — GVI k sath apna mustaqbil sanwaren." &nbsp;·&nbsp; 14 August 2026
                     </div>
                 </div>
 
-                {{-- Right: Network Node Art --}}
+                {{-- Right: Animated Pakistan Flag --}}
                 <div class="gn-art">
-                    <div style="position:relative; width:138px; height:138px; display:flex; align-items:center; justify-content:center;">
 
-                        {{-- spinning outer ring --}}
-                        <div style="position:absolute; inset:-10px; border-radius:50%;
-                             border:1.5px dashed rgba(0,210,255,.22);
-                             animation:gn-spin 14s linear infinite;"></div>
+                    {{-- Waving Pakistan Flag SVG --}}
+                    <div class="pak-flag-wrap">
+                        <div class="pak-pole"></div>
+                        <svg class="pak-flag-svg" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                {{-- Wave displacement filter --}}
+                                <filter id="pak-wave-f" x="-2%" y="-5%" width="108%" height="115%">
+                                    <feTurbulence type="fractalNoise" baseFrequency="0.02 0.10"
+                                                  numOctaves="3" seed="4" result="noise">
+                                        <animate attributeName="baseFrequency"
+                                                 dur="3.2s"
+                                                 values="0.020 0.10;0.030 0.07;0.020 0.10"
+                                                 repeatCount="indefinite"/>
+                                    </feTurbulence>
+                                    <feDisplacementMap in="SourceGraphic" in2="noise"
+                                                       scale="7" xChannelSelector="R" yChannelSelector="G"/>
+                                </filter>
+                                {{-- Star clip so it stays inside flag --}}
+                                <clipPath id="flag-clip">
+                                    <rect x="0" y="0" width="180" height="120"/>
+                                </clipPath>
+                            </defs>
 
-                        {{-- conic glow ring --}}
-                        <div style="position:absolute; inset:0; border-radius:50%;
-                             background:conic-gradient(rgba(0,210,255,.10),rgba(155,89,255,.12),rgba(0,230,152,.08),rgba(0,210,255,.10));
-                             animation:gn-spin 9s linear infinite;"></div>
+                            <g filter="url(#pak-wave-f)" clip-path="url(#flag-clip)">
+                                {{-- White vertical stripe (left 1/4) --}}
+                                <rect x="0" y="0" width="45" height="120" fill="#ffffff"/>
 
-                        {{-- center node --}}
-                        <div style="position:relative; z-index:3; width:68px; height:68px; border-radius:50%;
-                             background:rgba(0,210,255,.08); border:2px solid rgba(0,210,255,.45);
-                             box-shadow:0 0 0 8px rgba(0,210,255,.06),0 0 32px rgba(0,210,255,.38);
-                             display:flex; align-items:center; justify-content:center;">
-                            <i class="fas fa-globe-americas" style="font-size:1.9rem;color:#00d2ff;filter:drop-shadow(0 0 8px #00d2ff);"></i>
-                        </div>
+                                {{-- Green field (right 3/4) --}}
+                                <rect x="45" y="0" width="135" height="120" fill="#01411C"/>
 
-                        {{-- satellite user nodes --}}
-                        <div style="position:absolute;top:2px;left:50%;transform:translateX(-50%);
-                             width:28px;height:28px;border-radius:50%;
-                             background:rgba(155,89,255,.14);border:1px solid rgba(155,89,255,.42);
-                             box-shadow:0 0 10px rgba(155,89,255,.28);
-                             display:flex;align-items:center;justify-content:center;color:#9b59ff;font-size:.65rem;z-index:2;">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div style="position:absolute;top:22%;right:2px;
-                             width:28px;height:28px;border-radius:50%;
-                             background:rgba(0,230,152,.12);border:1px solid rgba(0,230,152,.38);
-                             box-shadow:0 0 10px rgba(0,230,152,.25);
-                             display:flex;align-items:center;justify-content:center;color:#00e698;font-size:.65rem;z-index:2;">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div style="position:absolute;bottom:22%;right:2px;
-                             width:28px;height:28px;border-radius:50%;
-                             background:rgba(79,143,255,.13);border:1px solid rgba(79,143,255,.38);
-                             box-shadow:0 0 10px rgba(79,143,255,.25);
-                             display:flex;align-items:center;justify-content:center;color:#4f8fff;font-size:.65rem;z-index:2;">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
-                             width:28px;height:28px;border-radius:50%;
-                             background:rgba(255,182,0,.12);border:1px solid rgba(255,182,0,.38);
-                             box-shadow:0 0 10px rgba(255,182,0,.25);
-                             display:flex;align-items:center;justify-content:center;color:#ffb600;font-size:.65rem;z-index:2;">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div style="position:absolute;bottom:22%;left:2px;
-                             width:28px;height:28px;border-radius:50%;
-                             background:rgba(255,79,163,.12);border:1px solid rgba(255,79,163,.35);
-                             box-shadow:0 0 10px rgba(255,79,163,.22);
-                             display:flex;align-items:center;justify-content:center;color:#ff4fa3;font-size:.65rem;z-index:2;">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div style="position:absolute;top:22%;left:2px;
-                             width:28px;height:28px;border-radius:50%;
-                             background:rgba(0,210,255,.12);border:1px solid rgba(0,210,255,.35);
-                             box-shadow:0 0 10px rgba(0,210,255,.22);
-                             display:flex;align-items:center;justify-content:center;color:#00d2ff;font-size:.65rem;z-index:2;">
-                            <i class="fas fa-user"></i>
-                        </div>
+                                {{-- Crescent moon: white outer circle minus green inner circle --}}
+                                <circle cx="104" cy="60" r="27" fill="#ffffff"/>
+                                <circle cx="118" cy="57" r="22" fill="#01411C"/>
 
+                                {{-- 5-pointed star --}}
+                                {{-- Center: (134, 46), outer r=11, inner r=4.5 --}}
+                                <polygon fill="#ffffff"
+                                    points="134,35 136.8,43.5 145.5,43.6 138.7,48.9 141.1,57.5 134,52.6 126.9,57.5 129.3,48.9 122.5,43.6 131.2,43.5"/>
+                            </g>
+                        </svg>
                     </div>
 
-                    <div class="gn-badge-row mt-2">
-                        <span class="gn-badge" style="border-color:rgba(0,210,255,.35);color:#00d2ff;">⬡ 7-Level Network</span>
-                        <span class="gn-badge" style="border-color:rgba(155,89,255,.35);color:#9b59ff;">◈ Saving Plan</span>
+                    <div class="pak-flag-label">🇵🇰 Pakistan Zindabad</div>
+
+                    <div class="gn-badge-row mt-1">
+                        <span class="gn-badge" style="border-color:rgba(0,165,80,.40);color:#4ade80;">☪ 14 August 2026</span>
                     </div>
                     <div class="gn-badge-row mt-1">
                         <span class="gn-badge" style="border-color:rgba(0,230,152,.35);color:#00e698;">↑ Daily ROI</span>
@@ -1465,27 +1474,31 @@
         </div>
 
         {{-- Announcement --}}
-        {{-- <div class="ann-card">
+        <div class="ann-card">
             <div class="ann-inner">
-                <div class="ann-eyebrow">Announcement</div>
-                <div class="ann-title">Second Level Reward Increased!</div>
-                <div class="ann-desc">We've upgraded the Second Level Reward to boost your earnings potential. This enhanced structure helps you grow your network and maximize returns.</div>
+                <div class="ann-eyebrow">🇵🇰 Special Announcement — Jashn-e-Azadi 2026</div>
+                <div class="ann-title">79ویں یومِ آزادی مبارک! — 14 August 2026</div>
+                <div class="ann-desc">
+                    GVI family ki taraf se aap tamam members ko Pakistan ka 79واں یوم آزادی mubarak ho!
+                    Is mubarak din apne saving plan ko review karen, apni team ko motivate karen, aur mil kar apna financial future roshan karen.
+                    Pakistan ki tarah GVI ka safar bhi azm, mehnat aur umeed ki dastan hai.
+                </div>
                 <div class="ann-chips">
-                    <div class="ann-chip">
-                        <div class="ann-chip-val">$260</div>
-                        <div class="ann-chip-lbl">Previous</div>
+                    <div class="ann-chip hi">
+                        <div class="ann-chip-val">1947</div>
+                        <div class="ann-chip-lbl">Saal-e-Azadi</div>
                     </div>
                     <div class="ann-chip hi">
-                        <div class="ann-chip-val">$350</div>
-                        <div class="ann-chip-lbl">New Reward</div>
+                        <div class="ann-chip-val">79th</div>
+                        <div class="ann-chip-lbl">Independence Year</div>
                     </div>
                     <div class="ann-chip hi">
-                        <div class="ann-chip-val">+35%</div>
-                        <div class="ann-chip-lbl">Increase</div>
+                        <div class="ann-chip-val">14 Aug</div>
+                        <div class="ann-chip-lbl">Jashn-e-Azadi</div>
                     </div>
                 </div>
             </div>
-        </div> --}}
+        </div>
 
         {{-- ─── SECTION: Targets ────────────────────── --}}
         <div class="sec-head">

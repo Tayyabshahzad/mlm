@@ -161,7 +161,6 @@
                     <button type="button" class="close" data-dismiss="modal"><i class="ki ki-close"></i></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-center text-danger">5% charge applies on every transfer.</p>
                     <div class="form-group">
                         <label class="font-weight-bold">Transfer Amount</label>
                         <input type="number" name="amount" class="form-control form-control-sm form-control-solid"

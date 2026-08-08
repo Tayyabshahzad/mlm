@@ -262,7 +262,7 @@ class WalletController extends Controller
 
         DB::beginTransaction(); // Start DB transaction
         try {
-            $chargePercentage = 0; // Set to 0 to disable charge; change to e.g. 5 to re-enable a 5% fee
+            $chargePercentage = 0;
             $chargeAmount = ($chargePercentage / 100) * $amountToTransfer;
             $finalTransferAmount = $amountToTransfer - $chargeAmount;
 
@@ -365,7 +365,7 @@ class WalletController extends Controller
 
         DB::beginTransaction();
         try {
-            $chargePercent = 0; // Set to 0 to disable charge; change to e.g. 5 to re-enable a 5% fee
+            $chargePercent = 0;
             $chargeAmount  = round(($chargePercent / 100) * $amount, 2);
             $finalAmount   = round($amount - $chargeAmount, 2);
 

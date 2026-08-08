@@ -11,10 +11,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                <p class="text-center text-danger">
-                    5% Will charge on every transaction 
-                </p>
-                    <div class="form-group row"> 
+                    <div class="form-group row">
                         <div class="col-lg-12 col-xl-12">
                             <label for="" class="font-weight-bold mr-2">
                                 Transfer Amount

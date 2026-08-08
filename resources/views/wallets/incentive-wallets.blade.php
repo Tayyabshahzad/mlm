@@ -79,7 +79,6 @@
 
             <div class="alert alert-info rounded-0 mb-4">
                 <i class="fas fa-info-circle mr-2"></i>
-                A <strong>5% charge</strong> applies on every transfer to Online Wallet. Minimum transfer is <strong>$5</strong>.
                 This wallet income is included in your <strong>2x plan</strong>.
             </div>
 
@@ -145,9 +144,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-center text-danger font-weight-bold">
-                        <i class="fas fa-exclamation-triangle mr-1"></i> 5% charge applies on every transfer
-                    </p>
                     <div class="form-group">
                         <label class="font-weight-bold">Transfer Amount ($)</label>
                         <input type="number" name="amount" class="form-control rounded-0"
@@ -155,12 +151,6 @@
                             max="{{ $currentBalance }}"
                             placeholder="Minimum ${{ $setting->min_wallet_transfer ?? 7.35 }}" required>
                         <small class="text-muted">Available Balance: <strong class="text-success">${{ number_format($currentBalance, 2) }}</strong></small>
-                    </div>
-                    <div class="alert alert-light rounded-0 p-2">
-                        <small>
-                            <strong>After 5% charge you will receive:</strong>
-                            <strong class="text-success" id="netAmount">$0.00</strong>
-                        </small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -175,12 +165,4 @@
 </div>
 
 @endsection
-@section('page_js')
-<script>
-    $('#transferAmount').on('input', function () {
-        var amount = parseFloat($(this).val()) || 0;
-        var net = amount - (amount * 0.05);
-        $('#netAmount').text('$' + (net > 0 ? net.toFixed(2) : '0.00'));
-    });
-</script>
 @endsection
