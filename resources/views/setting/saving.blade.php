@@ -33,28 +33,10 @@
                     @endif
 
                     @if(session('level_success'))
-                        <div class="alert alert-info alert-dismissible fade show">
+                        <div class="alert alert-success alert-dismissible fade show">
                             <i class="fas fa-check-circle mr-2"></i>{{ session('level_success') }}
                             <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
                         </div>
-                    @endif
-
-                    {{-- ── Campaign Active Banner ──────────────────────────────── --}}
-                    @if($setting->saving_campaign_enabled)
-                    <div class="mb-6" style="background:#f64e60;border-radius:8px;padding:1.2rem 1.5rem;">
-                        <div class="d-flex align-items-center">
-                            <span style="font-size:2rem;margin-right:1rem;">⚠️</span>
-                            <div style="color:#fff!important;">
-                                <strong class="d-block font-size-h6" style="color:#fff!important;">Campaign / Bonus Commission is ACTIVE!</strong>
-                                <span class="font-size-sm" style="color:#fff!important;">
-                                    Instalment payments are currently using <strong style="color:#fff!important;text-decoration:underline;">Campaign rates</strong>,
-                                    not the default rates. Review the current campaign rates in the Campaign section below.
-                                    &nbsp;—&nbsp;
-                                    To revert to default rates, turn the toggle <strong style="color:#fff!important;">OFF</strong> in the Campaign section.
-                                </span>
-                            </div>
-                        </div>
-                    </div>
                     @endif
 
                     {{-- ── Form 1: Registration & ROI ───────────────────────── --}}
@@ -166,173 +148,75 @@
                         </div>
 
                     </form>
-                    {{-- ── End Form 1 ──────────────────────────────────────── --}}
 
-                    {{-- ── Commission Levels (separate per-level forms) ──────── --}}
+                    {{-- ── Default Commission Levels (per-level individual save) ── --}}
                     @php
                         $levelLabels   = [1 => 'Direct', 2 => 'L2', 3 => 'L3', 4 => 'L4', 5 => 'L5', 6 => 'L6', 7 => 'L7'];
                         $levelDefaults = [1 => 7.0, 2 => 2.0, 3 => 1.0, 4 => 1.0, 5 => 1.0, 6 => 1.0, 7 => 1.0];
                     @endphp
 
-                        <div class="card card-custom gutter-b">
-                            <div class="card-header border-0 py-5">
-                                <h3 class="card-title font-weight-bolder text-dark">Referral Commission Levels (7 Levels)</h3>
-                            </div>
-                            <div class="card-body pt-0">
-                                <p class="text-muted font-size-sm mb-4">
-                                    Har level alag save hota hai — sirf jo level update karo wahi change hoga, baqi same rahenge.
-                                </p>
-
-                                @if(session('level_success'))
-                                    <div class="alert alert-success alert-dismissible fade show mb-4">
-                                        {{ session('level_success') }}
-                                        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-                                    </div>
-                                @endif
-
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-vertical-center">
-                                        <thead class="thead-light">
-                                            <tr>
-                                                <th style="width:120px;">Level</th>
-                                                <th>Current Rate</th>
-                                                <th style="width:240px;">New Value</th>
-                                                <th style="width:100px;"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @for($level = 1; $level <= 7; $level++)
-                                            @php $currentVal = $setting->{'saving_commission_l'.$level} ?? $levelDefaults[$level]; @endphp
-                                            <tr>
-                                                <td>
-                                                    <span class="font-weight-bold">Level {{ $level }}</span>
-                                                    <span class="badge badge-light-{{ $level === 1 ? 'primary' : 'secondary' }} ml-1">{{ $levelLabels[$level] }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="font-weight-bold text-primary font-size-lg">{{ $currentVal }}%</span>
-                                                    <small class="text-muted ml-2">($19 × {{ $currentVal }}% = ${{ number_format(19 * $currentVal / 100, 2) }})</small>
-                                                </td>
-                                                <td>
-                                                    <form method="POST" action="{{ route('setting.saving.update-level') }}" class="d-flex align-items-center gap-2">
-                                                        @csrf
-                                                        <input type="hidden" name="type" value="default">
-                                                        <input type="hidden" name="level" value="{{ $level }}">
-                                                        <div class="input-group input-group-sm" style="max-width:160px;">
-                                                            <input type="number" step="0.01" min="0" max="100"
-                                                                   name="value"
-                                                                   class="form-control"
-                                                                   placeholder="{{ $currentVal }}"
-                                                                   value="">
-                                                            <div class="input-group-append"><span class="input-group-text">%</span></div>
-                                                        </div>
-                                                </td>
-                                                <td>
-                                                        <button type="submit" class="btn btn-sm btn-primary font-weight-bold">Save</button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                            @endfor
-                                        </tbody>
-                                    </table>
-                                </div>
+                    <div class="card card-custom gutter-b">
+                        <div class="card-header border-0 py-5">
+                            <h3 class="card-title font-weight-bolder text-dark">Default Commission Levels (7 Levels)</h3>
+                            <div class="card-toolbar">
+                                <a href="{{ route('admin.saving.commission-config') }}" class="btn btn-sm btn-light-primary font-weight-bold">
+                                    <i class="fas fa-sliders-h mr-1"></i> Per-Instalment Rates
+                                </a>
                             </div>
                         </div>
+                        <div class="card-body pt-0">
+                            <p class="text-muted font-size-sm mb-4">
+                                These are the fallback rates used when no instalment-specific config is set.
+                                Each level saves independently — only the level you update will change.
+                            </p>
 
-                        {{-- Campaign / Bonus Commission --}}
-                        <div class="card card-custom gutter-b border-warning">
-                            <div class="card-header border-0 py-5" style="background:linear-gradient(135deg,#fff8e1,#fffde7);">
-                                <h3 class="card-title font-weight-bolder text-dark">
-                                    <i class="fas fa-star text-warning mr-2"></i> Campaign / Bonus Commission
-                                </h3>
-                                <div class="card-toolbar">
-                                    @if($setting->saving_campaign_enabled)
-                                        <span class="badge badge-success px-4 py-2 font-size-sm">
-                                            <i class="fas fa-circle mr-1" style="font-size:8px;"></i> Campaign LIVE
-                                        </span>
-                                    @else
-                                        <span class="badge badge-secondary px-4 py-2 font-size-sm">Campaign OFF</span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="card-body pt-2">
-                                <p class="text-muted font-size-sm mb-4">
-                                    When campaign is <strong>ON</strong>, these rates will be used for commissions. When <strong>OFF</strong>, the default rates above will apply.
-                                </p>
-
-                                {{-- Enable toggle --}}
-                                <form method="POST" action="{{ route('setting.saving.toggle-campaign') }}" class="mb-5" id="campaignToggleForm">
-                                    @csrf
-                                    <div class="d-flex align-items-center">
-                                        <span class="switch switch-outline switch-icon switch-success mr-3">
-                                            <label>
-                                                <input type="checkbox" name="saving_campaign_enabled" value="1"
-                                                    onchange="this.form.submit()"
-                                                    {{ $setting->saving_campaign_enabled ? 'checked' : '' }}>
-                                                <span></span>
-                                            </label>
-                                        </span>
-                                        <span class="font-weight-bold">Enable Campaign Rates</span>
-                                        <small class="text-muted ml-3">Toggle karte hi save ho jayega</small>
-                                    </div>
-                                </form>
-
-                                {{-- Campaign per-level forms --}}
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-vertical-center">
-                                        <thead class="thead-light">
-                                            <tr>
-                                                <th style="width:120px;">Level</th>
-                                                <th>Default Rate</th>
-                                                <th>Campaign Rate</th>
-                                                <th style="width:240px;">New Value</th>
-                                                <th style="width:100px;"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @for($level = 1; $level <= 7; $level++)
-                                            @php
-                                                $defaultVal  = $setting->{'saving_commission_l'.$level}  ?? $levelDefaults[$level];
-                                                $campaignVal = $setting->{'saving_campaign_l'.$level};
-                                            @endphp
-                                            <tr>
-                                                <td>
-                                                    <span class="font-weight-bold">Level {{ $level }}</span>
-                                                    <span class="badge badge-light-{{ $level === 1 ? 'warning' : 'secondary' }} ml-1">{{ $levelLabels[$level] }}</span>
-                                                </td>
-                                                <td><span class="text-muted">{{ $defaultVal }}%</span></td>
-                                                <td>
-                                                    @if($campaignVal !== null)
-                                                        <span class="font-weight-bold text-warning font-size-lg">{{ $campaignVal }}%</span>
-                                                        <small class="text-muted ml-1">($19 = ${{ number_format(19 * $campaignVal / 100, 2) }})</small>
-                                                    @else
-                                                        <span class="text-muted font-italic">same as default</span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    <form method="POST" action="{{ route('setting.saving.update-level') }}" class="d-flex align-items-center">
-                                                        @csrf
-                                                        <input type="hidden" name="type" value="campaign">
-                                                        <input type="hidden" name="level" value="{{ $level }}">
-                                                        <div class="input-group input-group-sm" style="max-width:160px;">
-                                                            <input type="number" step="0.01" min="0" max="100"
-                                                                   name="value"
-                                                                   class="form-control"
-                                                                   placeholder="{{ $campaignVal ?? $defaultVal }}"
-                                                                   value="">
-                                                            <div class="input-group-append"><span class="input-group-text">%</span></div>
-                                                        </div>
-                                                </td>
-                                                <td>
-                                                        <button type="submit" class="btn btn-sm btn-warning font-weight-bold">Save</button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                            @endfor
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-vertical-center">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th style="width:120px;">Level</th>
+                                            <th>Current Rate</th>
+                                            <th style="width:240px;">New Value</th>
+                                            <th style="width:100px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for($level = 1; $level <= 7; $level++)
+                                        @php $currentVal = $setting->{'saving_commission_l'.$level} ?? $levelDefaults[$level]; @endphp
+                                        <tr>
+                                            <td>
+                                                <span class="font-weight-bold">Level {{ $level }}</span>
+                                                <span class="badge badge-light-{{ $level === 1 ? 'primary' : 'secondary' }} ml-1">{{ $levelLabels[$level] }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="font-weight-bold text-primary font-size-lg">{{ $currentVal }}%</span>
+                                                <small class="text-muted ml-2">($19 × {{ $currentVal }}% = ${{ number_format(19 * $currentVal / 100, 2) }})</small>
+                                            </td>
+                                            <td>
+                                                <form method="POST" action="{{ route('setting.saving.update-level') }}" class="d-flex align-items-center gap-2">
+                                                    @csrf
+                                                    <input type="hidden" name="type" value="default">
+                                                    <input type="hidden" name="level" value="{{ $level }}">
+                                                    <div class="input-group input-group-sm" style="max-width:160px;">
+                                                        <input type="number" step="0.01" min="0" max="100"
+                                                               name="value"
+                                                               class="form-control"
+                                                               placeholder="{{ $currentVal }}"
+                                                               value="">
+                                                        <div class="input-group-append"><span class="input-group-text">%</span></div>
+                                                    </div>
+                                            </td>
+                                            <td>
+                                                    <button type="submit" class="btn btn-sm btn-primary font-weight-bold">Save</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        @endfor
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
+                    </div>
 
                 </div>
             </div>

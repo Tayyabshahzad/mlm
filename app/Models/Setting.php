@@ -34,5 +34,6 @@ class Setting extends Model
         'saving_campaign_enabled',
         'saving_campaign_l1','saving_campaign_l2','saving_campaign_l3','saving_campaign_l4',
         'saving_campaign_l5','saving_campaign_l6','saving_campaign_l7',
+        'saving_instalment_config_enabled',
     ];
 }

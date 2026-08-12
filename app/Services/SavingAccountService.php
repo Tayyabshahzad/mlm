@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\SavingInstalment;
 use App\Models\SavingInstalmentCommission;
+use App\Models\SavingInstalmentCommissionConfig;
 use App\Models\Setting;
 use App\Models\TransactionLog;
 use App\Models\User;
@@ -425,7 +426,7 @@ class SavingAccountService
                 continue;
             }
 
-            $percentage = $this->resolveCommissionRate($setting, $ancestor->level);
+            $percentage = $this->resolveCommissionRate($setting, $ancestor->level, $instalment?->instalment_number);
 
             if ($percentage <= 0) {
                 continue;
@@ -945,8 +946,19 @@ class SavingAccountService
      * Uses campaign rates when a campaign is enabled and today falls within its date range;
      * falls back to the default saving_commission_l{level} setting otherwise.
      */
-    private function resolveCommissionRate($setting, int $level): float
+    private function resolveCommissionRate($setting, int $level, ?int $instalmentNumber = null): float
     {
+        // 1. Instalment-specific config (only when the feature toggle is ON)
+        if ($instalmentNumber !== null && $setting?->saving_instalment_config_enabled) {
+            $config = SavingInstalmentCommissionConfig::where('instalment_number', $instalmentNumber)
+                ->where('level', $level)
+                ->first();
+            if ($config && $config->percentage > 0) {
+                return (float) $config->percentage;
+            }
+        }
+
+        // 2. Campaign rates (if active)
         if ($setting && $setting->saving_campaign_enabled) {
             $campaignField = "saving_campaign_l{$level}";
             $campaignRate  = $setting->$campaignField !== null ? (float) $setting->$campaignField : null;
@@ -955,6 +967,7 @@ class SavingAccountService
             }
         }
 
+        // 3. Default rates
         $defaultField = "saving_commission_l{$level}";
         return ($setting && isset($setting->$defaultField))
             ? (float) $setting->$defaultField

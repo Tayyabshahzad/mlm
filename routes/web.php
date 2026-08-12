@@ -296,6 +296,17 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
                  Route::post('/{commission}/send', 'sendSingle')->name('admin.saving.commissions.send-single');
              });
 
+        // ── Per-instalment Commission Config ──────────────────────────────────
+        Route::prefix('commission-config')
+             ->controller(App\Http\Controllers\Admin\SavingInstalmentCommissionConfigController::class)
+             ->group(function () {
+                 Route::get('/', 'index')->name('admin.saving.commission-config');
+                 Route::post('/toggle', 'toggleInstalmentConfig')->name('admin.saving.commission-config.toggle');
+                 Route::post('/update-level', 'updateLevel')->name('admin.saving.commission-config.update-level');
+                 Route::post('/delete-level', 'deleteLevel')->name('admin.saving.commission-config.delete-level');
+                 Route::delete('/instalment/{instalmentNumber}', 'deleteInstalment')->name('admin.saving.commission-config.delete-instalment');
+             });
+
         // ── Main saving-account routes ────────────────────────────────────────
         Route::controller(SavingInstalmentController::class)->group(function () {
             Route::get('/', 'adminIndex')->name('admin.saving.index');
