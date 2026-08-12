@@ -89,6 +89,13 @@ class SettingController extends Controller
             'saving_commission_l5'       => 'required|numeric|min:0|max:100',
             'saving_commission_l6'       => 'required|numeric|min:0|max:100',
             'saving_commission_l7'       => 'required|numeric|min:0|max:100',
+            'saving_campaign_l1'         => 'nullable|numeric|min:0|max:100',
+            'saving_campaign_l2'         => 'nullable|numeric|min:0|max:100',
+            'saving_campaign_l3'         => 'nullable|numeric|min:0|max:100',
+            'saving_campaign_l4'         => 'nullable|numeric|min:0|max:100',
+            'saving_campaign_l5'         => 'nullable|numeric|min:0|max:100',
+            'saving_campaign_l6'         => 'nullable|numeric|min:0|max:100',
+            'saving_campaign_l7'         => 'nullable|numeric|min:0|max:100',
         ]);
 
         $setting = Setting::first();
@@ -105,8 +112,43 @@ class SettingController extends Controller
             'saving_commission_l5'      => $request->saving_commission_l5,
             'saving_commission_l6'      => $request->saving_commission_l6,
             'saving_commission_l7'      => $request->saving_commission_l7,
+            'saving_campaign_enabled'   => $request->boolean('saving_campaign_enabled'),
+            'saving_campaign_l1'        => $request->saving_campaign_l1,
+            'saving_campaign_l2'        => $request->saving_campaign_l2,
+            'saving_campaign_l3'        => $request->saving_campaign_l3,
+            'saving_campaign_l4'        => $request->saving_campaign_l4,
+            'saving_campaign_l5'        => $request->saving_campaign_l5,
+            'saving_campaign_l6'        => $request->saving_campaign_l6,
+            'saving_campaign_l7'        => $request->saving_campaign_l7,
         ]);
 
         return back()->with('success', 'Saving account settings updated successfully.');
+    }
+
+    public function toggleCampaign(Request $request)
+    {
+        $setting = Setting::first();
+        $setting->update([
+            'saving_campaign_enabled' => $request->has('saving_campaign_enabled'),
+        ]);
+        return back()->with('level_success', 'Campaign rates ' . ($setting->saving_campaign_enabled ? 'enabled' : 'disabled') . '.');
+    }
+
+    public function updateSavingCommissionLevel(Request $request)
+    {
+        $request->validate([
+            'type'  => 'required|in:default,campaign',
+            'level' => 'required|integer|between:1,7',
+            'value' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $setting = Setting::first();
+        $field   = $request->type === 'campaign'
+            ? "saving_campaign_l{$request->level}"
+            : "saving_commission_l{$request->level}";
+
+        $setting->update([$field => $request->value]);
+
+        return back()->with('level_success', "Level {$request->level} " . ($request->type === 'campaign' ? 'campaign' : 'default') . " commission updated to {$request->value}%.");
     }
 }

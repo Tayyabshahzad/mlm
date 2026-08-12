@@ -181,6 +181,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::get('update.usdt', 'updateUSDT')->name('rate.manual.update');
         Route::get('/saving-account', 'savingSettings')->name('setting.saving');
         Route::post('/saving-account/update', 'updateSavingSettings')->name('setting.saving.update');
+        Route::post('/saving-account/update-level', 'updateSavingCommissionLevel')->name('setting.saving.update-level');
+        Route::post('/saving-account/toggle-campaign', 'toggleCampaign')->name('setting.saving.toggle-campaign');
     });
 
     Route::controller(ROIMonitoringController::class)->group(function () {

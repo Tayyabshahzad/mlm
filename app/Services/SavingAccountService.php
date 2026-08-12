@@ -425,10 +425,7 @@ class SavingAccountService
                 continue;
             }
 
-            $fieldName  = "saving_commission_l{$ancestor->level}";
-            $percentage = $setting && isset($setting->$fieldName)
-                ? (float) $setting->$fieldName
-                : (self::SAVING_COMMISSION_RATES[$ancestor->level] ?? 0);
+            $percentage = $this->resolveCommissionRate($setting, $ancestor->level);
 
             if ($percentage <= 0) {
                 continue;
@@ -675,10 +672,7 @@ class SavingAccountService
                 continue;
             }
 
-            $fieldName  = "saving_commission_l{$ancestor->level}";
-            $percentage = ($setting && isset($setting->$fieldName))
-                ? (float) $setting->$fieldName
-                : (self::SAVING_COMMISSION_RATES[$ancestor->level] ?? 0);
+            $percentage = $this->resolveCommissionRate($setting, $ancestor->level);
 
             if ($percentage <= 0) {
                 continue;
@@ -941,12 +935,30 @@ class SavingAccountService
         $setting = Setting::first();
         $rates   = [];
         for ($level = 1; $level <= 7; $level++) {
-            $field          = "saving_commission_l{$level}";
-            $rates[$level]  = $setting && isset($setting->$field)
-                ? (float) $setting->$field
-                : (self::SAVING_COMMISSION_RATES[$level] ?? 0);
+            $rates[$level] = $this->resolveCommissionRate($setting, $level);
         }
         return $rates;
+    }
+
+    /**
+     * Returns the effective commission % for a given level.
+     * Uses campaign rates when a campaign is enabled and today falls within its date range;
+     * falls back to the default saving_commission_l{level} setting otherwise.
+     */
+    private function resolveCommissionRate($setting, int $level): float
+    {
+        if ($setting && $setting->saving_campaign_enabled) {
+            $campaignField = "saving_campaign_l{$level}";
+            $campaignRate  = $setting->$campaignField !== null ? (float) $setting->$campaignField : null;
+            if ($campaignRate !== null && $campaignRate > 0) {
+                return $campaignRate;
+            }
+        }
+
+        $defaultField = "saving_commission_l{$level}";
+        return ($setting && isset($setting->$defaultField))
+            ? (float) $setting->$defaultField
+            : (self::SAVING_COMMISSION_RATES[$level] ?? 0);
     }
 }
 

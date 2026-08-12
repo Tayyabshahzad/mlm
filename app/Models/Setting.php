@@ -30,6 +30,9 @@ class Setting extends Model
         'saving_commission_l1','saving_commission_l2','saving_commission_l3','saving_commission_l4',
         'saving_commission_l5','saving_commission_l6','saving_commission_l7',
         'saving_roi_daily_rate',
-        'saving_commission_min_transfer'
+        'saving_commission_min_transfer',
+        'saving_campaign_enabled',
+        'saving_campaign_l1','saving_campaign_l2','saving_campaign_l3','saving_campaign_l4',
+        'saving_campaign_l5','saving_campaign_l6','saving_campaign_l7',
     ];
 }
