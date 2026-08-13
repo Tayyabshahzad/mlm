@@ -502,10 +502,11 @@ class SavingInstalmentController extends Controller
         foreach ($depositedInstalments as $inst) {
             $baseAmount = (float) ($inst->submitted_amount ?? $inst->amount);
             if ($inst->instalment_number === 1) {
-                $savingFee  = (float) ($user->saving_initial_fee ?? 0);
-                $savingPaid = (float) ($user->saving_initial_payment ?? 0);
-                $baseAmount += max(0.0, $savingPaid - $savingFee);
                 $inst1Deposited = true;
+                // Registration partial is NOT added to the commission base here.
+                // Commission is paid only on the instalment payment amount.
+                // (The partial was already credited to the saving wallet at registration,
+                //  and including it here caused double-commission for full-payment registrants.)
             }
             $this->savingAccountService->assignSavingCommissions($user, $baseAmount, $inst);
         }
@@ -690,11 +691,7 @@ class SavingInstalmentController extends Controller
 
         foreach ($depositedInstalments as $inst) {
             $baseAmount = (float) ($inst->submitted_amount ?? $inst->amount);
-            if ($inst->instalment_number === 1) {
-                $savingFee  = (float) ($user->saving_initial_fee ?? 0);
-                $savingPaid = (float) ($user->saving_initial_payment ?? 0);
-                $baseAmount += max(0.0, $savingPaid - $savingFee);
-            }
+            // Registration partial is NOT added — commission is on the instalment payment only.
             $this->savingAccountService->assignSavingCommissions($user, $baseAmount, $inst);
         }
 

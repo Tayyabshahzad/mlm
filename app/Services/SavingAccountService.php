@@ -353,13 +353,16 @@ class SavingAccountService
 
         // Commissions fire for EVERY confirmed instalment once the account is active.
         // Deduplication is enforced by the unique constraint in saving_instalment_commissions.
+        // Commission base is the instalment payment amount only — NOT totalCredit.
+        // (totalCredit includes the registration partial which was already in the wallet;
+        //  including it in the commission base caused double-commission for full-payment users.)
         $isEligibleForCommission = $user->saving_registration_completed && (
             ($user->account_type === 'saving' && $user->can_login) ||
             ($user->saving_enrolled && $user->saving_enrollment_activated)
         );
 
         if ($isEligibleForCommission) {
-            $this->assignSavingCommissions($user, $totalCredit, $instalment);
+            $this->assignSavingCommissions($user, $amount, $instalment);
         }
 
         Log::info("Saving deposit credited: user={$user->id}, amount={$amount}, instalment={$instalment->instalment_number}");
