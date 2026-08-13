@@ -21,6 +21,7 @@ class SavingInstalmentCommission extends Model
         'processed_by',
         'processed_at',
         'notes',
+        'excess_reversed',
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class SavingInstalmentCommission extends Model
         'processed_at'      => 'datetime',
         'level'             => 'integer',
         'instalment_number' => 'integer',
+        'excess_reversed'   => 'boolean',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────

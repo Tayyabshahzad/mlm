@@ -144,9 +144,14 @@ class ReverseExcessInstalment1Commissions extends Command
                     'transaction_type' => 'debit',
                 ]);
 
+                // Fix the displayed commission_amount to the correct value
                 DB::table('saving_instalment_commissions')
                     ->where('id', $row->sic_id)
-                    ->update(['excess_reversed' => 1, 'updated_at' => $now]);
+                    ->update([
+                        'commission_amount' => $row->correct,
+                        'excess_reversed'   => 1,
+                        'updated_at'        => $now,
+                    ]);
 
                 $reversed++;
             }

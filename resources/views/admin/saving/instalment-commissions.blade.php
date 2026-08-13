@@ -204,8 +204,17 @@
                                         <div class="text-muted small">{{ $commission->commission_type }}</div>
                                     </td>
                                     <td class="text-right">{{ $commission->percentage }}%</td>
-                                    <td class="text-right font-weight-bold text-success">
-                                        ${{ number_format($commission->commission_amount, 4) }}
+                                    <td class="text-right font-weight-bold">
+                                        @if($commission->excess_reversed)
+                                            <span class="text-primary">${{ number_format($commission->commission_amount, 4) }}</span>
+                                            <div style="margin-top:2px;">
+                                                <span class="badge badge-warning" style="font-size:9px;padding:2px 5px;">
+                                                    <i class="fas fa-check" style="font-size:8px;"></i> corrected
+                                                </span>
+                                            </div>
+                                        @else
+                                            <span class="text-success">${{ number_format($commission->commission_amount, 4) }}</span>
+                                        @endif
                                     </td>
                                     <td class="text-center">
                                         @if($commission->status === 'paid')
