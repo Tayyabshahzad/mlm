@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WithDrawalequest;
 use App\Exports\WithdrawalReportExport;
+use App\Notifications\WithdrawalSubmittedNotification;
+use App\Notifications\WithdrawalStatusNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -157,6 +159,15 @@ class WithdrawalRequestController extends Controller
             'review_notes' => $request->review_notes,
             'transfer_fee' => $calculatedFee,
         ]);
+
+        try {
+            Auth::user()->notify(new WithdrawalSubmittedNotification(
+                amount:      $withdrawableAmount,
+                fee:         $calculatedFee,
+                requestType: $request->withdrawal_option ?? 'online',
+            ));
+        } catch (\Throwable) {}
+
         return redirect()->route('wallets.online')->with('success', 'Withdrawal request submitted successfully.');
     }
 
@@ -315,17 +326,26 @@ class WithdrawalRequestController extends Controller
             $withDrawalequest->addMedia($request->file('screenshot'))
                 ->toMediaCollection('withdraw_screenshot');
         }
-        if($withDrawalequest->status === 'rejected'){ 
+        if($withDrawalequest->status === 'rejected'){
             $wallet = Wallet::where('user_id', $withDrawalequest->user->id)
             ->where('wallet_type', 'online') // Adjust the type if necessary
             ->first();
             if ($wallet) {
                 $wallet->balance += $withDrawalequest->amount;
-                $wallet->save();  
+                $wallet->save();
             } else {
                 return redirect()->back()->with('error', 'Wallet not found.');
             }
-        } 
+        }
+
+        try {
+            $withDrawalequest->user->notify(new WithdrawalStatusNotification(
+                amount:      $withDrawalequest->amount,
+                status:      $withDrawalequest->status,
+                requestType: $withDrawalequest->request_type ?? 'online',
+            ));
+        } catch (\Throwable) {}
+
         return redirect()->back()->with('success', 'Withdrawal request has been updated successfully.');
     }   
  

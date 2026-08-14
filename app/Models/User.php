@@ -71,6 +71,17 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         ];
     }
     
+    public function delete(): bool|null
+    {
+        // Free up email and username before soft-deleting so they can be reused
+        $suffix = $this->id . '_' . time();
+        $this->email    = 'deleted_' . $suffix . '@deleted.invalid';
+        $this->username = 'deleted_' . $suffix;
+        $this->save();
+
+        return parent::delete();
+    }
+
     public function profile()
     {
         return $this->hasOne(Profile::class);
