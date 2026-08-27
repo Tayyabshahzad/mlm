@@ -49,10 +49,48 @@
                 </div>
             </div>
 
-            @if($currentBalance > 0)
+            {{-- Instalment progress & transfer lock notice --}}
+            @if($totalInstalments > 0)
+                @php $progressPct = $totalInstalments > 0 ? round(($paidInstalments / $totalInstalments) * 100) : 0; @endphp
+                <div class="card card-custom mb-5 border @if($roiTransferLocked) border-warning @else border-success @endif">
+                    <div class="card-body py-4">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="font-weight-bold text-dark">
+                                @if($roiTransferLocked)
+                                    🔒 ROI Transfer Locked
+                                @else
+                                    ✅ ROI Transfer Unlocked
+                                @endif
+                            </span>
+                            <span class="font-size-sm text-muted">
+                                {{ $paidInstalments }} / {{ $totalInstalments }} instalments paid
+                            </span>
+                        </div>
+                        <div class="progress" style="height:8px;">
+                            <div class="progress-bar @if($roiTransferLocked) bg-warning @else bg-success @endif"
+                                 style="width: {{ $progressPct }}%"></div>
+                        </div>
+                        @if($roiTransferLocked)
+                            <small class="text-warning d-block mt-2">
+                                You need to complete all {{ $totalInstalments }} instalments before transferring ROI to your online wallet.
+                                {{ $totalInstalments - $paidInstalments }} instalment(s) remaining.
+                            </small>
+                        @else
+                            <small class="text-success d-block mt-2">All instalments complete — you can now transfer your ROI to the online wallet.</small>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            @if($currentBalance > 0 && !$roiTransferLocked)
                 <button type="button" class="btn btn-sm btn-info font-weight-bold mb-4"
                     data-toggle="modal" data-target="#roiTransferModal">
                     Transfer to Online Wallet
+                </button>
+            @elseif($currentBalance > 0 && $roiTransferLocked)
+                <button type="button" class="btn btn-sm btn-secondary font-weight-bold mb-4" disabled
+                    title="Complete all {{ $totalInstalments }} instalments to unlock ROI transfer">
+                    🔒 Transfer Locked ({{ $paidInstalments }}/{{ $totalInstalments }} paid)
                 </button>
             @endif
 

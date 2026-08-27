@@ -130,14 +130,44 @@ class WalletController extends Controller
         return view('wallets.reward',compact('wallets', 'totalEarning', 'currentBalance'));
     }
 
-    public function ROI()
+    public function ROI(Request $request)
     {
-        $baseQuery = Wallet::where('wallet_type', 'roi')
-            ->where('user_id', auth()->id());
-        $totalEarning   = (clone $baseQuery)->sum('total_amount');
-        $currentBalance = (clone $baseQuery)->sum('balance');
-        $wallets = (clone $baseQuery)->orderBy('id', 'desc')->paginate(20);
-        return view('wallets.roi', compact('wallets', 'totalEarning', 'currentBalance'));
+        $userId = auth()->id();
+        $user   = auth()->user();
+
+        // Standard ROI
+        $stdQuery       = Wallet::where('wallet_type', 'roi')->where('user_id', $userId);
+        $stdTotalEarning   = (clone $stdQuery)->sum('total_amount');
+        $stdCurrentBalance = (clone $stdQuery)->sum('balance');
+        $stdWallets        = (clone $stdQuery)->orderBy('id', 'desc')->paginate(20, ['*'], 'std_page');
+
+        // Saving ROI (only for saving users / enrolled users)
+        $isSavingUser   = $user->account_type === 'saving' || ($user->saving_enrolled && $user->saving_enrollment_activated);
+        $savQuery       = Wallet::where('wallet_type', 'saving_roi')->where('user_id', $userId);
+        $savTotalEarning   = $isSavingUser ? (clone $savQuery)->sum('total_amount') : 0;
+        $savCurrentBalance = $isSavingUser ? (clone $savQuery)->sum('balance') : 0;
+        $savWallets        = $isSavingUser ? (clone $savQuery)->orderBy('id', 'desc')->paginate(20, ['*'], 'sav_page') : collect();
+
+        // Instalment lock check for saving ROI transfer
+        $totalInstalments  = $isSavingUser ? $user->savingInstalments()->count() : 0;
+        $paidInstalments   = $isSavingUser ? $user->savingInstalments()->where('status', 'confirmed')->count() : 0;
+        $roiTransferLocked = $isSavingUser && ($totalInstalments === 0 || $paidInstalments < $totalInstalments);
+
+        // Combined totals
+        $totalEarning   = $stdTotalEarning + $savTotalEarning;
+        $currentBalance = $stdCurrentBalance + $savCurrentBalance;
+
+        // Legacy compat (used by transfer modal include)
+        $wallets = $stdWallets;
+
+        return view('wallets.roi', compact(
+            'wallets',
+            'totalEarning',   'currentBalance',
+            'stdTotalEarning', 'stdCurrentBalance', 'stdWallets',
+            'savTotalEarning', 'savCurrentBalance', 'savWallets',
+            'isSavingUser', 'roiTransferLocked',
+            'totalInstalments', 'paidInstalments'
+        ));
     }
 
 
@@ -228,8 +258,23 @@ class WalletController extends Controller
         $request->validate([
             'amount' => 'required|numeric|min:' . $minWalletTransfer,
             'wallet_type' => 'required|in:direct_indirect,reward,roi,profit_share,designation_incentive,saving_roi',
-        ]);  
-        $userId = auth()->id();  
+        ]);
+        $userId = auth()->id();
+        $user   = auth()->user();
+
+        // Saving ROI cannot be transferred to online wallet until all instalments are paid.
+        if ($request->wallet_type === 'saving_roi') {
+            $total  = $user->savingInstalments()->count();
+            $paid   = $user->savingInstalments()->where('status', 'confirmed')->count();
+            if ($total === 0 || $paid < $total) {
+                $remaining = $total - $paid;
+                return back()->with('error',
+                    "Saving ROI cannot be transferred yet. You have {$remaining} instalment(s) remaining. " .
+                    "ROI transfer will be unlocked after all {$total} instalments are paid."
+                );
+            }
+        }
+
         $amountToTransfer = $request->input('amount');  
         if ($request->wallet_type == 'reward-wallet') {
             $wallet_type = 'reward';
@@ -445,8 +490,13 @@ class WalletController extends Controller
 
         $setting = Setting::first();
 
+        $totalInstalments = $user->savingInstalments()->count();
+        $paidInstalments  = $user->savingInstalments()->where('status', 'confirmed')->count();
+        $roiTransferLocked = $totalInstalments === 0 || $paidInstalments < $totalInstalments;
+
         return view('wallets.saving-roi-wallet', compact(
-            'entries', 'totalEarning', 'currentBalance', 'setting'
+            'entries', 'totalEarning', 'currentBalance', 'setting',
+            'totalInstalments', 'paidInstalments', 'roiTransferLocked'
         ));
     }
 

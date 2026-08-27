@@ -13,6 +13,7 @@ use App\Services\WalletService;
 use App\Services\CommissionService;
 use App\Services\InvestmentSlabService;
 use App\Services\RewardService;
+use App\Services\SavingAccountService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
@@ -88,7 +89,8 @@ class UserController extends Controller
 
     /**
      * Activate a saving account user.
-     * Sets can_login = true, then distributes saving commissions for any already-deposited amount.
+     * Sets can_login = true, then distributes saving commissions for any already-deposited instalments.
+     * Also auto-enrolls the sponsor so they can see their saving team and commissions.
      * No PV, no reward, no profit-share, no investment slabs.
      */
     private function activateSavingUser(User $user)
@@ -100,27 +102,35 @@ class UserController extends Controller
             $user->saving_registration_completed = true;
             $user->save();
 
-            // Fire saving commissions only if:
-            // 1. Instalment #1 has already been deposited (deposited_at not null)
-            // 2. Commission has NOT already been fired (no direct_indirect saving_instalment wallet entry)
-            $inst1Deposited = $user->savingInstalments()
-                ->where('instalment_number', 1)
+            $savingService = app(SavingAccountService::class);
+
+            // Auto-enroll the sponsor so they can see saving team / commissions in their dashboard
+            $sponsor = $user->savingSponsor()->first() ?? $user->parent;
+            if ($sponsor) {
+                $savingService->autoEnrollSponsor($sponsor);
+            }
+
+            // Fire commissions for every deposited instalment that hasn't been tracked yet.
+            // assignSavingCommissions is idempotent per-instalment via unique constraint.
+            $depositedInstalments = $user->savingInstalments()
+                ->where('status', 'confirmed')
                 ->whereNotNull('deposited_at')
-                ->exists();
+                ->orderBy('instalment_number')
+                ->get();
 
-            $alreadyFired = \App\Models\Wallet::where('user_id', $user->id)
-                ->where('wallet_type', 'direct_indirect')
-                ->where('source_type', 'saving_instalment')
-                ->exists();
-
-            if ($inst1Deposited && !$alreadyFired) {
-                $savingService = app(\App\Services\SavingAccountService::class);
-                $savingService->assignSavingCommissions($user, $user->saving_total_deposited);
+            foreach ($depositedInstalments as $inst) {
+                $baseAmount = (float) ($inst->submitted_amount ?? $inst->amount);
+                $savingService->assignSavingCommissions($user, $baseAmount, $inst);
             }
 
             DB::commit();
+
+            $message = $depositedInstalments->isNotEmpty()
+                ? "Saving Account Member Activated — login enabled and commissions distributed."
+                : "Saving Account Member Activated — commissions will run once the first instalment is confirmed.";
+
             Log::info("Saving account user {$user->id} activated successfully");
-            return redirect()->back()->with('success', 'Saving Account Member Activated Successfully');
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Failed to activate saving user {$user->id}: " . $e->getMessage());
