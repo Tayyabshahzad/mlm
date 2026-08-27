@@ -82,10 +82,10 @@
 
 @section('page_js')
 <style>
-/* ── Independence Day Popup ─────────────────────────── */
+/* ── Milad-un-Nabi Popup ─────────────────────────── */
 #pak-overlay {
     position: fixed; inset: 0; z-index: 9999;
-    background: rgba(0,0,0,.72);
+    background: rgba(0,0,0,.75);
     display: flex; align-items: center; justify-content: center;
     backdrop-filter: blur(4px);
     animation: pak-fade-in .4s ease;
@@ -95,13 +95,13 @@
 }
 #pak-modal {
     position: relative;
-    background: linear-gradient(160deg, #010f04 0%, #022b0e 55%, #010f04 100%);
-    border: 1px solid rgba(0,165,80,.40);
+    background: linear-gradient(160deg, #0a0800 0%, #1a1200 55%, #0a0800 100%);
+    border: 1px solid rgba(212,175,55,.40);
     border-radius: 20px;
     padding: 2.8rem 2.4rem 2.4rem;
     max-width: 480px; width: 92%;
     text-align: center;
-    box-shadow: 0 0 0 1px rgba(0,165,80,.10), 0 32px 80px rgba(0,0,0,.80), 0 0 60px rgba(0,165,80,.18);
+    box-shadow: 0 0 0 1px rgba(212,175,55,.10), 0 32px 80px rgba(0,0,0,.85), 0 0 60px rgba(212,175,55,.15);
     animation: pak-slide-up .45s cubic-bezier(.22,1,.36,1);
     overflow: hidden;
 }
@@ -109,11 +109,11 @@
     from { opacity:0; transform:translateY(40px) scale(.95); }
     to   { opacity:1; transform:translateY(0)   scale(1);    }
 }
-/* corner flag stripes */
+/* golden top bar */
 #pak-modal::before {
     content: '';
     position: absolute; top: 0; left: 0; right: 0; height: 4px;
-    background: linear-gradient(90deg, #01411c 0%, #00a550 40%, #ffffff 40%, #ffffff 60%, #00a550 60%, #01411c 100%);
+    background: linear-gradient(90deg, #8b6914 0%, #d4af37 35%, #f5e27a 50%, #d4af37 65%, #8b6914 100%);
     border-radius: 20px 20px 0 0;
 }
 /* subtle glow orbs */
@@ -121,38 +121,38 @@
     content: '';
     position: absolute; inset: 0; pointer-events: none;
     background:
-        radial-gradient(ellipse 300px 200px at 10% 80%, rgba(0,165,80,.18) 0%, transparent 60%),
-        radial-gradient(ellipse 200px 160px at 90% 10%, rgba(255,255,255,.04) 0%, transparent 55%);
+        radial-gradient(ellipse 300px 200px at 10% 80%, rgba(212,175,55,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 200px 160px at 90% 10%, rgba(0,165,80,.06) 0%, transparent 55%);
 }
 .pak-crescent {
     font-size: 3.6rem; line-height: 1;
     margin-bottom: .6rem;
-    filter: drop-shadow(0 0 18px rgba(0,200,80,.6));
+    filter: drop-shadow(0 0 18px rgba(212,175,55,.6));
     animation: pak-glow-pulse 2s ease infinite;
 }
 @keyframes pak-glow-pulse {
-    0%,100% { filter: drop-shadow(0 0 14px rgba(0,200,80,.55)); }
-    50%      { filter: drop-shadow(0 0 28px rgba(0,200,80,.90)); }
+    0%,100% { filter: drop-shadow(0 0 14px rgba(212,175,55,.55)); }
+    50%      { filter: drop-shadow(0 0 30px rgba(212,175,55,.95)); }
 }
 .pak-title {
     font-size: 1.45rem; font-weight: 900; color: #fff;
     letter-spacing: -.02em; margin-bottom: .3rem;
 }
 .pak-sub {
-    font-size: .8rem; color: #4ade80; font-weight: 700;
+    font-size: .8rem; color: #d4af37; font-weight: 700;
     letter-spacing: .12em; text-transform: uppercase;
     margin-bottom: 1.6rem;
 }
 .pak-quote-box {
     position: relative;
-    background: rgba(0,165,80,.08);
-    border: 1px solid rgba(0,165,80,.22);
+    background: rgba(212,175,55,.07);
+    border: 1px solid rgba(212,175,55,.22);
     border-radius: 12px;
     padding: 1.2rem 1.4rem;
     margin-bottom: 1.8rem;
 }
 .pak-quote-mark {
-    font-size: 3rem; line-height: .6; color: rgba(0,165,80,.35);
+    font-size: 3rem; line-height: .6; color: rgba(212,175,55,.35);
     font-family: Georgia, serif; position: absolute; top: .6rem; left: .9rem;
 }
 .pak-quote-text {
@@ -162,21 +162,21 @@
 }
 .pak-quote-author {
     margin-top: .7rem; font-size: .72rem; font-weight: 700;
-    color: #4ade80; letter-spacing: .06em; text-transform: uppercase;
+    color: #d4af37; letter-spacing: .06em; text-transform: uppercase;
 }
 .pak-btn {
     display: inline-flex; align-items: center; gap: .55rem;
-    background: linear-gradient(135deg, #01411c, #00a550);
-    color: #fff; font-weight: 800; font-size: .95rem;
+    background: linear-gradient(135deg, #8b6914, #d4af37);
+    color: #0a0800; font-weight: 800; font-size: .95rem;
     border: none; border-radius: 50px;
     padding: .85rem 2.2rem; cursor: pointer;
-    box-shadow: 0 0 0 1px rgba(0,165,80,.4), 0 8px 28px rgba(0,165,80,.35);
+    box-shadow: 0 0 0 1px rgba(212,175,55,.4), 0 8px 28px rgba(212,175,55,.30);
     transition: transform .18s, box-shadow .18s;
     position: relative; z-index: 1;
 }
 .pak-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 0 1px rgba(0,165,80,.6), 0 14px 36px rgba(0,165,80,.50);
+    box-shadow: 0 0 0 1px rgba(212,175,55,.6), 0 14px 36px rgba(212,175,55,.45);
 }
 .pak-btn:active { transform: translateY(0); }
 .pak-skip {
@@ -194,10 +194,10 @@
 /* ── Toast ───────────────────────────────────────────── */
 #pak-toast {
     position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
-    background: linear-gradient(135deg, #01411c, #00a550);
-    color: #fff; font-weight: 800; font-size: 1rem;
+    background: linear-gradient(135deg, #8b6914, #d4af37);
+    color: #0a0800; font-weight: 800; font-size: 1rem;
     padding: .85rem 2rem; border-radius: 50px;
-    box-shadow: 0 8px 30px rgba(0,165,80,.45);
+    box-shadow: 0 8px 30px rgba(212,175,55,.45);
     z-index: 10001; white-space: nowrap;
     transition: transform .5s cubic-bezier(.22,1,.36,1), opacity .5s;
     opacity: 0;
@@ -205,23 +205,24 @@
 #pak-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 </style>
 
-{{-- Independence Day Popup --}}
+{{-- Milad-un-Nabi Popup --}}
 <div id="pak-overlay">
     <div id="pak-modal">
         <div class="pak-crescent">☪</div>
-        <div class="pak-title">Happy Independence Day!</div>
-        <div class="pak-sub">🇵🇰 79th · 14 August 2026 · Pakistan Zindabad 🇵🇰</div>
+        <div class="pak-title">Eid Milad-un-Nabi Mubarak! ﷺ</div>
+        <div class="pak-sub">☪ 12 Rabi-ul-Awwal · Rehmat-ul-Alameen ﷺ</div>
 
         <div class="pak-quote-box">
             <div class="pak-quote-mark">"</div>
             <div class="pak-quote-text">
-                With faith, discipline and selfless devotion to duty, there is nothing worthwhile that you cannot achieve.
+                Huzoor Nabi Kareem ﷺ ki seerat-e-mubarak hamein ikhlas, mehnat aur umeed ki raah dikhati hai.
+                GVI family ki taraf se aap sab ko Eid Milad-un-Nabi ﷺ mubarak ho!
             </div>
-            <div class="pak-quote-author">— Quaid-e-Azam Muhammad Ali Jinnah</div>
+            <div class="pak-quote-author">— Global Visioners International</div>
         </div>
 
         <button class="pak-btn" onclick="celebrateIndependence()">
-            🎉 Happy Independence Day!
+            ☪ Milad Mubarak Ho!
         </button>
         <button class="pak-skip" onclick="closePakPopup()">Skip for now</button>
     </div>
@@ -231,7 +232,7 @@
 <canvas id="pak-confetti"></canvas>
 
 {{-- Toast --}}
-<div id="pak-toast">🇵🇰 Pakistan Zindabad! Jashn-e-Azadi Mubarak! ☪</div>
+<div id="pak-toast">☪ Eid Milad-un-Nabi Mubarak! — GVI Family ﷺ</div>
 
 <script>
 /* ── Popup close ──────────────────────────────────── */
@@ -258,7 +259,7 @@ function launchConfetti() {
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    var colors = ['#00a550','#4ade80','#01411c','#ffffff','#86efac','#d1fae5','#00e676','#fff9c4'];
+    var colors = ['#d4af37','#f5e27a','#8b6914','#ffffff','#4ade80','#ffd700','#fffacd','#b8960c'];
     var pieces = [];
     var total  = 160;
 

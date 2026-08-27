@@ -419,35 +419,22 @@
     position: relative;
 }
 
-/* ── Pakistan Flag ───────────────────────────────── */
-.pak-flag-wrap {
-    display: flex; align-items: flex-start; gap: 0;
-    filter: drop-shadow(0 8px 28px rgba(0,0,0,.55)) drop-shadow(0 0 20px rgba(0,165,80,.30));
+/* ── Milad Crescent Art ───────────────────────────── */
+.milad-art-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: .6rem;
+    filter: drop-shadow(0 8px 28px rgba(0,0,0,.55)) drop-shadow(0 0 24px rgba(212,175,55,.35));
 }
-.pak-pole {
-    width: 5px;
-    height: 132px;
-    background: linear-gradient(180deg, #d4af37 0%, #b8960c 40%, #d4af37 70%, #b8960c 100%);
-    border-radius: 3px 3px 2px 2px;
-    box-shadow: 1px 0 3px rgba(0,0,0,.40);
-    flex-shrink: 0;
+.milad-crescent-svg {
+    width: 140px; height: 140px;
+    animation: milad-glow 3s ease-in-out infinite;
 }
-.pak-flag-svg {
-    width: 160px; height: 107px;
-    transform-origin: left center;
-    animation: pak-wave 2.8s ease-in-out infinite;
+@keyframes milad-glow {
+    0%,100% { filter: drop-shadow(0 0 12px rgba(212,175,55,.5)); transform: scale(1) rotate(-2deg); }
+    50%      { filter: drop-shadow(0 0 28px rgba(212,175,55,.85)); transform: scale(1.04) rotate(2deg); }
 }
-@keyframes pak-wave {
-    0%   { transform: perspective(400px) rotateY(0deg)   skewY(.4deg); }
-    25%  { transform: perspective(400px) rotateY(4deg)   skewY(-.6deg); }
-    50%  { transform: perspective(400px) rotateY(0deg)   skewY(.5deg); }
-    75%  { transform: perspective(400px) rotateY(-3deg)  skewY(-.4deg); }
-    100% { transform: perspective(400px) rotateY(0deg)   skewY(.4deg); }
-}
-.pak-flag-label {
-    font-size: .68rem; font-weight: 700; color: rgba(255,255,255,.50);
+.milad-art-label {
+    font-size: .68rem; font-weight: 700; color: rgba(212,175,55,.75);
     letter-spacing: .10em; text-transform: uppercase; text-align: center;
-    margin-top: .2rem;
 }
 .gn-emoji-stack {
     position: relative; width: 120px; height: 120px;
@@ -1031,107 +1018,87 @@
         {{-- GVI NETWORK BANNER --}}
         <div class="gn-banner">
 
-            {{-- layered glow: green left, light-green right, white bottom --}}
+            {{-- layered glow: green left, gold right, white bottom --}}
             <div style="position:absolute;inset:0;pointer-events:none;
                 background:
-                    radial-gradient(ellipse 680px 400px at 5%  62%, rgba(0,120,50,.55) 0%, transparent 60%),
-                    radial-gradient(ellipse 520px 330px at 93% 8%,  rgba(0,165,80,.38) 0%, transparent 58%),
-                    radial-gradient(ellipse 380px 280px at 50% 108%,rgba(255,255,255,.06) 0%, transparent 55%);"></div>
+                    radial-gradient(ellipse 680px 400px at 5%  62%, rgba(0,100,40,.55) 0%, transparent 60%),
+                    radial-gradient(ellipse 520px 330px at 93% 8%,  rgba(212,175,55,.30) 0%, transparent 58%),
+                    radial-gradient(ellipse 380px 280px at 50% 108%,rgba(255,255,255,.05) 0%, transparent 55%);"></div>
 
             {{-- subtle grid overlay --}}
             <div style="position:absolute;inset:0;pointer-events:none;
                 background-image:
-                    repeating-linear-gradient(60deg, rgba(0,165,80,.022) 0,rgba(0,165,80,.022) 1px,transparent 1px,transparent 28px),
-                    repeating-linear-gradient(-60deg,rgba(255,255,255,.014) 0,rgba(255,255,255,.014) 1px,transparent 1px,transparent 28px);"></div>
+                    repeating-linear-gradient(60deg, rgba(212,175,55,.018) 0,rgba(212,175,55,.018) 1px,transparent 1px,transparent 28px),
+                    repeating-linear-gradient(-60deg,rgba(255,255,255,.012) 0,rgba(255,255,255,.012) 1px,transparent 1px,transparent 28px);"></div>
 
-            {{-- floating particles: green / white --}}
+            {{-- floating particles: gold / white / green --}}
             <div class="gn-confetti">
-                <div class="gn-dot" style="left:4%;  top:52%; width:5px;height:5px; background:#4ade80; --dur:3.4s;--del:.0s"></div>
+                <div class="gn-dot" style="left:4%;  top:52%; width:5px;height:5px; background:#d4af37; --dur:3.4s;--del:.0s"></div>
                 <div class="gn-dot" style="left:14%; top:26%; width:3px;height:3px; background:#ffffff; --dur:2.8s;--del:.7s"></div>
-                <div class="gn-dot" style="left:24%; top:71%; width:5px;height:5px; background:#00a550; --dur:3.9s;--del:1.2s"></div>
-                <div class="gn-dot" style="left:37%; top:17%; width:4px;height:4px; background:#4ade80; --dur:3.0s;--del:.4s"></div>
+                <div class="gn-dot" style="left:24%; top:71%; width:5px;height:5px; background:#4ade80; --dur:3.9s;--del:1.2s"></div>
+                <div class="gn-dot" style="left:37%; top:17%; width:4px;height:4px; background:#f5e27a; --dur:3.0s;--del:.4s"></div>
                 <div class="gn-dot" style="left:52%; top:79%; width:3px;height:3px; background:#ffffff; --dur:3.6s;--del:.9s"></div>
-                <div class="gn-dot" style="left:63%; top:36%; width:5px;height:5px; background:#00a550; --dur:4.1s;--del:.2s"></div>
-                <div class="gn-dot" style="left:76%; top:61%; width:3px;height:3px; background:#86efac; --dur:3.2s;--del:1.5s"></div>
-                <div class="gn-dot" style="left:85%; top:21%; width:4px;height:4px; background:#ffffff; --dur:2.6s;--del:.6s"></div>
-                <div class="gn-dot" style="left:94%; top:67%; width:3px;height:3px; background:#4ade80; --dur:3.7s;--del:1.0s"></div>
+                <div class="gn-dot" style="left:63%; top:36%; width:5px;height:5px; background:#d4af37; --dur:4.1s;--del:.2s"></div>
+                <div class="gn-dot" style="left:76%; top:61%; width:3px;height:3px; background:#4ade80; --dur:3.2s;--del:1.5s"></div>
+                <div class="gn-dot" style="left:85%; top:21%; width:4px;height:4px; background:#f5e27a; --dur:2.6s;--del:.6s"></div>
+                <div class="gn-dot" style="left:94%; top:67%; width:3px;height:3px; background:#d4af37; --dur:3.7s;--del:1.0s"></div>
             </div>
 
             <div class="gn-inner">
 
                 {{-- Left: Text --}}
                 <div>
-                    <div class="gn-tag">
-                        <span class="gn-tag-pulse"></span>
-                        79th Independence Day &nbsp;·&nbsp; 14 August 2026
+                    <div class="gn-tag" style="color:#d4af37;background:rgba(212,175,55,.12);border-color:rgba(212,175,55,.35);">
+                        <span class="gn-tag-pulse" style="background:#d4af37;box-shadow:0 0 8px #d4af37;"></span>
+                        Eid Milad-un-Nabi ﷺ &nbsp;·&nbsp; 12 Rabi-ul-Awwal
                     </div>
 
                     <div class="gn-headline">
-                        Pakistan Zindabad! ☪<br>
-                        <span class="gn-hl-accent">Jashn-e-Azadi Mubarak.</span>
+                        ☪ Milad-un-Nabi Mubarak!<br>
+                        <span class="gn-hl-accent" style="background:linear-gradient(135deg,#d4af37,#f5e27a,#ffffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Rehmat-ul-Alameen ﷺ</span>
                     </div>
 
                     <div class="gn-body">
-                        <strong>GVI</strong> ki taraf se tamam members ko <strong>79ویں یومِ آزادی</strong> ki dil ki gehraiyon se mubarakbaad!
-                        Pakistan ki tarah <strong>GVI</strong> ka safar bhi umeed, mehnat aur yaqeen ki buniyad par qaim hai.<br><br>
-                        Is mubarak mauke par aap apne <strong>saving plan</strong> ko mazboot karein aur apni <strong>network team</strong>
-                        ko inspire karein — milkar ham sab ka mustaqbil roshan hai.
+                        <strong>GVI</strong> ki taraf se tamam members ko <strong>Eid Milad-un-Nabi ﷺ</strong> ki dil ki gehraiyon se mubarakbaad!<br><br>
+                        Huzoor Nabi Kareem ﷺ ki seerat-e-mubarak hamein mehnat, ikhlas aur umeed ka sabaq deti hai —
+                        isi buniyad par <strong>GVI</strong> ka safar bhi qaim hai.
                     </div>
 
-                    <div class="gn-quote">
-                        ☪ &nbsp;"Aik qaum, aik manzil — GVI k sath apna mustaqbil sanwaren." &nbsp;·&nbsp; 14 August 2026
+                    <div class="gn-quote" style="color:rgba(212,175,55,.90);background:rgba(212,175,55,.07);border-color:rgba(212,175,55,.20);">
+                        ☪ &nbsp;"Rehmat ke nabi ﷺ ka sadqa — GVI k sath apna aur apnon ka mustaqbil sanwaren."
                     </div>
                 </div>
 
-                {{-- Right: Animated Pakistan Flag --}}
+                {{-- Right: Animated Crescent & Star --}}
                 <div class="gn-art">
 
-                    {{-- Waving Pakistan Flag SVG --}}
-                    <div class="pak-flag-wrap">
-                        <div class="pak-pole"></div>
-                        <svg class="pak-flag-svg" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
+                    <div class="milad-art-wrap">
+                        <svg class="milad-crescent-svg" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
                             <defs>
-                                {{-- Wave displacement filter --}}
-                                <filter id="pak-wave-f" x="-2%" y="-5%" width="108%" height="115%">
-                                    <feTurbulence type="fractalNoise" baseFrequency="0.02 0.10"
-                                                  numOctaves="3" seed="4" result="noise">
-                                        <animate attributeName="baseFrequency"
-                                                 dur="3.2s"
-                                                 values="0.020 0.10;0.030 0.07;0.020 0.10"
-                                                 repeatCount="indefinite"/>
-                                    </feTurbulence>
-                                    <feDisplacementMap in="SourceGraphic" in2="noise"
-                                                       scale="7" xChannelSelector="R" yChannelSelector="G"/>
+                                <radialGradient id="cres-grd" cx="40%" cy="35%" r="65%">
+                                    <stop offset="0%"   stop-color="#f5e27a"/>
+                                    <stop offset="55%"  stop-color="#d4af37"/>
+                                    <stop offset="100%" stop-color="#8b6914"/>
+                                </radialGradient>
+                                <filter id="glow-f">
+                                    <feGaussianBlur stdDeviation="3" result="blur"/>
+                                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                                 </filter>
-                                {{-- Star clip so it stays inside flag --}}
-                                <clipPath id="flag-clip">
-                                    <rect x="0" y="0" width="180" height="120"/>
-                                </clipPath>
                             </defs>
-
-                            <g filter="url(#pak-wave-f)" clip-path="url(#flag-clip)">
-                                {{-- White vertical stripe (left 1/4) --}}
-                                <rect x="0" y="0" width="45" height="120" fill="#ffffff"/>
-
-                                {{-- Green field (right 3/4) --}}
-                                <rect x="45" y="0" width="135" height="120" fill="#01411C"/>
-
-                                {{-- Crescent moon: white outer circle minus green inner circle --}}
-                                <circle cx="104" cy="60" r="27" fill="#ffffff"/>
-                                <circle cx="118" cy="57" r="22" fill="#01411C"/>
-
-                                {{-- 5-pointed star --}}
-                                {{-- Center: (134, 46), outer r=11, inner r=4.5 --}}
-                                <polygon fill="#ffffff"
-                                    points="134,35 136.8,43.5 145.5,43.6 138.7,48.9 141.1,57.5 134,52.6 126.9,57.5 129.3,48.9 122.5,43.6 131.2,43.5"/>
-                            </g>
+                            {{-- Crescent --}}
+                            <circle cx="65" cy="70" r="42" fill="url(#cres-grd)" filter="url(#glow-f)"/>
+                            <circle cx="82" cy="62" r="34" fill="#010f04"/>
+                            {{-- Star --}}
+                            <polygon fill="url(#cres-grd)"
+                                points="108,36 110.5,43.5 118.5,43.6 112.3,48.4 114.5,56 108,51.5 101.5,56 103.7,48.4 97.5,43.6 105.5,43.5"
+                                filter="url(#glow-f)"/>
                         </svg>
+
+                        <div class="milad-art-label">☪ Eid Milad-un-Nabi ﷺ</div>
                     </div>
 
-                    <div class="pak-flag-label">🇵🇰 Pakistan Zindabad</div>
-
                     <div class="gn-badge-row mt-1">
-                        <span class="gn-badge" style="border-color:rgba(0,165,80,.40);color:#4ade80;">☪ 14 August 2026</span>
+                        <span class="gn-badge" style="border-color:rgba(212,175,55,.45);color:#d4af37;">☪ 12 Rabi-ul-Awwal</span>
                     </div>
                     <div class="gn-badge-row mt-1">
                         <span class="gn-badge" style="border-color:rgba(0,230,152,.35);color:#00e698;">↑ Daily ROI</span>
@@ -1476,25 +1443,25 @@
         {{-- Announcement --}}
         <div class="ann-card">
             <div class="ann-inner">
-                <div class="ann-eyebrow">🇵🇰 Special Announcement — Jashn-e-Azadi 2026</div>
-                <div class="ann-title">79ویں یومِ آزادی مبارک! — 14 August 2026</div>
+                <div class="ann-eyebrow">☪ Special Announcement — Eid Milad-un-Nabi ﷺ 2026</div>
+                <div class="ann-title">عید میلاد النبی ﷺ مبارک! — 12 ربیع الاول</div>
                 <div class="ann-desc">
-                    GVI family ki taraf se aap tamam members ko Pakistan ka 79واں یوم آزادی mubarak ho!
-                    Is mubarak din apne saving plan ko review karen, apni team ko motivate karen, aur mil kar apna financial future roshan karen.
-                    Pakistan ki tarah GVI ka safar bhi azm, mehnat aur umeed ki dastan hai.
+                    GVI family ki taraf se aap tamam members ko <strong>Eid Milad-un-Nabi ﷺ</strong> ki dil ki gehraiyon se mubarakbaad!
+                    Huzoor Paak ﷺ ki seerat-e-tayyiba hamein ikhlas, mehnat aur umeed ki raah dikhati hai.
+                    Is mubarak mauke par apne saving plan ko mazboot karen aur apni team ko inspire karen — milkar apna aur apnon ka mustaqbil roshan karen.
                 </div>
                 <div class="ann-chips">
                     <div class="ann-chip hi">
-                        <div class="ann-chip-val">1947</div>
-                        <div class="ann-chip-lbl">Saal-e-Azadi</div>
+                        <div class="ann-chip-val">12</div>
+                        <div class="ann-chip-lbl">Rabi-ul-Awwal</div>
                     </div>
                     <div class="ann-chip hi">
-                        <div class="ann-chip-val">79th</div>
-                        <div class="ann-chip-lbl">Independence Year</div>
+                        <div class="ann-chip-val">ﷺ</div>
+                        <div class="ann-chip-lbl">Nabi-e-Kareem</div>
                     </div>
                     <div class="ann-chip hi">
-                        <div class="ann-chip-val">14 Aug</div>
-                        <div class="ann-chip-lbl">Jashn-e-Azadi</div>
+                        <div class="ann-chip-val">☪</div>
+                        <div class="ann-chip-lbl">Milad Mubarak</div>
                     </div>
                 </div>
             </div>
