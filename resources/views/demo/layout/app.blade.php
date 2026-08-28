@@ -206,6 +206,7 @@
                         data-menu-dropdown-timeout="500">
                         <!--begin::Menu Nav-->
                         <ul class="menu-nav">
+                            @php $isSavingOnly = auth()->user()->account_type === 'saving'; @endphp
                             <li class="menu-item menu-item-active" aria-haspopup="true">
                                 <a href="{{ route('dashboard') }}" class="menu-link">
                                     <span class="svg-icon menu-icon">
@@ -251,31 +252,19 @@
                                 <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
                             </li>
 
-                            <li class="menu-item menu-item-submenu  @if (request()->is('genealogy*')) menu-item-open @endif"
+                            <li class="menu-item menu-item-submenu @if(request()->is('genealogy*')) menu-item-open @endif"
                                 aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
                                     <span class="svg-icon menu-icon">
-                                        <!--begin::Svg Icon | path:assets/media/svg/icons/Layout/Layout-4-blocks.svg-->
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                            viewBox="0 0 24 24" version="1.1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                                                 <rect x="0" y="0" width="24" height="24" />
-                                                <path
-                                                    d="M7,11 L15,11 C16.1045695,11 17,10.1045695 17,9 L17,8 L19,8 L19,9 C19,11.209139 17.209139,13 15,13 L7,13 L7,15 C7,15.5522847 6.55228475,16 6,16 C5.44771525,16 5,15.5522847 5,15 L5,9 C5,8.44771525 5.44771525,8 6,8 C6.55228475,8 7,8.44771525 7,9 L7,11 Z"
-                                                    fill="#000000" opacity="0.3" />
-                                                <path
-                                                    d="M6,21 C7.1045695,21 8,20.1045695 8,19 C8,17.8954305 7.1045695,17 6,17 C4.8954305,17 4,17.8954305 4,19 C4,20.1045695 4.8954305,21 6,21 Z M6,23 C3.790861,23 2,21.209139 2,19 C2,16.790861 3.790861,15 6,15 C8.209139,15 10,16.790861 10,19 C10,21.209139 8.209139,23 6,23 Z"
-                                                    fill="#000000" fill-rule="nonzero" />
-                                                <path
-                                                    d="M18,7 C19.1045695,7 20,6.1045695 20,5 C20,3.8954305 19.1045695,3 18,3 C16.8954305,3 16,3.8954305 16,5 C16,6.1045695 16.8954305,7 18,7 Z M18,9 C15.790861,9 14,7.209139 14,5 C14,2.790861 15.790861,1 18,1 C20.209139,1 22,2.790861 22,5 C22,7.209139 20.209139,9 18,9 Z"
-                                                    fill="#000000" fill-rule="nonzero" />
-                                                <path
-                                                    d="M6,7 C7.1045695,7 8,6.1045695 8,5 C8,3.8954305 7.1045695,3 6,3 C4.8954305,3 4,3.8954305 4,5 C4,6.1045695 4.8954305,7 6,7 Z M6,9 C3.790861,9 2,7.209139 2,5 C2,2.790861 3.790861,1 6,1 C8.209139,1 10,2.790861 10,5 C10,7.209139 8.209139,9 6,9 Z"
-                                                    fill="#000000" fill-rule="nonzero" />
+                                                <path d="M7,11 L15,11 C16.1045695,11 17,10.1045695 17,9 L17,8 L19,8 L19,9 C19,11.209139 17.209139,13 15,13 L7,13 L7,15 C7,15.5522847 6.55228475,16 6,16 C5.44771525,16 5,15.5522847 5,15 L5,9 C5,8.44771525 5.44771525,8 6,8 C6.55228475,8 7,8.44771525 7,9 L7,11 Z" fill="#000000" opacity="0.3" />
+                                                <path d="M6,21 C7.1045695,21 8,20.1045695 8,19 C8,17.8954305 7.1045695,17 6,17 C4.8954305,17 4,17.8954305 4,19 C4,20.1045695 4.8954305,21 6,21 Z M6,23 C3.790861,23 2,21.209139 2,19 C2,16.790861 3.790861,15 6,15 C8.209139,15 10,16.790861 10,19 C10,21.209139 8.209139,23 6,23 Z" fill="#000000" fill-rule="nonzero" />
+                                                <path d="M18,7 C19.1045695,7 20,6.1045695 20,5 C20,3.8954305 19.1045695,3 18,3 C16.8954305,3 16,3.8954305 16,5 C16,6.1045695 16.8954305,7 18,7 Z M18,9 C15.790861,9 14,7.209139 14,5 C14,2.790861 15.790861,1 18,1 C20.209139,1 22,2.790861 22,5 C22,7.209139 20.209139,9 18,9 Z" fill="#000000" fill-rule="nonzero" />
+                                                <path d="M6,7 C7.1045695,7 8,6.1045695 8,5 C8,3.8954305 7.1045695,3 6,3 C4.8954305,3 4,3.8954305 4,5 C4,6.1045695 4.8954305,7 6,7 Z M6,9 C3.790861,9 2,7.209139 2,5 C2,2.790861 3.790861,1 6,1 C8.209139,1 10,2.790861 10,5 C10,7.209139 8.209139,9 6,9 Z" fill="#000000" fill-rule="nonzero" />
                                             </g>
                                         </svg>
-                                        <!--end::Svg Icon-->
                                     </span>
                                     <span class="menu-text">Genealogy</span>
                                     <i class="menu-arrow"></i>
@@ -284,47 +273,38 @@
                                     <i class="menu-arrow"></i>
                                     <ul class="menu-subnav">
                                         <li class="menu-item menu-item-parent" aria-haspopup="true">
-                                            <span class="menu-link">
-                                                <span class="menu-text">Genealogy</span>
-                                            </span>
+                                            <span class="menu-link"><span class="menu-text">Genealogy</span></span>
                                         </li>
-                                        <li class="menu-item menu-item-submenu @if(request()->is('genealogy/team*')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('genealogy.team') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">My Team</span>
 
+                                        @if(!$isSavingOnly)
+                                        <li class="menu-item @if(request()->is('genealogy/team*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('genealogy.team') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
+                                                <span class="menu-text">My Team</span>
                                             </a>
                                         </li>
-                                        @if((auth()->user()->account_type === 'saving' && auth()->user()->can_login) || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
-                                        <li class="menu-item menu-item-submenu @if(request()->is('genealogy/my-saving-tree*')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('genealogy.my.saving.tree') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line">
-                                                    <span></span>
-                                                </i>
+                                        @endif
+
+                                        @if($isSavingOnly || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
+                                        <li class="menu-item @if(request()->is('genealogy/my-saving-tree*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('genealogy.my.saving.tree') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
                                                 <span class="menu-text">My Saving Team</span>
                                             </a>
                                         </li>
                                         @endif
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
+
+                                        @if(!$isSavingOnly)
+                                        <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
                                             <a href="javascript:;" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line">
-                                                    <span></span>
-                                                </i>
+                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
                                                 <span class="menu-text">Projects</span>
                                                 <i class="menu-arrow"></i>
                                             </a>
                                         </li>
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
+                                        <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
                                             <a href="javascript:;" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line">
-                                                    <span></span>
-                                                </i>
+                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
                                                 <span class="menu-text">Support Center</span>
                                                 <i class="menu-arrow"></i>
                                             </a>
@@ -332,82 +312,57 @@
                                                 <i class="menu-arrow"></i>
                                                 <ul class="menu-subnav">
                                                     <li class="menu-item" aria-haspopup="true">
-                                                        <a href="custom/apps/support-center/home-1.html"
-                                                            class="menu-link">
-                                                            <i class="menu-bullet menu-bullet-dot">
-                                                                <span></span>
-                                                            </i>
+                                                        <a href="custom/apps/support-center/home-1.html" class="menu-link">
+                                                            <i class="menu-bullet menu-bullet-dot"><span></span></i>
                                                             <span class="menu-text">Live Chat</span>
                                                         </a>
                                                     </li>
-
                                                 </ul>
                                             </div>
                                         </li>
-
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
+                                        <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
                                             <a href="javascript:;" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line">
-                                                    <span></span>
-                                                </i>
+                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
                                                 <span class="menu-text">Education Center</span>
                                                 <i class="menu-arrow"></i>
                                             </a>
                                             <div class="menu-submenu">
                                                 <i class="menu-arrow"></i>
                                                 <ul class="menu-subnav">
-                                                    <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                        data-menu-toggle="hover">
+                                                    <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
                                                         <a href="javascript:;" class="menu-link menu-toggle">
-                                                            <i class="menu-bullet menu-bullet-dot">
-                                                                <span></span>
-                                                            </i>
+                                                            <i class="menu-bullet menu-bullet-dot"><span></span></i>
                                                             <span class="menu-text">How TO ?</span>
                                                             <i class="menu-arrow"></i>
                                                         </a>
                                                     </li>
                                                     <li class="menu-item" aria-haspopup="true">
-                                                        <a href="custom/apps/education/class/dashboard.html"
-                                                            class="menu-link">
-                                                            <i class="menu-bullet menu-bullet-dot">
-                                                                <span></span>
-                                                            </i>
+                                                        <a href="custom/apps/education/class/dashboard.html" class="menu-link">
+                                                            <i class="menu-bullet menu-bullet-dot"><span></span></i>
                                                             <span class="menu-text">Live Meetings</span>
                                                         </a>
                                                     </li>
                                                 </ul>
                                             </div>
                                         </li>
+                                        @endif
 
                                     </ul>
                                 </div>
                             </li>
-                            <li class="menu-item menu-item-submenu  @if (request()->is('genealogy*')) menu-item-open @endif"
-                                aria-haspopup="true" data-menu-toggle="hover">
+                            @if(!$isSavingOnly)
+                            <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
                                     <span class="svg-icon menu-icon">
-                                        <!--begin::Svg Icon | path:assets/media/svg/icons/Layout/Layout-4-blocks.svg-->
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                            viewBox="0 0 24 24" version="1.1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                                                 <rect x="0" y="0" width="24" height="24" />
-                                                <path
-                                                    d="M7,11 L15,11 C16.1045695,11 17,10.1045695 17,9 L17,8 L19,8 L19,9 C19,11.209139 17.209139,13 15,13 L7,13 L7,15 C7,15.5522847 6.55228475,16 6,16 C5.44771525,16 5,15.5522847 5,15 L5,9 C5,8.44771525 5.44771525,8 6,8 C6.55228475,8 7,8.44771525 7,9 L7,11 Z"
-                                                    fill="#000000" opacity="0.3" />
-                                                <path
-                                                    d="M6,21 C7.1045695,21 8,20.1045695 8,19 C8,17.8954305 7.1045695,17 6,17 C4.8954305,17 4,17.8954305 4,19 C4,20.1045695 4.8954305,21 6,21 Z M6,23 C3.790861,23 2,21.209139 2,19 C2,16.790861 3.790861,15 6,15 C8.209139,15 10,16.790861 10,19 C10,21.209139 8.209139,23 6,23 Z"
-                                                    fill="#000000" fill-rule="nonzero" />
-                                                <path
-                                                    d="M18,7 C19.1045695,7 20,6.1045695 20,5 C20,3.8954305 19.1045695,3 18,3 C16.8954305,3 16,3.8954305 16,5 C16,6.1045695 16.8954305,7 18,7 Z M18,9 C15.790861,9 14,7.209139 14,5 C14,2.790861 15.790861,1 18,1 C20.209139,1 22,2.790861 22,5 C22,7.209139 20.209139,9 18,9 Z"
-                                                    fill="#000000" fill-rule="nonzero" />
-                                                <path
-                                                    d="M6,7 C7.1045695,7 8,6.1045695 8,5 C8,3.8954305 7.1045695,3 6,3 C4.8954305,3 4,3.8954305 4,5 C4,6.1045695 4.8954305,7 6,7 Z M6,9 C3.790861,9 2,7.209139 2,5 C2,2.790861 3.790861,1 6,1 C8.209139,1 10,2.790861 10,5 C10,7.209139 8.209139,9 6,9 Z"
-                                                    fill="#000000" fill-rule="nonzero" />
+                                                <path d="M7,11 L15,11 C16.1045695,11 17,10.1045695 17,9 L17,8 L19,8 L19,9 C19,11.209139 17.209139,13 15,13 L7,13 L7,15 C7,15.5522847 6.55228475,16 6,16 C5.44771525,16 5,15.5522847 5,15 L5,9 C5,8.44771525 5.44771525,8 6,8 C6.55228475,8 7,8.44771525 7,9 L7,11 Z" fill="#000000" opacity="0.3" />
+                                                <path d="M6,21 C7.1045695,21 8,20.1045695 8,19 C8,17.8954305 7.1045695,17 6,17 C4.8954305,17 4,17.8954305 4,19 C4,20.1045695 4.8954305,21 6,21 Z M6,23 C3.790861,23 2,21.209139 2,19 C2,16.790861 3.790861,15 6,15 C8.209139,15 10,16.790861 10,19 C10,21.209139 8.209139,23 6,23 Z" fill="#000000" fill-rule="nonzero" />
+                                                <path d="M18,7 C19.1045695,7 20,6.1045695 20,5 C20,3.8954305 19.1045695,3 18,3 C16.8954305,3 16,3.8954305 16,5 C16,6.1045695 16.8954305,7 18,7 Z M18,9 C15.790861,9 14,7.209139 14,5 C14,2.790861 15.790861,1 18,1 C20.209139,1 22,2.790861 22,5 C22,7.209139 20.209139,9 18,9 Z" fill="#000000" fill-rule="nonzero" />
+                                                <path d="M6,7 C7.1045695,7 8,6.1045695 8,5 C8,3.8954305 7.1045695,3 6,3 C4.8954305,3 4,3.8954305 4,5 C4,6.1045695 4.8954305,7 6,7 Z M6,9 C3.790861,9 2,7.209139 2,5 C2,2.790861 3.790861,1 6,1 C8.209139,1 10,2.790861 10,5 C10,7.209139 8.209139,9 6,9 Z" fill="#000000" fill-rule="nonzero" />
                                             </g>
                                         </svg>
-                                        <!--end::Svg Icon-->
                                     </span>
                                     <span class="menu-text">Product</span>
                                     <i class="menu-arrow"></i>
@@ -439,8 +394,9 @@
                                     </ul>
                                 </div>
                             </li>
+                            @endif {{-- !$isSavingOnly (Product menu end) --}}
 
-                            <li class="menu-item menu-item-submenu   @if (request()->is('wallets*')) menu-item-open @endif"
+                            <li class="menu-item menu-item-submenu @if(request()->is('wallets*')) menu-item-open @endif"
                                 aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
                                     <span class="svg-icon menu-icon">
@@ -470,18 +426,12 @@
                                     <ul class="menu-subnav">
 
                                         @php($savingRootId = \App\Models\Setting::first()?->saving_parent_user_id)
-                                        @if(auth()->user()->account_type === 'saving' && auth()->user()->can_login)
-                                            {{-- Saving account users --}}
+                                        @if($isSavingOnly && auth()->user()->can_login)
+                                            {{-- Saving-only account users: restricted wallet menu --}}
                                             <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
                                                 <a href="{{ route('wallets.saving.account') }}" class="menu-link">
                                                     <i class="menu-bullet menu-bullet-dot"><span></span></i>
                                                     <span class="menu-text">Saving Account</span>
-                                                </a>
-                                            </li>
-                                            <li class="menu-item @if(request()->is('wallets/direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
-                                                <a href="{{ route('wallets.direct.indirect') }}" class="menu-link">
-                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                    <span class="menu-text">Direct / Indirect</span>
                                                 </a>
                                             </li>
                                             <li class="menu-item @if(request()->is('wallets/online*')) menu-item-active @endif" aria-haspopup="true">
@@ -568,14 +518,14 @@
                                             @endif
                                         @endif
 
+                                        @if(!$isSavingOnly)
                                         <li class="menu-item" aria-haspopup="true">
                                             <a href="{{ route('show.transaction.history') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
                                                 <span class="menu-text">Transactions</span>
                                             </a>
                                         </li>
+                                        @endif
                                     </ul>
                                 </div>
                             </li>

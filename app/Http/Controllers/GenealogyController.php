@@ -12,12 +12,10 @@ class GenealogyController extends Controller
 {
     public function team()
     {
-        $user      = Auth::user();
-        $treeType  = $user->account_type === 'saving' ? 'saving' : 'standard';
+        $user = Auth::user();
 
         $nodeDataArray = [];
 
-        // Add the authenticated user as root
         $nodeDataArray[] = [
             'key'      => $user->id,
             'name'     => $user->username,
@@ -25,24 +23,56 @@ class GenealogyController extends Controller
             'image'    => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
         ];
 
-        // Build hierarchy using the correct tree
-        $buildHierarchy = function ($parent, $descendants) use (&$nodeDataArray, &$buildHierarchy, $treeType) {
-            $descendants = $descendants ?? collect();
-            foreach ($descendants as $descendant) {
-                // Only include active users who belong to the same tree type
-                if ($descendant->can_login && $descendant->account_type === ($treeType === 'saving' ? 'saving' : 'standard_investment')) {
-                    $nodeDataArray[] = [
-                        'key'    => $descendant->id,
-                        'parent' => $parent->id,
-                        'name'   => $descendant->username,
-                        'image'  => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
-                    ];
-                    $buildHierarchy($descendant, $descendant->children ?? collect());
-                }
-            }
-        };
+        // Always use the standard referral tree regardless of the logged-in user's account type
+        $descendantIds = DB::table('referral_trees')
+            ->where('ancestor_id', $user->id)
+            ->where('descendant_id', '!=', $user->id)
+            ->where('tree_type', 'standard')
+            ->pluck('descendant_id')
+            ->unique();
 
-        $buildHierarchy($user, $user->children ?? collect());
+        $allTreeUsers = User::whereIn('id', $descendantIds)
+            ->where('can_login', true)
+            ->where('account_type', '!=', 'saving') // standard tree never includes saving users
+            ->get()
+            ->keyBy('id');
+
+        // Fetch all direct-parent rows in one query, ordered by level so parents come before children
+        $parentRows = DB::table('referral_trees')
+            ->whereIn('descendant_id', $descendantIds->toArray())
+            ->where('tree_type', 'standard')
+            ->where('level', 1)
+            ->get()
+            ->keyBy('descendant_id');
+
+        $includedKeys = [$user->id => true];
+
+        // Sort by level ascending so parent nodes are added before their children
+        $orderedDescendants = DB::table('referral_trees')
+            ->where('ancestor_id', $user->id)
+            ->where('descendant_id', '!=', $user->id)
+            ->where('tree_type', 'standard')
+            ->orderBy('level')
+            ->pluck('descendant_id')
+            ->unique();
+
+        foreach ($orderedDescendants as $descendantId) {
+            $descendant = $allTreeUsers->get($descendantId);
+            if (!$descendant) continue;
+
+            $parentRow = $parentRows->get($descendantId);
+            $parentId  = $parentRow?->ancestor_id ?? $user->id;
+
+            if (!isset($includedKeys[$parentId])) continue;
+
+            $nodeDataArray[] = [
+                'key'    => $descendant->id,
+                'parent' => $parentId,
+                'name'   => $descendant->username,
+                'image'  => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+            ];
+            $includedKeys[$descendant->id] = true;
+        }
 
         return view('genealogy.team', compact('user', 'nodeDataArray'));
     }
@@ -143,6 +173,7 @@ class GenealogyController extends Controller
 
         $allTreeUsers = User::whereIn('id', $descendantIds)
             ->where('can_login', true)
+            ->where('account_type', 'saving') // saving tree only shows saving account users
             ->get()
             ->keyBy('id');
 
@@ -223,17 +254,18 @@ class GenealogyController extends Controller
 
     public function teamMembers()
     {
-        $user     = Auth::user();
-        $treeType = $user->account_type === 'saving' ? 'saving' : 'standard';
+        $user = Auth::user();
 
-        // Get descendants from the correct tree
+        // Always show standard tree members — saving members are in the saving tree
         $descendantIds = DB::table('referral_trees')
             ->where('ancestor_id', $user->id)
-            ->where('tree_type', $treeType)
+            ->where('tree_type', 'standard')
             ->where('level', 1)
             ->pluck('descendant_id');
 
-        $teamMembers = User::whereIn('id', $descendantIds)->get();
+        $teamMembers = User::whereIn('id', $descendantIds)
+            ->where('account_type', '!=', 'saving')
+            ->get();
 
         return view('genealogy.team-members', compact('teamMembers'));
     }

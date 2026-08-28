@@ -391,16 +391,23 @@ class WalletController extends Controller
         $minTransfer = (float) ($setting->saving_commission_min_transfer ?? 10.70);
 
         $request->validate([
-            'amount' => 'required|numeric|min:' . $minTransfer,
+            'amount'          => 'required|numeric|min:' . $minTransfer,
+            'commission_type' => 'nullable|in:direct,indirect',
         ]);
 
-        $amount = (float) $request->amount;
+        $amount         = (float) $request->amount;
+        $commissionType = $request->input('commission_type'); // null = all, 'direct' or 'indirect'
 
-        $wallets = Wallet::where('user_id', $user->id)
+        $walletsQuery = Wallet::where('user_id', $user->id)
             ->where('wallet_type', 'direct_indirect')
             ->where('source_type', 'saving_instalment')
-            ->where('balance', '>', 0)
-            ->get();
+            ->where('balance', '>', 0);
+
+        if ($commissionType) {
+            $walletsQuery->where('commission_type', $commissionType);
+        }
+
+        $wallets = $walletsQuery->get();
 
         $currentBalance = $wallets->sum('balance');
 
@@ -510,24 +517,47 @@ class WalletController extends Controller
             403
         );
 
-        $roiEntries = \App\Models\Wallet::where('user_id', $user->id)
-            ->where('wallet_type', 'saving_roi')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15, ['*'], 'roi_page');
+        // ROI
+        $roiBase        = \App\Models\Wallet::where('user_id', $user->id)->where('wallet_type', 'saving_roi');
+        $roiTotalEarned = (clone $roiBase)->sum('total_amount');
+        $roiBalance     = (clone $roiBase)->sum('balance');
+        $roiEntries     = (clone $roiBase)->orderBy('created_at', 'desc')->paginate(15, ['*'], 'roi_page');
 
-        $commissionEntries = \App\Models\Wallet::where('user_id', $user->id)
+        // Instalment lock for ROI
+        $totalInstalments  = $user->savingInstalments()->count();
+        $paidInstalments   = $user->savingInstalments()->where('status', 'confirmed')->count();
+        $roiTransferLocked = $totalInstalments === 0 || $paidInstalments < $totalInstalments;
+
+        // Commissions base
+        $commBase = \App\Models\Wallet::where('user_id', $user->id)
             ->where('wallet_type', 'direct_indirect')
-            ->where('source_type', 'saving_instalment')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15, ['*'], 'comm_page');
+            ->where('source_type', 'saving_instalment');
 
-        $totalRoi         = \App\Models\Wallet::where('user_id', $user->id)->where('wallet_type', 'saving_roi')->sum('balance');
-        $totalDirect      = \App\Models\Wallet::where('user_id', $user->id)->where('wallet_type', 'direct_indirect')->where('source_type', 'saving_instalment')->sum('direct_balance');
-        $totalIndirect    = \App\Models\Wallet::where('user_id', $user->id)->where('wallet_type', 'direct_indirect')->where('source_type', 'saving_instalment')->sum('indirect_balance');
+        // Direct
+        $directBase        = (clone $commBase)->where('commission_type', 'direct');
+        $directTotalEarned = (clone $directBase)->sum('direct_balance');
+        $directBalance     = (clone $directBase)->sum('balance');
+        $directEntries     = (clone $directBase)->orderBy('created_at', 'desc')->paginate(15, ['*'], 'dir_page');
+
+        // Indirect
+        $indirectBase        = (clone $commBase)->where('commission_type', 'indirect');
+        $indirectTotalEarned = (clone $indirectBase)->sum('indirect_balance');
+        $indirectBalance     = (clone $indirectBase)->sum('balance');
+        $indirectEntries     = (clone $indirectBase)->orderBy('created_at', 'desc')->paginate(15, ['*'], 'ind_page');
+
+        // Totals for summary cards
+        $totalEarned        = $roiTotalEarned + $directTotalEarned + $indirectTotalEarned;
+        $totalCurrentBalance= $roiBalance + $directBalance + $indirectBalance;
+
+        $setting = \App\Models\Setting::first();
 
         return view('wallets.saving-account', compact(
-            'user', 'roiEntries', 'commissionEntries',
-            'totalRoi', 'totalDirect', 'totalIndirect'
+            'user', 'setting',
+            'roiEntries', 'roiTotalEarned', 'roiBalance',
+            'totalInstalments', 'paidInstalments', 'roiTransferLocked',
+            'directEntries', 'directTotalEarned', 'directBalance',
+            'indirectEntries', 'indirectTotalEarned', 'indirectBalance',
+            'totalEarned', 'totalCurrentBalance'
         ));
     }
 
