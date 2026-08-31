@@ -26,17 +26,17 @@
                 <div class="card-body py-4">
                     <form method="GET" action="{{ route('saving.roi.report') }}">
                         <div class="row align-items-end">
-                            <div class="col-md-4">
+                            <div class="col-12 col-md-4 mb-3 mb-md-0">
                                 <label class="font-weight-bold font-size-sm">From Date</label>
                                 <input type="date" name="start_date" class="form-control form-control-sm form-control-solid"
                                     value="{{ request('start_date', $startDate->format('Y-m-d')) }}">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-12 col-md-4 mb-3 mb-md-0">
                                 <label class="font-weight-bold font-size-sm">To Date</label>
                                 <input type="date" name="end_date" class="form-control form-control-sm form-control-solid"
                                     value="{{ request('end_date', $endDate->format('Y-m-d')) }}">
                             </div>
-                            <div class="col-md-4 d-flex align-items-end mt-3 mt-md-0">
+                            <div class="col-12 col-md-4 d-flex align-items-end">
                                 <button type="submit" class="btn btn-primary btn-sm font-weight-bold mr-2">
                                     <i class="la la-search"></i> Apply
                                 </button>
@@ -53,18 +53,18 @@
 
             {{-- Summary Cards --}}
             <div class="row gutter-b">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6 mb-3">
                     <div class="card card-custom bg-success text-white">
-                        <div class="card-body py-5 text-center">
-                            <div style="font-size:1.8rem;font-weight:700;">${{ number_format($totalAllTime, 2) }}</div>
+                        <div class="card-body py-4 text-center">
+                            <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalAllTime, 2) }}</div>
                             <div class="font-size-sm mt-1">Total ROI Earned (All-Time)</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6 mb-3">
                     <div class="card card-custom bg-primary text-white">
-                        <div class="card-body py-5 text-center">
-                            <div style="font-size:1.8rem;font-weight:700;">${{ number_format($totalRoi, 2) }}</div>
+                        <div class="card-body py-4 text-center">
+                            <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalRoi, 2) }}</div>
                             <div class="font-size-sm mt-1">ROI in Selected Period</div>
                         </div>
                     </div>

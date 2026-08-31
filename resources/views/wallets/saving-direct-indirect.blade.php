@@ -43,35 +43,35 @@
             @endif
 
             {{-- Summary Cards --}}
-            <div class="row mb-6">
-                <div class="col-md-3">
-                    <div class="card card-custom bg-primary text-white">
-                        <div class="card-body py-5 text-center">
-                            <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalEarning, 2) }}</div>
-                            <div class="font-size-sm mt-1">Total Commissions Earned</div>
+            <div class="row mb-5">
+                <div class="col-12 col-md-3 mb-3">
+                    <div class="card card-custom bg-primary text-white h-100">
+                        <div class="card-body py-4 text-center">
+                            <div style="font-size:1.4rem;font-weight:700;">${{ number_format($totalEarning, 2) }}</div>
+                            <div class="font-size-sm mt-1">Total Earned</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card card-custom bg-success text-white">
-                        <div class="card-body py-5 text-center">
-                            <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalDirect, 2) }}</div>
-                            <div class="font-size-sm mt-1">Direct Commissions (Level 1)</div>
+                <div class="col-12 col-md-3 mb-3">
+                    <div class="card card-custom bg-success text-white h-100">
+                        <div class="card-body py-4 text-center">
+                            <div style="font-size:1.4rem;font-weight:700;">${{ number_format($totalDirect, 2) }}</div>
+                            <div class="font-size-sm mt-1">Direct (Level 1)</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card card-custom bg-info text-white">
-                        <div class="card-body py-5 text-center">
-                            <div style="font-size:1.6rem;font-weight:700;">${{ number_format($totalIndirect, 2) }}</div>
-                            <div class="font-size-sm mt-1">Indirect Commissions (Levels 2–7)</div>
+                <div class="col-12 col-md-3 mb-3">
+                    <div class="card card-custom bg-info text-white h-100">
+                        <div class="card-body py-4 text-center">
+                            <div style="font-size:1.4rem;font-weight:700;">${{ number_format($totalIndirect, 2) }}</div>
+                            <div class="font-size-sm mt-1">Indirect (Levels 2–7)</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card card-custom bg-warning text-white">
-                        <div class="card-body py-5 text-center">
-                            <div style="font-size:1.6rem;font-weight:700;">${{ number_format($currentBalance, 2) }}</div>
+                <div class="col-12 col-md-3 mb-3">
+                    <div class="card card-custom bg-warning text-white h-100">
+                        <div class="card-body py-4 text-center">
+                            <div style="font-size:1.4rem;font-weight:700;">${{ number_format($currentBalance, 2) }}</div>
                             <div class="font-size-sm mt-1">Available Balance</div>
                         </div>
                     </div>

@@ -115,6 +115,9 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
     // Saving ROI Report — user sees own ROI chart + export
     Route::get('wallets/saving-roi-report', [SavingRoiReportController::class, 'userIndex'])->name('saving.roi.report');
     Route::get('wallets/saving-roi-report/export', [SavingRoiReportController::class, 'userExport'])->name('saving.roi.report.export');
+
+    // Team Performance Tracker
+    Route::get('team-performance', [\App\Http\Controllers\TeamPerformanceController::class, 'index'])->name('team.performance');
 });
 
 // Admin Routes

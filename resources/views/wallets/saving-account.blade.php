@@ -43,49 +43,49 @@
             @endif
 
             {{-- 5 Summary Cards --}}
-            <div class="row mb-6 g-4">
-                <div class="col-6 col-md">
+            <div class="row mb-4">
+                <div class="col-12 col-md mb-3">
                     <div class="card card-custom h-100" style="background: linear-gradient(135deg,#6f42c1,#a855f7); color:#fff;">
-                        <div class="card-body py-5 text-center">
-                            <div class="mb-2" style="font-size:2rem;opacity:.85;"><i class="fas fa-wallet"></i></div>
-                            <div style="font-size:1.5rem;font-weight:700;">${{ number_format($totalEarned, 2) }}</div>
-                            <div class="mt-1" style="font-size:.78rem;opacity:.9;">Total Earned (All-Time)</div>
+                        <div class="card-body py-4 text-center">
+                            <div class="mb-2" style="font-size:1.6rem;opacity:.85;"><i class="fas fa-wallet"></i></div>
+                            <div style="font-size:1.25rem;font-weight:700;">${{ number_format($totalEarned, 2) }}</div>
+                            <div class="mt-1" style="font-size:.73rem;opacity:.9;">Total Earned</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md">
+                <div class="col-12 col-md mb-3">
                     <div class="card card-custom h-100" style="background: linear-gradient(135deg,#0d6efd,#3b82f6); color:#fff;">
-                        <div class="card-body py-5 text-center">
-                            <div class="mb-2" style="font-size:2rem;opacity:.85;"><i class="fas fa-coins"></i></div>
-                            <div style="font-size:1.5rem;font-weight:700;">${{ number_format($totalCurrentBalance, 2) }}</div>
-                            <div class="mt-1" style="font-size:.78rem;opacity:.9;">Current Total Balance</div>
+                        <div class="card-body py-4 text-center">
+                            <div class="mb-2" style="font-size:1.6rem;opacity:.85;"><i class="fas fa-coins"></i></div>
+                            <div style="font-size:1.25rem;font-weight:700;">${{ number_format($totalCurrentBalance, 2) }}</div>
+                            <div class="mt-1" style="font-size:.73rem;opacity:.9;">Current Balance</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md">
+                <div class="col-12 col-md mb-3">
                     <div class="card card-custom h-100" style="background: linear-gradient(135deg,#fd7e14,#f97316); color:#fff;">
-                        <div class="card-body py-5 text-center">
-                            <div class="mb-2" style="font-size:2rem;opacity:.85;"><i class="fas fa-chart-line"></i></div>
-                            <div style="font-size:1.5rem;font-weight:700;">${{ number_format($roiTotalEarned, 2) }}</div>
-                            <div class="mt-1" style="font-size:.78rem;opacity:.9;">Saving ROI Total</div>
+                        <div class="card-body py-4 text-center">
+                            <div class="mb-2" style="font-size:1.6rem;opacity:.85;"><i class="fas fa-chart-line"></i></div>
+                            <div style="font-size:1.25rem;font-weight:700;">${{ number_format($roiTotalEarned, 2) }}</div>
+                            <div class="mt-1" style="font-size:.73rem;opacity:.9;">Saving ROI Total</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md">
+                <div class="col-12 col-md mb-3">
                     <div class="card card-custom h-100" style="background: linear-gradient(135deg,#198754,#22c55e); color:#fff;">
-                        <div class="card-body py-5 text-center">
-                            <div class="mb-2" style="font-size:2rem;opacity:.85;"><i class="fas fa-arrow-right"></i></div>
-                            <div style="font-size:1.5rem;font-weight:700;">${{ number_format($directBalance, 2) }}</div>
-                            <div class="mt-1" style="font-size:.78rem;opacity:.9;">Direct Commission Balance</div>
+                        <div class="card-body py-4 text-center">
+                            <div class="mb-2" style="font-size:1.6rem;opacity:.85;"><i class="fas fa-arrow-right"></i></div>
+                            <div style="font-size:1.25rem;font-weight:700;">${{ number_format($directBalance, 2) }}</div>
+                            <div class="mt-1" style="font-size:.73rem;opacity:.9;">Direct Commission</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md">
+                <div class="col-12 col-md mb-3">
                     <div class="card card-custom h-100" style="background: linear-gradient(135deg,#0dcaf0,#06b6d4); color:#fff;">
-                        <div class="card-body py-5 text-center">
-                            <div class="mb-2" style="font-size:2rem;opacity:.85;"><i class="fas fa-sitemap"></i></div>
-                            <div style="font-size:1.5rem;font-weight:700;">${{ number_format($indirectBalance, 2) }}</div>
-                            <div class="mt-1" style="font-size:.78rem;opacity:.9;">Indirect Commission Balance</div>
+                        <div class="card-body py-4 text-center">
+                            <div class="mb-2" style="font-size:1.6rem;opacity:.85;"><i class="fas fa-sitemap"></i></div>
+                            <div style="font-size:1.25rem;font-weight:700;">${{ number_format($indirectBalance, 2) }}</div>
+                            <div class="mt-1" style="font-size:.73rem;opacity:.9;">Indirect Commission</div>
                         </div>
                     </div>
                 </div>
