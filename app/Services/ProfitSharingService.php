@@ -13,6 +13,21 @@ class ProfitSharingService
 {
     public function distributeCompanyProfits($totalProfit, $distributionType = 'rank_based')
     {
+        // Prevent the same distribution type from running twice on the same calendar day.
+        // Without this guard, running the command twice would credit every eligible user twice.
+        $todaySource = $distributionType . '_profit_sharing';
+        $alreadyRanToday = Wallet::where('wallet_type', 'profit_sharing')
+            ->where('wallet_src', $todaySource)
+            ->whereDate('created_at', now()->toDateString())
+            ->exists();
+
+        if ($alreadyRanToday) {
+            throw new \Exception(
+                "Profit distribution '{$distributionType}' was already run today (" .
+                now()->toDateString() . '). To re-run, reverse the existing entries first.'
+            );
+        }
+
         try {
             DB::beginTransaction();
 
@@ -60,21 +75,33 @@ class ProfitSharingService
             throw new \Exception('No eligible users found for profit sharing');
         }
 
-        // Calculate total weight based on rank levels
-        $totalWeight = $eligibleUsers->sum(function($user) {
-            return $user->currentRank->rank_level * 10; // Higher ranks get more weight
+        $setting = \App\Models\Setting::first();
+
+        // Bake the plan multiplier INTO the weight so that
+        // sum(all user shares) == $totalProfit exactly.
+        // VIP users get a larger slice of the pool rather than a post-hoc bonus
+        // that inflates the total payout beyond the budgeted amount.
+        $totalWeight = $eligibleUsers->sum(function($user) use ($setting) {
+            $multiplier = $user->user_plan === 'vip'
+                ? (float)($setting->vip_profit_multiplier ?? 1.5)
+                : (float)($setting->standard_profit_multiplier ?? 1.0);
+            return $user->currentRank->rank_level * 10 * $multiplier;
         });
 
-        // Distribute profits
         foreach ($eligibleUsers as $user) {
-            $userWeight = $user->currentRank->rank_level * 10;
-            $userShare = ($userWeight / $totalWeight) * $totalProfit;
+            $multiplier = $user->user_plan === 'vip'
+                ? (float)($setting->vip_profit_multiplier ?? 1.5)
+                : (float)($setting->standard_profit_multiplier ?? 1.0);
+            $userWeight = $user->currentRank->rank_level * 10 * $multiplier;
+            $userShare  = ($userWeight / $totalWeight) * $totalProfit;
 
             $this->creditProfitShare($user->id, $userShare, 'rank_based_profit_sharing', [
-                'rank_name' => $user->currentRank->rank_name,
-                'rank_level' => $user->currentRank->rank_level,
-                'user_weight' => $userWeight,
-                'total_weight' => $totalWeight
+                'rank_name'    => $user->currentRank->rank_name,
+                'rank_level'   => $user->currentRank->rank_level,
+                'user_weight'  => $userWeight,
+                'total_weight' => $totalWeight,
+                'user_plan'    => $user->user_plan ?? 'standard',
+                'multiplier'   => $multiplier,
             ]);
         }
     }
@@ -95,20 +122,28 @@ class ProfitSharingService
             throw new \Exception('No users with binary performance found');
         }
 
-        // Calculate total performance score
-        $totalPerformance = $eligibleUsers->sum(function($user) {
-            return $user->binarySystems->sum('total_earned');
+        $setting = \App\Models\Setting::first();
+
+        // Multiplier baked into score so total payout == $totalProfit exactly.
+        $totalScore = $eligibleUsers->sum(function($user) use ($setting) {
+            $multiplier = $user->user_plan === 'vip'
+                ? (float)($setting->vip_profit_multiplier ?? 1.5)
+                : (float)($setting->standard_profit_multiplier ?? 1.0);
+            return $user->binarySystems->sum('total_earned') * $multiplier;
         });
 
-        // Distribute based on binary performance
         foreach ($eligibleUsers as $user) {
-            $userPerformance = $user->binarySystems->sum('total_earned');
-            $userShare = ($userPerformance / $totalPerformance) * $totalProfit;
+            $multiplier    = $user->user_plan === 'vip'
+                ? (float)($setting->vip_profit_multiplier ?? 1.5)
+                : (float)($setting->standard_profit_multiplier ?? 1.0);
+            $userScore = $user->binarySystems->sum('total_earned') * $multiplier;
+            $userShare = ($userScore / $totalScore) * $totalProfit;
 
             $this->creditProfitShare($user->id, $userShare, 'binary_performance_profit_sharing', [
-                'binary_2x_earnings' => $user->binary2x->total_earned ?? 0,
-                'binary_7x_earnings' => $user->binary7x->total_earned ?? 0,
-                'total_binary_earnings' => $userPerformance
+                'binary_2x_earnings'   => $user->binary2x->total_earned ?? 0,
+                'binary_7x_earnings'   => $user->binary7x->total_earned ?? 0,
+                'total_binary_earnings'=> $user->binarySystems->sum('total_earned'),
+                'multiplier'           => $multiplier,
             ]);
         }
     }
@@ -128,28 +163,31 @@ class ProfitSharingService
             throw new \Exception('No users with investments found');
         }
 
-        // Calculate total investment
-        $totalInvestment = 0;
-        $userInvestments = [];
+        $setting = \App\Models\Setting::first();
+
+        $userScores    = [];
+        $totalScore    = 0;
 
         foreach ($eligibleUsers as $user) {
-            $userInvestment = $user->wallets()
+            $investment = $user->wallets()
                 ->where('wallet_type', 'investment')
                 ->sum('total_amount');
-
-            $userInvestments[$user->id] = $userInvestment;
-            $totalInvestment += $userInvestment;
+            $multiplier = $user->user_plan === 'vip'
+                ? (float)($setting->vip_profit_multiplier ?? 1.5)
+                : (float)($setting->standard_profit_multiplier ?? 1.0);
+            $score = $investment * $multiplier;
+            $userScores[$user->id] = ['investment' => $investment, 'score' => $score, 'multiplier' => $multiplier];
+            $totalScore += $score;
         }
 
-        // Distribute based on investment percentage
         foreach ($eligibleUsers as $user) {
-            $userInvestment = $userInvestments[$user->id];
-            $userShare = ($userInvestment / $totalInvestment) * $totalProfit;
+            $data      = $userScores[$user->id];
+            $userShare = ($data['score'] / $totalScore) * $totalProfit;
 
             $this->creditProfitShare($user->id, $userShare, 'investment_based_profit_sharing', [
-                'user_investment' => $userInvestment,
-                'total_investment' => $totalInvestment,
-                'investment_percentage' => ($userInvestment / $totalInvestment) * 100
+                'user_investment'      => $data['investment'],
+                'multiplier'           => $data['multiplier'],
+                'investment_percentage'=> ($data['score'] / $totalScore) * 100,
             ]);
         }
     }
@@ -166,28 +204,28 @@ class ProfitSharingService
             throw new \Exception('No users with teams found');
         }
 
-        // Calculate team sizes
-        $userTeamSizes = [];
-        $totalTeamSize = 0;
+        $setting     = \App\Models\Setting::first();
+        $userScores  = [];
+        $totalScore  = 0;
 
         foreach ($eligibleUsers as $user) {
-            $teamSize = $user->descendants()
-                ->where('blocked', false)
-                ->count();
-
-            $userTeamSizes[$user->id] = $teamSize;
-            $totalTeamSize += $teamSize;
+            $teamSize   = $user->descendants()->where('blocked', false)->count();
+            $multiplier = $user->user_plan === 'vip'
+                ? (float)($setting->vip_profit_multiplier ?? 1.5)
+                : (float)($setting->standard_profit_multiplier ?? 1.0);
+            $score = $teamSize * $multiplier;
+            $userScores[$user->id] = ['team_size' => $teamSize, 'score' => $score, 'multiplier' => $multiplier];
+            $totalScore += $score;
         }
 
-        // Distribute based on team size
         foreach ($eligibleUsers as $user) {
-            $teamSize = $userTeamSizes[$user->id];
-            $userShare = ($teamSize / $totalTeamSize) * $totalProfit;
+            $data      = $userScores[$user->id];
+            $userShare = ($data['score'] / $totalScore) * $totalProfit;
 
             $this->creditProfitShare($user->id, $userShare, 'team_size_profit_sharing', [
-                'team_size' => $teamSize,
-                'total_team_size' => $totalTeamSize,
-                'team_percentage' => ($teamSize / $totalTeamSize) * 100
+                'team_size'      => $data['team_size'],
+                'multiplier'     => $data['multiplier'],
+                'team_percentage'=> ($data['score'] / $totalScore) * 100,
             ]);
         }
     }
@@ -199,42 +237,28 @@ class ProfitSharingService
             return;
         }
 
-        // Apply VIP/Standard multiplier
         $user = User::find($userId);
         if (!$user) {
             return;
         }
 
-        $setting = \App\Models\Setting::first();
-        $multiplier = 1.0; // Default multiplier
-
-        if ($user->user_plan === 'vip') {
-            $multiplier = $setting->vip_profit_multiplier ?? 1.5;
-        } else {
-            $multiplier = $setting->standard_profit_multiplier ?? 1.0;
-        }
-
-        // Apply multiplier to the profit share amount
-        $finalAmount = $amount * $multiplier;
-
-        // Add multiplier info to metadata
-        $metadata['base_amount'] = $amount;
-        $metadata['multiplier'] = $multiplier;
-        $metadata['user_plan'] = $user->user_plan ?? 'standard';
-        $metadata['final_amount'] = $finalAmount;
+        // NOTE: The plan multiplier is already baked into $amount by the caller
+        // (each distribution method folds the multiplier into the weight calculation
+        // so that total payout == total pool). Do NOT apply it again here.
+        $userPlan = $user->user_plan ?? 'standard';
 
         Wallet::create([
-            'user_id' => $userId,
-            'wallet_type' => 'profit_sharing',
+            'user_id'         => $userId,
+            'wallet_type'     => 'profit_sharing',
             'commission_type' => 'profit_share',
-            'balance' => $finalAmount,
-            'total_amount' => $finalAmount,
-            'wallet_src' => $source,
-            'description' => "Company profit sharing (" . strtoupper($user->user_plan ?? 'standard') . " {$multiplier}x): " . ucwords(str_replace('_', ' ', $source)),
-            'metadata' => json_encode($metadata)
+            'balance'         => $amount,
+            'total_amount'    => $amount,
+            'wallet_src'      => $source,
+            'description'     => 'Company profit sharing (' . strtoupper($userPlan) . '): ' . ucwords(str_replace('_', ' ', $source)),
+            'metadata'        => json_encode($metadata),
         ]);
 
-        Log::info("Credited ${finalAmount} (base: ${amount} × {$multiplier}) profit share to user {$userId} ({$user->user_plan}) via {$source}");
+        Log::info("Credited {$amount} profit share to user {$userId} ({$userPlan}) via {$source}");
     }
 
     public function getProfitSharingStats()

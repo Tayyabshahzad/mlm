@@ -8,6 +8,7 @@ use App\Models\SavingInstalment;
 use App\Models\Setting;
 use App\Models\TransactionLog;
 use App\Models\User;
+use App\Models\Wallet;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\SavingAccountService;
 use Illuminate\Http\RedirectResponse;
@@ -446,6 +447,182 @@ class SavingInstalmentController extends Controller
     }
 
     // =========================================================================
+    // ADMIN — update ADB / FISP insurance options for a user
+    // =========================================================================
+
+    public function adminUpdateInsurance(Request $request, User $user): RedirectResponse
+    {
+        abort_unless($user->account_type === 'saving' || $user->saving_enrolled, 404);
+
+        $user->update([
+            'adb_option'  => $request->boolean('adb_option'),
+            'fisp_option' => $request->boolean('fisp_option'),
+        ]);
+
+        return back()->with('success', 'Insurance options updated for ' . $user->name . '.');
+    }
+
+    // ADMIN — pay an instalment on behalf of a user
+    // =========================================================================
+
+    public function adminPayOnBehalf(Request $request, SavingInstalment $instalment): RedirectResponse
+    {
+        if (!in_array($instalment->status, ['pending', 'missed'])) {
+            return back()->with('error', 'Only pending or missed instalments can be paid on behalf of user.');
+        }
+
+        $user          = $instalment->user;
+        $adbFee        = $user->adb_option  ? round($instalment->amount * 0.075, 2) : 0;
+        $fispFee       = $user->fisp_option ? round($instalment->amount * 0.1,   2) : 0;
+        $totalRequired = round($instalment->amount + $adbFee + $fispFee, 2);
+
+        $request->validate([
+            'submitted_amount' => 'required|numeric|min:0.01',
+            'notes'            => 'nullable|string|max:1000',
+            'proof'            => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
+        $submitted = (float) $request->submitted_amount;
+
+        if ($submitted < $totalRequired) {
+            return back()->with('error',
+                "Amount \${$submitted} is less than the required \${$totalRequired} (base \${$instalment->amount}" .
+                ($adbFee  > 0 ? " + ADB \${$adbFee}"  : '') .
+                ($fispFee > 0 ? " + FISP \${$fispFee}" : '') . ")."
+            );
+        }
+
+        try {
+            DB::transaction(function () use ($request, $instalment, $submitted) {
+                $instalment->update([
+                    'status'           => 'submitted',
+                    'submitted_amount' => $submitted,
+                    'submitted_at'     => now(),
+                    'payment_method'   => 'admin_payment',
+                    'transaction_id'   => 'ADMIN-' . strtoupper(Str::random(8)),
+                    'notes'            => $request->notes,
+                ]);
+
+                if ($request->hasFile('proof')) {
+                    $instalment->clearMediaCollection('instalment_proof');
+                    $instalment->addMedia($request->file('proof'))->toMediaCollection('instalment_proof');
+                }
+
+                $this->savingAccountService->confirmAndDeposit(
+                    $instalment,
+                    Auth::id(),
+                    $request->notes ?? 'Paid by admin on behalf of user'
+                );
+            });
+
+            return back()->with('success', "Instalment #{$instalment->instalment_number} paid and confirmed on behalf of user.");
+        } catch (\Exception $e) {
+            Log::error("Admin pay on behalf failed for instalment {$instalment->id}: " . $e->getMessage());
+            return back()->with('error', 'Failed: ' . $e->getMessage());
+        }
+    }
+
+    // ADMIN — reverse a confirmed instalment (current month only)
+    // =========================================================================
+
+    public function adminReverseInstalment(Request $request, SavingInstalment $instalment): RedirectResponse
+    {
+        if ($instalment->status !== 'confirmed') {
+            return back()->with('error', 'Only confirmed instalments can be reversed.');
+        }
+
+        if (!$instalment->confirmed_at || !Carbon::parse($instalment->confirmed_at)->isSameMonth(now())) {
+            return back()->with('error', 'Reversal is only allowed within the same calendar month of confirmation.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        try {
+            DB::transaction(function () use ($request, $instalment) {
+                $user           = $instalment->user;
+                $amount         = (float) ($instalment->submitted_amount ?? $instalment->amount);
+                $adbCharge      = (float) ($instalment->adb_charge  ?? 0);
+                $fispCharge     = (float) ($instalment->fisp_charge ?? 0);
+                $totalDeductions = $adbCharge + $fispCharge;
+                $netCredited    = (float) ($instalment->net_credited ?? $amount);
+
+                // Reverse the saving wallet credit
+                Wallet::create([
+                    'user_id'         => $user->id,
+                    'wallet_type'     => 'saving',
+                    'balance'         => -$amount,
+                    'commission_type' => 'saving_reversal',
+                    'level'           => '-',
+                    'total_amount'    => $amount,
+                    'wallet_src'      => 'saving_instalment',
+                    'source_type'     => 'saving',
+                    'description'     => "REVERSAL: Instalment #{$instalment->instalment_number} — {$request->reason}",
+                    'transaction_type'=> 'debit',
+                ]);
+
+                // Reverse ADB/FISP charges (credit back what was debited)
+                if ($totalDeductions > 0) {
+                    Wallet::create([
+                        'user_id'         => $user->id,
+                        'wallet_type'     => 'saving',
+                        'balance'         => $totalDeductions,
+                        'commission_type' => 'saving_reversal',
+                        'level'           => '-',
+                        'total_amount'    => $totalDeductions,
+                        'wallet_src'      => 'saving_instalment',
+                        'source_type'     => 'saving',
+                        'description'     => "REVERSAL: ADB/FISP charges — instalment #{$instalment->instalment_number}",
+                        'transaction_type'=> 'credit',
+                    ]);
+                }
+
+                // Decrement user totals
+                $user->decrement('saving_total_deposited',         max(0, $amount));
+                $user->decrement('roi_eligible_investment_amount', max(0, $netCredited));
+
+                // Audit log
+                TransactionLog::create([
+                    'user_id'          => $user->id,
+                    'from_wallet_type' => 'saving',
+                    'to_wallet_type'   => 'saving_reversal',
+                    'charge'           => 0,
+                    'amount'           => $amount,
+                    'final_amount'     => -$amount,
+                    'description'      => "Instalment #{$instalment->instalment_number} reversed: {$request->reason}",
+                    'status'           => 'debit',
+                ]);
+
+                // Reset instalment to pending
+                $instalment->update([
+                    'status'           => 'pending',
+                    'submitted_amount' => null,
+                    'submitted_at'     => null,
+                    'confirmed_at'     => null,
+                    'confirmed_by'     => null,
+                    'transaction_id'   => null,
+                    'payment_method'   => null,
+                    'deposited_at'     => null,
+                    'is_late'          => false,
+                    'deposit_deferred' => false,
+                    'adb_charge'       => null,
+                    'fisp_charge'      => null,
+                    'net_credited'     => null,
+                    'roi_eligible_from'=> null,
+                    'notes'            => 'Reversed by admin: ' . $request->reason,
+                ]);
+
+                $instalment->clearMediaCollection('instalment_proof');
+            });
+
+            return back()->with('success', "Instalment #{$instalment->instalment_number} reversed to pending.");
+        } catch (\Exception $e) {
+            Log::error("Reversal failed for instalment {$instalment->id}: " . $e->getMessage());
+            return back()->with('error', 'Reversal failed: ' . $e->getMessage());
+        }
+    }
+
     // ADMIN — activate a saving account user
     // =========================================================================
 

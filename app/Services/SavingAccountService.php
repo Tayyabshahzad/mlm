@@ -325,9 +325,16 @@ class SavingAccountService
             ]);
         }
 
-        // Update user's saving total (gross) and roi_eligible_investment_amount (net after ADB/FISP)
+        // Update user's saving total (gross).
+        // roi_eligible_investment_amount is ONLY incremented for pure saving-account users
+        // (account_type='saving'). For enrolled standard users it is the STANDARD-ROI base;
+        // incrementing it here would make their saving deposits generate extra standard ROI,
+        // which then flows into the online wallet — the saving ROI is calculated separately
+        // in processSavingRoi() from the instalment records directly.
         $user->increment('saving_total_deposited', $totalCredit);
-        $user->increment('roi_eligible_investment_amount', $netCredit);
+        if ($user->account_type === 'saving') {
+            $user->increment('roi_eligible_investment_amount', $netCredit);
+        }
 
         // Mark registration complete when instalment #1 is deposited.
         // NOTE: can_login is intentionally NOT set here — that is admin's job via
@@ -584,7 +591,13 @@ class SavingAccountService
 
             // ── 3. Update user investment totals ───────────────────────────────
             $user->increment('saving_total_deposited', $totalAdditional);
-            $user->increment('roi_eligible_investment_amount', $totalAdditional);
+            // Mirror the guard in creditDepositToWallet: only pure saving users own
+            // roi_eligible_investment_amount as their saving base. For enrolled standard
+            // users that field is the STANDARD-ROI base — inflating it here would cause
+            // saving adjustment amounts to generate extra standard ROI in the online wallet.
+            if ($user->account_type === 'saving') {
+                $user->increment('roi_eligible_investment_amount', $totalAdditional);
+            }
 
             // ── 4. Regenerate future instalment amounts ────────────────────────
             $futureCount = SavingInstalment::where('user_id', $user->id)
@@ -815,9 +828,9 @@ class SavingAccountService
             // Stamp the entry with the target date so reports show the correct day.
             $wallet->forceFill(['created_at' => $entryDate, 'updated_at' => $entryDate])->saveQuietly();
 
-            $user->increment('roi_wallet_balance', $amount);
-
             // Only advance last_saving_roi_payment_date if this date is more recent.
+            // NOTE: roi_wallet_balance is the STANDARD-ROI 2X-limit tracker — saving ROI
+            // must NOT touch it, otherwise it prematurely caps the standard plan ROI.
             if (!$user->last_saving_roi_payment_date ||
                 $forDate->gt(Carbon::parse($user->last_saving_roi_payment_date))) {
                 $user->update(['last_saving_roi_payment_date' => $forDate->toDateString()]);
@@ -869,7 +882,10 @@ class SavingAccountService
 
             $wallet->forceFill(['created_at' => $entryDate, 'updated_at' => $entryDate])->saveQuietly();
 
-            $user->increment('roi_wallet_balance', $amount);
+            // Only increment roi_wallet_balance for standard ROI — not saving ROI.
+            if (!$isSaving) {
+                $user->increment('roi_wallet_balance', $amount);
+            }
 
             if ($isSaving) {
                 if (!$user->last_saving_roi_payment_date ||

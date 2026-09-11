@@ -183,6 +183,77 @@
                 </div>
             </div>
 
+            {{-- Insurance Options (ADB / FISP) —— admin-only toggle --}}
+            <div class="card card-custom gutter-b">
+                <div class="py-4 border-0 card-header d-flex align-items-center">
+                    <h3 class="card-title font-weight-bolder text-dark mb-0">
+                        <i class="fas fa-shield-alt text-primary mr-2"></i>Insurance Options
+                    </h3>
+                    <span class="ml-3 badge badge-light-info font-size-xs">Admin Only</span>
+                </div>
+                <div class="card-body pt-0">
+                    <form method="POST" action="{{ route('admin.saving.update-insurance', $savingUser) }}">
+                        @csrf
+                        <div class="row align-items-center">
+
+                            {{-- ADB --}}
+                            <div class="col-12 col-md-5 mb-4 mb-md-0">
+                                <div class="p-4 d-flex align-items-start" style="background:#f0f4ff;border:1.5px solid #c7d2fe;border-radius:10px;">
+                                    <div class="mr-3 mt-1">
+                                        <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:#4f46e5;border-radius:8px;">
+                                            <i class="fas fa-car-crash" style="color:#fff;font-size:.95rem;"></i>
+                                        </span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="font-weight-bolder text-dark" style="font-size:.95rem;">ADB Option</div>
+                                        <div class="text-muted font-size-xs mt-1">Accidental Death Benefit — Rs. 3 per Rs. 1,000 of Sum Assured / month</div>
+                                        <label class="mt-2 d-flex align-items-center" style="cursor:pointer;gap:.5rem;">
+                                            <input type="checkbox" name="adb_option" value="1" class="ins-cb" id="adb_toggle"
+                                                {{ $savingUser->adb_option ? 'checked' : '' }}>
+                                            <span class="ins-track" id="adb_track"></span>
+                                            <span class="ins-label font-weight-bold font-size-sm" id="adb_label">
+                                                {{ $savingUser->adb_option ? 'Enabled' : 'Disabled' }}
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- FISP --}}
+                            <div class="col-12 col-md-5 mb-4 mb-md-0">
+                                <div class="p-4 d-flex align-items-start" style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;">
+                                    <div class="mr-3 mt-1">
+                                        <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:#059669;border-radius:8px;">
+                                            <i class="fas fa-users" style="color:#fff;font-size:.95rem;"></i>
+                                        </span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="font-weight-bolder text-dark" style="font-size:.95rem;">FISP Option</div>
+                                        <div class="text-muted font-size-xs mt-1">Family Income Support Plan — Rs. 4 per Rs. 1,000 of Sum Assured / month</div>
+                                        <label class="mt-2 d-flex align-items-center" style="cursor:pointer;gap:.5rem;">
+                                            <input type="checkbox" name="fisp_option" value="1" class="ins-cb" id="fisp_toggle"
+                                                {{ $savingUser->fisp_option ? 'checked' : '' }}>
+                                            <span class="ins-track" id="fisp_track"></span>
+                                            <span class="ins-label font-weight-bold font-size-sm" id="fisp_label">
+                                                {{ $savingUser->fisp_option ? 'Enabled' : 'Disabled' }}
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Save button --}}
+                            <div class="col-12 col-md-2 text-md-right">
+                                <button type="submit" class="btn btn-primary font-weight-bold px-5">
+                                    <i class="fas fa-save mr-1"></i>Save
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             {{-- Registration Payment Breakdown --}}
             @php
                 $regTotalPaid  = (float) ($savingUser->saving_initial_payment ?? 0);
@@ -381,7 +452,12 @@
                                         @endif
                                     </td>
 
-                                    <td>
+                                    @php
+                                        $canReverse = $inst->status === 'confirmed'
+                                            && $inst->confirmed_at
+                                            && \Carbon\Carbon::parse($inst->confirmed_at)->isSameMonth(now());
+                                    @endphp
+                                    <td style="min-width:140px;">
                                         @if($inst->status === 'submitted')
                                             <form method="POST" action="{{ route('admin.saving.confirm', $inst) }}" class="d-inline">
                                                 @csrf
@@ -392,7 +468,7 @@
                                             </form>
                                             <button class="mt-1 btn btn-sm btn-danger rounded-0" data-toggle="modal" data-target="#rejectModal{{ $inst->id }}">Reject</button>
 
-                                            {{-- Reject modal lives here, inside the submitted block --}}
+                                            {{-- Reject modal --}}
                                             <div class="modal fade" id="rejectModal{{ $inst->id }}" tabindex="-1">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
@@ -414,6 +490,71 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+                                        @elseif(in_array($inst->status, ['pending', 'missed']) || ($inst->status !== 'confirmed' && $inst->isOverdue()))
+                                            {{-- Admin Pay on Behalf button --}}
+                                            <button class="btn btn-sm btn-primary rounded-0" data-toggle="modal" data-target="#payModal{{ $inst->id }}">
+                                                <i class="fas fa-hand-holding-usd mr-1"></i>Pay
+                                            </button>
+
+                                            {{-- Pay on Behalf modal --}}
+                                            <div class="modal fade" id="payModal{{ $inst->id }}" tabindex="-1">
+                                                <div class="modal-dialog modal-md">
+                                                    <div class="modal-content">
+                                                        <form method="POST" action="{{ route('admin.saving.admin-pay', $inst) }}" enctype="multipart/form-data">
+                                                            @csrf
+                                                            <div class="modal-header" style="background:#e0f2fe;">
+                                                                <h5 class="modal-title font-weight-bold">
+                                                                    <i class="fas fa-hand-holding-usd text-primary mr-2"></i>
+                                                                    Pay Instalment #{{ $inst->instalment_number }} on Behalf
+                                                                </h5>
+                                                                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="alert alert-info py-2 mb-3" style="font-size:.83rem;">
+                                                                    <strong>Due:</strong> {{ $inst->due_date->format('d M Y') }} &nbsp;|&nbsp;
+                                                                    <strong>Required:</strong> ${{ number_format($totalP, 2) }}
+                                                                    @if($hasOpts)
+                                                                        <div class="mt-1 text-muted" style="font-size:.77rem;">
+                                                                            Base ${{ number_format($inst->amount, 2) }}
+                                                                            @if($adbC > 0) + ADB ${{ number_format($adbC, 2) }} @endif
+                                                                            @if($fispC > 0) + FISP ${{ number_format($fispC, 2) }} @endif
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
+
+                                                                <div class="form-group mb-3">
+                                                                    <label class="font-weight-bold font-size-sm">Amount Received <span class="text-danger">*</span></label>
+                                                                    <div class="input-group input-group-solid">
+                                                                        <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                                                        <input type="number" name="submitted_amount" class="form-control form-control-solid"
+                                                                            step="0.01" min="{{ $totalP }}"
+                                                                            value="{{ number_format($totalP, 2, '.', '') }}" required>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="form-group mb-3">
+                                                                    <label class="font-weight-bold font-size-sm">Proof / Screenshot <span class="text-muted font-weight-normal">(optional)</span></label>
+                                                                    <input type="file" name="proof" class="form-control form-control-solid" accept=".jpg,.jpeg,.png,.pdf">
+                                                                </div>
+
+                                                                <div class="form-group mb-0">
+                                                                    <label class="font-weight-bold font-size-sm">Notes / Description <span class="text-muted font-weight-normal">(optional)</span></label>
+                                                                    <textarea name="notes" class="form-control form-control-solid" rows="2"
+                                                                        placeholder="e.g. Cash received at office, bank transfer confirmed..."></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-light font-weight-bold" data-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-primary font-weight-bold">
+                                                                    <i class="fas fa-check mr-1"></i>Confirm &amp; Deposit
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         @elseif($inst->status === 'confirmed' && $inst->deposit_deferred && !$inst->deposited_at)
                                             <form method="POST" action="{{ route('admin.saving.force-deposit', $inst) }}" class="d-inline"
                                                   onsubmit="return confirm('Process deferred deposit for Instalment #{{ $inst->instalment_number }}? This will credit the wallet now.')">
@@ -422,8 +563,57 @@
                                                     <i class="fas fa-bolt mr-1"></i> Process Now
                                                 </button>
                                             </form>
+
+                                        @elseif($inst->status === 'confirmed')
+                                            <span class="text-success font-size-xs font-weight-bold d-block mb-1">
+                                                <i class="fas fa-check-circle mr-1"></i>Confirmed
+                                            </span>
+
                                         @else
                                             <span class="text-muted">—</span>
+                                        @endif
+
+                                        {{-- Reverse button: confirmed + same month only --}}
+                                        @if($canReverse)
+                                            <button class="btn btn-sm btn-light-danger rounded-0 mt-1" data-toggle="modal" data-target="#reverseModal{{ $inst->id }}">
+                                                <i class="fas fa-undo mr-1"></i>Reverse
+                                            </button>
+
+                                            {{-- Reverse modal --}}
+                                            <div class="modal fade" id="reverseModal{{ $inst->id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <form method="POST" action="{{ route('admin.saving.reverse', $inst) }}">
+                                                            @csrf
+                                                            <div class="modal-header" style="background:#fef2f2;">
+                                                                <h5 class="modal-title font-weight-bold text-danger">
+                                                                    <i class="fas fa-undo mr-2"></i>Reverse Instalment #{{ $inst->instalment_number }}
+                                                                </h5>
+                                                                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="alert alert-warning py-2 mb-3" style="font-size:.83rem;">
+                                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                                    This will <strong>reverse the wallet credit of ${{ number_format($inst->submitted_amount ?? $inst->amount, 2) }}</strong>
+                                                                    and reset the instalment to <strong>Pending</strong>.
+                                                                    This action cannot be undone.
+                                                                </div>
+                                                                <div class="form-group mb-0">
+                                                                    <label class="font-weight-bold font-size-sm">Reason for Reversal <span class="text-danger">*</span></label>
+                                                                    <textarea name="reason" class="form-control form-control-solid" rows="3"
+                                                                        placeholder="e.g. Payment bounced, incorrect amount, entered by mistake..." required></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-light font-weight-bold" data-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-danger font-weight-bold">
+                                                                    <i class="fas fa-undo mr-1"></i>Yes, Reverse It
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         @endif
                                     </td>
                                 </tr>
@@ -710,6 +900,38 @@
     </div>
 </div>
 @endif
+
+@section('page_js')
+<style>
+.ins-cb { display:none; }
+.ins-track {
+    display:inline-block; width:44px; height:24px; border-radius:50px;
+    background:#cbd5e1; position:relative; transition:background .2s; flex-shrink:0;
+}
+.ins-track::after {
+    content:''; position:absolute; top:3px; left:3px;
+    width:18px; height:18px; border-radius:50%; background:#fff;
+    transition:left .2s; box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.ins-cb:checked + .ins-track { background:#059669; }
+.ins-cb:checked + .ins-track::after { left:23px; }
+.ins-label { color:#64748b; }
+.ins-cb:checked ~ .ins-label { color:#059669; }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    [['adb_toggle','adb_label'], ['fisp_toggle','fisp_label']].forEach(function(pair) {
+        var cb  = document.getElementById(pair[0]);
+        var lbl = document.getElementById(pair[1]);
+        if (!cb || !lbl) return;
+        cb.addEventListener('change', function () {
+            lbl.textContent = cb.checked ? 'Enabled' : 'Disabled';
+            lbl.style.color = cb.checked ? '#059669' : '#64748b';
+        });
+    });
+});
+</script>
+@endsection
 
 @endsection
 

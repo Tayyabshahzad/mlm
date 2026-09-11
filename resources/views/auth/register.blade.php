@@ -185,44 +185,6 @@
             @error('referral_link') <div class="f-error">{{ $message }}</div> @enderror
         </div>
 
-        @if($isSaving)
-        {{-- ── ADB / FISP — pure CSS toggle switches, no Metronic interference ── --}}
-        <div class="f-divider">Additional Options</div>
-        <div class="f-group">
-            <label class="f-label" style="margin-bottom:.5rem;">Select Optional Insurance Covers</label>
-            <div class="sw-row">
-
-                {{-- ADB --}}
-                <label class="sw-card">
-                    <input type="checkbox" class="sw-input" id="check_adb" name="adb_option" value="1" onchange="calcRegOptions()" {{ old('adb_option') ? 'checked' : '' }} />
-                    <span class="sw-text">
-                        <span class="sw-title">ADB Option</span>
-                        <span class="sw-desc">Accidental Death Benefit &mdash; Rs. 3 per Rs. 1,000 of Sum Assured / month</span>
-                        <span class="sw-badge" id="reg_adb_charge"></span>
-                    </span>
-                    <span class="sw-track"></span>
-                </label>
-
-                {{-- FISP --}}
-                <label class="sw-card">
-                    <input type="checkbox" class="sw-input" id="check_fisp" name="fisp_option" value="1" onchange="calcRegOptions()" {{ old('fisp_option') ? 'checked' : '' }} />
-                    <span class="sw-text">
-                        <span class="sw-title">FISP Option</span>
-                        <span class="sw-desc">Family Income Support Plan &mdash; Rs. 4 per Rs. 1,000 of Sum Assured / month</span>
-                        <span class="sw-badge" id="reg_fisp_charge"></span>
-                    </span>
-                    <span class="sw-track"></span>
-                </label>
-
-            </div>
-
-            <div class="charge-box" id="reg_options_summary">
-                <div class="charge-box-title">Monthly Charge Breakdown</div>
-                <div id="reg_options_detail" style="line-height:1.7;"></div>
-            </div>
-        </div>
-        @endif
-
         <div class="f-divider">Payment Details</div>
 
         {{-- ── Payment Method ── --}}
@@ -341,40 +303,6 @@
     const isSavingPage = {{ $isSaving ? 'true' : 'false' }};
     const usdRate      = {{ (float)($setting->usd ?? 278) }};
 
-    // ── ADB/FISP charge preview ──────────────────────────────
-    function calcRegOptions() {
-        var usd    = parseFloat(document.getElementById('usdt_amount')?.value || 0);
-        var net    = Math.max(0, usd - savingFee);
-        var summEl = document.getElementById('reg_options_summary');
-        var adbBdg = document.getElementById('reg_adb_charge');
-        var fspBdg = document.getElementById('reg_fisp_charge');
-        var adbOn  = document.getElementById('check_adb')?.checked  || false;
-        var fspOn  = document.getElementById('check_fisp')?.checked || false;
-
-        if (net <= 0 || (!adbOn && !fspOn)) {
-            if (summEl) summEl.style.display = 'none';
-            if (adbBdg) adbBdg.style.display = 'none';
-            if (fspBdg) fspBdg.style.display = 'none';
-            return;
-        }
-        var units   = (net * 25) / 1000;
-        var adbUsd  = adbOn ? units * 3 : 0;
-        var fspUsd  = fspOn ? units * 4 : 0;
-        function fmt(n) { return 'Rs. ' + Math.round(n * usdRate).toLocaleString('en-PK'); }
-
-        if (adbBdg) { adbBdg.textContent = adbOn ? fmt(adbUsd) + '/mo' : ''; adbBdg.style.display = adbOn ? 'inline' : 'none'; }
-        if (fspBdg) { fspBdg.textContent = fspOn ? fmt(fspUsd) + '/mo' : ''; fspBdg.style.display = fspOn ? 'inline' : 'none'; }
-
-        var lines = [];
-        lines.push('Sum Assured = $' + net.toFixed(2) + ' × 25 = <strong>$' + (net*25).toFixed(2) + '</strong>');
-        if (adbOn) lines.push('ADB = ' + Math.round(units) + ' × $3 = <strong>$' + adbUsd.toFixed(2) + '/mo</strong> (' + fmt(adbUsd) + ')');
-        if (fspOn) lines.push('FISP = ' + Math.round(units) + ' × $4 = <strong>$' + fspUsd.toFixed(2) + '/mo</strong> (' + fmt(fspUsd) + ')');
-        if (adbOn && fspOn) lines.push('<strong>Total: $' + (adbUsd+fspUsd).toFixed(2) + '/mo (' + fmt(adbUsd+fspUsd) + ')</strong>');
-
-        document.getElementById('reg_options_detail').innerHTML = lines.join('<br>');
-        if (summEl) summEl.style.display = 'block';
-    }
-
     // ── Payment method toggle ────────────────────────────────
     function togglePayment(method) {
         var usdt  = document.getElementById('usdt-panel');
@@ -407,7 +335,6 @@
                 var usd = parseFloat((pkr / rate).toFixed(2));
                 if (infoEl) infoEl.textContent = '1 USD = PKR ' + rate + '  ·  PKR ' + pkr.toLocaleString() + ' ≈ $' + usd + ' USD';
                 usdEl.value = usd;
-                calcRegOptions();
             } else {
                 usdEl.value = '';
                 if (infoEl) infoEl.textContent = '';
@@ -426,7 +353,6 @@
                 if (r.value === oldType) r.checked = true;
             });
             if (usdEl) usdEl.min = savingFee;
-            calcRegOptions();
         } else {
             var acct = document.getElementById('account_type');
             if (acct) { updateAccountBadge(acct.value); acct.addEventListener('change', function(){ updateAccountBadge(this.value); }); }

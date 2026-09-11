@@ -58,7 +58,7 @@
                             <div class="col-12 col-md-3 mb-3 mb-md-0">
                                 <label class="font-weight-bold font-size-sm mb-2">From Date</label>
                                 <input type="date" name="from" class="form-control form-control-solid"
-                                    value="{{ request('from', now()->startOfMonth()->format('Y-m-d')) }}" required>
+                                    value="{{ request('from', $targetUser->created_at ? \Carbon\Carbon::parse($targetUser->created_at)->format('Y-m-d') : '2020-01-01') }}" required>
                             </div>
 
                             {{-- Date To --}}
@@ -76,7 +76,7 @@
                                 <div class="d-flex flex-wrap" style="gap:0.4rem;">
                                     @foreach(range(1,7) as $lvl)
                                     @php
-                                        $selectedLevels = request()->has('levels') ? (array) request('levels') : range(1,7);
+                                        $selectedLevels = (array) request('levels', range(1,7));
                                         $isChecked = in_array($lvl, array_map('intval', $selectedLevels));
                                     @endphp
                                     <label class="level-chip {{ $isChecked ? 'active' : '' }}" for="lvl{{ $lvl }}">
@@ -117,8 +117,6 @@
                     </form>
                 </div>
             </div>
-
-            @if(request()->has('levels'))
 
             {{-- ── SUMMARY LEVEL CARDS ─────────────────────────── --}}
             @php
@@ -244,7 +242,6 @@
                 </div>
             </div>
 
-            @endif {{-- end @if has levels --}}
 
         </div>
     </div>

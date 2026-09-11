@@ -13,6 +13,7 @@ use App\Http\Controllers\{
     ProductController,
     ProfileController,
     ReportController,
+    ROIController,
     SavingInstalmentController,
     SavingRoiReportController,
     ScheduleRoiController,
@@ -127,7 +128,6 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::put('status/update', 'updateStatus')->name('users.status.update');
         Route::get('details', 'userDetails')->name('users.details');
         Route::get('roi/payments', 'roiPayments')->name('roi.payments');
-        Route::post('submit/roi/payments', 'submitRoiPayments')->name('submit.roi.payments');
         Route::get('info/{id}', 'userInfo')->name('user.info');
         Route::get('{id}/wallet-overview', 'adminUserWallets')->name('admin.user.wallets');
         Route::get('{id}/overview', [\App\Http\Controllers\Admin\UserOverviewController::class, 'show'])->name('admin.user.overview');
@@ -169,6 +169,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     }); 
     Route::controller(ScheduleRoiController::class)->group(function () {
         Route::get('run-schedule-manually', 'schedule')->name('run.schedule.manually');
+    });
+    Route::controller(ROIController::class)->group(function () {
+        Route::post('submit/roi/payments', 'submitRoiPayments')->name('submit.roi.payments');
     });
     Route::controller(WithdrawalRequestController::class)->group(function () {
         Route::get('/withdrawals/requests', 'requests')->name('withdrawals.requests');
@@ -324,7 +327,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
             Route::post('/instalment/{instalment}/confirm', 'adminConfirm')->name('admin.saving.confirm');
             Route::post('/instalment/{instalment}/reject', 'adminReject')->name('admin.saving.reject');
             Route::post('/instalment/{instalment}/force-deposit', 'adminForceDeposit')->name('admin.saving.force-deposit');
+            Route::post('/instalment/{instalment}/admin-pay', 'adminPayOnBehalf')->name('admin.saving.admin-pay');
+            Route::post('/instalment/{instalment}/reverse', 'adminReverseInstalment')->name('admin.saving.reverse');
             Route::post('/{user}/activate', 'adminActivate')->name('admin.saving.activate');
+            Route::post('/{user}/update-insurance', 'adminUpdateInsurance')->name('admin.saving.update-insurance');
             Route::post('/{user}/update-schedule', 'adminUpdateSchedule')->name('admin.saving.update-schedule');
             Route::get('/adjust-plan', 'showAdjustPlan')->name('admin.saving.adjust-plan');
             Route::post('/adjust-plan', 'applyAdjustPlan')->name('admin.saving.adjust-plan.apply');

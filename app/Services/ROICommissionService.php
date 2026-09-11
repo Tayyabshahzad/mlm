@@ -160,15 +160,19 @@ class ROICommissionService
     }
 
     /**
-     * Get ALL users at exact level (not just count)
+     * Get ACTIVE users at exact level (not just count).
+     * Mirrors countUsersAtExactLevel — only active, unblocked users are returned.
      */
     private function getAllUsersAtLevel(int $ancestorId, int $level): \Illuminate\Support\Collection
     {
         return User::whereIn('id', function ($query) use ($ancestorId, $level) {
-            $query->select('descendant_id')
+            $query->select('referral_trees.descendant_id')
                 ->from('referral_trees')
-                ->where('ancestor_id', $ancestorId)
-                ->where('level', $level);
+                ->join('users', 'users.id', '=', 'referral_trees.descendant_id')
+                ->where('referral_trees.ancestor_id', $ancestorId)
+                ->where('referral_trees.level', $level)
+                ->where('users.can_login', 1)
+                ->where('users.blocked', false);
         })->get();
     }
 
@@ -228,13 +232,18 @@ class ROICommissionService
     }
 
     /**
-     * Count users at exact level only (not cumulative)
+     * Count ACTIVE users at exact level only (not cumulative).
+     * Only users who can_login and are not blocked count toward the threshold —
+     * inactive/blocked referrals must not let an ancestor unlock profit sharing.
      */
     private function countUsersAtExactLevel(int $ancestorId, int $level): int
     {
         return DB::table('referral_trees')
-            ->where('ancestor_id', $ancestorId)
-            ->where('level', $level)
+            ->join('users', 'users.id', '=', 'referral_trees.descendant_id')
+            ->where('referral_trees.ancestor_id', $ancestorId)
+            ->where('referral_trees.level', $level)
+            ->where('users.can_login', 1)
+            ->where('users.blocked', false)
             ->count();
     }
 

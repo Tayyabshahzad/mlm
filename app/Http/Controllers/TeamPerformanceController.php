@@ -20,16 +20,14 @@ class TeamPerformanceController extends Controller
             $targetUser = User::find($request->user_id) ?? $authUser;
         }
 
-        $users       = collect();
-        $levelCounts = collect();
-        $totalCount  = 0;
+        // Always run the query — use defaults when no filter submitted
+        $from   = \Carbon\Carbon::parse($request->input('from', $targetUser->created_at ?? now()->subYears(5)))->startOfDay();
+        $to     = \Carbon\Carbon::parse($request->input('to', now()))->endOfDay();
+        $levels = $request->filled('levels')
+            ? array_map('intval', (array) $request->levels)
+            : range(1, 7);
 
-        if ($request->filled('from') && $request->filled('to') && $request->filled('levels')) {
-            $from   = \Carbon\Carbon::parse($request->from)->startOfDay();
-            $to     = \Carbon\Carbon::parse($request->to)->endOfDay();
-            $levels = array_map('intval', (array) $request->levels);
-
-            $users = DB::table('referral_trees')
+        $users = DB::table('referral_trees')
                 ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
                 ->leftJoin('users as sponsors', 'users.sponsor_id', '=', 'sponsors.id')
                 ->where('referral_trees.ancestor_id', $targetUser->id)
@@ -50,9 +48,8 @@ class TeamPerformanceController extends Controller
                 ->orderBy('users.created_at', 'desc')
                 ->get();
 
-            $levelCounts = $users->groupBy('level')->map->count()->sortKeys();
-            $totalCount  = $users->count();
-        }
+        $levelCounts = $users->groupBy('level')->map->count()->sortKeys();
+        $totalCount  = $users->count();
 
         // For admin/super-admin: all users (any account type)
         $allUsers = $isSuperAdmin
