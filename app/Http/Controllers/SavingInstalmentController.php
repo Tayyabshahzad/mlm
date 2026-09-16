@@ -637,11 +637,49 @@ class SavingInstalmentController extends Controller
         // Update all pending instalments to the admin-specified monthly amount
         $monthlyAmount = $request->filled('monthly_amount') ? (float) $request->monthly_amount : null;
         if ($monthlyAmount) {
-            // Only update pending instalments — submitted ones keep their original amount
-            // so the admin can still confirm/reject at what the user actually paid.
+            // Update all pending instalments to the corrected plan amount.
             $user->savingInstalments()
                 ->where('status', 'pending')
                 ->update(['amount' => $monthlyAmount]);
+
+            // If instalment #1 was auto-confirmed at registration with a different amount
+            // (because the user typed the wrong value), correct it here so the ROI base
+            // and saving total reflect what the admin intends, not the original wrong entry.
+            $inst1 = $user->savingInstalments()
+                ->where('instalment_number', 1)
+                ->where('status', 'confirmed')
+                ->first();
+
+            if ($inst1 && abs((float) $inst1->amount - $monthlyAmount) > 0.001) {
+                $oldAmount = (float) $inst1->amount;
+                $diff      = round($monthlyAmount - $oldAmount, 4);
+
+                // Correct the instalment record
+                $inst1->update(['amount' => $monthlyAmount]);
+
+                // Create a wallet adjustment so the saving wallet balance stays accurate
+                Wallet::create([
+                    'user_id'          => $user->id,
+                    'wallet_type'      => 'saving',
+                    'balance'          => $diff,
+                    'commission_type'  => 'saving_correction',
+                    'level'            => '-',
+                    'total_amount'     => abs($diff),
+                    'wallet_src'       => 'admin_correction',
+                    'source_type'      => 'saving',
+                    'description'      => 'Plan amount corrected at activation: $' . number_format($oldAmount, 2) . ' → $' . number_format($monthlyAmount, 2),
+                    'transaction_type' => $diff > 0 ? 'credit' : 'debit',
+                ]);
+
+                // Override the user's saving total and ROI base to match the corrected plan amount.
+                // For enrolled standard users roi_eligible_investment_amount is the STANDARD-ROI
+                // base and must not be touched — only pure saving users use it as their saving base.
+                $updates = ['saving_total_deposited' => $monthlyAmount];
+                if ($user->account_type === 'saving') {
+                    $updates['roi_eligible_investment_amount'] = $monthlyAmount;
+                }
+                $user->update($updates);
+            }
         }
 
         if ($user->account_type === 'saving') {
