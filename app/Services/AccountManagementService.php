@@ -289,6 +289,12 @@ class AccountManagementService
      */
     public function isWithdrawalEnabled(User $user): bool
     {
+        // Pure saving-account users have no 7X cap concept — the 7X limit belongs to the
+        // standard investment plan only. Saving users withdraw money they have already
+        // transferred to the online wallet from their saving/commission wallets.
+        if ($user->account_type === 'saving') {
+            return true;
+        }
         return !$this->hasReached7XLimit($user);
     }
 
