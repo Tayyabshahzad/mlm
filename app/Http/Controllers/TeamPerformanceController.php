@@ -31,7 +31,7 @@ class TeamPerformanceController extends Controller
                 ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
                 ->leftJoin('users as sponsors', 'users.sponsor_id', '=', 'sponsors.id')
                 ->where('referral_trees.ancestor_id', $targetUser->id)
-                ->where('referral_trees.tree_type', 'standard')
+                ->whereIn('referral_trees.tree_type', ['standard', 'saving'])
                 ->where('users.can_login', true)
                 ->whereIn('referral_trees.level', $levels)
                 ->whereBetween('users.created_at', [$from, $to])
@@ -44,9 +44,11 @@ class TeamPerformanceController extends Controller
                     'sponsors.name as sponsor_name',
                     'sponsors.username as sponsor_username'
                 )
+                ->distinct('users.id')
                 ->orderBy('referral_trees.level')
                 ->orderBy('users.created_at', 'desc')
-                ->get();
+                ->get()
+                ->unique('id');
 
         $levelCounts = $users->groupBy('level')->map->count()->sortKeys();
         $totalCount  = $users->count();

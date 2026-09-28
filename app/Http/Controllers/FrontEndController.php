@@ -276,11 +276,12 @@ class FrontEndController extends Controller
         }
 
         // ── Standard investment dashboard ─────────────────────────────────
+        // Use DISTINCT to avoid double-counting users who appear in both trees
         $referralCounts = DB::table('referral_trees')
-        ->select('referral_trees.level', DB::raw('COUNT(referral_trees.descendant_id) as count'))
+        ->select('referral_trees.level', DB::raw('COUNT(DISTINCT referral_trees.descendant_id) as count'))
         ->join('users', 'referral_trees.descendant_id', '=', 'users.id')
         ->where('referral_trees.ancestor_id', $user->id)
-        ->where('referral_trees.tree_type', 'standard')
+        ->whereIn('referral_trees.tree_type', ['standard', 'saving'])
         ->where('users.can_login', true)
         ->where('referral_trees.level', '<=', 7)
         ->groupBy('referral_trees.level')

@@ -23,45 +23,51 @@ class GenealogyController extends Controller
             'image'    => $user->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
         ];
 
-        // Always use the standard referral tree regardless of the logged-in user's account type
+        // Collect descendants from BOTH trees so saving-account referrals are visible
         $descendantIds = DB::table('referral_trees')
             ->where('ancestor_id', $user->id)
             ->where('descendant_id', '!=', $user->id)
-            ->where('tree_type', 'standard')
+            ->whereIn('tree_type', ['standard', 'saving'])
             ->pluck('descendant_id')
             ->unique();
 
         $allTreeUsers = User::whereIn('id', $descendantIds)
             ->where('can_login', true)
-            ->where('account_type', '!=', 'saving') // standard tree never includes saving users
             ->get()
             ->keyBy('id');
 
-        // Fetch all direct-parent rows in one query, ordered by level so parents come before children
-        $parentRows = DB::table('referral_trees')
+        // Build parent map: for each descendant pick their level-1 parent.
+        // Prefer the standard-tree parent when both exist (keeps hierarchy consistent).
+        $rawParentRows = DB::table('referral_trees')
             ->whereIn('descendant_id', $descendantIds->toArray())
-            ->where('tree_type', 'standard')
+            ->whereIn('tree_type', ['standard', 'saving'])
             ->where('level', 1)
-            ->get()
-            ->keyBy('descendant_id');
+            ->get();
 
-        $includedKeys = [$user->id => true];
+        $parentMap = [];
+        foreach ($rawParentRows as $row) {
+            $did = $row->descendant_id;
+            if (!isset($parentMap[$did]) || $row->tree_type === 'standard') {
+                $parentMap[$did] = $row->ancestor_id;
+            }
+        }
 
-        // Sort by level ascending so parent nodes are added before their children
+        // Sort ascending by level so parents are always added before their children
         $orderedDescendants = DB::table('referral_trees')
             ->where('ancestor_id', $user->id)
             ->where('descendant_id', '!=', $user->id)
-            ->where('tree_type', 'standard')
+            ->whereIn('tree_type', ['standard', 'saving'])
             ->orderBy('level')
             ->pluck('descendant_id')
             ->unique();
+
+        $includedKeys = [$user->id => true];
 
         foreach ($orderedDescendants as $descendantId) {
             $descendant = $allTreeUsers->get($descendantId);
             if (!$descendant) continue;
 
-            $parentRow = $parentRows->get($descendantId);
-            $parentId  = $parentRow?->ancestor_id ?? $user->id;
+            $parentId = $parentMap[$descendantId] ?? $user->id;
 
             if (!isset($includedKeys[$parentId])) continue;
 
@@ -256,16 +262,15 @@ class GenealogyController extends Controller
     {
         $user = Auth::user();
 
-        // Always show standard tree members — saving members are in the saving tree
+        // Include directs from both trees so saving-account referrals are visible
         $descendantIds = DB::table('referral_trees')
             ->where('ancestor_id', $user->id)
-            ->where('tree_type', 'standard')
+            ->whereIn('tree_type', ['standard', 'saving'])
             ->where('level', 1)
-            ->pluck('descendant_id');
+            ->pluck('descendant_id')
+            ->unique();
 
-        $teamMembers = User::whereIn('id', $descendantIds)
-            ->where('account_type', '!=', 'saving')
-            ->get();
+        $teamMembers = User::whereIn('id', $descendantIds)->get();
 
         return view('genealogy.team-members', compact('teamMembers'));
     }

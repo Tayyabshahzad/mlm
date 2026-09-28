@@ -65,7 +65,6 @@ class RegisteredUserController extends Controller
 
         $request->validate([
             'name'             => 'required|string|max:255',
-            'username'         => ['required', 'string', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
             'email'            => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
             'password'         => ['required', 'confirmed', Rules\Password::defaults()],
             'transaction_id'   => ['required', 'max:50', 'string', Rule::unique('users')->whereNull('deleted_at')],
@@ -91,7 +90,7 @@ class RegisteredUserController extends Controller
                 ->where('is_active', true)
                 ->firstOrFail();
 
-            $username = $this->generateUsername($request->username);
+            $username = $this->generateUsername($request->name, $request->cnic);
             $vipMin   = $setting->vip_package_min ?? 35;
             $userPlan = $netAmount >= $vipMin ? 'vip' : 'standard';
 
@@ -156,7 +155,6 @@ class RegisteredUserController extends Controller
 
         $request->validate([
             'name'             => 'required|string|max:255',
-            'username'         => ['required', 'string', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
             'email'            => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
             'password'         => ['required', 'confirmed', Rules\Password::defaults()],
             'transaction_id'   => ['required', 'max:50', 'string', Rule::unique('users')->whereNull('deleted_at')],
@@ -193,7 +191,7 @@ class RegisteredUserController extends Controller
 
         DB::beginTransaction();
         try {
-            $username = $this->generateUsername($request->username);
+            $username = $this->generateUsername($request->name, $request->cnic);
 
             // Net deposit = everything above the fee, regardless of whether it covers inst#1 fully.
             $netDeposit           = max(0.0, (float) $request->usdt_amount - (float) $savingFee);
@@ -392,18 +390,22 @@ class RegisteredUserController extends Controller
     // Shared helpers
     // -------------------------------------------------------------------------
 
-    private function generateUsername(string $rawUsername): string
+    private function generateUsername(string $name, string $cnic): string
     {
-        $base  = Str::slug($rawUsername);
+        $digits = preg_replace('/\D/', '', $cnic);   // strip dashes → 13 digits
+        $last3  = substr($digits, -3);               // last 3 digits of CNIC
+        $base   = Str::slug($name) . $last3;
+
         if (!$base) {
-            abort(422, 'Invalid Username format');
+            abort(422, 'Could not generate a username from the provided name and CNIC.');
         }
-        $name  = $base;
+
+        $candidate = $base;
         $count = 1;
-        while (User::where('username', $name)->exists()) {
-            $name = $base . '-' . $count++;
+        while (User::where('username', $candidate)->exists()) {
+            $candidate = $base . '-' . $count++;
         }
-        return $name;
+        return $candidate;
     }
 
     private function handleActivationCode(Request $request, User $user): void

@@ -82,23 +82,28 @@
         <div id="new-user-fields">
             <div class="f-divider">Personal Details</div>
 
-            <div class="f-row">
-                <div class="f-group">
-                    <label class="f-label">Full Name <span style="color:#ef4444;">*</span></label>
-                    <div class="f-wrap">
-                        <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="#94a3b8" stroke-width="1.8"/></svg></div>
-                        <input class="f-input" type="text" name="name" placeholder="Your full name" value="{{ old('name') }}" autocomplete="off" />
-                    </div>
-                    @error('name') <div class="f-error">{{ $message }}</div> @enderror
+            <div class="f-group">
+                <label class="f-label">Full Name <span style="color:#ef4444;">*</span></label>
+                <div class="f-wrap">
+                    <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="#94a3b8" stroke-width="1.8"/></svg></div>
+                    <input class="f-input" type="text" id="reg-name" name="name" placeholder="Your full name" value="{{ old('name') }}" autocomplete="off" />
                 </div>
-                <div class="f-group">
-                    <label class="f-label">Username <span style="color:#ef4444;">*</span></label>
-                    <div class="f-wrap">
-                        <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#94a3b8" stroke-width="1.8"/><path d="M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0" stroke="#94a3b8" stroke-width="1.8"/></svg></div>
-                        <input class="f-input" type="text" name="username" placeholder="username" value="{{ old('username') }}" autocomplete="off" />
-                    </div>
-                    @error('username') <div class="f-error">{{ $message }}</div> @enderror
+                @error('name') <div class="f-error">{{ $message }}</div> @enderror
+            </div>
+
+            <div class="f-group">
+                <label class="f-label">CNIC Number <span style="color:#ef4444;">*</span></label>
+                <div class="f-wrap">
+                    <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#94a3b8" stroke-width="1.8"/><path d="M2 10h20" stroke="#94a3b8" stroke-width="1.8"/><path d="M7 15h4M7 13h3" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+                    <input class="f-input" type="text" id="cnic" name="cnic" value="{{ old('cnic') }}" placeholder="XXXXX-XXXXXXX-X" maxlength="15" autocomplete="off" required />
                 </div>
+                <div style="display:flex;align-items:center;gap:.5rem;margin-top:.3rem;flex-wrap:wrap;">
+                    <small style="font-size:.73rem;color:#64748b;">Format: 01101-0301010-9 (dashes auto-added)</small>
+                    <span id="username-preview" style="display:none;font-size:.72rem;background:#ede9fe;color:#4f46e5;padding:.15rem .55rem;border-radius:20px;font-weight:600;">
+                        Username: <span id="username-preview-val"></span>
+                    </span>
+                </div>
+                @error('cnic') <div class="f-error">{{ $message }}</div> @enderror
             </div>
 
             <div class="f-group">
@@ -146,16 +151,6 @@
                     <input id="phone" name="phone_number" value="{{ old('phone_number') }}" type="tel" class="f-input" placeholder="Phone number" />
                 </div>
                 @error('phone_number') <div class="f-error">{{ $message }}</div> @enderror
-            </div>
-
-            <div class="f-group">
-                <label class="f-label">CNIC Number <span style="color:#ef4444;">*</span></label>
-                <div class="f-wrap">
-                    <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#94a3b8" stroke-width="1.8"/><path d="M2 10h20" stroke="#94a3b8" stroke-width="1.8"/><path d="M7 15h4M7 13h3" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-                    <input class="f-input" type="text" id="cnic" name="cnic" value="{{ old('cnic') }}" placeholder="XXXXX-XXXXXXX-X" maxlength="15" autocomplete="off" required />
-                </div>
-                <small style="font-size:.73rem;color:#64748b;">Format: 01101-0301010-9 (dashes auto-added)</small>
-                @error('cnic') <div class="f-error">{{ $message }}</div> @enderror
             </div>
         </div>{{-- end #new-user-fields --}}
 
@@ -431,25 +426,52 @@
         navigator.clipboard.writeText(txt).then(function(){ toastr.info('Wallet address copied!'); });
     }
 
+    // ── Username auto-preview ────────────────────────────────
+    function updateUsernamePreview() {
+        var nameEl    = document.getElementById('reg-name');
+        var cnicEl    = document.getElementById('cnic');
+        var preview   = document.getElementById('username-preview');
+        var previewVal = document.getElementById('username-preview-val');
+        if (!nameEl || !cnicEl || !preview || !previewVal) return;
+
+        var name  = nameEl.value.trim();
+        var cnic  = cnicEl.value.replace(/\D/g, '');
+        var last3 = cnic.length >= 3 ? cnic.slice(-3) : '';
+
+        if (name && last3.length === 3) {
+            // Mimic Str::slug: lowercase, replace spaces/special chars with dash
+            var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            var suggested = slug + last3;
+            previewVal.textContent = suggested;
+            preview.style.display = 'inline-flex';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
     // ── CNIC auto-format (XXXXX-XXXXXXX-X) ──────────────────
     (function () {
-        var el = document.getElementById('cnic');
+        var el    = document.getElementById('cnic');
+        var nameEl = document.getElementById('reg-name');
         if (!el) return;
-        el.addEventListener('input', function (e) {
-            var raw   = this.value.replace(/\D/g, '').substring(0, 13);
-            var out   = '';
+        el.addEventListener('input', function () {
+            var raw = this.value.replace(/\D/g, '').substring(0, 13);
+            var out = '';
             if (raw.length > 0)  out  = raw.substring(0, Math.min(5, raw.length));
             if (raw.length > 5)  out += '-' + raw.substring(5, Math.min(12, raw.length));
             if (raw.length > 12) out += '-' + raw.substring(12, 13);
             this.value = out;
+            updateUsernamePreview();
         });
-        // On backspace at a dash position, remove the dash too
         el.addEventListener('keydown', function (e) {
             if (e.key === 'Backspace' && this.value.slice(-1) === '-') {
                 e.preventDefault();
                 this.value = this.value.slice(0, -1);
             }
         });
+        if (nameEl) nameEl.addEventListener('input', updateUsernamePreview);
+        // Show preview on page load if old() values are present
+        updateUsernamePreview();
     })();
 
     // ── CSRF refresh on submit ───────────────────────────────
