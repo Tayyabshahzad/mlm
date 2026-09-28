@@ -147,7 +147,27 @@
                                                                     {{ $teamMember->can_login ? 'Activated' : 'Activate' }}
                                                                 </a>
                                                                 <a class="dropdown-item text-primary" href="{{ route('user.info', $teamMember->id) }}">Details</a>
+                                                                <a class="dropdown-item text-dark" href="{{ route('admin.user.overview', $teamMember->id) }}">
+                                                                      Overview
+                                                                </a>
                                                                 <a class="dropdown-item text-success" href="{{ route('admin.user.wallets', $teamMember->id) }}">Wallet Overview</a>
+                                                                <div class="dropdown-divider"></div>
+                                                                <form method="POST" action="{{ route('admin.kyc.request', $teamMember->id) }}" class="d-inline w-100">
+                                                                    @csrf
+                                                                    <button type="submit" class="dropdown-item text-warning"
+                                                                        onclick="return confirm('Request KYC from {{ addslashes($teamMember->name) }}?')">
+                                                                        <i class="mr-1 fas fa-id-card"></i>
+                                                                        Request KYC
+                                                                        @if($teamMember->kyc_status === 'approved')
+                                                                            <small class="text-success">(Verified)</small>
+                                                                        @elseif($teamMember->kyc_status === 'submitted')
+                                                                            <small class="text-info">(Review Pending)</small>
+                                                                        @elseif($teamMember->kyc_status === 'pending')
+                                                                            <small class="text-muted">(Requested)</small>
+                                                                        @endif
+                                                                    </button>
+                                                                </form>
+                                                                <div class="dropdown-divider"></div>
                                                                 <a class="dropdown-item text-danger" data-toggle="modal" data-target="#deleteUser" data-id="{{ $teamMember->id }}" href="#">Delete</a>
                                                             </div>
                                                         </div>
@@ -208,6 +228,7 @@
                                                     <th>Admin Status</th>
                                                     <th>Options</th>
                                                     <th>Instalments</th>
+                                                    <th>KYC</th>
                                                     <th>Actions</th>
                                                     <th>Joined</th>
                                                 </tr>
@@ -264,6 +285,18 @@
                                                         @endif
                                                     </td>
                                                     <td>
+                                                    @if($member->kyc_status === null)
+                                                         <small class="text-warning">(Not Requested)</small>
+                                                    @elseif($member->kyc_status === 'approved')
+                                                        <small class="text-success">(Verified)</small>
+                                                    @elseif($member->kyc_status === 'submitted')
+                                                        <small class="text-info">(Review Pending)</small>
+                                                    @elseif($member->kyc_status === 'pending')
+                                                        <small class="text-primary">(Requested)</small>
+                                                    @endif
+                                                    </td>
+                                                                        
+                                                    <td>
                                                         <div class="dropdown">
                                                             <button class="btn btn-sm btn-outline-info rounded-0 dropdown-toggle" type="button" data-toggle="dropdown">
                                                                 Actions
@@ -280,9 +313,12 @@
                                                                 <a class="dropdown-item text-warning user-details-btn"
                                                                    data-toggle="modal" data-target="#userDetails"
                                                                    data-id="{{ $member->id }}" href="#">Signup Details</a>
+                                                                <a class="dropdown-item text-info" href="{{ route('admin.user.overview', $member->id) }}">Overview</a>
                                                                 <a class="dropdown-item text-success" href="{{ route('admin.user.wallets', $member->id) }}">Wallet Overview</a>
                                                                 <a class="dropdown-item text-primary" href="{{ route('admin.saving.show', $member) }}">Instalment Details</a>
                                                                 <a class="dropdown-item text-info" href="{{ route('user.info', $member->id) }}">User Info</a>
+                                                                <div class="dropdown-divider"></div> 
+                                                                <div class="dropdown-divider"></div>
                                                                 <a class="dropdown-item text-danger" data-toggle="modal" data-target="#deleteUser" data-id="{{ $member->id }}" data-saving="true" href="#">Remove Saving Data</a>
                                                             </div>
                                                         </div>

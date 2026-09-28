@@ -2,705 +2,628 @@
 @section('content')
 
 <style>
-/* ═══════════════════════════════════════════════════════
-   GVI DASHBOARD v6 — Modern Light
-═══════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ═══════════════════════════════════════════
+   GVI DASHBOARD — CareOps Style
+═══════════════════════════════════════════ */
 :root {
-    --f:  'Poppins', system-ui, sans-serif;
-    --bg: #f4f6fb;
-    --t1: #0f172a;
-    --t2: #475569;
-    --t3: #94a3b8;
-    --br: rgba(15,23,42,.08);
-    --card-r: 16px;
-    --ease: cubic-bezier(.25,.46,.45,.94);
+    --bg:      #EEEDF8;
+    --card:    #FFFFFF;
+    --accent:  #5B5BD6;
+    --green:   #10B981;
+    --red:     #EF4444;
+    --amber:   #F59E0B;
+    --t1:      #111827;
+    --t2:      #6B7280;
+    --t3:      #9CA3AF;
+    --bdr:     rgba(0,0,0,.06);
+    --r:       16px;
+    --sh:      0 2px 8px rgba(0,0,0,.06);
+    --sh-h:    0 8px 24px rgba(0,0,0,.10);
 }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Page shell ─────────────────────────────────────── */
-.db { font-family: var(--f); background: var(--bg); min-height: 100vh; color: var(--t1); -webkit-font-smoothing: antialiased; }
+.db {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--t1);
+    -webkit-font-smoothing: antialiased;
+}
 
-/* ─────────────────────────────────────────────────────
-   TICKER
-───────────────────────────────────────────────────── */
-.ticker { overflow: hidden; background: linear-gradient(90deg,#4f46e5,#0ea5e9); padding: .48rem 0; }
-.ticker-track { display: flex; width: max-content; animation: ticker-go 35s linear infinite; }
+/* ── Ticker ─────────────────────────────── */
+.ticker { overflow: hidden; background: var(--accent); padding: .32rem 0; }
+.ticker-track { display: flex; width: max-content; animation: tick 40s linear infinite; }
 .ticker-track:hover { animation-play-state: paused; }
-@keyframes ticker-go { to { transform: translateX(-50%); } }
-.t-item { display: inline-flex; align-items: center; gap: .5rem; padding: 0 2.2rem; font-size: .74rem; font-weight: 600; color: #fff; white-space: nowrap; }
-.t-dot  { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.45); }
+@keyframes tick { to { transform: translateX(-50%); } }
+.t-item { display: inline-flex; align-items: center; gap: .5rem; padding: 0 2rem; font-size: .7rem; font-weight: 500; color: rgba(255,255,255,.88); white-space: nowrap; }
+.t-sep { width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,.35); }
 
-/* ─────────────────────────────────────────────────────
-   HERO
-───────────────────────────────────────────────────── */
-.hero {
-    background: linear-gradient(135deg, #1e1b4b 0%, #2e1065 45%, #1e3a8a 100%);
-    padding: 2rem 2rem 1.8rem; position: relative; overflow: hidden;
+/* ── Page header ────────────────────────── */
+.ph {
+    background: var(--card);
+    border-bottom: 1px solid var(--bdr);
+    padding: 1.1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
-.hero::before {
-    content: ''; position: absolute; inset: 0;
-    background-image: radial-gradient(circle at 20% 50%, rgba(139,92,246,.20) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 20%, rgba(59,130,246,.18) 0%, transparent 45%);
-    pointer-events: none;
+.ph-title { font-size: 1.15rem; font-weight: 800; color: var(--t1); letter-spacing: -.025em; }
+.ph-sub   { font-size: .74rem; color: var(--t3); margin-top: .1rem; }
+.ph-right { display: flex; align-items: center; gap: .65rem; flex-shrink: 0; }
+.ph-chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .26rem .72rem; border-radius: 50px; font-size: .68rem; font-weight: 600;
+    border: 1.5px solid;
 }
-/* subtle grid dots */
-.hero::after {
-    content: ''; position: absolute; inset: 0;
-    background-image: radial-gradient(circle, rgba(255,255,255,.08) 1px, transparent 1px);
-    background-size: 28px 28px; pointer-events: none;
+.ph-chip.saving { color: #059669; border-color: rgba(5,150,105,.3); background: #D1FAE5; }
+.ph-chip.vip    { color: #D97706; border-color: rgba(217,119,6,.3);  background: #FEF3C7; }
+.ph-chip.std    { color: #4F46E5; border-color: rgba(79,70,229,.3);  background: #EDE9FE; }
+.ph-date { font-size: .78rem; font-weight: 600; color: var(--t2); }
+.ph-date small { display: block; font-size: .68rem; color: var(--t3); font-weight: 400; }
+
+/* ── Body ───────────────────────────────── */
+.db-body { max-width: 1320px; margin: 0 auto; padding: 1.75rem 1.75rem 4rem; }
+
+/* ── Alert banners ──────────────────────── */
+.alert-bar {
+    display: flex; align-items: center; gap: .85rem;
+    padding: .85rem 1.15rem; border-radius: var(--r); margin-bottom: .85rem;
+    border: 1.5px solid; text-decoration: none; color: inherit;
 }
-.hero-in {
-    max-width: 1340px; margin: 0 auto; position: relative; z-index: 1;
-    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;
-}
-.hero-brand { font-size: .6rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: .45rem; }
-.hero-name  { font-size: 2rem; font-weight: 900; color: #fff; letter-spacing: -.03em; line-height: 1.15; margin-bottom: .7rem; }
-.hero-name em { font-style: normal; background: linear-gradient(90deg,#a78bfa,#67e8f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.hero-pkg { display: inline-flex; align-items: center; gap: .36rem; padding: .26rem .82rem; border-radius: 50px; font-size: .66rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.85); background: rgba(255,255,255,.1); }
-.hero-pkg.vip { color: #fde68a; border-color: rgba(253,230,138,.35); background: rgba(253,230,138,.1); }
-
-.hero-bal {
-    flex-shrink: 0; min-width: 220px; text-align: right;
-    background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.16);
-    border-radius: 14px; padding: 1.2rem 1.7rem; backdrop-filter: blur(12px);
-}
-.hero-bal-lbl { font-size: .6rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: .28rem; }
-.hero-bal-val { font-size: 2.1rem; font-weight: 900; color: #fff; letter-spacing: -.04em; line-height: 1; margin-bottom: .22rem; }
-.hero-bal-sub { font-size: .68rem; color: rgba(255,255,255,.5); display: flex; align-items: center; gap: .25rem; justify-content: flex-end; }
-.hero-bal-sub .live { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 6px #34d399; }
-
-.hero-date { text-align: right; flex-shrink: 0; }
-.hero-date-t { font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.38); margin-bottom: .16rem; }
-.hero-date-v { font-size: .84rem; font-weight: 700; color: rgba(255,255,255,.82); }
-.hero-date-s { font-size: .68rem; color: rgba(255,255,255,.35); margin-top: .08rem; }
-
-/* ─────────────────────────────────────────────────────
-   BODY
-───────────────────────────────────────────────────── */
-.db-body { max-width: 1340px; margin: 0 auto; padding: 1.8rem 1.5rem 4rem; }
-
-/* Section label */
-.sec { display: flex; align-items: center; gap: .6rem; margin-bottom: .9rem; margin-top: 1.6rem; }
-.sec:first-child { margin-top: 0; }
-.sec-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.sec-txt { font-size: .65rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--t2); }
-.sec::after { content: ''; flex: 1; height: 1px; background: var(--br); }
-
-/* ─────────────────────────────────────────────────────
-   STAT CARDS GRID
-───────────────────────────────────────────────────── */
-.sg {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem; margin-bottom: 1.4rem;
-}
-
-/* Stat card base — clean white, left accent border */
-.sc {
-    background: #fff;
-    border-radius: var(--card-r);
-    padding: 1.35rem 1.4rem;
-    position: relative; overflow: hidden;
-    text-decoration: none; color: inherit;
-    transition: transform .18s var(--ease), box-shadow .18s var(--ease);
-    border: 1px solid #e8edf4;
-    border-left-width: 4px;
-    box-shadow: 0 1px 4px rgba(15,23,42,.05);
-}
-.sc:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(15,23,42,.09);
-}
-
-/* Left accent color per variant */
-.sc-purple { border-left-color: #7c3aed; }
-.sc-green  { border-left-color: #059669; }
-.sc-blue   { border-left-color: #2563eb; }
-.sc-amber  { border-left-color: #d97706; }
-.sc-pink   { border-left-color: #db2777; }
-.sc-sky    { border-left-color: #0891b2; }
-.sc-yellow { border-left-color: #ca8a04; }
-.sc-teal   { border-left-color: #0d9488; }
-.sc-indigo { border-left-color: #4f46e5; }
-.sc-rose   { border-left-color: #e11d48; }
-.sc-emerald{ border-left-color: #10b981; }
-.sc-violet { border-left-color: #8b5cf6; }
-
-/* Card layout */
-.sc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
-.sc-icon {
-    width: 48px; height: 48px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.15rem; flex-shrink: 0; color: #fff;
-}
-.sc-arrow { font-size: .68rem; color: #cbd5e1; transition: color .15s, transform .15s; }
-.sc:hover .sc-arrow { color: #94a3b8; transform: translateX(2px); }
-
-/* Typography — strong hierarchy, all on white = excellent contrast */
-.sc-lbl {
+.alert-bar.warn { background: #FFFBEB; border-color: rgba(245,158,11,.25); }
+.alert-bar.danger { background: #FEF2F2; border-color: rgba(239,68,68,.25); }
+.alert-bar-icon { font-size: 1.15rem; flex-shrink: 0; }
+.alert-bar strong { font-size: .82rem; font-weight: 700; display: block; margin-bottom: .06rem; }
+.alert-bar small  { font-size: .72rem; color: var(--t2); }
+.alert-bar-cta {
+    margin-left: auto; flex-shrink: 0;
     font-size: .72rem; font-weight: 600;
-    letter-spacing: .07em; text-transform: uppercase;
-    color: #64748b;          /* readable gray on white */
-    margin-bottom: .4rem;
-}
-.sc-val {
-    font-size: 1.75rem; font-weight: 800;
-    letter-spacing: -.03em; line-height: 1.05;
-    color: #0f172a;          /* near-black — maximum readability */
-    margin-bottom: .35rem;
-}
-.sc-sub {
-    font-size: .73rem; font-weight: 500;
-    display: flex; align-items: center; gap: .28rem;
-    color: #94a3b8;
+    padding: .28rem .72rem; border-radius: 7px;
+    background: rgba(0,0,0,.06);
+    color: var(--t1);
 }
 
-/* Solid colored icon per variant (white icon on solid bg) */
-.sc-purple .sc-icon { background: #7c3aed; }
-.sc-green  .sc-icon { background: #059669; }
-.sc-blue   .sc-icon { background: #2563eb; }
-.sc-amber  .sc-icon { background: #d97706; }
-.sc-pink   .sc-icon { background: #db2777; }
-.sc-sky    .sc-icon { background: #0891b2; }
-.sc-yellow .sc-icon { background: #ca8a04; }
-.sc-teal   .sc-icon { background: #0d9488; }
-.sc-indigo .sc-icon { background: #4f46e5; }
-.sc-rose   .sc-icon { background: #e11d48; }
-.sc-emerald .sc-icon { background: #10b981; }
-.sc-violet .sc-icon { background: #8b5cf6; }
+/* ── Section head ───────────────────────── */
+.sec-h {
+    font-size: .68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--t3);
+    margin-bottom: .85rem; margin-top: 1.6rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.sec-h:first-child { margin-top: 0; }
+.sec-h::after { content: ''; flex: 1; height: 1px; background: rgba(0,0,0,.08); }
 
-/* ─────────────────────────────────────────────────────
-   ROI METER CARDS
-───────────────────────────────────────────────────── */
-.roi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.4rem; }
+/* ══════════════════════════════════════════
+   TOP KPI ROW  (like CareOps top metrics)
+══════════════════════════════════════════ */
+.kpi-row { display: grid; gap: .85rem; margin-bottom: .85rem; }
+.kpi-5   { grid-template-columns: repeat(5,1fr); }
+.kpi-4   { grid-template-columns: repeat(4,1fr); }
+.kpi-3   { grid-template-columns: repeat(3,1fr); }
 
-.roi-card {
-    background: #fff; border-radius: var(--card-r);
-    border: 1px solid var(--br); padding: 1.4rem 1.5rem;
-    box-shadow: 0 1px 6px rgba(15,23,42,.06);
+.kpi {
+    background: var(--card);
+    border-radius: var(--r);
+    padding: 1.25rem 1.3rem;
+    box-shadow: var(--sh);
+    border: 1px solid var(--bdr);
+    transition: box-shadow .18s, transform .18s;
+}
+.kpi:hover { box-shadow: var(--sh-h); transform: translateY(-2px); }
+
+.kpi-lbl {
+    font-size: .68rem; font-weight: 600;
+    color: var(--t3); text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: .55rem;
+}
+.kpi-val {
+    font-size: 1.7rem; font-weight: 800; letter-spacing: -.035em;
+    color: var(--t1); line-height: 1; margin-bottom: .4rem;
+}
+.kpi-val.md { font-size: 1.35rem; letter-spacing: -.02em; }
+.kpi-trend {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .72rem; font-weight: 600;
+}
+.kpi-trend.up   { color: var(--green); }
+.kpi-trend.down { color: var(--red);   }
+.kpi-trend.neu  { color: var(--t3);    }
+
+/* ══════════════════════════════════════════
+   CONTENT GRID
+══════════════════════════════════════════ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; margin-bottom: .85rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: .85rem; margin-bottom: .85rem; }
+
+/* ── Card base ──────────────────────────── */
+.card {
+    background: var(--card);
+    border-radius: var(--r);
+    box-shadow: var(--sh);
+    border: 1px solid var(--bdr);
+    overflow: hidden;
+}
+.card-body { padding: 1.4rem 1.5rem; }
+.card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.5rem; border-bottom: 1px solid var(--bdr);
+}
+.card-head h4 {
+    font-size: .88rem; font-weight: 700; color: var(--t1);
+    display: flex; align-items: center; gap: .5rem;
+}
+.card-head .chip {
+    font-size: .62rem; font-weight: 700; padding: .15rem .55rem;
+    border-radius: 50px; text-transform: uppercase; letter-spacing: .04em;
+}
+.chip-green  { background: #D1FAE5; color: #059669; }
+.chip-amber  { background: #FEF3C7; color: #D97706; }
+.chip-red    { background: #FEE2E2; color: #DC2626; }
+.chip-blue   { background: #DBEAFE; color: #2563EB; }
+.chip-purple { background: #EDE9FE; color: #6D28D9; }
+
+/* ── Wallet list ────────────────────────── */
+.wallet-list { display: flex; flex-direction: column; gap: 0; }
+.wl-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .8rem 0; border-bottom: 1px solid rgba(0,0,0,.05);
+}
+.wl-row:last-child { border-bottom: none; }
+.wl-left { display: flex; align-items: center; gap: .7rem; }
+.wl-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.wl-lbl  { font-size: .8rem; font-weight: 500; color: var(--t2); }
+.wl-val  { font-size: .9rem; font-weight: 700; color: var(--t1); }
+.wl-sub  { font-size: .68rem; color: var(--t3); margin-top: .04rem; }
+.wl-bar-wrap { padding: .35rem 0; }
+.wl-bar  { height: 5px; background: rgba(0,0,0,.06); border-radius: 99px; overflow: hidden; }
+.wl-fill { height: 100%; border-radius: 99px; }
+
+/* ── Big stat (for total earnings) ─────── */
+.big-stat-card {
+    background: var(--accent);
+    border-radius: var(--r);
+    padding: 1.75rem 1.75rem;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(91,91,214,.35);
     position: relative; overflow: hidden;
 }
-.roi-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0;
-    height: 3px; background: var(--rc-top, #4f46e5); border-radius: var(--card-r) var(--card-r) 0 0;
+.big-stat-card::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
 }
-.roi-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-.roi-icon-wrap { display: flex; align-items: center; gap: .55rem; }
-.roi-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: .88rem; }
-.roi-title { font-size: .84rem; font-weight: 700; color: var(--t1); }
-.roi-sub   { font-size: .64rem; color: var(--t2); margin-top: .07rem; }
-
-.badge { font-size: .6rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; padding: .2rem .64rem; border-radius: 50px; }
-.badge-green  { background: #dcfce7; color: #166534; }
-.badge-red    { background: #fee2e2; color: #991b1b; }
-.badge-amber  { background: #fef3c7; color: #92400e; }
-
-.track { height: 8px; background: #f1f5f9; border-radius: 99px; overflow: hidden; margin-bottom: .4rem; }
-.track-fill { height: 100%; border-radius: 99px; transition: width 1.2s ease; }
-.track-pct  { text-align: right; font-size: .67rem; font-weight: 700; color: var(--t3); margin-top: -.3rem; margin-bottom: .8rem; }
-
-.roi-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: .4rem; padding-top: .8rem; border-top: 1px solid var(--br); }
-.rs-val { font-size: .97rem; font-weight: 800; color: var(--t1); }
-.rs-lbl { font-size: .58rem; color: var(--t3); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-top: .08rem; }
-
-.roi-notice { display: flex; align-items: center; gap: .42rem; margin-top: .85rem; padding: .5rem .8rem; border-radius: 8px; font-size: .72rem; font-weight: 600; }
-.rn-g { background: #dcfce7; color: #166534; }
-.rn-a { background: #fef3c7; color: #92400e; }
-
-/* ─────────────────────────────────────────────────────
-   TARGET RINGS
-───────────────────────────────────────────────────── */
-.tg-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.4rem; }
-.tg-card {
-    background: #fff; border: 1px solid var(--br); border-radius: var(--card-r);
-    box-shadow: 0 1px 6px rgba(15,23,42,.06); padding: 1.6rem; text-align: center;
-    transition: transform .2s var(--ease), box-shadow .2s;
+.big-stat-card::after {
+    content: '';
+    position: absolute; bottom: -60px; right: 40px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.05);
 }
-.tg-card:hover { transform: translateY(-3px); box-shadow: 0 6px 22px rgba(15,23,42,.1); }
-.tg-card h3 { font-size: .88rem; font-weight: 800; color: var(--t1); margin-bottom: .16rem; }
-.tg-card p  { font-size: .72rem; color: var(--t2); margin-bottom: 1.25rem; line-height: 1.5; }
+.bsc-lbl { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; opacity: .7; margin-bottom: .6rem; }
+.bsc-val { font-size: 2.8rem; font-weight: 900; letter-spacing: -.05em; line-height: 1; margin-bottom: .5rem; }
+.bsc-sub { font-size: .76rem; opacity: .75; display: flex; align-items: center; gap: .35rem; }
+.bsc-live { width: 7px; height: 7px; border-radius: 50%; background: #34D399; box-shadow: 0 0 6px #34D399; }
 
-.ring-w { position: relative; width: 146px; height: 146px; margin: 0 auto 1.25rem; }
+/* ── Progress bar row ───────────────────── */
+.prog-row { padding: .9rem 0; border-bottom: 1px solid rgba(0,0,0,.05); }
+.prog-row:last-child { border-bottom: none; }
+.prog-row-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .45rem; }
+.prog-row-lbl { font-size: .78rem; font-weight: 500; color: var(--t2); }
+.prog-row-val { font-size: .78rem; font-weight: 700; color: var(--t1); }
+.prog-track { height: 5px; background: rgba(0,0,0,.07); border-radius: 99px; overflow: hidden; }
+.prog-fill  { height: 100%; border-radius: 99px; }
+
+/* ── ROI cards ──────────────────────────── */
+.roi-c {
+    background: var(--card);
+    border-radius: var(--r);
+    border: 1px solid var(--bdr);
+    box-shadow: var(--sh);
+    overflow: hidden;
+}
+.roi-c-top {
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1px solid var(--bdr);
+    display: flex; align-items: flex-start; justify-content: space-between;
+}
+.roi-c-title { font-size: .88rem; font-weight: 700; color: var(--t1); margin-bottom: .1rem; }
+.roi-c-sub   { font-size: .68rem; color: var(--t3); }
+.roi-c-body  { padding: 1.2rem 1.4rem; }
+.roi-nums {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: .5rem; margin-top: 1rem; padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,.06);
+}
+.rn-v { font-size: .95rem; font-weight: 800; color: var(--t1); }
+.rn-l { font-size: .62rem; color: var(--t3); text-transform: uppercase; letter-spacing: .05em; margin-top: .05rem; }
+.roi-notice {
+    display: flex; align-items: center; gap: .4rem;
+    margin-top: .85rem; padding: .42rem .75rem;
+    border-radius: 8px; font-size: .72rem; font-weight: 600;
+}
+.rn-g { background: #D1FAE5; color: #059669; }
+.rn-a { background: #FEF3C7; color: #D97706; }
+
+/* ── Ring ───────────────────────────────── */
+.ring-card {
+    background: var(--card); border-radius: var(--r);
+    border: 1px solid var(--bdr); box-shadow: var(--sh);
+    padding: 1.5rem; text-align: center;
+    transition: box-shadow .18s, transform .18s;
+}
+.ring-card:hover { box-shadow: var(--sh-h); transform: translateY(-2px); }
+.ring-card h3 { font-size: .88rem; font-weight: 700; color: var(--t1); margin-bottom: .15rem; }
+.ring-card p  { font-size: .72rem; color: var(--t3); margin-bottom: 1.2rem; }
+.ring-w { position: relative; width: 128px; height: 128px; margin: 0 auto 1.2rem; }
 .ring-w svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.ring-bg   { fill: none; stroke: #f1f5f9; stroke-width: 9; }
-.ring-fill { fill: none; stroke-width: 9; stroke-linecap: round; }
+.ring-bg   { fill: none; stroke: rgba(0,0,0,.07); stroke-width: 8; }
+.ring-fill-el { fill: none; stroke-width: 8; stroke-linecap: round; }
 .ring-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.ring-pct { font-size: 1.7rem; font-weight: 900; color: var(--t1); letter-spacing: -.04em; line-height: 1; }
-.ring-s   { font-size: .6rem; font-weight: 600; color: var(--t2); text-transform: uppercase; letter-spacing: .08em; margin-top: .26rem; }
+.ring-pct { font-size: 1.5rem; font-weight: 900; color: var(--t1); letter-spacing: -.04em; line-height: 1; }
+.ring-s   { font-size: .6rem; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: .07em; margin-top: .2rem; }
+.ring-btn {
+    width: 100%; padding: .6rem; border: 1.5px solid rgba(0,0,0,.1);
+    border-radius: 9px; font-family: inherit; font-size: .77rem; font-weight: 600;
+    cursor: pointer; background: transparent; color: var(--t2);
+    display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: all .15s;
+}
+.ring-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-.tg-btn { width: 100%; padding: .68rem; border: none; border-radius: 10px; font-family: var(--f); font-size: .78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .36rem; transition: opacity .18s, transform .18s; }
-.tg-btn:hover { opacity: .86; transform: translateY(-1px); }
-.tg-btn-a { background: linear-gradient(135deg,#7c3aed,#6d28d9); color: #fff; box-shadow: 0 4px 14px rgba(124,58,237,.3); }
-.tg-btn-b { background: linear-gradient(135deg,#2563eb,#1d4ed8); color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,.3); }
+/* ── Expandable ─────────────────────────── */
+.xpanel { background: var(--card); border: 1px solid var(--bdr); border-radius: var(--r); box-shadow: var(--sh); margin-bottom: .85rem; display: none; }
+.xpanel.open { display: block; animation: fup .2s ease; }
+@keyframes fup { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.xp-head { padding: .9rem 1.4rem; border-bottom: 1px solid var(--bdr); font-size: .85rem; font-weight: 700; color: var(--t1); display: flex; align-items: center; gap: .5rem; }
+.xp-ico  { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: .72rem; }
+.xp-body { padding: 1.15rem 1.4rem; }
 
-/* ─────────────────────────────────────────────────────
-   EXPANDABLE PANELS
-───────────────────────────────────────────────────── */
-.xpanel { background: #fff; border: 1px solid var(--br); border-radius: var(--card-r); box-shadow: 0 1px 6px rgba(15,23,42,.06); margin-bottom: 1.2rem; display: none; }
-.xpanel.open { display: block; animation: fadeup .28s var(--ease); }
-@keyframes fadeup { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.xp-head { padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--br); display: flex; align-items: center; gap: .6rem; font-size: .88rem; font-weight: 800; color: var(--t1); }
-.xp-ico  { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: .78rem; }
-.xp-body { padding: 1.4rem; }
-
-.lv-row { display: grid; grid-template-columns: 40px 1fr 150px 72px; gap: .8rem; align-items: center; padding: .75rem .9rem; border-radius: 10px; border: 1px solid transparent; margin-bottom: .38rem; transition: background .15s, border-color .15s; }
-.lv-row:hover { background: #f8fafc; border-color: var(--br); }
-.lv-num { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg,#7c3aed,#6d28d9); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .95rem; flex-shrink: 0; box-shadow: 0 3px 9px rgba(124,58,237,.22); }
-.lv-info h6 { font-size: .78rem; font-weight: 700; color: var(--t1); margin-bottom: .05rem; }
-.lv-info p  { font-size: .66rem; color: var(--t2); }
-.lv-bar { height: 5px; background: #f1f5f9; border-radius: 99px; overflow: hidden; margin-bottom: .18rem; }
-.lv-fill{ height: 100%; border-radius: 99px; background: linear-gradient(90deg,#7c3aed,#06b6d4); }
+.lv-row { display: grid; grid-template-columns: 36px 1fr 140px 60px; gap: .75rem; align-items: center; padding: .6rem .75rem; border-radius: 9px; margin-bottom: .28rem; transition: background .12s; }
+.lv-row:hover { background: var(--bg); }
+.lv-num { width: 36px; height: 36px; border-radius: 9px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .88rem; flex-shrink: 0; }
+.lv-info h6 { font-size: .77rem; font-weight: 700; color: var(--t1); margin-bottom: .03rem; }
+.lv-info p  { font-size: .66rem; color: var(--t3); }
+.lv-bar { height: 4px; background: rgba(0,0,0,.07); border-radius: 99px; overflow: hidden; margin-bottom: .14rem; }
+.lv-fill{ height: 100%; border-radius: 99px; background: var(--accent); }
 .lv-pct { font-size: .6rem; color: var(--t3); font-weight: 600; }
 .lv-cnt { font-size: .84rem; font-weight: 800; color: var(--t1); text-align: right; }
-.lv-cnt span { font-size: .65rem; color: var(--t3); font-weight: 500; }
+.lv-cnt span { font-size: .63rem; color: var(--t3); font-weight: 500; }
 
-.rank-g { display: grid; grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); gap: .75rem; }
-.rank-i { text-align: center; padding: 1.15rem .85rem; border-radius: 12px; border: 1.5px solid var(--br); background: #fafafa; transition: all .2s var(--ease); }
-.rank-i:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(15,23,42,.1); background: #fff; }
-.rank-i.won { border-color: rgba(5,150,105,.28); background: #f0fdf4; }
-.rank-img { width: 46px; height: 46px; object-fit: contain; display: block; margin: 0 auto .55rem; }
-.rank-n  { font-size: .75rem; font-weight: 700; color: var(--t1); margin-bottom: .12rem; }
-.rank-r  { font-size: .61rem; color: var(--t2); margin-bottom: .6rem; line-height: 1.4; }
-.rank-tr { height: 4px; background: #f1f5f9; border-radius: 99px; overflow: hidden; margin-bottom: .32rem; }
-.rank-br { height: 100%; border-radius: 99px; background: linear-gradient(90deg,#7c3aed,#0891b2); }
+.rank-g { display: grid; grid-template-columns: repeat(auto-fill,minmax(108px,1fr)); gap: .7rem; }
+.rank-i { text-align: center; padding: 1rem .7rem; border-radius: 12px; border: 1.5px solid rgba(0,0,0,.08); background: var(--bg); transition: all .18s; }
+.rank-i:hover { transform: translateY(-2px); box-shadow: var(--sh-h); background: var(--card); }
+.rank-i.won { border-color: rgba(16,185,129,.3); background: #D1FAE5; }
+.rank-img { width: 42px; height: 42px; object-fit: contain; display: block; margin: 0 auto .45rem; }
+.rank-n  { font-size: .73rem; font-weight: 700; color: var(--t1); margin-bottom: .1rem; }
+.rank-r  { font-size: .61rem; color: var(--t3); margin-bottom: .5rem; line-height: 1.4; }
+.rank-tr { height: 3px; background: rgba(0,0,0,.08); border-radius: 99px; overflow: hidden; margin-bottom: .25rem; }
+.rank-br { height: 100%; border-radius: 99px; background: var(--accent); }
 .rank-ct { font-size: .61rem; color: var(--t3); font-weight: 600; }
-.rank-dn { display: inline-flex; align-items: center; gap: .17rem; background: #dcfce7; color: #166534; border-radius: 50px; padding: .12rem .46rem; font-size: .6rem; font-weight: 700; margin-top: .25rem; }
+.rank-won-b { display: inline-flex; align-items: center; gap: .15rem; background: #D1FAE5; color: #059669; border-radius: 50px; padding: .1rem .42rem; font-size: .59rem; font-weight: 700; margin-top: .22rem; }
 
-/* ─────────────────────────────────────────────────────
-   ADMIN ALERT
-───────────────────────────────────────────────────── */
-.aa { display: flex; align-items: center; gap: .9rem; padding: .9rem 1.25rem; border-radius: var(--card-r); margin-bottom: 1.2rem; text-decoration: none; background: #fef2f2; border: 1px solid #fecaca; box-shadow: 0 1px 4px rgba(220,38,38,.1); }
-.aa-ico { font-size: 1.35rem; flex-shrink: 0; }
-.aa strong { display: block; color: #991b1b; font-size: .87rem; font-weight: 700; }
-.aa span   { color: #ef4444; font-size: .74rem; }
-.aa-n { margin-left: auto; background: #dc2626; color: #fff; border-radius: 50px; padding: .24rem .82rem; font-size: .82rem; font-weight: 800; flex-shrink: 0; }
-
-/* ─────────────────────────────────────────────────────
-   RESPONSIVE — single column on mobile
-───────────────────────────────────────────────────── */
+/* ── Responsive ─────────────────────────── */
 @media (max-width: 700px) {
-    .sg        { grid-template-columns: 1fr; }
-    .roi-grid  { grid-template-columns: 1fr; }
-    .tg-grid   { grid-template-columns: 1fr; }
-    .hero-bal  { display: none; }
-    .hero-date { display: none; }
-    .hero-name { font-size: 1.65rem; }
-    .hero      { padding: 1.5rem 1.1rem 1.3rem; }
-    .db-body   { padding: 1.2rem .9rem 3rem; }
-    .lv-row    { grid-template-columns: 38px 1fr; gap: .5rem; }
+    .kpi-5,.kpi-4,.kpi-3 { grid-template-columns: 1fr 1fr; }
+    .grid-2,.grid-3 { grid-template-columns: 1fr; }
+    .ph { padding: .9rem 1rem; }
+    .db-body { padding: 1rem 1rem 3rem; }
+    .lv-row { grid-template-columns: 34px 1fr; }
     .lv-row > :nth-child(3), .lv-row > :nth-child(4) { display: none; }
 }
-@media (min-width: 701px) and (max-width: 1024px) {
-    .sg { grid-template-columns: repeat(2, 1fr); }
-}
-@media (min-width: 1025px) {
-    .sg { grid-template-columns: repeat(3, 1fr); }
+@media (min-width: 701px) and (max-width: 960px) {
+    .kpi-5 { grid-template-columns: repeat(3,1fr); }
+    .kpi-4 { grid-template-columns: repeat(2,1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: repeat(2,1fr); }
 }
 </style>
 
 <div class="db">
 @php $isSavingOnly = ($data['account_type'] ?? null) === 'saving'; @endphp
 
-{{-- ─── HERO ───────────────────────────────────────────── --}}
-<div class="hero">
-    <div class="hero-in">
-        <div>
-            <div class="hero-brand">Global Visioners International</div>
-            <div class="hero-name">Salam, <em>{{ Auth::user()->name }}</em> 👋</div>
-            @if($data['user_plan'] === 'vip')
-                <span class="hero-pkg vip"><i class="fas fa-crown"></i>&nbsp;VIP Gold Package</span>
-            @elseif($data['user_plan'] === 'saving')
-                <span class="hero-pkg" style="color:#34d399;border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.1)"><i class="fas fa-piggy-bank"></i>&nbsp;Saving Plan</span>
-            @else
-                <span class="hero-pkg"><i class="fas fa-gem"></i>&nbsp;Standard Package</span>
-            @endif
-        </div>
-
-        <div class="hero-bal">
-            <div class="hero-bal-lbl">Total Earnings</div>
-            <div class="hero-bal-val" id="heroBalance">${{ number_format($data['total_earning'], 2) }}</div>
-            <div class="hero-bal-sub">
-                <span class="live"></span>
-                {{ $isSavingOnly ? 'Saving' : 'Online' }}: ${{ number_format($data['online_wallet'], 2) }}
-            </div>
-        </div>
-
-        <div class="hero-date">
-            <div class="hero-date-t">Today</div>
-            <div class="hero-date-v">{{ now()->format('l, M d Y') }}</div>
-            @role('admin')
-            <div class="hero-date-s">{{ now()->format('h:i A') }} · {{ config('app.timezone') }}</div>
-            @endrole
-        </div>
-    </div>
-</div>
-
-{{-- ─── TICKER ──────────────────────────────────────────── --}}
+{{-- ── TICKER ───────────────────────────── --}}
 <div class="ticker">
     <div class="ticker-track">
-        <span class="t-item">☪&nbsp; Eid Milad-un-Nabi ﷺ Mubarak! — GVI family ki taraf se tamam members ko dil ki gehraiyon se mubarakbaad <span class="t-dot"></span></span>
-        <span class="t-item">🌙&nbsp; 12 Rabi-ul-Awwal — Huzoor Nabi Kareem ﷺ ki seerat hamein mehnat, ikhlas aur umeed ka raasta dikhati hai <span class="t-dot"></span></span>
-        <span class="t-item">☪&nbsp; Rehmat-ul-Alameen ﷺ — Milad Mubarak! GVI ke sath apna aur apnon ka mustaqbil roshan karen <span class="t-dot"></span></span>
-        <span class="t-item">🕌&nbsp; عید میلاد النبی ﷺ مبارک — 12 ربیع الاول — GVI ki poori team ki taraf se khushamdeed <span class="t-dot"></span></span>
-        {{-- duplicate for seamless loop --}}
-        <span class="t-item">☪&nbsp; Eid Milad-un-Nabi ﷺ Mubarak! — GVI family ki taraf se tamam members ko dil ki gehraiyon se mubarakbaad <span class="t-dot"></span></span>
-        <span class="t-item">🌙&nbsp; 12 Rabi-ul-Awwal — Huzoor Nabi Kareem ﷺ ki seerat hamein mehnat, ikhlas aur umeed ka raasta dikhati hai <span class="t-dot"></span></span>
-        <span class="t-item">☪&nbsp; Rehmat-ul-Alameen ﷺ — Milad Mubarak! GVI ke sath apna aur apnon ka mustaqbil roshan karen <span class="t-dot"></span></span>
-        <span class="t-item">🕌&nbsp; عید میلاد النبی ﷺ مبارک — 12 ربیع الاول — GVI ki poori team ki taraf se khushamdeed <span class="t-dot"></span></span>
+        <span class="t-item">☪ Eid Milad-un-Nabi ﷺ Mubarak! — GVI family ki taraf se tamam members ko dil ki gehraiyon se mubarakbaad <span class="t-sep"></span></span>
+        <span class="t-item">🌙 12 Rabi-ul-Awwal — Huzoor Nabi Kareem ﷺ ki seerat hamein mehnat, ikhlas aur umeed ka raasta dikhati hai <span class="t-sep"></span></span>
+        <span class="t-item">☪ Rehmat-ul-Alameen ﷺ — Milad Mubarak! GVI ke sath apna aur apnon ka mustaqbil roshan karen <span class="t-sep"></span></span>
+        <span class="t-item">🕌 عید میلاد النبی ﷺ مبارک — 12 ربیع الاول — GVI ki poori team ki taraf se khushamdeed <span class="t-sep"></span></span>
+        <span class="t-item">☪ Eid Milad-un-Nabi ﷺ Mubarak! — GVI family ki taraf se tamam members ko dil ki gehraiyon se mubarakbaad <span class="t-sep"></span></span>
+        <span class="t-item">🌙 12 Rabi-ul-Awwal — Huzoor Nabi Kareem ﷺ ki seerat hamein mehnat, ikhlas aur umeed ka raasta dikhati hai <span class="t-sep"></span></span>
+        <span class="t-item">☪ Rehmat-ul-Alameen ﷺ — Milad Mubarak! GVI ke sath apna aur apnon ka mustaqbil roshan karen <span class="t-sep"></span></span>
+        <span class="t-item">🕌 عید میلاد النبی ﷺ مبارک — 12 ربیع الاول — GVI ki poori team ki taraf se khushamdeed <span class="t-sep"></span></span>
     </div>
 </div>
 
-{{-- ─── BODY ────────────────────────────────────────────── --}}
+{{-- ── PAGE HEADER ──────────────────────── --}}
+<div class="ph">
+    <div>
+        <div class="ph-title">Dashboard</div>
+        <div class="ph-sub">Welcome back, {{ Auth::user()->name }}</div>
+    </div>
+    <div class="ph-right">
+        @if($data['user_plan'] === 'vip')
+            <span class="ph-chip vip"><i class="fas fa-crown"></i> VIP Gold</span>
+        @elseif($data['user_plan'] === 'saving')
+            <span class="ph-chip saving"><i class="fas fa-piggy-bank"></i> Saving Plan</span>
+        @else
+            <span class="ph-chip std"><i class="fas fa-gem"></i> Standard</span>
+        @endif
+        <div class="ph-date">
+            {{ now()->format('d M Y') }}
+            <small>{{ now()->format('l') }}</small>
+        </div>
+    </div>
+</div>
+
+{{-- ── BODY ─────────────────────────────── --}}
 <div class="db-body">
 
-    {{-- Admin Alert --}}
+    {{-- Alerts --}}
+    @php $kycUser = auth()->user(); @endphp
+    @if(in_array($kycUser->kyc_status, ['pending', 'rejected']))
+    <a href="{{ route('kyc.show') }}" class="alert-bar {{ $kycUser->kyc_status === 'rejected' ? 'danger' : 'warn' }}">
+        <div class="alert-bar-icon">{{ $kycUser->kyc_status === 'rejected' ? '❌' : '🪪' }}</div>
+        <div>
+            <strong style="color:{{ $kycUser->kyc_status === 'rejected' ? '#DC2626' : '#D97706' }}">
+                {{ $kycUser->kyc_status === 'rejected' ? 'KYC Rejected — Re-upload Required' : 'KYC Verification Required' }}
+            </strong>
+            <small>
+                @if($kycUser->kyc_status === 'rejected' && $kycUser->kyc_rejection_reason)
+                    Reason: {{ $kycUser->kyc_rejection_reason }}. Please re-upload your CNIC photos.
+                @else
+                    Please upload CNIC front & back to complete verification.
+                @endif
+            </small>
+        </div>
+        <div class="alert-bar-cta">Upload Now →</div>
+    </a>
+    @endif
+
     @role('admin')
     {{-- @if($data['missed_roi_count'] > 0)
-    <a href="{{ route('roi.submission.monitoring') }}" class="aa">
-        <div class="aa-ico">⚠️</div>
-        <div><strong>ROI Submissions Missing Today</strong><span>Click to review users who have not received their ROI distribution</span></div>
-        <div class="aa-n">{{ $data['missed_roi_count'] }} Users</div>
+    <a href="{{ route('roi.submission.monitoring') }}" class="alert-bar danger">
+        <div class="alert-bar-icon">⚠️</div>
+        <div>
+            <strong style="color:#DC2626">ROI Submissions Missing</strong>
+            <small>{{ $data['missed_roi_count'] }} users have not received ROI today.</small>
+        </div>
+        <div class="alert-bar-cta">Review →</div>
     </a>
     @endif --}}
     @endrole
 
-    {{-- ── WALLET OVERVIEW (standard + both users only) ───── --}}
+    {{-- ═══════════════════════════════════════
+         STANDARD / BOTH — WALLET OVERVIEW
+    ═══════════════════════════════════════ --}}
     @if(!$isSavingOnly)
-    <div class="sec" style="margin-top:0">
-        <div class="sec-dot" style="background:#7c3aed"></div>
-        <div class="sec-txt">Wallet Overview</div>
-    </div>
 
-    <div class="sg">
-        {{-- Total Earnings --}}
-        <div class="sc sc-purple">
-            <div class="sc-top">
-                <div class="sc-icon"><i class="fas fa-coins"></i></div>
-                <i class="fas fa-chevron-right sc-arrow"></i>
-            </div>
-            <div class="sc-lbl">Total Earnings</div>
-            <div class="sc-val">${{ number_format($data['total_earning'], 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-arrow-trend-up"></i> All-time cumulative</div>
+    {{-- Top KPI row (like CareOps top metrics) --}}
+    <div class="sec-h">Overview</div>
+
+    <div class="kpi-row kpi-5" style="margin-bottom:1.5rem">
+        <div class="kpi">
+            <div class="kpi-lbl">Total Earnings</div>
+            <div class="kpi-val">${{ number_format($data['total_earning'], 2) }}</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> All-time cumulative</div>
         </div>
-
-        {{-- Online Wallet --}}
-        <div class="sc sc-green">
-            <div class="sc-top">
-                <div class="sc-icon"><i class="fas fa-wallet"></i></div>
-                <i class="fas fa-chevron-right sc-arrow"></i>
-            </div>
-            <div class="sc-lbl">Online Wallet</div>
-            <div class="sc-val">${{ number_format($data['online_wallet'], 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-circle" style="font-size:.4rem"></i> Available balance</div>
+        <div class="kpi">
+            <div class="kpi-lbl">Online Wallet</div>
+            <div class="kpi-val">${{ number_format($data['online_wallet'], 2) }}</div>
+            <div class="kpi-trend neu">Available balance</div>
         </div>
-
-        {{-- ROI Earnings --}}
-        <div class="sc sc-blue">
-            <div class="sc-top">
-                <div class="sc-icon"><i class="fas fa-chart-line"></i></div>
-                <i class="fas fa-chevron-right sc-arrow"></i>
-            </div>
-            <div class="sc-lbl">ROI Earnings</div>
-            <div class="sc-val">${{ number_format($data['roi'], 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-arrow-up"></i> Return on investment</div>
+        <div class="kpi">
+            <div class="kpi-lbl">ROI Earnings</div>
+            <div class="kpi-val">${{ number_format($data['roi'], 2) }}</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> Return on investment</div>
         </div>
-
-        {{-- Direct / Indirect --}}
-        <div class="sc sc-amber">
-            <div class="sc-top">
-                <div class="sc-icon"><i class="fas fa-users"></i></div>
-                <i class="fas fa-chevron-right sc-arrow"></i>
-            </div>
-            <div class="sc-lbl">Direct / Indirect</div>
-            <div class="sc-val">${{ number_format($data['direct_indirect'], 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-arrow-up"></i> Commission income</div>
+        <div class="kpi">
+            <div class="kpi-lbl">Team Size</div>
+            <div class="kpi-val md">{{ number_format($data['totalTeam']) }}</div>
+            <div class="kpi-trend neu">Active members</div>
         </div>
-
-        {{-- Profit Sharing --}}
-        <div class="sc sc-pink">
-            <div class="sc-top">
-                <div class="sc-icon"><i class="fas fa-chart-pie"></i></div>
-                <i class="fas fa-chevron-right sc-arrow"></i>
-            </div>
-            <div class="sc-lbl">Profit Sharing</div>
-            <div class="sc-val">${{ number_format($data['profit_share'], 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-calendar"></i> Monthly distribution</div>
-        </div>
-
-        {{-- Rewards --}}
-        <div class="sc sc-sky">
-            <div class="sc-top">
-                <div class="sc-icon"><i class="fas fa-gift"></i></div>
-                <i class="fas fa-chevron-right sc-arrow"></i>
-            </div>
-            <div class="sc-lbl">Rewards Earned</div>
-            <div class="sc-val">${{ number_format($data['rewardWallet'], 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-trophy"></i> Achievement bonuses</div>
-        </div>
-
-        {{-- Designation Incentive --}}
-        <a href="{{ route('wallets.incentive') }}" class="sc sc-yellow" style="cursor:pointer">
-            <div class="sc-top">
-                <div class="sc-icon"><i class="fas fa-star"></i></div>
-                <i class="fas fa-external-link-alt sc-arrow" style="font-size:.6rem"></i>
-            </div>
-            <div class="sc-lbl">Designation Incentive</div>
-            <div class="sc-val">${{ number_format($data['designation_incentive'], 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-arrow-right"></i> View details</div>
-        </a>
-
-        {{-- Team Size --}}
-        <div class="sc sc-teal">
-            <div class="sc-top">
-                <div class="sc-icon"><i class="fas fa-network-wired"></i></div>
-                <i class="fas fa-chevron-right sc-arrow"></i>
-            </div>
-            <div class="sc-lbl">Team Size</div>
-            <div class="sc-val" style="font-size:1.4rem;letter-spacing:0">{{ number_format($data['totalTeam']) }}</div>
-            <div class="sc-sub"><i class="fas fa-user-plus"></i> Active network members</div>
-        </div>
-
-        {{-- Rank --}}
-        <div class="sc sc-indigo">
-            <div class="sc-top">
-                <div class="sc-icon"><i class="fas fa-crown"></i></div>
-                <i class="fas fa-chevron-right sc-arrow"></i>
-            </div>
-            <div class="sc-lbl">Your Rank</div>
-            <div class="sc-val" style="font-size:1.2rem;letter-spacing:0">VISIONER</div>
-            <div class="sc-sub"><i class="fas fa-star"></i> Active member status</div>
+        <div class="kpi">
+            <div class="kpi-lbl">Your Rank</div>
+            <div class="kpi-val md">VISIONER</div>
+            <div class="kpi-trend neu">Active status</div>
         </div>
     </div>
-    @endif
 
-    {{-- ── SAVING PLAN (saving-only + enrolled standard users) ── --}}
-    @if(!empty($data['saving_enrolled']))
-    <div class="sec">
-        <div class="sec-dot" style="background:#059669"></div>
-        <div class="sec-txt">Welfare Smart Savings Plan</div>
-    </div>
+    {{-- Second row: big earnings card + wallet breakdown --}}
+    <div class="grid-2" style="margin-bottom:1.5rem">
 
-    <div class="sg">
-        <div class="sc sc-emerald">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-wallet"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">Saving Investments</div>
-            <div class="sc-val">${{ number_format($data['saving_deposit'] ?? 0, 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-calendar-check"></i> Total deposited</div>
-        </div>
+        {{-- Left: Total Earnings hero card --}}
+        <div class="big-stat-card">
+            <div class="bsc-lbl">Total Portfolio Value</div>
+            <div class="bsc-val" id="heroBalance">${{ number_format($data['total_earning'], 2) }}</div>
+            <div class="bsc-sub">
+                <span class="bsc-live"></span>
+                Online Wallet: ${{ number_format($data['online_wallet'], 2) }}
+            </div>
 
-        <div class="sc sc-blue">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-chart-line"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">Saving ROI's</div>
-            <div class="sc-val">${{ number_format($data['saving_roi'] ?? 0, 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-arrow-trend-up"></i> Daily appreciation</div>
-        </div>
-
-        <div class="sc sc-violet">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-users"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">Saving Direct &amp; Indirect</div>
-            <div class="sc-val">${{ number_format(($data['saving_direct'] ?? 0) + ($data['saving_indirect'] ?? 0), 2) }}</div>
-            <div class="sc-sub">D: ${{ number_format($data['saving_direct'] ?? 0, 2) }} &nbsp;·&nbsp; I: ${{ number_format($data['saving_indirect'] ?? 0, 2) }}</div>
-        </div>
-
-        @if(!empty($data['instalment_summary']['next_due']))
-        <div class="sc sc-rose">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-calendar-exclamation"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">Next Due Date</div>
-            <div class="sc-val" data-no-counter style="font-size:1.1rem;letter-spacing:0">{{ $data['instalment_summary']['next_due']->due_date->format('d-m-Y') }}</div>
-            <div class="sc-sub"><i class="fas fa-receipt"></i> #{{ $data['instalment_summary']['next_due']->instalment_number }} · ${{ number_format($data['instalment_summary']['next_due']->amount, 2) }}</div>
-        </div>
-        @endif
-
-        @if(isset($data['saving_direct_team_count']))
-        <div class="sc sc-green">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-user-plus"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">Direct Team Members</div>
-            <div class="sc-val" style="font-size:1.4rem;letter-spacing:0">{{ number_format($data['saving_direct_team_count']) }}</div>
-            <div class="sc-sub"><i class="fas fa-circle-check"></i> Your direct saving referrals</div>
-        </div>
-        @endif
-
-        @if(isset($data['user_saving_team_count']))
-        <div class="sc sc-amber">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-users-rectangle"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">My Saving Members</div>
-            <div class="sc-val" style="font-size:1.4rem;letter-spacing:0">{{ number_format($data['user_saving_team_count']) }}</div>
-            <div class="sc-sub"><i class="fas fa-circle-check"></i> In your saving network</div>
-        </div>
-        @endif
-    </div>
-    @endif
-
-    {{-- ── ADMIN SAVING OVERVIEW ─────────────────────── --}}
-    @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('super-admin'))
-    @if(isset($data['admin_saving_total_invested']))
-    <div class="sec">
-        <div class="sec-dot" style="background:#d97706"></div>
-        <div class="sec-txt">Saving Plan — System Overview</div>
-    </div>
-
-    <div class="sg">
-        <div class="sc sc-amber">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-users-rectangle"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">Total Saving Members</div>
-            <div class="sc-val" style="font-size:1.4rem;letter-spacing:0">{{ number_format($data['admin_saving_total_users']) }}</div>
-            <div class="sc-sub"><i class="fas fa-circle-check"></i> Active plan participants</div>
-        </div>
-
-        <div class="sc sc-emerald">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-sack-dollar"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">Total Saving Invested</div>
-            <div class="sc-val">${{ number_format($data['admin_saving_total_invested'], 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-arrow-up"></i> All members combined</div>
-        </div>
-
-        <div class="sc sc-blue">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-chart-line"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">Total Saving ROI Paid</div>
-            <div class="sc-val">${{ number_format($data['admin_saving_total_roi'], 2) }}</div>
-            <div class="sc-sub"><i class="fas fa-calendar-days"></i> Distributed to date</div>
-        </div>
-
-        <div class="sc sc-violet">
-            <div class="sc-top"><div class="sc-icon"><i class="fas fa-diagram-project"></i></div><i class="fas fa-chevron-right sc-arrow"></i></div>
-            <div class="sc-lbl">Total Direct &amp; Indirect</div>
-            <div class="sc-val">${{ number_format($data['admin_saving_total_direct'] + $data['admin_saving_total_indirect'], 2) }}</div>
-            <div class="sc-sub">D: ${{ number_format($data['admin_saving_total_direct'], 2) }} &nbsp;·&nbsp; I: ${{ number_format($data['admin_saving_total_indirect'], 2) }}</div>
-        </div>
-    </div>
-    @endif
-    @endif
-
-    {{-- ── ROI CONTROL (standard + both users only) ───── --}}
-    @if(!$isSavingOnly)
-    <div class="sec">
-        <div class="sec-dot" style="background:#0891b2"></div>
-        <div class="sec-txt">Analytics &amp; ROI Control</div>
-    </div>
-
-    <div class="roi-grid">
-        {{-- 2X --}}
-        <div class="roi-card" style="--rc-top:linear-gradient(90deg,#7c3aed,#06b6d4)">
-            <div class="roi-head">
-                <div class="roi-icon-wrap">
-                    <div class="roi-icon" style="background:#f3f0ff;color:#7c3aed"><i class="fas fa-chart-bar"></i></div>
-                    <div>
-                        <div class="roi-title">2X ROI Progress</div>
-                        <div class="roi-sub">Investment return tracker</div>
-                    </div>
+            <div style="margin-top:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+                <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:.9rem 1rem">
+                    <div style="font-size:.65rem;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Direct / Indirect</div>
+                    <div style="font-size:1.15rem;font-weight:800">${{ number_format($data['direct_indirect'], 2) }}</div>
                 </div>
-                <span class="badge {{ $data['roi_stats']['has_reached_2x'] ? 'badge-red' : 'badge-green' }}">
+                <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:.9rem 1rem">
+                    <div style="font-size:.65rem;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Profit Sharing</div>
+                    <div style="font-size:1.15rem;font-weight:800">${{ number_format($data['profit_share'], 2) }}</div>
+                </div>
+                <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:.9rem 1rem">
+                    <div style="font-size:.65rem;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Rewards</div>
+                    <div style="font-size:1.15rem;font-weight:800">${{ number_format($data['rewardWallet'], 2) }}</div>
+                </div>
+                <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:.9rem 1rem">
+                    <div style="font-size:.65rem;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Incentive</div>
+                    <div style="font-size:1.15rem;font-weight:800">${{ number_format($data['designation_incentive'], 2) }}</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Right: Wallet breakdown list --}}
+        <div class="card">
+            <div class="card-head">
+                <h4><i class="fas fa-chart-pie" style="color:var(--accent)"></i> Earnings Breakdown</h4>
+            </div>
+            <div class="card-body">
+                @php
+                    $total = max($data['total_earning'], 0.01);
+                    $wallets = [
+                        ['label' => 'ROI Earnings',           'val' => $data['roi'],                    'color' => '#5B5BD6'],
+                        ['label' => 'Direct / Indirect',      'val' => $data['direct_indirect'],        'color' => '#10B981'],
+                        ['label' => 'Profit Sharing',         'val' => $data['profit_share'],           'color' => '#F59E0B'],
+                        ['label' => 'Rewards',                'val' => $data['rewardWallet'],           'color' => '#EC4899'],
+                        ['label' => 'Designation Incentive',  'val' => $data['designation_incentive'], 'color' => '#06B6D4'],
+                    ];
+                @endphp
+                <div class="wallet-list">
+                    @foreach($wallets as $w)
+                    <div class="wl-row">
+                        <div class="wl-left">
+                            <span class="wl-dot" style="background:{{ $w['color'] }}"></span>
+                            <div>
+                                <div class="wl-lbl">{{ $w['label'] }}</div>
+                                <div class="wl-bar-wrap" style="width:100px">
+                                    <div class="wl-bar">
+                                        <div class="wl-fill" style="width:{{ min(($w['val']/$total)*100,100) }}%;background:{{ $w['color'] }}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wl-val">${{ number_format($w['val'], 2) }}</div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════
+         ROI CONTROL
+    ═══════════════════════════════════════ --}}
+    <div class="sec-h">Analytics &amp; ROI Control</div>
+
+    <div class="grid-2" style="margin-bottom:1.5rem">
+        {{-- 2X --}}
+        <div class="roi-c">
+            <div class="roi-c-top">
+                <div>
+                    <div class="roi-c-title">2X ROI Progress</div>
+                    <div class="roi-c-sub">Investment return tracker</div>
+                </div>
+                <span class="chip {{ $data['roi_stats']['has_reached_2x'] ? 'chip-red' : 'chip-green' }}">
                     {{ $data['roi_stats']['has_reached_2x'] ? 'Completed' : 'Active' }}
                 </span>
             </div>
-            <div class="track">
-                <div class="track-fill" style="width:{{ min($data['roi_stats']['completion_percentage'],100) }}%;background:linear-gradient(90deg,#7c3aed,#06b6d4)"></div>
+            <div class="roi-c-body">
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:.45rem">
+                    <span style="font-size:.72rem;color:var(--t3)">Progress</span>
+                    <span style="font-size:.88rem;font-weight:700;color:var(--t1)">{{ number_format(min($data['roi_stats']['completion_percentage'],100),1) }}%</span>
+                </div>
+                <div class="prog-track">
+                    <div class="prog-fill" style="width:{{ min($data['roi_stats']['completion_percentage'],100) }}%;background:var(--accent)"></div>
+                </div>
+                <div class="roi-nums">
+                    <div><div class="rn-v">${{ number_format($data['roi_stats']['invested_amount'],2) }}</div><div class="rn-l">Invested</div></div>
+                    <div><div class="rn-v">${{ number_format($data['roi_stats']['total_roi_paid'],2) }}</div><div class="rn-l">Earned</div></div>
+                    <div><div class="rn-v">${{ number_format($data['roi_stats']['remaining_amount'],2) }}</div><div class="rn-l">Remaining</div></div>
+                </div>
+                @if($data['roi_stats']['has_reached_2x'])
+                <div class="roi-notice rn-g"><i class="fas fa-check-circle"></i> 2X ROI Target Achieved!</div>
+                @endif
             </div>
-            <div class="track-pct">{{ number_format(min($data['roi_stats']['completion_percentage'],100),1) }}%</div>
-            <div class="roi-stats">
-                <div><div class="rs-val">${{ number_format($data['roi_stats']['invested_amount'],2) }}</div><div class="rs-lbl">Invested</div></div>
-                <div><div class="rs-val">${{ number_format($data['roi_stats']['total_roi_paid'],2) }}</div><div class="rs-lbl">Earned</div></div>
-                <div><div class="rs-val">${{ number_format($data['roi_stats']['remaining_amount'],2) }}</div><div class="rs-lbl">Left</div></div>
-            </div>
-            @if($data['roi_stats']['has_reached_2x'])
-            <div class="roi-notice rn-g"><i class="fas fa-check-circle"></i> 2X ROI Target Achieved!</div>
-            @endif
         </div>
 
         {{-- 7X --}}
-        <div class="roi-card" style="--rc-top:linear-gradient(90deg,#d97706,#db2777)">
-            <div class="roi-head">
-                <div class="roi-icon-wrap">
-                    <div class="roi-icon" style="background:#fffbeb;color:#d97706"><i class="fas fa-shield-alt"></i></div>
-                    <div>
-                        <div class="roi-title">7X Withdrawal Control</div>
-                        <div class="roi-sub">Withdrawal eligibility</div>
-                    </div>
+        <div class="roi-c">
+            <div class="roi-c-top">
+                <div>
+                    <div class="roi-c-title">7X Withdrawal Control</div>
+                    <div class="roi-c-sub">Withdrawal eligibility status</div>
                 </div>
-                <span class="badge {{ $data['roi_stats']['withdrawal_enabled'] ? 'badge-green' : 'badge-amber' }}">
+                <span class="chip {{ $data['roi_stats']['withdrawal_enabled'] ? 'chip-green' : 'chip-amber' }}">
                     {{ $data['roi_stats']['withdrawal_enabled'] ? 'Enabled' : 'Suspended' }}
                 </span>
             </div>
-            <div class="track">
-                <div class="track-fill" style="width:{{ min($data['roi_stats']['completion_7x_percentage'],100) }}%;background:linear-gradient(90deg,#d97706,#db2777)"></div>
+            <div class="roi-c-body">
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:.45rem">
+                    <span style="font-size:.72rem;color:var(--t3)">Progress to 7X limit</span>
+                    <span style="font-size:.88rem;font-weight:700;color:var(--t1)">{{ number_format(min($data['roi_stats']['completion_7x_percentage'],100),1) }}%</span>
+                </div>
+                <div class="prog-track">
+                    <div class="prog-fill" style="width:{{ min($data['roi_stats']['completion_7x_percentage'],100) }}%;background:#F59E0B"></div>
+                </div>
+                <div class="roi-nums">
+                    <div><div class="rn-v">${{ number_format($data['roi_stats']['seven_x_limit'],2) }}</div><div class="rn-l">7X Limit</div></div>
+                    <div><div class="rn-v">${{ number_format($data['roi_stats']['total_roi_paid'],2) }}</div><div class="rn-l">Earned</div></div>
+                    <div><div class="rn-v">${{ number_format($data['roi_stats']['remaining_7x_amount'],2) }}</div><div class="rn-l">Until Limit</div></div>
+                </div>
+                @if(!$data['roi_stats']['withdrawal_enabled'])
+                <div class="roi-notice rn-a"><i class="fas fa-ban"></i> Withdrawals suspended — top-up required</div>
+                @endif
             </div>
-            <div class="track-pct">{{ number_format(min($data['roi_stats']['completion_7x_percentage'],100),1) }}%</div>
-            <div class="roi-stats">
-                <div><div class="rs-val">${{ number_format($data['roi_stats']['seven_x_limit'],2) }}</div><div class="rs-lbl">7X Limit</div></div>
-                <div><div class="rs-val">${{ number_format($data['roi_stats']['total_roi_paid'],2) }}</div><div class="rs-lbl">Earned</div></div>
-                <div><div class="rs-val">${{ number_format($data['roi_stats']['remaining_7x_amount'],2) }}</div><div class="rs-lbl">Until Limit</div></div>
-            </div>
-            @if(!$data['roi_stats']['withdrawal_enabled'])
-            <div class="roi-notice rn-a"><i class="fas fa-ban"></i> Withdrawals suspended — top-up required</div>
-            @endif
         </div>
     </div>
 
-    @endif
+    {{-- ═══════════════════════════════════════
+         TARGETS
+    ═══════════════════════════════════════ --}}
+    <div class="sec-h">Targets &amp; Progress</div>
 
-    {{-- ── TARGETS (standard + both users only) ───────── --}}
-    @if(!$isSavingOnly)
-    <div class="sec">
-        <div class="sec-dot" style="background:#059669"></div>
-        <div class="sec-txt">Targets &amp; Progress</div>
-    </div>
+    <div class="grid-2" style="margin-bottom:1.5rem">
+        @php $r = 60; $c = 2 * M_PI * $r; @endphp
 
-    <div class="tg-grid">
-        @php $r = 70; $c = 2 * M_PI * $r; @endphp
-
-        <div class="tg-card">
+        <div class="ring-card">
             <h3>Reward Target</h3>
-            <p>Track your progress towards the next reward milestone</p>
+            <p>Track progress towards next reward milestone</p>
             <div class="ring-w">
-                <svg viewBox="0 0 168 168">
-                    <circle class="ring-bg" cx="84" cy="84" r="{{ $r }}"/>
-                    <circle class="ring-fill" cx="84" cy="84" r="{{ $r }}"
-                        stroke="url(#rg1)"
+                <svg viewBox="0 0 144 144">
+                    <circle class="ring-bg" cx="72" cy="72" r="{{ $r }}"/>
+                    <circle class="ring-fill-el" cx="72" cy="72" r="{{ $r }}"
+                        stroke="var(--accent)"
                         stroke-dasharray="{{ $c }}"
                         stroke-dashoffset="{{ $c - ($c * $data['reward'] / 100) }}"/>
-                    <defs>
-                        <linearGradient id="rg1" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#06b6d4"/>
-                        </linearGradient>
-                    </defs>
                 </svg>
                 <div class="ring-c">
                     <div class="ring-pct">{{ number_format($data['reward'],1) }}%</div>
                     <div class="ring-s">Complete</div>
                 </div>
             </div>
-            <button class="tg-btn tg-btn-a" id="btnReward"><i class="fas fa-trophy"></i> View Reward Details</button>
+            <button class="ring-btn" id="btnReward"><i class="fas fa-trophy"></i> View Reward Details</button>
         </div>
 
-        <div class="tg-card">
+        <div class="ring-card">
             <h3>Rank Target</h3>
             <p>Advance to the next leadership level in the network</p>
             <div class="ring-w">
-                <svg viewBox="0 0 168 168">
-                    <circle class="ring-bg" cx="84" cy="84" r="{{ $r }}"/>
-                    <circle class="ring-fill" cx="84" cy="84" r="{{ $r }}"
-                        stroke="url(#rg2)"
+                <svg viewBox="0 0 144 144">
+                    <circle class="ring-bg" cx="72" cy="72" r="{{ $r }}"/>
+                    <circle class="ring-fill-el" cx="72" cy="72" r="{{ $r }}"
+                        stroke="#10B981"
                         stroke-dasharray="{{ $c }}"
                         stroke-dashoffset="{{ $c }}"/>
-                    <defs>
-                        <linearGradient id="rg2" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#7c3aed"/>
-                        </linearGradient>
-                    </defs>
                 </svg>
                 <div class="ring-c">
                     <div class="ring-pct">0%</div>
                     <div class="ring-s">Complete</div>
                 </div>
             </div>
-            <button class="tg-btn tg-btn-b" id="btnRank"><i class="fas fa-crown"></i> View Rank Progress</button>
+            <button class="ring-btn" id="btnRank"><i class="fas fa-crown"></i> View Rank Progress</button>
         </div>
     </div>
 
-    {{-- Reward Panel --}}
+    {{-- Reward panel --}}
     <div class="xpanel" id="panelReward">
         <div class="xp-head">
-            <div class="xp-ico" style="background:#f3f0ff;color:#7c3aed"><i class="fas fa-trophy"></i></div>
+            <div class="xp-ico" style="background:#EDE9FE;color:var(--accent)"><i class="fas fa-trophy"></i></div>
             Reward Level Progress
         </div>
         <div class="xp-body">
@@ -723,10 +646,10 @@
         </div>
     </div>
 
-    {{-- Rank Panel --}}
+    {{-- Rank panel --}}
     <div class="xpanel" id="panelRank">
         <div class="xp-head">
-            <div class="xp-ico" style="background:#eff6ff;color:#2563eb"><i class="fas fa-crown"></i></div>
+            <div class="xp-ico" style="background:#D1FAE5;color:#059669"><i class="fas fa-crown"></i></div>
             Rank Advancement Progress
         </div>
         <div class="xp-body">
@@ -758,12 +681,96 @@
                     <div class="rank-r">{{ $rk['req'] }}</div>
                     <div class="rank-tr"><div class="rank-br" style="width:{{ $rp }}%"></div></div>
                     <div class="rank-ct">{{ $tm }} / {{ $rk['size'] }}</div>
-                    @if($won)<div class="rank-dn"><i class="fas fa-check"></i> Achieved</div>@endif
+                    @if($won)<div class="rank-won-b"><i class="fas fa-check"></i> Achieved</div>@endif
                 </div>
                 @endforeach
             </div>
         </div>
     </div>
+
+    @endif {{-- /!isSavingOnly --}}
+
+    {{-- ═══════════════════════════════════════
+         SAVING PLAN
+    ═══════════════════════════════════════ --}}
+    @if(!empty($data['saving_enrolled']))
+    <div class="sec-h">Welfare Smart Savings Plan</div>
+
+    <div class="kpi-row kpi-3" style="margin-bottom:1rem">
+        <div class="kpi">
+            <div class="kpi-lbl">Total Deposited</div>
+            <div class="kpi-val">${{ number_format($data['saving_deposit'] ?? 0, 2) }}</div>
+            <div class="kpi-trend neu">Saving investments</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-lbl">Saving ROI</div>
+            <div class="kpi-val">${{ number_format($data['saving_roi'] ?? 0, 2) }}</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> Daily appreciation</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-lbl">Direct &amp; Indirect</div>
+            <div class="kpi-val">${{ number_format(($data['saving_direct'] ?? 0) + ($data['saving_indirect'] ?? 0), 2) }}</div>
+            <div class="kpi-trend neu">D: ${{ number_format($data['saving_direct'] ?? 0,2) }} · I: ${{ number_format($data['saving_indirect'] ?? 0,2) }}</div>
+        </div>
+    </div>
+
+    @if(!empty($data['instalment_summary']['next_due']) || isset($data['saving_direct_team_count']) || isset($data['user_saving_team_count']))
+    <div class="kpi-row kpi-3" style="margin-bottom:1.5rem">
+        @if(!empty($data['instalment_summary']['next_due']))
+        <div class="kpi" style="border-left:3px solid var(--red)">
+            <div class="kpi-lbl">Next Due Date</div>
+            <div class="kpi-val md" data-no-counter>{{ $data['instalment_summary']['next_due']->due_date->format('d M Y') }}</div>
+            <div class="kpi-trend down"><i class="fas fa-calendar-exclamation"></i> #{{ $data['instalment_summary']['next_due']->instalment_number }} · ${{ number_format($data['instalment_summary']['next_due']->amount, 2) }}</div>
+        </div>
+        @endif
+        @if(isset($data['saving_direct_team_count']))
+        <div class="kpi">
+            <div class="kpi-lbl">Direct Members</div>
+            <div class="kpi-val md">{{ number_format($data['saving_direct_team_count']) }}</div>
+            <div class="kpi-trend neu">Direct saving referrals</div>
+        </div>
+        @endif
+        @if(isset($data['user_saving_team_count']))
+        <div class="kpi">
+            <div class="kpi-lbl">Saving Network</div>
+            <div class="kpi-val md">{{ number_format($data['user_saving_team_count']) }}</div>
+            <div class="kpi-trend neu">In your saving network</div>
+        </div>
+        @endif
+    </div>
+    @endif
+    @endif
+
+    {{-- ═══════════════════════════════════════
+         ADMIN SAVING OVERVIEW
+    ═══════════════════════════════════════ --}}
+    @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('super-admin'))
+    @if(isset($data['admin_saving_total_invested']))
+    <div class="sec-h">Saving Plan — System Overview</div>
+
+    <div class="kpi-row kpi-4" style="margin-bottom:1.5rem">
+        <div class="kpi">
+            <div class="kpi-lbl">Total Members</div>
+            <div class="kpi-val md">{{ number_format($data['admin_saving_total_users']) }}</div>
+            <div class="kpi-trend neu">Active participants</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-lbl">Total Invested</div>
+            <div class="kpi-val">${{ number_format($data['admin_saving_total_invested'], 2) }}</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> All members combined</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-lbl">Total ROI Paid</div>
+            <div class="kpi-val">${{ number_format($data['admin_saving_total_roi'], 2) }}</div>
+            <div class="kpi-trend neu">Distributed to date</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-lbl">Direct &amp; Indirect</div>
+            <div class="kpi-val">${{ number_format($data['admin_saving_total_direct'] + $data['admin_saving_total_indirect'], 2) }}</div>
+            <div class="kpi-trend neu">D: ${{ number_format($data['admin_saving_total_direct'],2) }}</div>
+        </div>
+    </div>
+    @endif
     @endif
 
 </div>{{-- /db-body --}}
@@ -774,20 +781,20 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    /* ── Panel toggles ───────────────────────────────────── */
+    /* Panel toggles */
     function toggle(show, hide) {
         document.getElementById(hide).classList.remove('open');
         const p = document.getElementById(show);
         const was = p.classList.contains('open');
         p.classList.toggle('open', !was);
-        if (!was) setTimeout(() => p.scrollIntoView({ behavior:'smooth', block:'nearest' }), 55);
+        if (!was) setTimeout(() => p.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
     }
     document.getElementById('btnReward')?.addEventListener('click', () => toggle('panelReward','panelRank'));
     document.getElementById('btnRank')?.addEventListener('click',   () => toggle('panelRank',  'panelReward'));
 
-    /* ── Counter animation ───────────────────────────────── */
+    /* Counter animation */
     function countUp(el, target, prefix, dec) {
-        const dur = 1500, t0 = performance.now();
+        const dur = 1400, t0 = performance.now();
         (function step(now) {
             const p = Math.min((now - t0) / dur, 1);
             const e = 1 - Math.pow(1 - p, 3);
@@ -795,8 +802,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (p < 1) requestAnimationFrame(step);
         })(t0);
     }
-    function runCounters() {
-        document.querySelectorAll('.sc-val, #heroBalance').forEach(el => {
+    setTimeout(() => {
+        document.querySelectorAll('.kpi-val, .bsc-val').forEach(el => {
             if (el.hasAttribute('data-no-counter')) return;
             const raw = el.textContent.trim();
             const pfx = raw.startsWith('$') ? '$' : '';
@@ -807,31 +814,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 countUp(el, num, pfx, dec);
             }
         });
-    }
+    }, 80);
 
-    /* ── Entrance fade-up ────────────────────────────────── */
-    const els = document.querySelectorAll('.sc, .roi-card, .tg-card');
-    els.forEach((el, i) => {
-        el.style.cssText += `opacity:0;transform:translateY(16px);transition:opacity .4s ease ${i*38}ms,transform .4s ease ${i*38}ms`;
-    });
-    new IntersectionObserver((entries) => {
+    /* Subtle fade-in */
+    const io = new IntersectionObserver(entries => {
         entries.forEach(e => {
             if (e.isIntersecting) {
                 e.target.style.opacity = '1';
                 e.target.style.transform = 'translateY(0)';
+                io.unobserve(e.target);
             }
         });
-    }, { threshold: 0.06 }).observe(document.querySelector('.db-body'));
+    }, { threshold: 0.04 });
 
-    /* trigger on all observed --  use a single root observer */
-    const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-            if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; io.unobserve(e.target); }
-        });
-    }, { threshold: 0.06 });
-    els.forEach(el => io.observe(el));
-
-    setTimeout(runCounters, 150);
+    document.querySelectorAll('.kpi, .roi-c, .ring-card, .big-stat-card, .card').forEach((el, i) => {
+        el.style.cssText += `opacity:0;transform:translateY(10px);transition:opacity .3s ease ${i*25}ms,transform .3s ease ${i*25}ms`;
+        io.observe(el);
+    });
 });
 </script>
 @endsection

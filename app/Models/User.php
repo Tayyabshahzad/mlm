@@ -43,6 +43,8 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         'total_binary_earnings',
         'can_login',
         'sponsor_id','ancestor_id','descendant_id','level','last_roi_payment_date','transaction_id','freez_wallet','blocked','usdt_rate','transferred_amount','converted_usdt_amount','fee_deducted','net_invested_usdt_amount','negative_pv','roi_eligible_investment_amount', 'roi_status', 'roi_stopped_at','stop_reason','stop_reason_description','user_plan',
+        'cnic',
+        'kyc_status', 'kyc_rejection_reason', 'kyc_submitted_at', 'kyc_reviewed_at', 'kyc_reviewed_by',
         'account_type','saving_plan_start_date','saving_registration_completed','saving_total_deposited','saving_initial_payment','saving_initial_fee','adb_option','fisp_option','saving_enrolled',
         'saving_enrollment_activated','saving_enrollment_activated_at','saving_enrollment_activated_by',
         'last_saving_roi_payment_date'
@@ -80,6 +82,12 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         $this->save();
 
         return parent::delete();
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('kyc_cnic_front')->singleFile();
+        $this->addMediaCollection('kyc_cnic_back')->singleFile();
     }
 
     public function profile()

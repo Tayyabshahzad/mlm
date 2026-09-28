@@ -77,6 +77,7 @@ class RegisteredUserController extends Controller
             'activation_code'  => ['nullable', new ValidActivationCode($request->payment_method)],
             'transferred_amount' => 'required|numeric',
             'usdt_amount'      => 'required|numeric|min:' . $minUsdt,
+            'cnic'             => ['required', 'string', 'regex:/^\d{5}-\d{7}-\d{1}$/', Rule::unique('users')->whereNull('deleted_at')],
         ]);
 
         $netAmount = $request->usdt_amount - $setting->registration_fee;
@@ -113,6 +114,7 @@ class RegisteredUserController extends Controller
                 'roi_eligible_investment_amount' => $netAmount,
                 'user_plan'                 => $userPlan,
                 'account_type'              => 'standard_investment',
+                'cnic'                      => $request->cnic,
             ]);
 
             $this->handleActivationCode($request, $user);
@@ -166,6 +168,7 @@ class RegisteredUserController extends Controller
             'activation_code'  => ['nullable', new ValidActivationCode($request->payment_method)],
             'transferred_amount' => 'required|numeric',
             'usdt_amount'      => 'required|numeric|min:' . $minTotal,
+            'cnic'             => ['required', 'string', 'regex:/^\d{5}-\d{7}-\d{1}$/', Rule::unique('users')->whereNull('deleted_at')],
         ]);
 
 
@@ -227,6 +230,7 @@ class RegisteredUserController extends Controller
                 'saving_initial_fee'             => $savingFee,
                 'adb_option'                     => false,
                 'fisp_option'                    => false,
+                'cnic'                           => $request->cnic,
             ]);
 
             $this->handleActivationCode($request, $user);

@@ -10,6 +10,7 @@ use App\Http\Controllers\{
     CommissionController,
     FrontEndController,
     GenealogyController,
+    KycController,
     ProductController,
     ProfileController,
     ReportController,
@@ -24,7 +25,7 @@ use App\Http\Controllers\{
     WithdrawalRequestController,
     ROIMonitoringController,
     ROISubmissionMonitoringController
-}; 
+};
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\{Route, Auth, Artisan};
 use App\Http\Middleware\{CheckUserStatus, CheckBlockedUser};
@@ -119,10 +120,23 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
 
     // Team Performance Tracker
     Route::get('team-performance', [\App\Http\Controllers\TeamPerformanceController::class, 'index'])->name('team.performance');
+
+    // KYC
+    Route::controller(KycController::class)->group(function () {
+        Route::get('kyc', 'show')->name('kyc.show');
+        Route::post('kyc/submit', 'submit')->name('kyc.submit');
+    });
 });
 
 // Admin Routes
-Route::middleware(['auth', 'verified', 'role:admin'])->group(function () { 
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+    // KYC admin actions
+    Route::controller(KycController::class)->prefix('admin/kyc')->group(function () {
+        Route::post('{user}/request', 'adminRequest')->name('admin.kyc.request');
+        Route::post('{user}/approve', 'adminApprove')->name('admin.kyc.approve');
+        Route::post('{user}/reject', 'adminReject')->name('admin.kyc.reject');
+    });
+
     Route::prefix('users')->controller(UserController::class)->group(function () {
         Route::get('index', 'index')->name('users.index');
         Route::put('status/update', 'updateStatus')->name('users.status.update');

@@ -68,6 +68,16 @@
                                 @if($currentRank)
                                     <span class="badge badge-dark">{{ $currentRank->rank_name }}</span>
                                 @endif
+                                {{-- KYC status badge --}}
+                                @if($user->kyc_status === 'approved')
+                                    <span class="badge badge-success"><i class="fas fa-shield-alt mr-1"></i>KYC Verified</span>
+                                @elseif($user->kyc_status === 'submitted')
+                                    <span class="badge badge-info"><i class="fas fa-clock mr-1"></i>KYC Pending Review</span>
+                                @elseif($user->kyc_status === 'rejected')
+                                    <span class="badge badge-danger"><i class="fas fa-times mr-1"></i>KYC Rejected</span>
+                                @elseif($user->kyc_status === 'pending')
+                                    <span class="badge badge-warning text-dark"><i class="fas fa-exclamation mr-1"></i>KYC Requested</span>
+                                @endif
                             </div>
                             <div class="flex-wrap mt-1 text-muted font-size-sm d-flex" style="gap:1rem;">
                                 <span><i class="mr-1 fas fa-envelope"></i>{{ $user->email }}</span>
@@ -114,6 +124,149 @@
                     </div>
                 </div>
                 @endforeach
+            </div>
+
+            {{-- ── KYC Management Card ──────────────────────────────────────── --}}
+            <div class="mb-6 card card-custom">
+                <div class="border-0 card-header">
+                    <h3 class="card-title font-weight-bolder text-dark">
+                        <i class="fas fa-id-card text-primary mr-2"></i> KYC Verification
+                    </h3>
+                    <div class="card-toolbar">
+                        @if(!$user->kyc_status || $user->kyc_status === 'approved')
+                            <form method="POST" action="{{ route('admin.kyc.request', $user) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-light-warning font-weight-bold rounded-0"
+                                    onclick="return confirm('Request KYC from {{ $user->name }}?')">
+                                    <i class="fas fa-paper-plane mr-1"></i>
+                                    {{ $user->kyc_status === 'approved' ? 'Re-request KYC' : 'Request KYC' }}
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+                <div class="card-body pt-2">
+                    @php
+                        $kycLabels = [
+                            null         => ['Not Requested', 'secondary'],
+                            ''           => ['Not Requested', 'secondary'],
+                            'pending'    => ['Requested — Awaiting Upload', 'warning'],
+                            'submitted'  => ['Documents Submitted — Under Review', 'info'],
+                            'approved'   => ['Approved ✓', 'success'],
+                            'rejected'   => ['Rejected', 'danger'],
+                        ];
+                        [$kycLabel, $kycColor] = $kycLabels[$user->kyc_status] ?? ['Unknown', 'secondary'];
+                        $cnicFront = $user->getFirstMedia('kyc_cnic_front');
+                        $cnicBack  = $user->getFirstMedia('kyc_cnic_back');
+                    @endphp
+
+                    <div class="d-flex align-items-center mb-4" style="gap:1rem;">
+                        <span class="badge badge-{{ $kycColor }} font-size-sm px-4 py-2">{{ $kycLabel }}</span>
+                        @if($user->kyc_submitted_at)
+                            <span class="text-muted font-size-sm">
+                                Submitted: {{ \Carbon\Carbon::parse($user->kyc_submitted_at)->format('d M Y, h:i A') }}
+                            </span>
+                        @endif
+                        @if($user->kyc_reviewed_at)
+                            <span class="text-muted font-size-sm">
+                                Reviewed: {{ \Carbon\Carbon::parse($user->kyc_reviewed_at)->format('d M Y, h:i A') }}
+                            </span>
+                        @endif
+                    </div>
+
+                    @if($user->kyc_rejection_reason)
+                        <div class="alert alert-danger py-2 mb-4 font-size-sm">
+                            <strong>Rejection Reason:</strong> {{ $user->kyc_rejection_reason }}
+                        </div>
+                    @endif
+
+                    {{-- CNIC images --}}
+                    @if($cnicFront || $cnicBack)
+                    <div class="row mb-4">
+                        @if($cnicFront)
+                        <div class="col-md-6 mb-3">
+                            <p class="font-weight-bold font-size-sm mb-2">CNIC Front</p>
+                            <a href="{{ $cnicFront->getUrl() }}" target="_blank">
+                                <img src="{{ $cnicFront->getUrl() }}" alt="CNIC Front"
+                                     style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;" />
+                            </a>
+                        </div>
+                        @endif
+                        @if($cnicBack)
+                        <div class="col-md-6 mb-3">
+                            <p class="font-weight-bold font-size-sm mb-2">CNIC Back</p>
+                            <a href="{{ $cnicBack->getUrl() }}" target="_blank">
+                                <img src="{{ $cnicBack->getUrl() }}" alt="CNIC Back"
+                                     style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;" />
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    {{-- Approve / Reject actions (only when submitted) --}}
+                    @if($user->kyc_status === 'submitted')
+                    <div class="d-flex" style="gap:.75rem;">
+                        <form method="POST" action="{{ route('admin.kyc.approve', $user) }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-success font-weight-bold rounded-0"
+                                onclick="return confirm('Approve KYC for {{ $user->name }}?')">
+                                <i class="fas fa-check mr-1"></i> Approve KYC
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-danger font-weight-bold rounded-0"
+                            data-toggle="modal" data-target="#rejectKycModal">
+                            <i class="fas fa-times mr-1"></i> Reject KYC
+                        </button>
+                    </div>
+                    @endif
+
+                    {{-- Show CNIC number if set --}}
+                    @if($user->cnic)
+                        <div class="mt-3 text-muted font-size-sm">
+                            <i class="fas fa-id-card mr-1"></i> CNIC on file: <strong>{{ $user->cnic }}</strong>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Reject KYC Modal --}}
+            <div class="modal fade" id="rejectKycModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-md" role="document">
+                    <div class="modal-content">
+                        <form method="POST" action="{{ route('admin.kyc.reject', $user) }}">
+                            @csrf
+                            <div class="modal-header">
+                                <h5 class="modal-title font-weight-bold text-danger">
+                                    <i class="fas fa-times-circle mr-2"></i> Reject KYC — {{ $user->name }}
+                                </h5>
+                                <button type="button" class="close" data-dismiss="modal"><i class="la la-times"></i></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label class="font-weight-bold font-size-sm">
+                                        Rejection Reason <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea name="rejection_reason" rows="3" required
+                                        class="form-control form-control-solid"
+                                        placeholder="e.g. Image is blurry, wrong document uploaded, CNIC not visible..."></textarea>
+                                </div>
+                                <div class="alert alert-warning py-2 font-size-sm">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    User will be notified to re-upload their documents.
+                                    Previously submitted images will be deleted.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light font-weight-bold rounded-0" data-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger font-weight-bold rounded-0">
+                                    <i class="fas fa-times mr-1"></i> Confirm Rejection
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
 
             {{-- ── Tabs ──────────────────────────────────────────────────────── --}}

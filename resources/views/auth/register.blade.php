@@ -147,6 +147,16 @@
                 </div>
                 @error('phone_number') <div class="f-error">{{ $message }}</div> @enderror
             </div>
+
+            <div class="f-group">
+                <label class="f-label">CNIC Number <span style="color:#ef4444;">*</span></label>
+                <div class="f-wrap">
+                    <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#94a3b8" stroke-width="1.8"/><path d="M2 10h20" stroke="#94a3b8" stroke-width="1.8"/><path d="M7 15h4M7 13h3" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+                    <input class="f-input" type="text" id="cnic" name="cnic" value="{{ old('cnic') }}" placeholder="XXXXX-XXXXXXX-X" maxlength="15" autocomplete="off" required />
+                </div>
+                <small style="font-size:.73rem;color:#64748b;">Format: 01101-0301010-9 (dashes auto-added)</small>
+                @error('cnic') <div class="f-error">{{ $message }}</div> @enderror
+            </div>
         </div>{{-- end #new-user-fields --}}
 
         {{-- ── Existing user fields ── --}}
@@ -420,6 +430,27 @@
         var txt = document.getElementById('walletAddress').textContent.trim();
         navigator.clipboard.writeText(txt).then(function(){ toastr.info('Wallet address copied!'); });
     }
+
+    // ── CNIC auto-format (XXXXX-XXXXXXX-X) ──────────────────
+    (function () {
+        var el = document.getElementById('cnic');
+        if (!el) return;
+        el.addEventListener('input', function (e) {
+            var raw   = this.value.replace(/\D/g, '').substring(0, 13);
+            var out   = '';
+            if (raw.length > 0)  out  = raw.substring(0, Math.min(5, raw.length));
+            if (raw.length > 5)  out += '-' + raw.substring(5, Math.min(12, raw.length));
+            if (raw.length > 12) out += '-' + raw.substring(12, 13);
+            this.value = out;
+        });
+        // On backspace at a dash position, remove the dash too
+        el.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace' && this.value.slice(-1) === '-') {
+                e.preventDefault();
+                this.value = this.value.slice(0, -1);
+            }
+        });
+    })();
 
     // ── CSRF refresh on submit ───────────────────────────────
     (function() {
