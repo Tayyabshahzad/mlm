@@ -201,16 +201,33 @@
                                         </button>
                                     </div>
 
+                                    {{-- Type Filter --}}
+                                    <div class="mb-4 d-flex align-items-center gap-3" style="gap:1.2rem;">
+                                        <span class="font-weight-600 text-muted" style="font-size:.85rem;white-space:nowrap;">Show:</span>
+                                        @foreach(['all' => 'Both Account Types', 'pure' => 'Saving Account Only', 'enrolled' => 'Enrolled Standard Users'] as $val => $label)
+                                        <a href="{{ route('users.index', array_merge(request()->query(), ['tab'=>'saving','saving_type'=>$val,'saving_page'=>1])) }}"
+                                           style="display:flex;align-items:center;gap:.4rem;text-decoration:none;font-size:.88rem;font-weight:500;color:{{ ($savingType??'all')===$val ? '#3699FF' : '#6c757d' }};">
+                                            <span style="width:16px;height:16px;border-radius:50%;border:2px solid {{ ($savingType??'all')===$val ? '#3699FF' : '#b0b7c3' }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                                @if(($savingType??'all')===$val)
+                                                <span style="width:8px;height:8px;border-radius:50%;background:#3699FF;display:block;"></span>
+                                                @endif
+                                            </span>
+                                            {{ $label }}
+                                        </a>
+                                        @endforeach
+                                    </div>
+
                                     {{-- Search --}}
                                     <form method="GET" action="{{ route('users.index') }}" class="mb-4">
                                         <input type="hidden" name="tab" value="saving">
+                                        <input type="hidden" name="saving_type" value="{{ $savingType ?? 'all' }}">
                                         <div class="input-group">
                                             <input type="text" name="search" class="form-control rounded-0"
                                                    placeholder="Search saving account users..."
                                                    value="{{ $tab === 'saving' ? ($search ?? '') : '' }}">
                                             <div class="input-group-append">
                                                 <button type="submit" class="btn btn-sm rounded-0 btn-info">Search</button>
-                                                <a href="{{ route('users.index', ['tab' => 'saving']) }}" class="rounded-0 btn btn-success">Clear</a>
+                                                <a href="{{ route('users.index', ['tab' => 'saving', 'saving_type' => $savingType ?? 'all']) }}" class="rounded-0 btn btn-success">Clear</a>
                                             </div>
                                         </div>
                                     </form>

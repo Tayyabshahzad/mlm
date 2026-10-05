@@ -123,10 +123,10 @@ class WithdrawalRequestController extends Controller
             $calculatedFee = $actualAmount * ($feePercent / 100);
             $withdrawableAmount = $actualAmount - $calculatedFee;
         } elseif ($request->withdrawal_option == 'usdt') {
-            // Apply USDT discount (negative fee means bonus)
-            $discountPercent = $settings->usdt_withdrawal_discount_percent ?? 2;
-            $calculatedFee = -($actualAmount * ($discountPercent / 100)); // Negative for discount
-            $withdrawableAmount = $actualAmount + abs($calculatedFee); // Add discount
+            // Apply USDT withdrawal fee (deducted like bank/cash)
+            $feePercent = $settings->usdt_withdrawal_discount_percent ?? 0;
+            $calculatedFee = $actualAmount * ($feePercent / 100);
+            $withdrawableAmount = $actualAmount - $calculatedFee;
         }  
         $onlineWalletSum = Wallet::where('wallet_type', 'online')
         ->where('user_id', Auth::id())

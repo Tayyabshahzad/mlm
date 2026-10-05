@@ -604,7 +604,11 @@
                                 <span>Bank <small class="text-warning">({{ $setting->bank_withdrawal_fee_percent ?? 2 }}% fee applies)</small></span>
                                 <br>
                                 <input type="radio" value="usdt" name="withdrawal_option">
-                                <span>USDT <small class="text-success">({{ $setting->usdt_withdrawal_discount_percent ?? 2 }}% discount!)</small></span>
+                                <span>USDT
+                                    @if(($setting->usdt_withdrawal_discount_percent ?? 0) > 0)
+                                        <small class="text-warning">({{ $setting->usdt_withdrawal_discount_percent }}% fee applies)</small>
+                                    @endif
+                                </span>
                                 <br>
                                 <input type="radio" value="cash" name="withdrawal_option">
                                 <span>Cash

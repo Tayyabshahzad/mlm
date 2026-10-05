@@ -266,7 +266,7 @@
                 @error('transferred_amount') <div class="f-error">{{ $message }}</div> @enderror
             </div>
             <div class="f-group">
-                <label class="f-label">Equiv. USDT <span style="font-size:.65rem;color:#ef4444;">(Min. {{ $isSaving ? '$'.($setting->saving_registration_fee ?? 5) : '60 USD' }})</span></label>
+                <label class="f-label">Equiv. USDT <span style="font-size:.65rem;color:#ef4444;">   </span></label>
                 <div class="f-wrap">
                     <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#94a3b8" stroke-width="1.8"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/></svg></div>
                     <input class="f-input" type="text" name="usdt_amount" id="usdt_amount" min="{{ $setting->saving_registration_fee ?? 5 }}" placeholder="Auto-calculated" readonly required />

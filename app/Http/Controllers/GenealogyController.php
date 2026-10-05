@@ -36,48 +36,33 @@ class GenealogyController extends Controller
             ->get()
             ->keyBy('id');
 
-        // Build parent map: for each descendant pick their level-1 parent.
-        // Prefer the standard-tree parent when both exist (keeps hierarchy consistent).
-        $rawParentRows = DB::table('referral_trees')
-            ->whereIn('descendant_id', $descendantIds->toArray())
-            ->whereIn('tree_type', ['standard', 'saving'])
-            ->where('level', 1)
-            ->get();
-
-        $parentMap = [];
-        foreach ($rawParentRows as $row) {
-            $did = $row->descendant_id;
-            if (!isset($parentMap[$did]) || $row->tree_type === 'standard') {
-                $parentMap[$did] = $row->ancestor_id;
-            }
+        // Use sponsor_id as the direct parent (correct regardless of tree type).
+        // Building a children-map and doing BFS ensures every parent is added
+        // before its children, preventing the cascade-skip problem.
+        $childrenMap = [];
+        foreach ($allTreeUsers as $u) {
+            $childrenMap[$u->sponsor_id][] = $u->id;
         }
 
-        // Sort ascending by level so parents are always added before their children
-        $orderedDescendants = DB::table('referral_trees')
-            ->where('ancestor_id', $user->id)
-            ->where('descendant_id', '!=', $user->id)
-            ->whereIn('tree_type', ['standard', 'saving'])
-            ->orderBy('level')
-            ->pluck('descendant_id')
-            ->unique();
-
         $includedKeys = [$user->id => true];
+        $queue = [$user->id];
 
-        foreach ($orderedDescendants as $descendantId) {
-            $descendant = $allTreeUsers->get($descendantId);
-            if (!$descendant) continue;
+        while (!empty($queue)) {
+            $parentId = array_shift($queue);
 
-            $parentId = $parentMap[$descendantId] ?? $user->id;
+            foreach ($childrenMap[$parentId] ?? [] as $childId) {
+                $child = $allTreeUsers->get($childId);
+                if (!$child || isset($includedKeys[$childId])) continue;
 
-            if (!isset($includedKeys[$parentId])) continue;
-
-            $nodeDataArray[] = [
-                'key'    => $descendant->id,
-                'parent' => $parentId,
-                'name'   => $descendant->username,
-                'image'  => $descendant->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
-            ];
-            $includedKeys[$descendant->id] = true;
+                $nodeDataArray[] = [
+                    'key'    => $child->id,
+                    'parent' => $parentId,
+                    'name'   => $child->username,
+                    'image'  => $child->getFirstMediaUrl('user_profile_images', 'thumb') ?: asset('assets/custom-images/fav-icon.png'),
+                ];
+                $includedKeys[$childId] = true;
+                $queue[] = $childId;
+            }
         }
 
         return view('genealogy.team', compact('user', 'nodeDataArray'));
@@ -179,7 +164,6 @@ class GenealogyController extends Controller
 
         $allTreeUsers = User::whereIn('id', $descendantIds)
             ->where('can_login', true)
-            ->where('account_type', 'saving') // saving tree only shows saving account users
             ->get()
             ->keyBy('id');
 

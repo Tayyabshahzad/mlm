@@ -467,13 +467,13 @@
                                     </div>
 
                                     <div class="form-group row">
-                                        <label class="col-xl-3 col-lg-3 col-form-label">USDT Withdrawal Discount (%)</label>
+                                        <label class="col-xl-3 col-lg-3 col-form-label">USDT Withdrawal Fee (%)</label>
                                         <div class="col-lg-9 col-xl-6">
                                             <input class="form-control form-control-lg form-control-solid" type="number"
                                                 step="0.01" name="usdt_withdrawal_discount_percent"
-                                                value="{{ old('usdt_withdrawal_discount_percent', $setting->usdt_withdrawal_discount_percent ?? 2) }}"
+                                                value="{{ old('usdt_withdrawal_discount_percent', $setting->usdt_withdrawal_discount_percent ?? 0) }}"
                                                 required min="0" max="100" />
-                                            <span class="form-text text-muted">Discount percentage (incentive) for USDT withdrawals</span>
+                                            <span class="form-text text-muted">Fee percentage deducted from USDT withdrawals (e.g. 7 = 7% fee)</span>
                                             @error('usdt_withdrawal_discount_percent')
                                                 <div class="text-danger mt-2">
                                                     <small>{{ $message }}</small>

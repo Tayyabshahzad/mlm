@@ -792,10 +792,11 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $search  = $request->input('search');
-        $tab     = $request->input('tab', 'standard'); // 'standard' or 'saving'
+        $search      = $request->input('search');
+        $tab         = $request->input('tab', 'standard'); // 'standard' or 'saving'
+        $savingType  = $request->input('saving_type', 'all'); // 'all' | 'pure' | 'enrolled'
 
-        $baseQuery = function ($accountType) use ($request, $search) {
+        $baseQuery = function ($accountType) use ($request, $search, $savingType) {
             $eagerLoads = $accountType === 'saving'
                 ? ['team', 'activationCode', 'savingInstalments', 'parent', 'savingSponsor']
                 : ['team', 'activationCode'];
@@ -803,15 +804,24 @@ class UserController extends Controller
             $query = User::with($eagerLoads);
 
             if ($accountType === 'saving') {
-                // Only actual saving plan participants — exclude auto-enrolled sponsors
-                // (who have saving_enrolled = true but saving_initial_payment = 0)
-                $query->where(function ($q) {
-                    $q->where('account_type', 'saving')
-                      ->orWhere(function ($q2) {
-                          $q2->where('saving_enrolled', true)
-                             ->where('saving_initial_payment', '>', 0);
-                      });
-                });
+                if ($savingType === 'pure') {
+                    // Only pure saving account users
+                    $query->where('account_type', 'saving');
+                } elseif ($savingType === 'enrolled') {
+                    // Only standard users who enrolled in saving plan
+                    $query->where('saving_enrolled', true)
+                          ->where('saving_initial_payment', '>', 0)
+                          ->where('account_type', '!=', 'saving');
+                } else {
+                    // All saving plan participants — exclude auto-enrolled sponsors (saving_initial_payment = 0)
+                    $query->where(function ($q) {
+                        $q->where('account_type', 'saving')
+                          ->orWhere(function ($q2) {
+                              $q2->where('saving_enrolled', true)
+                                 ->where('saving_initial_payment', '>', 0);
+                          });
+                    });
+                }
             } else {
                 $query->where('account_type', $accountType)
                       ->where('id', '!=', auth()->user()->id);
@@ -853,7 +863,7 @@ class UserController extends Controller
         $savingUsers          = User::where($savingScope)->orderBy('name')->get(['id', 'name', 'username']);
 
         return view('users.index', compact(
-            'teamMembers', 'savingMembers', 'search', 'tab',
+            'teamMembers', 'savingMembers', 'search', 'tab', 'savingType',
             'totalMembers', 'totalActiveMembers', 'totalInActiveMembers', 'totalBlockedMembers', 'totalfreezeMembers',
             'totalSavingMembers', 'totalActiveSaving', 'totalInactiveSaving', 'totalActivatedSaving', 'savingUsers'
         ));

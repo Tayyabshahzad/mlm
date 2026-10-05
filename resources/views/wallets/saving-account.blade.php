@@ -365,18 +365,27 @@
                     <div class="alert alert-info py-2 font-size-sm mb-4">
                         Only your <strong>Direct Commission</strong> balance will be transferred. ROI and indirect commissions are not included.
                     </div>
+                    @php $directMin = $setting->saving_commission_min_transfer ?? 10.70; @endphp
                     <div class="form-group">
                         <label class="font-weight-bold">Transfer Amount</label>
-                        <input type="number" name="amount" class="form-control form-control-sm form-control-solid"
-                            min="{{ $setting->saving_commission_min_transfer ?? 10.70 }}" step="0.01"
-                            max="{{ $directBalance }}" required placeholder="Enter amount">
-                        <strong class="text-danger d-block mt-1">Available: ${{ number_format($directBalance, 2) }}</strong>
-                        <small class="text-muted">Minimum Transfer: ${{ $setting->saving_commission_min_transfer ?? 10.70 }}</small>
+                        @if($directBalance < $directMin)
+                            <input type="number" name="amount" class="form-control form-control-sm form-control-solid"
+                                min="0" max="{{ $directBalance }}" step="0.01" placeholder="Enter amount" disabled>
+                            <strong class="text-danger d-block mt-1">Available: ${{ number_format($directBalance, 2) }}</strong>
+                            <div class="alert alert-warning py-2 mt-2 font-size-sm">
+                                Your balance is below the minimum transfer amount of <strong>${{ number_format($directMin, 2) }}</strong>. Earn more commissions to transfer.
+                            </div>
+                        @else
+                            <input type="number" name="amount" class="form-control form-control-sm form-control-solid"
+                                min="{{ $directMin }}" max="{{ $directBalance }}" step="0.01" required placeholder="Enter amount">
+                            <strong class="text-danger d-block mt-1">Available: ${{ number_format($directBalance, 2) }}</strong>
+                            <small class="text-muted">Minimum Transfer: ${{ number_format($directMin, 2) }}</small>
+                        @endif
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm font-weight-bold">Confirm Transfer</button>
+                    <button type="submit" class="btn btn-primary btn-sm font-weight-bold" {{ $directBalance < $directMin ? 'disabled' : '' }}>Confirm Transfer</button>
                 </div>
             </form>
         </div>
@@ -398,18 +407,27 @@
                     <div class="alert alert-info py-2 font-size-sm mb-4">
                         Only your <strong>Indirect Commission</strong> balance will be transferred. ROI and direct commissions are not included.
                     </div>
+                    @php $indirectMin = $setting->saving_commission_min_transfer ?? 10.70; @endphp
                     <div class="form-group">
                         <label class="font-weight-bold">Transfer Amount</label>
-                        <input type="number" name="amount" class="form-control form-control-sm form-control-solid"
-                            min="{{ $setting->saving_commission_min_transfer ?? 10.70 }}" step="0.01"
-                            max="{{ $indirectBalance }}" required placeholder="Enter amount">
-                        <strong class="text-danger d-block mt-1">Available: ${{ number_format($indirectBalance, 2) }}</strong>
-                        <small class="text-muted">Minimum Transfer: ${{ $setting->saving_commission_min_transfer ?? 10.70 }}</small>
+                        @if($indirectBalance < $indirectMin)
+                            <input type="number" name="amount" class="form-control form-control-sm form-control-solid"
+                                min="0" max="{{ $indirectBalance }}" step="0.01" placeholder="Enter amount" disabled>
+                            <strong class="text-danger d-block mt-1">Available: ${{ number_format($indirectBalance, 2) }}</strong>
+                            <div class="alert alert-warning py-2 mt-2 font-size-sm">
+                                Your balance is below the minimum transfer amount of <strong>${{ number_format($indirectMin, 2) }}</strong>. Earn more commissions to transfer.
+                            </div>
+                        @else
+                            <input type="number" name="amount" class="form-control form-control-sm form-control-solid"
+                                min="{{ $indirectMin }}" max="{{ $indirectBalance }}" step="0.01" required placeholder="Enter amount">
+                            <strong class="text-danger d-block mt-1">Available: ${{ number_format($indirectBalance, 2) }}</strong>
+                            <small class="text-muted">Minimum Transfer: ${{ number_format($indirectMin, 2) }}</small>
+                        @endif
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-info btn-sm font-weight-bold">Confirm Transfer</button>
+                    <button type="submit" class="btn btn-info btn-sm font-weight-bold" {{ $indirectBalance < $indirectMin ? 'disabled' : '' }}>Confirm Transfer</button>
                 </div>
             </form>
         </div>
