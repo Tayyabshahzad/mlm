@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::get('register/ref/{ref?}', [RegisteredUserController::class, 'create'])->name('register'); 
     
-    Route::post('register', [RegisteredUserController::class, 'store'])->name('register.user'); ;
+    Route::post('register', [RegisteredUserController::class, 'store'])->name('register.user');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
@@ -33,6 +33,9 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 });
+
+// Public route — accessible by both guests and logged-in users (admin testing form)
+Route::post('register/check-user-cnic', [RegisteredUserController::class, 'checkUserCnic'])->name('register.check.cnic');
 
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)

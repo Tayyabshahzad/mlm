@@ -40,6 +40,28 @@ class RegisteredUserController extends Controller
     /**
      * Handle an incoming registration request.
      */
+    public function checkUserCnic(Request $request)
+    {
+        $identifier = trim($request->input('identifier', ''));
+        if (!$identifier) {
+            return response()->json(['found' => false]);
+        }
+
+        $user = User::where('username', $identifier)->orWhere('email', $identifier)->first();
+
+        if (!$user) {
+            return response()->json(['found' => false, 'message' => 'No account found with this username or email.']);
+        }
+
+        return response()->json([
+            'found'            => true,
+            'already_enrolled' => $user->saving_enrolled || $user->account_type === 'saving',
+            'has_cnic'         => !empty($user->cnic),
+            'name'             => $user->name,
+            'username'         => $user->username,
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $setting     = Setting::first();
@@ -295,6 +317,15 @@ class RegisteredUserController extends Controller
 
         $isFullPayment = $request->usdt_amount >= $fullTotal;
 
+        // Find user first so we know if CNIC is required
+        $existingUser = User::where('username', $request->identifier)
+            ->orWhere('email', $request->identifier)
+            ->first();
+
+        $cnicRules = $existingUser && empty($existingUser->cnic)
+            ? ['required', 'string', 'regex:/^\d{5}-\d{7}-\d{1}$/', Rule::unique('users')->whereNull('deleted_at')]
+            : ['nullable'];
+
         $request->validate([
             'identifier'         => 'required|string|max:255',
             'transaction_id'     => 'required|max:50|string',
@@ -303,12 +334,8 @@ class RegisteredUserController extends Controller
             'amount_src'         => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'transferred_amount' => 'required|numeric',
             'usdt_amount'        => 'required|numeric|min:' . $minTotal,
+            'cnic'               => $cnicRules,
         ]);
-
-        // Find the existing user by username or email
-        $existingUser = User::where('username', $request->identifier)
-            ->orWhere('email', $request->identifier)
-            ->first();
 
         if (!$existingUser) {
             return redirect()->back()->withInput()
@@ -333,14 +360,18 @@ class RegisteredUserController extends Controller
             $netDeposit           = max(0.0, (float) $request->usdt_amount - (float) $savingFee);
             $registrationComplete = $netDeposit >= (float) $savingDeposit;
 
-            $existingUser->update([
+            $updateData = [
                 'saving_enrolled'               => true,
                 'saving_plan_start_date'        => Carbon::today()->toDateString(),
                 'saving_registration_completed' => $registrationComplete,
                 'saving_total_deposited'        => $registrationComplete ? $netDeposit : 0,
                 'saving_initial_payment'        => $request->usdt_amount,
                 'saving_initial_fee'            => $savingFee,
-            ]);
+            ];
+            if ($request->filled('cnic') && empty($existingUser->cnic)) {
+                $updateData['cnic'] = $request->cnic;
+            }
+            $existingUser->update($updateData);
 
             // Place user in the saving tree under the referral link owner
             $this->registerUser($referralLink->user_id, $existingUser->id, 'saving', $setting->saving_parent_user_id);

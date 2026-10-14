@@ -165,8 +165,9 @@
                     <label class="f-label">Username or Email <span style="color:#ef4444;">*</span></label>
                     <div class="f-wrap">
                         <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#94a3b8" stroke-width="1.8"/><path d="M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0" stroke="#94a3b8" stroke-width="1.8"/></svg></div>
-                        <input class="f-input" type="text" name="identifier" id="identifier" placeholder="Username or email" value="{{ old('identifier') }}" autocomplete="off" />
+                        <input class="f-input" type="text" name="identifier" id="identifier" placeholder="Username or email" value="{{ old('identifier') }}" autocomplete="off" oninput="checkExistingUserCnic()" />
                     </div>
+                    <small id="existing-user-feedback" style="display:block;margin-top:.3rem;font-size:.8rem;font-weight:500;min-height:1.2rem;"></small>
                     @error('identifier') <div class="f-error">{{ $message }}</div> @enderror
                 </div>
 
@@ -177,6 +178,17 @@
                         <input class="f-input" type="text" name="referral_link" id="referral_existing" value="{{ $ref ?? old('referral_link') }}" placeholder="Referral code" autocomplete="off" />
                     </div>
                 </div>
+            </div>
+
+            {{-- CNIC field — appears only when user has no CNIC on record --}}
+            <div class="f-group d-none" id="existing-cnic-wrap">
+                <label class="f-label">CNIC Number <span style="color:#ef4444;">*</span></label>
+                <div class="f-wrap">
+                    <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#94a3b8" stroke-width="1.8"/><path d="M2 10h20" stroke="#94a3b8" stroke-width="1.8"/></svg></div>
+                    <input class="f-input" type="text" name="cnic" id="existing-cnic" placeholder="XXXXX-XXXXXXX-X" maxlength="15" autocomplete="off" value="{{ old('cnic') }}" />
+                </div>
+                <small class="text-muted" style="font-size:.73rem;">Your CNIC is not on file — please enter it to complete enrollment. Format: 01101-0301010-9</small>
+                @error('cnic') <div class="f-error">{{ $message }}</div> @enderror
             </div>
         </div>{{-- end #existing-user-fields --}}
 
@@ -376,6 +388,9 @@
         var ln      = document.getElementById('label-new-user');
         var le      = document.getElementById('label-existing-user');
 
+        // All required inputs inside new-user-fields
+        var newRequiredInputs = nf ? nf.querySelectorAll('[required]') : [];
+
         if (type === 'existing') {
             if (nf)      nf.classList.add('d-none');
             if (ef)      ef.classList.remove('d-none');
@@ -386,6 +401,11 @@
             if (btn)     btn.textContent = 'Enroll in Savings Program';
             if (ln)      ln.style.borderColor = '#e2e8f0';
             if (le)      le.style.borderColor = '#4f46e5';
+            // Remove required from all hidden new-user inputs to prevent browser validation error
+            newRequiredInputs.forEach(function(el) {
+                el.dataset.wasRequired = 'true';
+                el.removeAttribute('required');
+            });
         } else {
             if (nf)      nf.classList.remove('d-none');
             if (ef)      ef.classList.add('d-none');
@@ -396,7 +416,71 @@
             if (btn)     btn.textContent = 'Join Savings Program';
             if (ln)      ln.style.borderColor = '#4f46e5';
             if (le)      le.style.borderColor = '#e2e8f0';
+            // Restore required on new-user inputs
+            if (nf) nf.querySelectorAll('[data-was-required]').forEach(function(el) {
+                el.setAttribute('required', 'required');
+                delete el.dataset.wasRequired;
+            });
+            // Reset existing-user CNIC field
+            resetExistingCnicField();
         }
+    }
+
+    // ── Existing user CNIC check via AJAX ──────────────────────────────────────
+    var _cnicCheckTimer = null;
+
+    function resetExistingCnicField() {
+        var wrap = document.getElementById('existing-cnic-wrap');
+        var fb   = document.getElementById('existing-user-feedback');
+        if (wrap) { wrap.classList.add('d-none'); wrap.querySelector('input').removeAttribute('required'); }
+        if (fb)   { fb.textContent = ''; fb.className = ''; }
+    }
+
+    function checkExistingUserCnic() {
+        clearTimeout(_cnicCheckTimer);
+        _cnicCheckTimer = setTimeout(function() {
+            var identifier = document.getElementById('identifier').value.trim();
+            var fb   = document.getElementById('existing-user-feedback');
+            var wrap = document.getElementById('existing-cnic-wrap');
+            var inp  = wrap ? wrap.querySelector('input') : null;
+
+            if (!identifier) { resetExistingCnicField(); return; }
+
+            if (fb) { fb.textContent = '⏳ Checking...'; fb.style.color = '#6b7280'; }
+
+            fetch('{{ route("register.check.cnic") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ identifier: identifier })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.found) {
+                    if (fb) { fb.textContent = '✗ User not found with this username or email.'; fb.style.color = '#ef4444'; }
+                    resetExistingCnicField();
+                    return;
+                }
+
+                // Show found status + enrollment status
+                var statusMsg = '✓ Found: ' + data.name + ' (@' + data.username + ')';
+                if (data.already_enrolled) {
+                    statusMsg += ' — ⚠ Already enrolled in Savings Program';
+                    if (fb) { fb.textContent = statusMsg; fb.style.color = '#d97706'; }
+                } else {
+                    if (fb) { fb.textContent = statusMsg; fb.style.color = '#16a34a'; }
+                }
+
+                // CNIC check is independent of enrollment status
+                if (!data.has_cnic) {
+                    if (wrap) { wrap.classList.remove('d-none'); if (inp) inp.setAttribute('required', 'required'); }
+                } else {
+                    if (wrap) { wrap.classList.add('d-none'); if (inp) inp.removeAttribute('required'); }
+                }
+            })
+            .catch(function() {
+                if (fb) { fb.textContent = 'Error checking user. Try again.'; fb.style.color = '#ef4444'; }
+            });
+        }, 600);
     }
 
     // ── Account badge (standard form) ───────────────────────
@@ -472,6 +556,32 @@
         if (nameEl) nameEl.addEventListener('input', updateUsernamePreview);
         // Show preview on page load if old() values are present
         updateUsernamePreview();
+    })();
+
+    // ── CNIC auto-format for existing-user CNIC field ───────
+    (function () {
+        var el = document.getElementById('existing-cnic');
+        if (!el) return;
+        el.addEventListener('input', function () {
+            var raw = this.value.replace(/\D/g, '').substring(0, 13);
+            var out = '';
+            if (raw.length > 0)  out  = raw.substring(0, Math.min(5, raw.length));
+            if (raw.length > 5)  out += '-' + raw.substring(5, Math.min(12, raw.length));
+            if (raw.length > 12) out += '-' + raw.substring(12, 13);
+            this.value = out;
+        });
+        el.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace' && this.value.slice(-1) === '-') {
+                e.preventDefault();
+                this.value = this.value.slice(0, -1);
+            }
+        });
+    })();
+
+    // If old() identifier exists (after validation error), re-check CNIC
+    (function() {
+        var id = document.getElementById('identifier');
+        if (id && id.value.trim()) checkExistingUserCnic();
     })();
 
     // ── CSRF refresh on submit ───────────────────────────────
