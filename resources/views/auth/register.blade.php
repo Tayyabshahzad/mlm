@@ -185,7 +185,7 @@
                 <label class="f-label">CNIC Number <span style="color:#ef4444;">*</span></label>
                 <div class="f-wrap">
                     <div class="f-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#94a3b8" stroke-width="1.8"/><path d="M2 10h20" stroke="#94a3b8" stroke-width="1.8"/></svg></div>
-                    <input class="f-input" type="text" name="cnic" id="existing-cnic" placeholder="XXXXX-XXXXXXX-X" maxlength="15" autocomplete="off" value="{{ old('cnic') }}" />
+                    <input class="f-input" type="text" name="cnic" id="existing-cnic" placeholder="XXXXX-XXXXXXX-X" maxlength="15" autocomplete="off" value="{{ old('cnic') }}" disabled />
                 </div>
                 <small class="text-muted" style="font-size:.73rem;">Your CNIC is not on file — please enter it to complete enrollment. Format: 01101-0301010-9</small>
                 @error('cnic') <div class="f-error">{{ $message }}</div> @enderror
@@ -432,8 +432,12 @@
     function resetExistingCnicField() {
         var wrap = document.getElementById('existing-cnic-wrap');
         var fb   = document.getElementById('existing-user-feedback');
-        if (wrap) { wrap.classList.add('d-none'); wrap.querySelector('input').removeAttribute('required'); }
-        if (fb)   { fb.textContent = ''; fb.className = ''; }
+        if (wrap) {
+            wrap.classList.add('d-none');
+            var inp = wrap.querySelector('input');
+            if (inp) { inp.removeAttribute('required'); inp.setAttribute('disabled', 'disabled'); inp.value = ''; }
+        }
+        if (fb) { fb.textContent = ''; fb.style.color = ''; }
     }
 
     function checkExistingUserCnic() {
@@ -472,9 +476,11 @@
 
                 // CNIC check is independent of enrollment status
                 if (!data.has_cnic) {
-                    if (wrap) { wrap.classList.remove('d-none'); if (inp) inp.setAttribute('required', 'required'); }
+                    if (wrap) { wrap.classList.remove('d-none'); }
+                    if (inp) { inp.removeAttribute('disabled'); inp.setAttribute('required', 'required'); }
                 } else {
-                    if (wrap) { wrap.classList.add('d-none'); if (inp) inp.removeAttribute('required'); }
+                    if (wrap) { wrap.classList.add('d-none'); }
+                    if (inp) { inp.setAttribute('disabled', 'disabled'); inp.removeAttribute('required'); }
                 }
             })
             .catch(function() {
