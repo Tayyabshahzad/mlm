@@ -86,6 +86,24 @@
                 </div>
 
                 <div class="navi-item mb-2">
+                    <a href="{{ route('admin.cards.settings') }}" class="navi-link py-4 {{ request()->routeIs('admin.cards.settings') ? 'active' : '' }}">
+                        <span class="navi-icon mr-2">
+                            <span class="svg-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24"/>
+                                        <rect fill="#000000" opacity="0.3" x="2" y="5" width="20" height="14" rx="2"/>
+                                        <rect fill="#000000" x="2" y="8" width="20" height="3"/>
+                                        <rect fill="#000000" opacity="0.3" x="16" y="14" width="4" height="2" rx="1"/>
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="navi-text font-size-lg">Card Settings</span>
+                    </a>
+                </div>
+
+                <div class="navi-item mb-2">
                     <a href="{{ route('admin.impersonation.index') }}" class="navi-link py-4 {{ request()->routeIs('admin.impersonation.*') ? 'active' : '' }} ">
                         <span class="navi-icon mr-2">
                             <span class="svg-icon">

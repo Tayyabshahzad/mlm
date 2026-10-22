@@ -78,7 +78,10 @@
                                 @endif
 
                                 <div class="pt-5 align-items-center justify-content-center" > 
-                                    <a href="#"  data-toggle="modal"   data-target="#TopUpAccount"  class="mb-5 mr-3 rounded-0 btn btn-success font-weight-bolder font-size-sm">TopUp Your Account</a>    
+                                    <a href="#"  data-toggle="modal"   data-target="#TopUpAccount"  class="mb-5 mr-3 rounded-0 btn btn-success font-weight-bolder font-size-sm">TopUp Your Account</a>
+                                    @if(\App\Support\DigitalCardSettings::enabled())
+                                        <a href="#" data-toggle="modal" data-target="#GenerateDigitalCard" class="mb-5 mr-3 rounded-0 btn btn-dark font-weight-bolder font-size-sm">Generate Digital Card</a>
+                                    @endif
                                 </div>
 
                             </div> 
@@ -687,6 +690,47 @@
         </div>
     </div>
 </div>
+
+{{-- Generate Digital Card (deducted from the online wallet) --}}
+@if(\App\Support\DigitalCardSettings::enabled())
+<div class="modal fade" id="GenerateDigitalCard" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="{{ route('cards.store') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Generate Digital Card</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4 p-3 bg-light-primary rounded">
+                        <span class="text-muted">Available online balance:</span>
+                        <span class="font-weight-bolder text-primary">${{ number_format($availableBalance, 2) }}</span>
+                    </div>
+                    <label class="font-weight-bold">Card Amount (USD) <span class="text-danger">*</span></label>
+                    <input type="number" name="amount" step="0.01" required
+                           min="{{ \App\Support\DigitalCardSettings::minAmount() }}"
+                           max="{{ min(\App\Support\DigitalCardSettings::maxAmount(), max((float) $availableBalance, 0)) }}"
+                           class="mb-2 form-control form-control-sm form-control-solid" placeholder="e.g. 19.00">
+                    <ul class="text-muted small pl-4 mb-0">
+                        <li>The amount is deducted from your online wallet immediately.</li>
+                        <li>To pay an instalment, the card amount must <strong>exactly</strong> match the recipient's instalment total.</li>
+                        <li>Valid for {{ \App\Models\DigitalCard::validityLabel() }}. Unused cards are refunded on expiry or if you cancel before sharing.</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('cards.index') }}" class="rounded-0 btn btn-light-dark btn-sm mr-auto">My Cards</a>
+                    <button type="button" class="rounded-0 btn btn-light-primary btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="rounded-0 btn btn-dark btn-sm"
+                            onclick="return confirm('Generate a card? The amount will be deducted from your online wallet.')">Generate Card</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 <div class="modal fade" id="WithdrawDelete" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

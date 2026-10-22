@@ -10,6 +10,7 @@ use App\Models\TransactionLog;
 use App\Models\User;
 use App\Models\Wallet;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\DigitalCardService;
 use App\Services\SavingAccountService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -58,6 +59,13 @@ class SavingInstalmentController extends Controller
             'partialDeposit' => $partialDeposit,
             'inst1Remaining' => $inst1Remaining,
             'fullTotal'      => $fullTotal,
+            // Received digital cards currently usable for an instalment payment
+            'digitalCards'   => \App\Models\DigitalCard::with('generator:id,name,username')
+                ->where('recipient_id', $user->id)
+                ->where('status', \App\Models\DigitalCard::STATUS_SHARED)
+                ->where('expires_at', '>', now())
+                ->orderBy('expires_at')
+                ->get(),
         ]));
     }
 
@@ -211,10 +219,17 @@ class SavingInstalmentController extends Controller
             ->orderBy('level')
             ->get();
 
+        // Digital cards reserved for / used on this user's instalments, keyed by instalment id
+        $instalmentCards = \App\Models\DigitalCard::with('generator:id,name,username')
+            ->whereIn('saving_instalment_id', $summary['instalments']->pluck('id'))
+            ->get()
+            ->keyBy('saving_instalment_id');
+
         return view('admin.saving.show', array_merge($summary, [
             'savingUser'         => $user,
             'setting'            => $setting,
             'pendingCommissions' => $pendingCommissions,
+            'instalmentCards'    => $instalmentCards,
         ]));
     }
 
@@ -298,14 +313,19 @@ class SavingInstalmentController extends Controller
             'notes' => 'required|string|max:500',
         ]);
 
-        $instalment->update([
-            'status'           => 'pending',
-            'submitted_at'     => null,
-            'submitted_amount' => null,
-            'transaction_id'   => null,
-            'payment_method'   => null,
-            'notes'            => 'Rejected: ' . $request->notes,
-        ]);
+        DB::transaction(function () use ($instalment, $request) {
+            $instalment->update([
+                'status'           => 'pending',
+                'submitted_at'     => null,
+                'submitted_amount' => null,
+                'transaction_id'   => null,
+                'payment_method'   => null,
+                'notes'            => 'Rejected: ' . $request->notes,
+            ]);
+
+            // A digital card reserved for this instalment goes back to its recipient.
+            app(DigitalCardService::class)->releaseForInstalment($instalment, Auth::id(), $request->notes);
+        });
 
         // Sync amount to current plan — if admin changed the plan while this instalment
         // was in 'submitted' state, it missed the bulk update. Align it now.
@@ -612,6 +632,9 @@ class SavingInstalmentController extends Controller
                     'roi_eligible_from'=> null,
                     'notes'            => 'Reversed by admin: ' . $request->reason,
                 ]);
+
+                // A digital card used for this instalment becomes usable again by its recipient.
+                app(DigitalCardService::class)->restoreAfterReversal($instalment, Auth::id(), $request->reason);
 
                 $instalment->clearMediaCollection('instalment_proof');
             });

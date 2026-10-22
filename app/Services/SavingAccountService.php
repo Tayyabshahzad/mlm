@@ -136,6 +136,19 @@ class SavingAccountService
         ]);
     }
 
+    /**
+     * Exact amount a member must pay for an instalment: base + ADB + FISP.
+     * Same formula as SavingInstalmentController::userSubmit().
+     */
+    public function requiredInstalmentTotal(SavingInstalment $instalment): float
+    {
+        $user    = $instalment->user;
+        $adbFee  = $user->adb_option  ? round($instalment->amount * 0.075, 2) : 0;
+        $fispFee = $user->fisp_option ? round($instalment->amount * 0.1, 2) : 0;
+
+        return round($instalment->amount + $adbFee + $fispFee, 2);
+    }
+
     public function getInstalmentSummary(User $user): array
     {
         $instalments   = SavingInstalment::where('user_id', $user->id)->orderBy('instalment_number')->get();
@@ -212,6 +225,10 @@ class SavingAccountService
                 ]);
                 $user->refresh();
             }
+
+            // If this instalment was paid with a digital card, mark the card used
+            // (aborts the whole confirmation if the card is not validly reserved).
+            app(DigitalCardService::class)->markUsedForInstalment($instalment, $adminId);
 
             $this->creditDepositToWallet($instalment);
         });

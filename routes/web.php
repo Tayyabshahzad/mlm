@@ -126,6 +126,20 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
         Route::get('kyc', 'show')->name('kyc.show');
         Route::post('kyc/submit', 'submit')->name('kyc.submit');
     });
+
+    // Digital Cards — generate, share, receive, pay instalments (static routes before {card})
+    Route::prefix('cards')->controller(\App\Http\Controllers\DigitalCardController::class)->group(function () {
+        Route::get('/', 'index')->name('cards.index');
+        Route::post('/', 'store')->middleware('throttle:10,1')->name('cards.store');
+        Route::get('received', 'received')->name('cards.received');
+        Route::get('recipients', 'recipients')->middleware('throttle:60,1')->name('cards.recipients');
+        Route::post('pay', 'pay')->middleware('throttle:10,1')->name('cards.pay');
+        Route::get('{card}', 'show')->name('cards.show');
+        Route::get('{card}/image', 'image')->name('cards.image');
+        Route::get('{card}/pdf', 'pdf')->name('cards.pdf');
+        Route::post('{card}/share', 'share')->middleware('throttle:10,1')->name('cards.share');
+        Route::post('{card}/cancel', 'cancel')->name('cards.cancel');
+    });
 });
 
 // Admin Routes
@@ -302,6 +316,18 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::get('saving-roi-report', [SavingRoiReportController::class, 'adminIndex'])->name('admin.saving.roi.report');
     Route::get('saving-roi-report/export', [SavingRoiReportController::class, 'adminExport'])->name('admin.saving.roi.report.export');
     Route::post('saving-roi-report/manual-run', [SavingRoiReportController::class, 'manualRun'])->name('admin.saving.roi.manual.run');
+
+    // Digital Cards — admin management & audit
+    Route::prefix('admin/digital-cards')->controller(\App\Http\Controllers\Admin\DigitalCardAdminController::class)->group(function () {
+        Route::get('/', 'index')->name('admin.cards.index');
+        Route::get('/settings', [\App\Http\Controllers\Admin\DigitalCardSettingsController::class, 'index'])->name('admin.cards.settings');
+        Route::post('/settings', [\App\Http\Controllers\Admin\DigitalCardSettingsController::class, 'update'])->name('admin.cards.settings.update');
+        Route::get('/failed-attempts', 'failedAttempts')->name('admin.cards.failed');
+        Route::post('/run-expiry', 'runExpiry')->name('admin.cards.run-expiry');
+        Route::get('/{card}', 'show')->name('admin.cards.show');
+        Route::post('/{card}/cancel', 'cancel')->name('admin.cards.cancel');
+        Route::post('/{card}/reset-pin-lock', 'resetPinLock')->name('admin.cards.reset-pin-lock');
+    });
 
     // Saving Account — admin management (specific routes before wildcard)
     Route::prefix('saving-accounts')->group(function () {

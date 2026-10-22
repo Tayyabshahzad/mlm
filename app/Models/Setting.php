@@ -35,5 +35,7 @@ class Setting extends Model
         'saving_campaign_l1','saving_campaign_l2','saving_campaign_l3','saving_campaign_l4',
         'saving_campaign_l5','saving_campaign_l6','saving_campaign_l7',
         'saving_instalment_config_enabled',
+        'digital_card_enabled','digital_card_min_amount','digital_card_max_amount','digital_card_expiry_days',
+        'digital_card_max_failed_pin_attempts','digital_card_pin_lock_minutes','digital_card_logo',
     ];
 }

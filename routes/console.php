@@ -25,3 +25,8 @@ Schedule::command('roi:process-saving')
     ->when(function () {
         return Carbon::now('Asia/Karachi')->dayOfWeek !== Carbon::FRIDAY;
     });
+// Digital cards — expire unused cards past their expiry date and refund generators
+Schedule::command('cards:expire')
+    ->hourly()
+    ->timezone('Asia/Karachi')
+    ->withoutOverlapping();

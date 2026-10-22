@@ -411,7 +411,15 @@
                                         @endif
                                     </td>
 
-                                    <td class="text-muted" style="font-size:.8rem;">{{ $inst->transaction_id ?? '—' }}</td>
+                                    <td class="text-muted" style="font-size:.8rem;">
+                                        @if(isset($instalmentCards[$inst->id]))
+                                            <span class="badge badge-light-warning">Digital Card</span><br>
+                                            <span class="text-dark">{{ $instalmentCards[$inst->id]->maskedNumber() }}</span><br>
+                                            <span>from {{ $instalmentCards[$inst->id]->generator?->name }}</span>
+                                        @else
+                                            {{ $inst->transaction_id ?? '—' }}
+                                        @endif
+                                    </td>
 
                                     <td>
                                         @switch($inst->status)
@@ -437,7 +445,9 @@
                                     <td class="text-nowrap" style="font-size:.8rem;">{{ $inst->submitted_at?->format('d M Y H:i') ?? '—' }}</td>
 
                                     <td>
-                                        @if($inst->proofScreenshot())
+                                        @if(isset($instalmentCards[$inst->id]))
+                                            <a href="{{ route('admin.cards.show', $instalmentCards[$inst->id]) }}" class="btn btn-xs btn-light-warning text-nowrap">View Card</a>
+                                        @elseif($inst->proofScreenshot())
                                             <a href="{{ $inst->proofScreenshot() }}" target="_blank" class="btn btn-xs btn-light-primary">View</a>
                                         @else <span class="text-muted">—</span>
                                         @endif

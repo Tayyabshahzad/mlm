@@ -283,6 +283,40 @@
                             </div>
                             <button type="submit" class="btn btn-primary">Submit Payment Proof</button>
                         </form>
+
+                        {{-- Pay with a received digital card --}}
+                        @if(isset($digitalCards) && $digitalCards->isNotEmpty())
+                            <div class="separator separator-dashed my-8"></div>
+                            <h5 class="font-weight-bolder mb-1">Or pay with a received digital card</h5>
+                            <p class="text-muted small mb-4">The card amount must exactly match the total to pay (${{ number_format($totalPayable, 2) }}). Card payments are confirmed by admin.</p>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-vertical-center">
+                                    <tbody>
+                                        @foreach($digitalCards as $dc)
+                                            @php $dcMatches = round((float) $dc->amount, 2) === round($totalPayable, 2); @endphp
+                                            <tr>
+                                                <td class="text-nowrap font-weight-bold">{{ $dc->maskedNumber() }}</td>
+                                                <td class="font-weight-bolder {{ $dcMatches ? 'text-success' : 'text-muted' }}">${{ number_format($dc->amount, 2) }}</td>
+                                                <td class="small text-muted">from {{ $dc->generator?->name }} · expires {{ $dc->expires_at->format('d M Y') }}</td>
+                                                <td class="text-right" style="min-width:260px">
+                                                    @if($dcMatches)
+                                                        <form method="POST" action="{{ route('cards.pay') }}" class="form-inline justify-content-end">
+                                                            @csrf
+                                                            <input type="hidden" name="card_reference" value="{{ $dc->reference }}">
+                                                            <input type="password" name="pin" inputmode="numeric" pattern="\d{4}" maxlength="4" required autocomplete="off"
+                                                                   class="form-control form-control-sm mr-2" style="width:90px" placeholder="PIN">
+                                                            <button class="btn btn-sm btn-success" onclick="return confirm('Use card {{ $dc->maskedNumber() }} to pay instalment #{{ $next_due->instalment_number }}?')">Pay with Card</button>
+                                                        </form>
+                                                    @else
+                                                        <span class="badge badge-light-secondary">Amount does not match</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @elseif($next_due && $next_due->status === 'submitted')

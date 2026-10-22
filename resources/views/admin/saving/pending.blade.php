@@ -64,10 +64,21 @@
                                     </td>
                                     <td class="font-weight-bold text-primary">${{ number_format($inst->submitted_amount ?? $inst->amount, 2) }}</td>
                                     <td class="text-muted small">{{ $inst->transaction_id ?? '—' }}</td>
-                                    <td>{{ $inst->payment_method ?? '—' }}</td>
+                                    <td>
+                                        @if($inst->payment_method === 'digital_card')
+                                            <span class="badge badge-light-warning">Digital Card</span>
+                                        @else
+                                            {{ $inst->payment_method ?? '—' }}
+                                        @endif
+                                    </td>
                                     <td>{{ $inst->submitted_at?->format('d M Y H:i') }}</td>
                                     <td>
-                                        @if($inst->proofScreenshot())
+                                        @php
+                                            $instCard = $inst->payment_method === 'digital_card' ? \App\Models\DigitalCard::where('saving_instalment_id', $inst->id)->first() : null;
+                                        @endphp
+                                        @if($instCard)
+                                            <a href="{{ route('admin.cards.show', $instCard) }}" class="btn btn-sm btn-light-warning">View Card</a>
+                                        @elseif($inst->proofScreenshot())
                                             <a href="{{ $inst->proofScreenshot() }}" target="_blank" class="btn btn-sm btn-light-primary">View Proof</a>
                                         @else <span class="text-muted">—</span>
                                         @endif

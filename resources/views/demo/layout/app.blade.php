@@ -396,6 +396,49 @@
                             </li>
                             @endif {{-- !$isSavingOnly (Product menu end) --}}
 
+                            {{-- Digital Cards --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('cards*')) menu-item-open @endif"
+                                aria-haspopup="true" data-menu-toggle="hover">
+                                <a href="javascript:;" class="menu-link menu-toggle">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <rect fill="#000000" opacity="0.3" x="2" y="5" width="20" height="14" rx="2"/>
+                                                <rect fill="#000000" x="2" y="8" width="20" height="3"/>
+                                                <rect fill="#000000" opacity="0.3" x="16" y="14" width="4" height="2" rx="1"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">
+                                        Digital Cards
+                                        {{-- assigned inline: this layout mixes inline and block PHP directives, which Blade mis-pairs if more are added --}}
+                                        @if(($newCardAlerts = auth()->user()->unreadNotifications()->where('type', \App\Notifications\DigitalCardReceivedNotification::class)->count()) > 0)<span class="ml-1 badge badge-pill badge-success">{{ $newCardAlerts }}</span>@endif
+                                    </span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('cards') || (request()->is('cards/*') && !request()->is('cards/received*'))) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('cards.index') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
+                                                <span class="menu-text">My Cards</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('cards/received*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('cards.received') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
+                                                <span class="menu-text">
+                                                    Received Cards
+                                                    @if($newCardAlerts > 0)<span class="ml-1 badge badge-pill badge-success">{{ $newCardAlerts }} new</span>@endif
+                                                </span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
                             <li class="menu-item menu-item-submenu @if(request()->is('wallets*')) menu-item-open @endif"
                                 aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
@@ -1275,6 +1318,16 @@
                                             </a>
                                         </li>
 
+                                        <li class="menu-item menu-item-submenu @if(request()->routeIs('admin.cards.settings*')) menu-item-active @endif" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('admin.cards.settings') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot">
+                                                    <span></span>
+                                                </i>
+                                                <span class="menu-text">Card Settings</span>
+                                            </a>
+                                        </li>
+
                                         <li class="menu-item menu-item-submenu @if(request()->is('saving-accounts*') && !request()->is('saving-accounts/enrollments*')) menu-item-active @endif" aria-haspopup="true"
                                             data-menu-toggle="hover">
                                             <a href="{{ route('admin.saving.index') }}" class="menu-link menu-toggle">
@@ -1302,6 +1355,19 @@
                                             <a href="{{ route('admin.saving.roi.report') }}" class="menu-link menu-toggle">
                                                 <i class="menu-bullet menu-bullet-dot"><span></span></i>
                                                 <span class="menu-text">Saving ROI Report</span>
+                                            </a>
+                                        </li>
+
+                                        <li class="menu-item menu-item-submenu @if(request()->is('admin/digital-cards*') && !request()->routeIs('admin.cards.settings*')) menu-item-active @endif" aria-haspopup="true"
+                                            data-menu-toggle="hover">
+                                            <a href="{{ route('admin.cards.index') }}" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">
+                                                    Digital Cards
+                                                    @if(($cardsPendingReview = \App\Models\DigitalCard::where('status', 'reserved')->count()) > 0)
+                                                        <span class="ml-1 badge badge-pill badge-warning">{{ $cardsPendingReview }}</span>
+                                                    @endif
+                                                </span>
                                             </a>
                                         </li>
 
