@@ -313,33 +313,7 @@ class SavingInstalmentController extends Controller
             'notes' => 'required|string|max:500',
         ]);
 
-        DB::transaction(function () use ($instalment, $request) {
-            $instalment->update([
-                'status'           => 'pending',
-                'submitted_at'     => null,
-                'submitted_amount' => null,
-                'transaction_id'   => null,
-                'payment_method'   => null,
-                'notes'            => 'Rejected: ' . $request->notes,
-            ]);
-
-            // A digital card reserved for this instalment goes back to its recipient.
-            app(DigitalCardService::class)->releaseForInstalment($instalment, Auth::id(), $request->notes);
-        });
-
-        // Sync amount to current plan — if admin changed the plan while this instalment
-        // was in 'submitted' state, it missed the bulk update. Align it now.
-        $currentPlanAmount = SavingInstalment::where('user_id', $instalment->user_id)
-            ->where('status', 'pending')
-            ->where('id', '!=', $instalment->id)
-            ->value('amount');
-
-        if ($currentPlanAmount && $currentPlanAmount != $instalment->amount) {
-            $instalment->update(['amount' => $currentPlanAmount]);
-        }
-
-        // Remove proof media
-        $instalment->clearMediaCollection('instalment_proof');
+        $this->savingAccountService->rejectSubmission($instalment, Auth::id(), $request->notes);
 
         return back()->with('success', "Instalment #{$instalment->instalment_number} rejected and reset to pending.");
     }
@@ -635,6 +609,8 @@ class SavingInstalmentController extends Controller
 
                 // A digital card used for this instalment becomes usable again by its recipient.
                 app(DigitalCardService::class)->restoreAfterReversal($instalment, Auth::id(), $request->reason);
+                // A bank reconciliation for this instalment is reversed and its bank reference freed.
+                app(\App\Services\BankReconciliationService::class)->markReversed($instalment, Auth::id(), $request->reason);
 
                 $instalment->clearMediaCollection('instalment_proof');
             });

@@ -247,6 +247,32 @@
                             </li>
                             @endif
 
+                            {{-- Bank Reconciliation (Office Admins + admins) --}}
+                            @if(auth()->user()->hasAnyRole(['admin', 'office-admin']))
+                            <li class="menu-item @if(request()->is('reconciliation*')) menu-item-active @endif" aria-haspopup="true">
+                                <a href="{{ route('reconciliation.index') }}" class="menu-link">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <path d="M3,10 L12,4 L21,10 L3,10 Z" fill="#000000"/>
+                                                <rect fill="#000000" opacity="0.3" x="5" y="11" width="2" height="7"/>
+                                                <rect fill="#000000" opacity="0.3" x="11" y="11" width="2" height="7"/>
+                                                <rect fill="#000000" opacity="0.3" x="17" y="11" width="2" height="7"/>
+                                                <rect fill="#000000" x="3" y="19" width="18" height="2"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">
+                                        Bank Reconciliation
+                                        @if(($awaitingBankChecks = \App\Models\SavingInstalment::where('status', 'submitted')->where(fn ($q) => $q->whereNull('payment_method')->orWhere('payment_method', '!=', 'digital_card'))->count()) > 0)
+                                            <span class="ml-1 badge badge-pill badge-warning">{{ $awaitingBankChecks }}</span>
+                                        @endif
+                                    </span>
+                                </a>
+                            </li>
+                            @endif
+
                             <li class="menu-section">
                                 <h4 class="menu-text">Genealogy Details</h4>
                                 <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
@@ -439,7 +465,21 @@
                                 </div>
                             </li>
 
-                            <li class="menu-item menu-item-submenu @if(request()->is('wallets*')) menu-item-open @endif"
+                            @php
+                                $savingRootId  = \App\Models\Setting::first()?->saving_parent_user_id;
+                                $hasSavingAccess = auth()->id() == $savingRootId
+                                    || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated);
+                                // Which wallet groups this member sees (same rules as before the menu split):
+                                //   saving_only → Saving Wallet (Saving Account)
+                                //   both        → Saving Wallet (4 pages) + Standard Wallet
+                                //   standard    → Standard Wallet
+                                $walletCase = ($isSavingOnly && auth()->user()->can_login)
+                                    ? 'saving_only'
+                                    : ($hasSavingAccess ? 'both' : 'standard');
+                            @endphp
+
+                            {{-- ══ Wallets: Online Wallet first, then Transactions ══ --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('wallets/online*') || request()->is('wallets/show-transaction-history*')) menu-item-open @endif"
                                 aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
                                     <span class="svg-icon menu-icon">
@@ -467,257 +507,141 @@
                                 <div class="menu-submenu">
                                     <i class="menu-arrow"></i>
                                     <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('wallets/online*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.online') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Online Wallet</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('wallets/show-transaction-history*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('show.transaction.history') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Transactions</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
 
-                                        @php
-                                            $savingRootId  = \App\Models\Setting::first()?->saving_parent_user_id;
-                                            $hasSavingAccess = auth()->id() == $savingRootId
-                                                || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated);
-                                        @endphp
-
-                                        {{-- ════════════════════════════════════════════════
-                                             CASE 1 — saving-only account  → Saving Wallet only
-                                             ════════════════════════════════════════════════ --}}
-                                        @if($isSavingOnly && auth()->user()->can_login)
-
-                                            <li class="menu-item menu-item-submenu
-                                                @if(request()->is('wallets/saving-account*') || request()->is('wallets/online*'))
-                                                    menu-item-open
-                                                @endif"
-                                                aria-haspopup="true" data-menu-toggle="hover">
-                                                <a href="javascript:;" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                    <span class="menu-text">Saving Wallet</span>
-                                                    <i class="menu-arrow"></i>
-                                                </a>
-                                                <div class="menu-submenu">
-                                                    <i class="menu-arrow"></i>
-                                                    <ul class="menu-subnav">
-                                                        <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.saving.account') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Saving Account</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/online*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.online') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Online Wallet</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-
-                                            <li class="menu-item @if(request()->is('wallets/show-transaction-history*')) menu-item-active @endif" aria-haspopup="true">
-                                                <a href="{{ route('show.transaction.history') }}" class="menu-link">
-                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                    <span class="menu-text">Transactions</span>
-                                                </a>
-                                            </li>
-
-                                        {{-- ════════════════════════════════════════════════
-                                             CASE 2 — standard user WITH saving access
-                                                       → Saving Wallet first, Standard Wallet second
-                                             ════════════════════════════════════════════════ --}}
-                                        @elseif($hasSavingAccess)
-
-                                            {{-- Saving Wallet (top) --}}
-                                            <li class="menu-item menu-item-submenu
-                                                @if(request()->is('wallets/saving*') || request()->is('saving-roi-report*'))
-                                                    menu-item-open
-                                                @endif"
-                                                aria-haspopup="true" data-menu-toggle="hover">
-                                                <a href="javascript:;" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                    <span class="menu-text">Saving Wallet</span>
-                                                    <i class="menu-arrow"></i>
-                                                </a>
-                                                <div class="menu-submenu">
-                                                    <i class="menu-arrow"></i>
-                                                    <ul class="menu-subnav">
-                                                        <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.saving.account') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Saving Account</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/saving-direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.saving.direct.indirect') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Savings Direct / Indirect</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/saving-roi*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.saving.roi') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Savings ROI</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('saving-roi-report*') && !auth()->user()->hasRole('admin')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('saving.roi.report') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Saving ROI Report</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-
-                                            {{-- Standard Wallet (below) --}}
-                                            <li class="menu-item menu-item-submenu
-                                                @if(request()->is('wallets/online*') || request()->is('wallets/investment*') || request()->is('wallets/direct-indirect*') || request()->is('wallets/roi*') || request()->is('wallets/rewards*') || request()->is('wallets/profit-share*') || request()->is('wallets/incentive-wallets*'))
-                                                    menu-item-open
-                                                @endif"
-                                                aria-haspopup="true" data-menu-toggle="hover">
-                                                <a href="javascript:;" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                    <span class="menu-text">Standard Wallet</span>
-                                                    <i class="menu-arrow"></i>
-                                                </a>
-                                                <div class="menu-submenu">
-                                                    <i class="menu-arrow"></i>
-                                                    <ul class="menu-subnav">
-                                                        <li class="menu-item @if(request()->is('wallets/online*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.online') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Online Wallet</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/investment*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.investment') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Investment Wallet</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.direct.indirect') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Direct / Indirect</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/rewards*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.rewards') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Rewards</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/roi*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.roi') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">ROI</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/profit-share*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.profit.share') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Profit Share</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item" aria-haspopup="true">
-                                                            <a href="@" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Rank</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/incentive-wallets*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.incentive') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Incentive Wallets</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-
-                                            <li class="menu-item @if(request()->is('wallets/show-transaction-history*')) menu-item-active @endif" aria-haspopup="true">
-                                                <a href="{{ route('show.transaction.history') }}" class="menu-link">
-                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                    <span class="menu-text">Transactions</span>
-                                                </a>
-                                            </li>
-
-                                        {{-- ════════════════════════════════════════════════
-                                             CASE 3 — standard-only user (no saving)
-                                                       → Standard Wallet only
-                                             ════════════════════════════════════════════════ --}}
-                                        @else
-
-                                            <li class="menu-item menu-item-submenu
-                                                @if(request()->is('wallets/online*') || request()->is('wallets/investment*') || request()->is('wallets/direct-indirect*') || request()->is('wallets/roi*') || request()->is('wallets/rewards*') || request()->is('wallets/profit-share*') || request()->is('wallets/incentive-wallets*'))
-                                                    menu-item-open
-                                                @endif"
-                                                aria-haspopup="true" data-menu-toggle="hover">
-                                                <a href="javascript:;" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                    <span class="menu-text">Standard Wallet</span>
-                                                    <i class="menu-arrow"></i>
-                                                </a>
-                                                <div class="menu-submenu">
-                                                    <i class="menu-arrow"></i>
-                                                    <ul class="menu-subnav">
-                                                        <li class="menu-item @if(request()->is('wallets/online*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.online') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Online Wallet</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/investment*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.investment') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Investment Wallet</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.direct.indirect') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Direct / Indirect</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/rewards*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.rewards') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Rewards</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/roi*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.roi') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">ROI</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/profit-share*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.profit.share') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Profit Share</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item" aria-haspopup="true">
-                                                            <a href="@" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Rank</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="menu-item @if(request()->is('wallets/incentive-wallets*')) menu-item-active @endif" aria-haspopup="true">
-                                                            <a href="{{ route('wallets.incentive') }}" class="menu-link">
-                                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                                <span class="menu-text">Incentive Wallets</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-
-                                            <li class="menu-item @if(request()->is('wallets/show-transaction-history*')) menu-item-active @endif" aria-haspopup="true">
-                                                <a href="{{ route('show.transaction.history') }}" class="menu-link">
-                                                    <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                    <span class="menu-text">Transactions</span>
-                                                </a>
-                                            </li>
-
+                            {{-- ══ Saving Wallet (own menu) ══ --}}
+                            @if($walletCase !== 'standard')
+                            <li class="menu-item menu-item-submenu @if(request()->is('wallets/saving*') || (request()->is('saving-roi-report*') && !auth()->user()->hasRole('admin'))) menu-item-open @endif"
+                                aria-haspopup="true" data-menu-toggle="hover">
+                                <a href="javascript:;" class="menu-link menu-toggle">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <path d="M5,9 L19,9 C20.1045695,9 21,9.8954305 21,11 L21,18 C21,19.1045695 20.1045695,20 19,20 L5,20 C3.8954305,20 3,19.1045695 3,18 L3,11 C3,9.8954305 3.8954305,9 5,9 Z" fill="#000000" opacity="0.3"/>
+                                                <circle fill="#000000" cx="12" cy="14.5" r="2.5"/>
+                                                <path d="M8,9 L8,7 C8,4.790861 9.790861,3 12,3 C14.209139,3 16,4.790861 16,7 L16,9 L14,9 L14,7 C14,5.8954305 13.1045695,5 12,5 C10.8954305,5 10,5.8954305 10,7 L10,9 Z" fill="#000000"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">Saving Wallet</span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.saving.account') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Saving Account</span>
+                                            </a>
+                                        </li>
+                                        @if($walletCase === 'both')
+                                        <li class="menu-item @if(request()->is('wallets/saving-direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.saving.direct.indirect') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Savings Direct / Indirect</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('wallets/saving-roi*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.saving.roi') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Savings ROI</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('saving-roi-report*') && !auth()->user()->hasRole('admin')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('saving.roi.report') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Saving ROI Report</span>
+                                            </a>
+                                        </li>
                                         @endif
                                     </ul>
                                 </div>
                             </li>
+                            @endif
+
+                            {{-- ══ Standard Wallet (own menu) ══ --}}
+                            @if($walletCase !== 'saving_only')
+                            <li class="menu-item menu-item-submenu @if(request()->is('wallets/investment*') || request()->is('wallets/direct-indirect*') || request()->is('wallets/roi*') || request()->is('wallets/rewards*') || request()->is('wallets/profit-share*') || request()->is('wallets/incentive-wallets*')) menu-item-open @endif"
+                                aria-haspopup="true" data-menu-toggle="hover">
+                                <a href="javascript:;" class="menu-link menu-toggle">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <rect fill="#000000" opacity="0.3" x="4" y="13" width="4" height="7" rx="1"/>
+                                                <rect fill="#000000" opacity="0.3" x="10" y="9" width="4" height="11" rx="1"/>
+                                                <rect fill="#000000" x="16" y="4" width="4" height="16" rx="1"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">Standard Wallet</span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('wallets/investment*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.investment') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Investment Wallet</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('wallets/direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.direct.indirect') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Direct / Indirect</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('wallets/rewards*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.rewards') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Rewards</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('wallets/roi*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.roi') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">ROI</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('wallets/profit-share*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.profit.share') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Profit Share</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item" aria-haspopup="true">
+                                            <a href="@" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Rank</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('wallets/incentive-wallets*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.incentive') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Incentive Wallets</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            @endif
 
                             {{-- Team Performance Tracker --}}
                             <li class="menu-item @if(request()->is('team-performance*')) menu-item-active @endif" aria-haspopup="true">

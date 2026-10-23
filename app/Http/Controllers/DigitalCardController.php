@@ -183,15 +183,19 @@ class DigitalCardController extends Controller
     {
         $q = trim((string) $request->get('q', ''));
 
-        $query = $this->cards->eligibleRecipientsQuery(Auth::user())->select('id', 'name', 'username');
+        $me    = Auth::user();
+        $query = $this->cards->eligibleRecipientsQuery($me)->select('id', 'name', 'username');
         if ($q !== '') {
             $query->where(fn ($w) => $w->where('username', 'like', "%{$q}%")->orWhere('name', 'like', "%{$q}%"));
         }
 
+        // The member themselves (if eligible) is listed first.
         return response()->json([
-            'results' => $query->orderBy('name')->limit(25)->get()->map(fn ($u) => [
+            'results' => $query->orderByRaw('id = ? DESC', [$me->id])->orderBy('name')->limit(25)->get()->map(fn ($u) => [
                 'id'   => $u->id,
-                'text' => "{$u->name} (@{$u->username})",
+                'text' => (int) $u->id === (int) $me->id
+                    ? "{$u->name} (@{$u->username}) — You (pay your own instalment)"
+                    : "{$u->name} (@{$u->username})",
             ]),
         ]);
     }

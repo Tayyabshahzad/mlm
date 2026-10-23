@@ -235,6 +235,41 @@ class SavingAccountService
     }
 
     /**
+     * Reject a submitted instalment and send it back to pending.
+     * Shared by the admin "Reject" action and the Office Admin bank reconciliation.
+     */
+    public function rejectSubmission(SavingInstalment $instalment, ?int $actorId, string $notes): void
+    {
+        DB::transaction(function () use ($instalment, $actorId, $notes) {
+            $instalment->update([
+                'status'           => 'pending',
+                'submitted_at'     => null,
+                'submitted_amount' => null,
+                'transaction_id'   => null,
+                'payment_method'   => null,
+                'notes'            => 'Rejected: ' . $notes,
+            ]);
+
+            // A digital card reserved for this instalment goes back to its recipient.
+            app(DigitalCardService::class)->releaseForInstalment($instalment, $actorId, $notes);
+        });
+
+        // Sync amount to current plan — if admin changed the plan while this instalment
+        // was in 'submitted' state, it missed the bulk update. Align it now.
+        $currentPlanAmount = SavingInstalment::where('user_id', $instalment->user_id)
+            ->where('status', 'pending')
+            ->where('id', '!=', $instalment->id)
+            ->value('amount');
+
+        if ($currentPlanAmount && $currentPlanAmount != $instalment->amount) {
+            $instalment->update(['amount' => $currentPlanAmount]);
+        }
+
+        // Remove proof media
+        $instalment->clearMediaCollection('instalment_proof');
+    }
+
+    /**
      * Credit the instalment amount to the user's saving wallet.
      * Commissions are only distributed if admin has activated the account (can_login = true).
      */

@@ -135,12 +135,15 @@ class DigitalCardService
      */
     public function eligibleRecipientsQuery(User $sender): Builder
     {
+        // The sender may also assign a card to themselves (to pay their own
+        // instalment), as long as they are on a saving instalment plan.
         return User::query()
-            ->whereIn('id', DB::table('referral_trees')
-                ->select('descendant_id')
-                ->where('ancestor_id', $sender->id)
-                ->where('level', '>=', 1))
-            ->where('id', '!=', $sender->id)
+            ->where(fn ($q) => $q
+                ->whereIn('id', DB::table('referral_trees')
+                    ->select('descendant_id')
+                    ->where('ancestor_id', $sender->id)
+                    ->where('level', '>=', 1))
+                ->orWhere('id', $sender->id))
             ->where('blocked', false)
             ->whereHas('savingInstalments');
     }
@@ -173,7 +176,7 @@ class DigitalCardService
             }
             if (!$this->isEligibleRecipient($sender, $recipient)) {
                 throw new DigitalCardException(
-                    'The selected member is not an eligible downline member on a saving instalment plan.',
+                    'The selected member must be yourself or one of your downline members, and on a saving instalment plan.',
                     'ineligible_recipient'
                 );
             }
@@ -206,6 +209,11 @@ class DigitalCardService
 
     private function notifyRecipient(DigitalCard $card, User $sender, User $recipient, string $method): void
     {
+        // Assigned to themselves — no "you received a card" alert or email needed.
+        if ((int) $sender->id === (int) $recipient->id) {
+            return;
+        }
+
         try {
             $recipient->notify(new DigitalCardReceivedNotification($card, $sender, $method === DigitalCard::SHARE_EMAIL));
 

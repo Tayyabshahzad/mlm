@@ -142,6 +142,17 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
     });
 });
 
+// Bank Reconciliation — Office Admins and admins only
+Route::middleware(['auth', 'verified', CheckUserStatus::class, 'role:admin|office-admin'])
+    ->prefix('reconciliation')
+    ->controller(\App\Http\Controllers\Admin\BankReconciliationController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('reconciliation.index');
+        Route::post('instalment/{instalment}/verify', 'verify')->middleware('throttle:30,1')->name('reconciliation.verify');
+        Route::post('instalment/{instalment}/record', 'record')->middleware('throttle:30,1')->name('reconciliation.record');
+        Route::post('instalment/{instalment}/reject', 'reject')->middleware('throttle:30,1')->name('reconciliation.reject');
+    });
+
 // Admin Routes
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     // KYC admin actions
@@ -316,6 +327,13 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::get('saving-roi-report', [SavingRoiReportController::class, 'adminIndex'])->name('admin.saving.roi.report');
     Route::get('saving-roi-report/export', [SavingRoiReportController::class, 'adminExport'])->name('admin.saving.roi.report.export');
     Route::post('saving-roi-report/manual-run', [SavingRoiReportController::class, 'manualRun'])->name('admin.saving.roi.manual.run');
+
+    // Office Admin accounts (who may use Bank Reconciliation)
+    Route::prefix('reconciliation/office-admins')->controller(\App\Http\Controllers\Admin\OfficeAdminController::class)->group(function () {
+        Route::get('/', 'index')->name('admin.office-admins.index');
+        Route::post('/', 'assign')->name('admin.office-admins.assign');
+        Route::delete('/{user}', 'remove')->name('admin.office-admins.remove');
+    });
 
     // Digital Cards — admin management & audit
     Route::prefix('admin/digital-cards')->controller(\App\Http\Controllers\Admin\DigitalCardAdminController::class)->group(function () {

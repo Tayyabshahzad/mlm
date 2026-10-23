@@ -171,7 +171,7 @@ it('refuses to share with someone outside the downline', function () {
 
     $card = dcService()->generate($a, 19);
 
-    expect(fn () => dcService()->share($card, $a, $stranger, 'portal'))->toThrow(DigitalCardException::class, 'eligible');
+    expect(fn () => dcService()->share($card, $a, $stranger, 'portal'))->toThrow(DigitalCardException::class, 'yourself or one of your downline');
     expect($card->fresh()->status)->toBe(DigitalCard::STATUS_AVAILABLE);
 });
 
@@ -784,4 +784,100 @@ it('shows the digital card on the admin saving-account page for card-paid instal
         ->assertOk()
         ->assertSee('#' . $inst->instalment_number)
         ->assertSee('Instalment Payment Confirmed');
+});
+
+it('lets a member on a saving plan assign their own card to themselves and pay their own instalment', function () {
+    $a    = dcSaver();   // generator is on a saving plan
+    $down = dcSaver();
+    dcLink($a, $down);
+    dcFund($a, 50);
+    $card = dcService()->generate($a, 19);
+
+    // Listed first in the recipient search, marked as "You"
+    $results = collect($this->actingAs($a)->getJson(route('cards.recipients'))->json('results'));
+    expect($results->first()['id'])->toBe($a->id)
+        ->and($results->first()['text'])->toContain('You')
+        ->and($results->pluck('id')->all())->toContain($down->id);
+
+    // Assign to self through the HTTP endpoint — no "you received a card" alert to themselves
+    $this->actingAs($a)->post(route('cards.share', $card), ['recipient_id' => $a->id, 'method' => 'email'])->assertSessionHas('success');
+    Notification::assertNothingSentTo($a);
+
+    $card->refresh();
+    expect($card->status)->toBe(DigitalCard::STATUS_SHARED)
+        ->and($card->recipient_id)->toBe($a->id)
+        ->and(DigitalCardEvent::where('digital_card_id', $card->id)->where('event', 'shared')->value('to_user_id'))->toBe($a->id);
+
+    // Pays their own next instalment, then the normal admin confirmation marks it used
+    $inst = dcService()->payInstalment($a, $card->reference, $card->pin);
+    expect($inst->user_id)->toBe($a->id)->and($inst->status)->toBe('submitted');
+
+    app(SavingAccountService::class)->confirmAndDeposit($inst->fresh(), dcUser()->id);
+    expect($card->fresh()->status)->toBe(DigitalCard::STATUS_USED);
+
+    // Once assigned to themselves it cannot be re-assigned to the downline
+    $card2 = dcService()->generate($a, 19);
+    dcService()->share($card2, $a, $a, 'portal');
+    expect(fn () => dcService()->share($card2, $a, $down, 'portal'))->toThrow(DigitalCardException::class);
+});
+
+it('does not let a member without a saving plan assign a card to themselves', function () {
+    $a = dcUser();   // standard member, no instalments
+    dcFund($a, 50);
+    $card = dcService()->generate($a, 19);
+
+    $ids = collect($this->actingAs($a)->getJson(route('cards.recipients'))->json('results'))->pluck('id');
+    expect($ids->contains($a->id))->toBeFalse();
+
+    expect(fn () => dcService()->share($card, $a, $a, 'portal'))->toThrow(DigitalCardException::class, 'yourself or one of your downline');
+    expect($card->fresh()->status)->toBe(DigitalCard::STATUS_AVAILABLE);
+});
+
+it('lets a member with $1000 create ten $100 cards through the portal, and no more', function () {
+    $a = dcUser();
+    dcFund($a, 1000);
+
+    for ($i = 1; $i <= 10; $i++) {
+        $this->actingAs($a)->post(route('cards.store'), ['amount' => '100'])->assertSessionHas('success');
+    }
+
+    expect(DigitalCard::where('generated_by', $a->id)->count())->toBe(10)
+        ->and(dcOnline($a))->toBe(0.0);
+
+    // The 11th card is refused only because the balance is used up
+    expect(fn () => dcService()->generate($a, 100))->toThrow(DigitalCardException::class, 'Insufficient');
+});
+
+// ─── Sidebar: Wallets menu layout ────────────────────────────────────────────
+
+it('shows Online Wallet first under Wallets, with Saving and Standard wallets as separate menus', function () {
+    \App\Models\Setting::query()->insert(['created_at' => now(), 'updated_at' => now()]);
+
+    $menuText = function (User $u) {
+        $html = $this->actingAs($u)->get(route('cards.index'))->assertOk()->getContent();
+        preg_match_all('/<span class="menu-text">\s*([^<]+?)\s*</', $html, $m);
+        return $m[1];
+    };
+    $after = fn (array $items, string $label, int $n) => array_slice($items, array_search($label, $items) + 1, $n);
+
+    // Standard-only member
+    $std = $menuText(dcUser());
+    expect($after($std, 'Wallets', 2))->toBe(['Online Wallet', 'Transactions'])
+        ->and(array_count_values($std)['Online Wallet'])->toBe(1)
+        ->and($std)->toContain('Standard Wallet')->not->toContain('Saving Wallet')
+        ->and($after($std, 'Standard Wallet', 1))->toBe(['Investment Wallet']);
+
+    // Standard member with saving access
+    $both = $menuText(dcUser(['saving_enrolled' => true, 'saving_enrollment_activated' => true]));
+    expect($after($both, 'Wallets', 2))->toBe(['Online Wallet', 'Transactions'])
+        ->and(array_count_values($both)['Online Wallet'])->toBe(1)
+        ->and($after($both, 'Saving Wallet', 4))->toBe(['Saving Account', 'Savings Direct / Indirect', 'Savings ROI', 'Saving ROI Report'])
+        ->and($both)->toContain('Standard Wallet');
+
+    // Saving-only member
+    $sav = $menuText(dcSaver());
+    expect($after($sav, 'Wallets', 2))->toBe(['Online Wallet', 'Transactions'])
+        ->and(array_count_values($sav)['Online Wallet'])->toBe(1)
+        ->and($after($sav, 'Saving Wallet', 1))->toBe(['Saving Account'])
+        ->and($sav)->not->toContain('Standard Wallet');
 });

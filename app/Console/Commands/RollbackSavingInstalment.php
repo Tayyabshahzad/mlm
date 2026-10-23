@@ -205,6 +205,7 @@ class RollbackSavingInstalment extends Command
 
                 // A digital card used for this instalment becomes usable again by its recipient.
                 app(\App\Services\DigitalCardService::class)->restoreAfterReversal($instalment, null, 'Rolled back via console');
+                app(\App\Services\BankReconciliationService::class)->markReversed($instalment, null, 'Rolled back via console');
 
                 // 7. Clear proof screenshot
                 $instalment->clearMediaCollection('instalment_proof');

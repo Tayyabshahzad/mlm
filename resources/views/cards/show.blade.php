@@ -117,7 +117,7 @@
                     @if($canShare)
                         <div class="card card-custom gutter-b">
                             <div class="card-header border-0 pt-5">
-                                <h3 class="card-title font-weight-bolder">Share with a Downline Member</h3>
+                                <h3 class="card-title font-weight-bolder">Assign Card (Yourself or Downline)</h3>
                             </div>
                             <div class="card-body pt-2">
                                 <form method="POST" action="{{ route('cards.share', $card) }}">
@@ -125,7 +125,7 @@
                                     <div class="form-group">
                                         <label class="font-weight-bold">Recipient</label>
                                         <select name="recipient_id" id="recipient_id" class="form-control" required></select>
-                                        <span class="form-text text-muted">Only members in your downline who are on a saving instalment plan are listed.</span>
+                                        <span class="form-text text-muted">Choose yourself to pay your own instalment, or a downline member. Only members on a saving instalment plan are listed.</span>
                                     </div>
                                     <div class="form-group">
                                         <label class="font-weight-bold">Send via</label>
@@ -209,7 +209,7 @@
 <script>
 $(function () {
     $('#recipient_id').select2({
-        placeholder: 'Search your downline by name or username…',
+        placeholder: 'Search yourself or your downline by name or username…',
         width: '100%',
         ajax: {
             url: @json(route('cards.recipients')),

@@ -40,7 +40,7 @@
                             @else
                                 <p class="text-muted">
                                     Cards are generated from your <strong>Online Wallet</strong>. The card is valid for {{ \App\Models\DigitalCard::validityLabel() }}
-                                    and can be shared with one eligible downline member on a saving instalment plan.
+                                    and can be assigned to yourself or to one eligible downline member on a saving instalment plan.
                                 </p>
                                 <a href="{{ route('wallets.online') }}" class="btn btn-dark btn-block font-weight-bold">
                                     Go to Online Wallet to Generate a Card
