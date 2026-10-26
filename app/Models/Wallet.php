@@ -23,6 +23,7 @@ class Wallet extends Model
 
     public function form()
     {
-        return $this->belongsTo(User::class,'wallet_from'); // Assuming your User model exists and has a relationship
+        // Include soft-deleted members: commission history must still show where it came from.
+        return $this->belongsTo(User::class,'wallet_from')->withTrashed();
     }
 }

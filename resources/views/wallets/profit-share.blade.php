@@ -213,7 +213,7 @@
                                         <span href="#" class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $loop->iteration }}</span>
                                     </td>  
                                     <td>
-                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $profit->form->username }}</a> 
+                                        <a class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $profit->form?->trashed() ? 'Deleted member' : ($profit->form?->username ?? '—') }}</a> 
                                     </td>   
                                     <td>
                                         <span class="text-dark-75 font-weight-bolder d-block font-size-sm">{{ $profit->level }} </span> 
