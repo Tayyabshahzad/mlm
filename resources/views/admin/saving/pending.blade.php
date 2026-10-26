@@ -67,6 +67,14 @@
                                     <td>
                                         @if($inst->payment_method === 'digital_card')
                                             <span class="badge badge-light-warning">Digital Card</span>
+                                        @elseif($inst->payment_method === 'sheet_upload')
+                                            <span class="badge badge-light-info">Payment Sheet</span>
+                                            @if($sheetRow = \App\Models\InstalmentUploadRow::with('batch.uploader:id,username')->where('saving_instalment_id', $inst->id)->latest('id')->first())
+                                                <div class="small mt-1">
+                                                    <a href="{{ route('payment-sheets.show', $sheetRow->batch_id) }}">Sheet #{{ $sheetRow->batch_id }}</a>
+                                                    <span class="text-muted">by @ {{ $sheetRow->batch?->uploader?->username }}</span>
+                                                </div>
+                                            @endif
                                         @else
                                             {{ $inst->payment_method ?? '—' }}
                                         @endif

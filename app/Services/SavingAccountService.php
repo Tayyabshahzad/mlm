@@ -241,6 +241,16 @@ class SavingAccountService
     public function rejectSubmission(SavingInstalment $instalment, ?int $actorId, string $notes): void
     {
         DB::transaction(function () use ($instalment, $actorId, $notes) {
+            // A payment-sheet entry keeps the rejection reason on its sheet row,
+            // so the data entry operator can still see it later.
+            if ($instalment->payment_method === InstalmentSheetUploadService::PAYMENT_METHOD) {
+                \App\Models\InstalmentUploadRow::where('saving_instalment_id', $instalment->id)
+                    ->whereNull('rejected_at')
+                    ->get()
+                    ->filter(fn ($row) => $row->expectedTxn() === $instalment->transaction_id)
+                    ->each(fn ($row) => $row->update(['rejected_reason' => mb_substr($notes, 0, 500), 'rejected_at' => now()]));
+            }
+
             $instalment->update([
                 'status'           => 'pending',
                 'submitted_at'     => null,

@@ -850,34 +850,120 @@ it('lets a member with $1000 create ten $100 cards through the portal, and no mo
 
 // ─── Sidebar: Wallets menu layout ────────────────────────────────────────────
 
-it('shows Online Wallet first under Wallets, with Saving and Standard wallets as separate menus', function () {
+it('groups every wallet under one Wallets menu: Online first, then Saving and Standard as nested submenus', function () {
     \App\Models\Setting::query()->insert(['created_at' => now(), 'updated_at' => now()]);
 
-    $menuText = function (User $u) {
+    // Menu texts inside the Wallets <li class="... menu-wallets ...">, in order
+    $walletsMenu = function (User $u) {
         $html = $this->actingAs($u)->get(route('cards.index'))->assertOk()->getContent();
-        preg_match_all('/<span class="menu-text">\s*([^<]+?)\s*</', $html, $m);
-        return $m[1];
+        $start = strpos($html, 'menu-item-submenu menu-wallets');
+        expect($start)->not->toBeFalse();
+        $end  = strpos($html, 'Digital Cards', $start);
+        preg_match_all('/<span class="menu-text">\s*([^<]+?)\s*</', substr($html, $start, $end - $start), $m);
+        return [$m[1], $html];
     };
-    $after = fn (array $items, string $label, int $n) => array_slice($items, array_search($label, $items) + 1, $n);
 
-    // Standard-only member
-    $std = $menuText(dcUser());
-    expect($after($std, 'Wallets', 2))->toBe(['Online Wallet', 'Transactions'])
-        ->and(array_count_values($std)['Online Wallet'])->toBe(1)
-        ->and($std)->toContain('Standard Wallet')->not->toContain('Saving Wallet')
-        ->and($after($std, 'Standard Wallet', 1))->toBe(['Investment Wallet']);
+    $stdItems = ['Investment Wallet', 'Direct / Indirect', 'Rewards', 'ROI', 'Profit Share', 'Incentive Wallets'];
 
     // Standard member with saving access
-    $both = $menuText(dcUser(['saving_enrolled' => true, 'saving_enrollment_activated' => true]));
-    expect($after($both, 'Wallets', 2))->toBe(['Online Wallet', 'Transactions'])
-        ->and(array_count_values($both)['Online Wallet'])->toBe(1)
-        ->and($after($both, 'Saving Wallet', 4))->toBe(['Saving Account', 'Savings Direct / Indirect', 'Savings ROI', 'Saving ROI Report'])
-        ->and($both)->toContain('Standard Wallet');
+    [$both, $html] = $walletsMenu(dcUser(['saving_enrolled' => true, 'saving_enrollment_activated' => true]));
+    expect($both)->toBe(array_merge(
+        ['Wallets', 'Online Wallet', 'Saving Wallet', 'Saving Account', 'Savings Direct / Indirect', 'Savings ROI', 'Saving ROI Report', 'Standard Wallet'],
+        $stdItems, ['Transactions']));
+    // No separate top-level Saving / Standard menus any more
+    expect(substr_count($html, '<span class="menu-text">Saving Wallet</span>'))->toBe(1)
+        ->and(substr_count($html, '<span class="menu-text">Standard Wallet</span>'))->toBe(1)
+        ->and(substr_count($html, '<span class="menu-text">Online Wallet</span>'))->toBe(1);
+
+    // Standard-only member
+    [$std] = $walletsMenu(dcUser());
+    expect($std)->toBe(array_merge(['Wallets', 'Online Wallet', 'Standard Wallet'], $stdItems, ['Transactions']));
 
     // Saving-only member
-    $sav = $menuText(dcSaver());
-    expect($after($sav, 'Wallets', 2))->toBe(['Online Wallet', 'Transactions'])
-        ->and(array_count_values($sav)['Online Wallet'])->toBe(1)
-        ->and($after($sav, 'Saving Wallet', 1))->toBe(['Saving Account'])
-        ->and($sav)->not->toContain('Standard Wallet');
+    [$sav] = $walletsMenu(dcSaver());
+    expect($sav)->toBe(['Wallets', 'Online Wallet', 'Saving Wallet', 'Saving Account', 'Transactions']);
+});
+
+it('opens the Wallets menu and highlights the active wallet page', function () {
+    \App\Models\Setting::query()->insert(['created_at' => now(), 'updated_at' => now()]);
+    $u = dcUser(['saving_enrolled' => true, 'saving_enrollment_activated' => true]);
+
+    $html = $this->actingAs($u)->get(route('wallets.saving.direct.indirect'))->assertOk()->getContent();
+    expect($html)->toContain('menu-wallets  menu-item-open')
+        ->and($html)->toMatch('/menu-item\s+menu-item-active[^>]*>\s*<a href="[^"]*saving-direct-indirect"/');
+});
+
+it('shows the violet Saving Direct/Indirect → Online transfer option', function () {
+    \App\Models\Setting::query()->insert(['created_at' => now(), 'updated_at' => now()]);
+    $u = dcUser(['saving_enrolled' => true, 'saving_enrollment_activated' => true]);
+
+    // No balance yet: option shown but disabled
+    $this->actingAs($u)->get(route('wallets.saving.direct.indirect'))->assertOk()
+        ->assertSee('Transfer to Online Wallet')->assertSee('Nothing available to transfer yet.')
+        ->assertSee('wv-option', false);
+
+    // With saving commissions: enabled, shows Direct and Indirect amounts
+    Wallet::create(['user_id' => $u->id, 'wallet_type' => 'direct_indirect', 'balance' => 7, 'direct_balance' => 7, 'indirect_balance' => 0,
+        'total_amount' => 7, 'commission_type' => 'direct', 'level' => 1, 'source_type' => 'saving_instalment', 'wallet_from' => $u->id]);
+    Wallet::create(['user_id' => $u->id, 'wallet_type' => 'direct_indirect', 'balance' => 2, 'direct_balance' => 0, 'indirect_balance' => 2,
+        'total_amount' => 2, 'commission_type' => 'indirect', 'level' => 2, 'source_type' => 'saving_instalment', 'wallet_from' => $u->id]);
+
+    $this->actingAs($u)->get(route('wallets.saving.direct.indirect'))->assertOk()
+        ->assertSee('Saving Direct $7.00')->assertSee('Saving Indirect $2.00')
+        ->assertDontSee('Nothing available to transfer yet.')
+        ->assertSee('wv-btn', false);
+});
+
+// ─── Whole sidebar structure ────────────────────────────────────────────────
+
+it('organises the admin sidebar into Member, Staff Tools and Administration sections without dead links', function () {
+    \App\Models\Setting::query()->insert(['created_at' => now(), 'updated_at' => now()]);
+    Role::findOrCreate('admin');
+    $admin = dcUser();
+    $admin->assignRole('admin');
+
+    $html = $this->actingAs($admin)->get(route('cards.index'))->assertOk()->getContent();
+    $aside = substr($html, strpos($html, 'begin::Menu Nav'), strpos($html, 'end::Menu Nav') - strpos($html, 'begin::Menu Nav'));
+    preg_match_all('/<(?:span|h4) class="menu-text">\s*([^<]+?)\s*</', $aside, $m);
+    $items = $m[1];
+
+    // Sections in order
+    $sections = array_values(array_intersect($items, ['Staff Tools', 'Administration', 'Session']));
+    expect($sections)->toBe(['Staff Tools', 'Administration', 'Session']);
+
+    // Admin groups and their pages, in order
+    $after = fn (string $label, int $n) => array_slice($items, max(array_keys($items, $label)) + 1, $n); // last occurrence = admin group label
+    expect($after('Members', 6))->toBe(['All Members', 'Saving Members', 'Deleted Members', 'Change Parent', 'Activation Codes', 'Staff Roles'])
+        ->and($after('Finance', 5))->toBe(['Withdrawal Requests', 'Withdrawal Analytics', 'Account Top-ups', 'Top-up Analytics', 'Incentive Wallet'])
+        ->and($after('ROI &amp; Rental', 4))->toBe(['ROI Monitoring', 'ROI Payments', 'Rental Percentage', 'ROI Reversal'])
+        ->and($after('Rewards', 2))->toBe(['Pending Rewards', 'Reward Review'])
+        ->and($after('Reports', 3))->toBe(['Genealogy Tree Report', 'Genealogy Tree View', 'Saving Account Tree'])
+        ->and($after('Settings', 9))->toBe(['Basic Settings', 'ROI Settings', 'User Plans (Gold/Silver)', 'Commission &amp; Bonuses',
+            'Profit Share Settings', 'Reward Settings', 'Saving Account Settings', 'Instalment Commission Rates', 'Card Settings']);
+    expect($items)->toContain('Savings Program')->toContain('Saving Accounts')->toContain('Adjust Instalment Plan')
+        ->toContain('Genealogy')->toContain('My Account')->toContain('Bank Reconciliation')->toContain('Upload Payment Sheet');
+
+    // Removed: dead / duplicate / temporary entries
+    expect($items)->not->toContain('Rank')->not->toContain('My Savings Tree')->not->toContain('Reward Review (Temp)')
+        ->and(array_count_values($items)['Logout'])->toBe(1)
+        ->and($aside)->not->toContain('href="@"')
+        ->and($aside)->toContain('id="sidebar-logout-form"');
+
+    // Every sidebar link resolves (no 404 / 500)
+    preg_match_all('/href="(http[^"]+)"/', $aside, $links);
+    foreach (array_unique($links[1]) as $url) {
+        $status = $this->actingAs($admin)->get($url)->getStatusCode();
+        expect($status)->toBeLessThan(500, "Sidebar link {$url} returned {$status}");
+        expect($status)->not->toBe(404, "Sidebar link {$url} is broken");
+    }
+});
+
+it('keeps the member sidebar grouped and hides the admin and staff sections from members', function () {
+    \App\Models\Setting::query()->insert(['created_at' => now(), 'updated_at' => now()]);
+    $html = $this->actingAs(dcSaver())->get(route('cards.index'))->assertOk()->getContent();
+    $aside = substr($html, strpos($html, 'begin::Menu Nav'), strpos($html, 'end::Menu Nav') - strpos($html, 'begin::Menu Nav'));
+    preg_match_all('/<(?:span|h4) class="menu-text">\s*([^<]+?)\s*</', $aside, $m);
+
+    expect($m[1])->toContain('Genealogy')->toContain('Wallets')->toContain('My Account')->toContain('My Saving Plan')->toContain('Logout')
+        ->not->toContain('Administration')->not->toContain('Staff Tools')->not->toContain('Members')->not->toContain('Settings');
 });

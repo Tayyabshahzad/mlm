@@ -81,7 +81,7 @@
                                                 </svg>
                                                 <!--end::Svg Icon-->
                                             </span>
-                                            <span class="card-title font-weight-bolder text-white font-size-h2 mb-0 mt-6 d-block">${{ $firstInvest->amount }}</span>
+                                            <span class="card-title font-weight-bolder text-white font-size-h2 mb-0 mt-6 d-block">${{ number_format((float) ($firstInvest?->amount ?? 0), 2) }}</span>
                                             <span class="font-weight-bold text-white font-size-sm">Initial Investment</span>
                                         </div>
                                         <!--end::Body-->
@@ -106,7 +106,7 @@
                                                 </svg>
                                                 <!--end::Svg Icon-->
                                             </span>
-                                            <span class="card-title font-weight-bolder text-white font-size-h2 mb-0 mt-6 d-block">${{ $lastInvest->amount }}</span>
+                                            <span class="card-title font-weight-bolder text-white font-size-h2 mb-0 mt-6 d-block">${{ number_format((float) ($lastInvest?->amount ?? 0), 2) }}</span>
                                             <span class="font-weight-bold text-white font-size-sm">Last Investment</span>
                                         </div>
                                         <!--end::Body-->

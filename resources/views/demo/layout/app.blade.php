@@ -82,6 +82,24 @@
             background-color: #5AB8B0 !important
         }
 
+        /* ── Wallets menu: violet accent (dark aside) ─────────────────── */
+        .aside-menu .menu-nav > .menu-item.menu-wallets > .menu-link .svg-icon svg g [fill] { fill: #a47bff !important; }
+        .aside-menu .menu-nav > .menu-item.menu-wallets.menu-item-open > .menu-link,
+        .aside-menu .menu-nav > .menu-item.menu-wallets > .menu-link:hover { background-color: rgba(137, 80, 252, .14) !important; }
+        .aside-menu .menu-nav > .menu-item.menu-wallets.menu-item-open > .menu-link .menu-text { color: #fff !important; }
+        .aside-menu .menu-item.menu-wallets .menu-submenu .menu-item > .menu-link:hover,
+        .aside-menu .menu-item.menu-wallets .menu-submenu .menu-item.menu-item-open > .menu-link { background-color: rgba(137, 80, 252, .12) !important; }
+        .aside-menu .menu-item.menu-wallets .menu-submenu .menu-item > .menu-link:hover .menu-text { color: #c9b0ff !important; }
+        .aside-menu .menu-item.menu-wallets .menu-submenu .menu-item.menu-item-active > .menu-link {
+            background-color: rgba(137, 80, 252, .22) !important;
+            box-shadow: inset 3px 0 0 #8950fc;
+        }
+        .aside-menu .menu-item.menu-wallets .menu-submenu .menu-item.menu-item-active > .menu-link .menu-text { color: #fff !important; font-weight: 600; }
+        .aside-menu .menu-item.menu-wallets .menu-submenu .menu-item.menu-item-active > .menu-link .menu-bullet > span,
+        .aside-menu .menu-item.menu-wallets .menu-submenu .menu-item.menu-item-open > .menu-link .menu-bullet > span,
+        .aside-menu .menu-item.menu-wallets .menu-submenu .menu-item > .menu-link:hover .menu-bullet > span { background-color: #a47bff !important; }
+        .aside-menu .menu-item.menu-wallets .menu-submenu .menu-item.menu-item-open > .menu-link .menu-arrow { color: #a47bff !important; }
+
   .announcement {
     background-color: #d4edda;
     color: #155724;
@@ -206,29 +224,37 @@
                         data-menu-dropdown-timeout="500">
                         <!--begin::Menu Nav-->
                         <ul class="menu-nav">
-                            @php $isSavingOnly = auth()->user()->account_type === 'saving'; @endphp
-                            <li class="menu-item menu-item-active" aria-haspopup="true">
+                            @php
+                                $isSavingOnly    = auth()->user()->account_type === 'saving';
+                                $isOperatorOnly  = auth()->user()->isDataEntryOperatorOnly();
+                                $isAdmin         = auth()->user()->hasRole('admin');
+                                $savingRootId    = \App\Models\Setting::first()?->saving_parent_user_id;
+                                $hasSavingAccess = auth()->id() == $savingRootId
+                                    || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated);
+                                // Which wallet groups this member sees:
+                                //   saving_only → Saving Wallet (Saving Account) · both → Saving (4 pages) + Standard · standard → Standard
+                                $walletCase = ($isSavingOnly && auth()->user()->can_login)
+                                    ? 'saving_only'
+                                    : ($hasSavingAccess ? 'both' : 'standard');
+                                $showSavingTeam = $isSavingOnly || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated);
+                            @endphp
+
+                            {{-- ═════════════════════════ MEMBER ═════════════════════════ --}}
+                            <li class="menu-item @if(request()->is('dashboard')) menu-item-active @endif" aria-haspopup="true">
                                 <a href="{{ route('dashboard') }}" class="menu-link">
                                     <span class="svg-icon menu-icon">
-                                        <!--begin::Svg Icon | path:assets/media/svg/icons/Design/Layers.svg-->
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                            viewBox="0 0 24 24" version="1.1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <polygon points="0 0 24 0 24 24 0 24" />
-                                                <path
-                                                    d="M12.9336061,16.072447 L19.36,10.9564761 L19.5181585,10.8312381 C20.1676248,10.3169571 20.2772143,9.3735535 19.7629333,8.72408713 C19.6917232,8.63415859 19.6104327,8.55269514 19.5206557,8.48129411 L12.9336854,3.24257445 C12.3871201,2.80788259 11.6128799,2.80788259 11.0663146,3.24257445 L4.47482784,8.48488609 C3.82645598,9.00054628 3.71887192,9.94418071 4.23453211,10.5925526 C4.30500305,10.6811601 4.38527899,10.7615046 4.47382636,10.8320511 L4.63,10.9564761 L11.0659024,16.0730648 C11.6126744,16.5077525 12.3871218,16.5074963 12.9336061,16.072447 Z"
-                                                    fill="#000000" fill-rule="nonzero" />
-                                                <path
-                                                    d="M11.0563554,18.6706981 L5.33593024,14.122919 C4.94553994,13.8125559 4.37746707,13.8774308 4.06710397,14.2678211 C4.06471678,14.2708238 4.06234874,14.2738418 4.06,14.2768747 L4.06,14.2768747 C3.75257288,14.6738539 3.82516916,15.244888 4.22214834,15.5523151 C4.22358765,15.5534297 4.2250303,15.55454 4.22647627,15.555646 L11.0872776,20.8031356 C11.6250734,21.2144692 12.371757,21.2145375 12.909628,20.8033023 L19.7677785,15.559828 C20.1693192,15.2528257 20.2459576,14.6784381 19.9389553,14.2768974 C19.9376429,14.2751809 19.9363245,14.2734691 19.935,14.2717619 L19.935,14.2717619 C19.6266937,13.8743807 19.0546209,13.8021712 18.6572397,14.1104775 C18.654352,14.112718 18.6514778,14.1149757 18.6486172,14.1172508 L12.9235044,18.6705218 C12.377022,19.1051477 11.6029199,19.1052208 11.0563554,18.6706981 Z"
-                                                    fill="#000000" opacity="0.3" />
+                                                <polygon points="0 0 24 0 24 24 0 24"/>
+                                                <path d="M12.9336061,16.072447 L19.36,10.9564761 L19.5181585,10.8312381 C20.1676248,10.3169571 20.2772143,9.3735535 19.7629333,8.72408713 C19.6917232,8.63415859 19.6104327,8.55269514 19.5206557,8.48129411 L12.9336854,3.24257445 C12.3871201,2.80788259 11.6128799,2.80788259 11.0663146,3.24257445 L4.47482784,8.48488609 C3.82645598,9.00054628 3.71887192,9.94418071 4.23453211,10.5925526 C4.30500305,10.6811601 4.38527899,10.7615046 4.47382636,10.8320511 L4.63,10.9564761 L11.0659024,16.0730648 C11.6126744,16.5077525 12.3871218,16.5074963 12.9336061,16.072447 Z" fill="#000000" fill-rule="nonzero"/>
+                                                <path d="M11.0563554,18.6706981 L5.33593024,14.122919 C4.94553994,13.8125559 4.37746707,13.8774308 4.06710397,14.2678211 L4.06,14.2768747 C3.75257288,14.6738539 3.82516916,15.244888 4.22214834,15.5523151 L11.0872776,20.8031356 C11.6250734,21.2144692 12.371757,21.2145375 12.909628,20.8033023 L19.7677785,15.559828 C20.1693192,15.2528257 20.2459576,14.6784381 19.9389553,14.2768974 L19.935,14.2717619 C19.6266937,13.8743807 19.0546209,13.8021712 18.6572397,14.1104775 L12.9235044,18.6705218 C12.377022,19.1051477 11.6029199,19.1052208 11.0563554,18.6706981 Z" fill="#000000" opacity="0.3"/>
                                             </g>
                                         </svg>
-                                        <!--end::Svg Icon-->
                                     </span>
                                     <span class="menu-text">Dashboard</span>
                                 </a>
                             </li>
+
                             @if((auth()->user()->account_type === 'saving' && auth()->user()->can_login) || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated && auth()->user()->savingInstalments()->exists()))
                             <li class="menu-item @if(request()->is('saving/instalments*')) menu-item-active @endif" aria-haspopup="true">
                                 <a href="{{ route('saving.user.instalments') }}" class="menu-link">
@@ -247,9 +273,264 @@
                             </li>
                             @endif
 
-                            {{-- Bank Reconciliation (Office Admins + admins) --}}
+                            @if(!$isOperatorOnly)
+                            {{-- Genealogy --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('genealogy/team*') || request()->is('genealogy/my-saving-tree*') || request()->is('team-performance*')) menu-item-open @endif"
+                                aria-haspopup="true" data-menu-toggle="hover">
+                                <a href="javascript:;" class="menu-link menu-toggle">
+                                    <span class="svg-icon menu-icon">
+                                        <!-- Genealogy / family-tree icon (duotone) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <!-- top (sponsor) node -->
+                                                <rect fill="#000000" x="8.5" y="2" width="7" height="5.5" rx="1.5"/>
+                                                <!-- connectors -->
+                                                <rect fill="#000000" x="11.25" y="7.5" width="1.5" height="3"/>
+                                                <rect fill="#000000" x="5.25" y="10" width="13.5" height="1.5" rx=".75"/>
+                                                <rect fill="#000000" x="5.25" y="10" width="1.5" height="3.5"/>
+                                                <rect fill="#000000" x="17.25" y="10" width="1.5" height="3.5"/>
+                                                <!-- downline nodes -->
+                                                <rect fill="#000000" opacity="0.3" x="2" y="13.5" width="8" height="6.5" rx="1.5"/>
+                                                <rect fill="#000000" opacity="0.3" x="14" y="13.5" width="8" height="6.5" rx="1.5"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">Genealogy</span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        @if(!$isSavingOnly)
+                                        <li class="menu-item @if(request()->is('genealogy/team*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('genealogy.team') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">My Team</span>
+                                            </a>
+                                        </li>
+                                        @endif
+                                        @if($showSavingTeam)
+                                        <li class="menu-item @if(request()->is('genealogy/my-saving-tree*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('genealogy.my.saving.tree') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">My Saving Team</span>
+                                            </a>
+                                        </li>
+                                        @endif
+                                        <li class="menu-item @if(request()->is('team-performance*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('team.performance') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Team Performance</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            {{-- Wallets: Online first, Saving ▸ and Standard ▸ nested --}}
+                            <li class="menu-item menu-item-submenu menu-wallets @if(request()->is('wallets*')) menu-item-open @endif"
+                                aria-haspopup="true" data-menu-toggle="hover">
+                                <a href="javascript:;" class="menu-link menu-toggle">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24" />
+                                                <circle fill="#000000" opacity="0.3" cx="20.5" cy="12.5" r="1.5" />
+                                                <rect fill="#000000" opacity="0.3" transform="translate(12.000000, 6.500000) rotate(-15.000000) translate(-12.000000, -6.500000) " x="3" y="3" width="18" height="7" rx="1" />
+                                                <path d="M22,9.33681558 C21.5453723,9.12084552 21.0367986,9 20.5,9 C18.5670034,9 17,10.5670034 17,12.5 C17,14.4329966 18.5670034,16 20.5,16 C21.0367986,16 21.5453723,15.8791545 22,15.6631844 L22,18 C22,19.1045695 21.1045695,20 20,20 L4,20 C2.8954305,20 2,19.1045695 2,18 L2,6 C2,4.8954305 2.8954305,4 4,4 L20,4 C21.1045695,4 22,4.8954305 22,6 L22,9.33681558 Z" fill="#000000" />
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">Wallets</span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('wallets/online*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('wallets.online') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Online Wallet</span>
+                                            </a>
+                                        </li>
+
+                                        @if($walletCase !== 'standard')
+                                        <li class="menu-item menu-item-submenu @if(request()->is('wallets/saving*')) menu-item-open @endif"
+                                            aria-haspopup="true" data-menu-toggle="hover">
+                                            <a href="javascript:;" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Saving Wallet</span>
+                                                <i class="menu-arrow"></i>
+                                            </a>
+                                            <div class="menu-submenu">
+                                                <i class="menu-arrow"></i>
+                                                <ul class="menu-subnav">
+                                                    <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('wallets.saving.account') }}" class="menu-link">
+                                                            <i class="menu-bullet menu-bullet-line"><span></span></i>
+                                                            <span class="menu-text">Saving Account</span>
+                                                        </a>
+                                                    </li>
+                                                    @if($walletCase === 'both')
+                                                    <li class="menu-item @if(request()->is('wallets/saving-direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('wallets.saving.direct.indirect') }}" class="menu-link">
+                                                            <i class="menu-bullet menu-bullet-line"><span></span></i>
+                                                            <span class="menu-text">Savings Direct / Indirect</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="menu-item @if(request()->is('wallets/saving-roi') || request()->is('wallets/saving-roi/*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('wallets.saving.roi') }}" class="menu-link">
+                                                            <i class="menu-bullet menu-bullet-line"><span></span></i>
+                                                            <span class="menu-text">Savings ROI</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="menu-item @if(request()->is('wallets/saving-roi-report*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('saving.roi.report') }}" class="menu-link">
+                                                            <i class="menu-bullet menu-bullet-line"><span></span></i>
+                                                            <span class="menu-text">Saving ROI Report</span>
+                                                        </a>
+                                                    </li>
+                                                    @endif
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        @endif
+
+                                        @if($walletCase !== 'saving_only')
+                                        <li class="menu-item menu-item-submenu @if(request()->is('wallets/investment*') || request()->is('wallets/direct-indirect*') || request()->is('wallets/return-on-investment*') || request()->is('wallets/rewards*') || request()->is('wallets/profit-share*') || request()->is('wallets/incentive-wallets*')) menu-item-open @endif"
+                                            aria-haspopup="true" data-menu-toggle="hover">
+                                            <a href="javascript:;" class="menu-link menu-toggle">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Standard Wallet</span>
+                                                <i class="menu-arrow"></i>
+                                            </a>
+                                            <div class="menu-submenu">
+                                                <i class="menu-arrow"></i>
+                                                <ul class="menu-subnav">
+                                                    <li class="menu-item @if(request()->is('wallets/investment*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('wallets.investment') }}" class="menu-link"><i class="menu-bullet menu-bullet-line"><span></span></i><span class="menu-text">Investment Wallet</span></a>
+                                                    </li>
+                                                    <li class="menu-item @if(request()->is('wallets/direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('wallets.direct.indirect') }}" class="menu-link"><i class="menu-bullet menu-bullet-line"><span></span></i><span class="menu-text">Direct / Indirect</span></a>
+                                                    </li>
+                                                    <li class="menu-item @if(request()->is('wallets/rewards*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('wallets.rewards') }}" class="menu-link"><i class="menu-bullet menu-bullet-line"><span></span></i><span class="menu-text">Rewards</span></a>
+                                                    </li>
+                                                    <li class="menu-item @if(request()->is('wallets/return-on-investment*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('wallets.roi') }}" class="menu-link"><i class="menu-bullet menu-bullet-line"><span></span></i><span class="menu-text">ROI</span></a>
+                                                    </li>
+                                                    <li class="menu-item @if(request()->is('wallets/profit-share*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('wallets.profit.share') }}" class="menu-link"><i class="menu-bullet menu-bullet-line"><span></span></i><span class="menu-text">Profit Share</span></a>
+                                                    </li>
+                                                    <li class="menu-item @if(request()->is('wallets/incentive-wallets*')) menu-item-active @endif" aria-haspopup="true">
+                                                        <a href="{{ route('wallets.incentive') }}" class="menu-link"><i class="menu-bullet menu-bullet-line"><span></span></i><span class="menu-text">Incentive Wallets</span></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        @endif
+
+                                        <li class="menu-item @if(request()->is('wallets/show-transaction-history*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('show.transaction.history') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">Transactions</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            {{-- Digital Cards --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('cards*')) menu-item-open @endif"
+                                aria-haspopup="true" data-menu-toggle="hover">
+                                <a href="javascript:;" class="menu-link menu-toggle">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <rect fill="#000000" opacity="0.3" x="2" y="5" width="20" height="14" rx="2"/>
+                                                <rect fill="#000000" x="2" y="8" width="20" height="3"/>
+                                                <rect fill="#000000" opacity="0.3" x="16" y="14" width="4" height="2" rx="1"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">
+                                        Digital Cards
+                                        @if(($newCardAlerts = auth()->user()->unreadNotifications()->where('type', \App\Notifications\DigitalCardReceivedNotification::class)->count()) > 0)<span class="ml-1 badge badge-pill badge-success">{{ $newCardAlerts }}</span>@endif
+                                    </span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('cards') || (request()->is('cards/*') && !request()->is('cards/received*'))) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('cards.index') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">My Cards</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('cards/received*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('cards.received') }}" class="menu-link">
+                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
+                                                <span class="menu-text">
+                                                    Received Cards
+                                                    @if($newCardAlerts > 0)<span class="ml-1 badge badge-pill badge-success">{{ $newCardAlerts }} new</span>@endif
+                                                </span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            {{-- My Account --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('profile*')) menu-item-open @endif"
+                                aria-haspopup="true" data-menu-toggle="hover">
+                                <a href="javascript:;" class="menu-link menu-toggle">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <polygon points="0 0 24 0 24 24 0 24"/>
+                                                <path d="M12,11 C9.790861,11 8,9.209139 8,7 C8,4.790861 9.790861,3 12,3 C14.209139,3 16,4.790861 16,7 C16,9.209139 14.209139,11 12,11 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"/>
+                                                <path d="M3.00065168,20.1992055 C3.38825852,15.4265159 7.26191235,13 11.9833413,13 C16.7712164,13 20.7048837,15.2931929 20.9979143,20.2 C21.0095879,20.3954741 20.9979143,21 20.2466999,21 C16.541124,21 11.0347247,21 3.72750223,21 C3.47671215,21 2.97953825,20.45918 3.00065168,20.1992055 Z" fill="#000000" fill-rule="nonzero"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">My Account</span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('profile/info*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('profile.edit') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Personal Information</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('profile/account*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('account.information') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Account Information</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('profile/bank-details*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('profile.bank.details') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Bank Account</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('profile/social*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('social.account.information') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Social Accounts</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('profile/change-password*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('profile.change.password') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Change Password</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            @endif {{-- !$isOperatorOnly --}}
+
+                            {{-- ═════════════════════════ STAFF TOOLS ═════════════════════════ --}}
+                            @if(auth()->user()->hasAnyRole(['admin', 'office-admin', 'operator']))
+                            <li class="menu-section">
+                                <h4 class="menu-text">Staff Tools</h4>
+                                <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
+                            </li>
+
                             @if(auth()->user()->hasAnyRole(['admin', 'office-admin']))
-                            <li class="menu-item @if(request()->is('reconciliation*')) menu-item-active @endif" aria-haspopup="true">
+                            <li class="menu-item @if(request()->is('reconciliation*') && !request()->is('reconciliation/office-admins*')) menu-item-active @endif" aria-haspopup="true">
                                 <a href="{{ route('reconciliation.index') }}" class="menu-link">
                                     <span class="svg-icon menu-icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
@@ -273,259 +554,74 @@
                             </li>
                             @endif
 
+                            @if(auth()->user()->hasAnyRole(['admin', 'operator']))
+                            <li class="menu-item @if(request()->is('payment-sheets*')) menu-item-active @endif" aria-haspopup="true">
+                                <a href="{{ route('payment-sheets.index') }}" class="menu-link">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <path d="M5.857,2 L13.736,2 C14.091,2 14.434,2.126 14.705,2.355 L19.469,6.384 C19.806,6.669 20,7.088 20,7.529 L20,19.083 C20,20.874 19.980,21 18.143,21 L5.857,21 C4.020,21 4,20.874 4,19.083 L4,3.917 C4,2.126 4.020,2 5.857,2 Z" fill="#000000" opacity="0.3"/>
+                                                <path d="M11,14 L9,14 L12,11 L15,14 L13,14 L13,18 L11,18 L11,14 Z" fill="#000000"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">Upload Payment Sheet</span>
+                                </a>
+                            </li>
+                            @endif
+                            @endif
+
+                            {{-- ═════════════════════════ ADMINISTRATION ═════════════════════════ --}}
+                            @if($isAdmin)
                             <li class="menu-section">
-                                <h4 class="menu-text">Genealogy Details</h4>
+                                <h4 class="menu-text">Administration</h4>
                                 <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
                             </li>
 
-                            <li class="menu-item menu-item-submenu @if(request()->is('genealogy*')) menu-item-open @endif"
-                                aria-haspopup="true" data-menu-toggle="hover">
-                                <a href="javascript:;" class="menu-link menu-toggle">
-                                    <span class="svg-icon menu-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
-                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <rect x="0" y="0" width="24" height="24" />
-                                                <path d="M7,11 L15,11 C16.1045695,11 17,10.1045695 17,9 L17,8 L19,8 L19,9 C19,11.209139 17.209139,13 15,13 L7,13 L7,15 C7,15.5522847 6.55228475,16 6,16 C5.44771525,16 5,15.5522847 5,15 L5,9 C5,8.44771525 5.44771525,8 6,8 C6.55228475,8 7,8.44771525 7,9 L7,11 Z" fill="#000000" opacity="0.3" />
-                                                <path d="M6,21 C7.1045695,21 8,20.1045695 8,19 C8,17.8954305 7.1045695,17 6,17 C4.8954305,17 4,17.8954305 4,19 C4,20.1045695 4.8954305,21 6,21 Z M6,23 C3.790861,23 2,21.209139 2,19 C2,16.790861 3.790861,15 6,15 C8.209139,15 10,16.790861 10,19 C10,21.209139 8.209139,23 6,23 Z" fill="#000000" fill-rule="nonzero" />
-                                                <path d="M18,7 C19.1045695,7 20,6.1045695 20,5 C20,3.8954305 19.1045695,3 18,3 C16.8954305,3 16,3.8954305 16,5 C16,6.1045695 16.8954305,7 18,7 Z M18,9 C15.790861,9 14,7.209139 14,5 C14,2.790861 15.790861,1 18,1 C20.209139,1 22,2.790861 22,5 C22,7.209139 20.209139,9 18,9 Z" fill="#000000" fill-rule="nonzero" />
-                                                <path d="M6,7 C7.1045695,7 8,6.1045695 8,5 C8,3.8954305 7.1045695,3 6,3 C4.8954305,3 4,3.8954305 4,5 C4,6.1045695 4.8954305,7 6,7 Z M6,9 C3.790861,9 2,7.209139 2,5 C2,2.790861 3.790861,1 6,1 C8.209139,1 10,2.790861 10,5 C10,7.209139 8.209139,9 6,9 Z" fill="#000000" fill-rule="nonzero" />
-                                            </g>
-                                        </svg>
-                                    </span>
-                                    <span class="menu-text">Genealogy</span>
-                                    <i class="menu-arrow"></i>
-                                </a>
-                                <div class="menu-submenu">
-                                    <i class="menu-arrow"></i>
-                                    <ul class="menu-subnav">
-                                        <li class="menu-item menu-item-parent" aria-haspopup="true">
-                                            <span class="menu-link"><span class="menu-text">Genealogy</span></span>
-                                        </li>
-
-                                        @if(!$isSavingOnly)
-                                        <li class="menu-item @if(request()->is('genealogy/team*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('genealogy.team') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
-                                                <span class="menu-text">My Team</span>
-                                            </a>
-                                        </li>
-                                        @endif
-
-                                        @if($isSavingOnly || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
-                                        <li class="menu-item @if(request()->is('genealogy/my-saving-tree*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('genealogy.my.saving.tree') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
-                                                <span class="menu-text">My Saving Team</span>
-                                            </a>
-                                        </li>
-                                        @endif
-
-                                        @if(!$isSavingOnly)
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
-                                            <a href="javascript:;" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
-                                                <span class="menu-text">Projects</span>
-                                                <i class="menu-arrow"></i>
-                                            </a>
-                                        </li>
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
-                                            <a href="javascript:;" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
-                                                <span class="menu-text">Support Center</span>
-                                                <i class="menu-arrow"></i>
-                                            </a>
-                                            <div class="menu-submenu">
-                                                <i class="menu-arrow"></i>
-                                                <ul class="menu-subnav">
-                                                    <li class="menu-item" aria-haspopup="true">
-                                                        <a href="custom/apps/support-center/home-1.html" class="menu-link">
-                                                            <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                            <span class="menu-text">Live Chat</span>
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
-                                            <a href="javascript:;" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
-                                                <span class="menu-text">Education Center</span>
-                                                <i class="menu-arrow"></i>
-                                            </a>
-                                            <div class="menu-submenu">
-                                                <i class="menu-arrow"></i>
-                                                <ul class="menu-subnav">
-                                                    <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
-                                                        <a href="javascript:;" class="menu-link menu-toggle">
-                                                            <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                            <span class="menu-text">How TO ?</span>
-                                                            <i class="menu-arrow"></i>
-                                                        </a>
-                                                    </li>
-                                                    <li class="menu-item" aria-haspopup="true">
-                                                        <a href="custom/apps/education/class/dashboard.html" class="menu-link">
-                                                            <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                            <span class="menu-text">Live Meetings</span>
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        @endif
-
-                                    </ul>
-                                </div>
-                            </li>
-                            @if(!$isSavingOnly)
-                            <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
-                                <a href="javascript:;" class="menu-link menu-toggle">
-                                    <span class="svg-icon menu-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
-                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <rect x="0" y="0" width="24" height="24" />
-                                                <path d="M7,11 L15,11 C16.1045695,11 17,10.1045695 17,9 L17,8 L19,8 L19,9 C19,11.209139 17.209139,13 15,13 L7,13 L7,15 C7,15.5522847 6.55228475,16 6,16 C5.44771525,16 5,15.5522847 5,15 L5,9 C5,8.44771525 5.44771525,8 6,8 C6.55228475,8 7,8.44771525 7,9 L7,11 Z" fill="#000000" opacity="0.3" />
-                                                <path d="M6,21 C7.1045695,21 8,20.1045695 8,19 C8,17.8954305 7.1045695,17 6,17 C4.8954305,17 4,17.8954305 4,19 C4,20.1045695 4.8954305,21 6,21 Z M6,23 C3.790861,23 2,21.209139 2,19 C2,16.790861 3.790861,15 6,15 C8.209139,15 10,16.790861 10,19 C10,21.209139 8.209139,23 6,23 Z" fill="#000000" fill-rule="nonzero" />
-                                                <path d="M18,7 C19.1045695,7 20,6.1045695 20,5 C20,3.8954305 19.1045695,3 18,3 C16.8954305,3 16,3.8954305 16,5 C16,6.1045695 16.8954305,7 18,7 Z M18,9 C15.790861,9 14,7.209139 14,5 C14,2.790861 15.790861,1 18,1 C20.209139,1 22,2.790861 22,5 C22,7.209139 20.209139,9 18,9 Z" fill="#000000" fill-rule="nonzero" />
-                                                <path d="M6,7 C7.1045695,7 8,6.1045695 8,5 C8,3.8954305 7.1045695,3 6,3 C4.8954305,3 4,3.8954305 4,5 C4,6.1045695 4.8954305,7 6,7 Z M6,9 C3.790861,9 2,7.209139 2,5 C2,2.790861 3.790861,1 6,1 C8.209139,1 10,2.790861 10,5 C10,7.209139 8.209139,9 6,9 Z" fill="#000000" fill-rule="nonzero" />
-                                            </g>
-                                        </svg>
-                                    </span>
-                                    <span class="menu-text">Product</span>
-                                    <i class="menu-arrow"></i>
-                                </a>
-                                <div class="menu-submenu">
-                                    <i class="menu-arrow"></i>
-                                    <ul class="menu-subnav">
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('buy.products') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Buy Products</span> 
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('activation.code') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-line">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Activation Code</span> 
-                                            </a>
-                                        </li>
-
-
-                                    </ul>
-                                </div>
-                            </li>
-                            @endif {{-- !$isSavingOnly (Product menu end) --}}
-
-                            {{-- Digital Cards --}}
-                            <li class="menu-item menu-item-submenu @if(request()->is('cards*')) menu-item-open @endif"
+                            {{-- Members --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('users/index*') || request()->is('users/deleted*') || request()->is('users/change-parent*') || request()->is('users/activation-code*') || request()->is('users/info*') || request()->is('reconciliation/office-admins*')) menu-item-open @endif"
                                 aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
                                     <span class="svg-icon menu-icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <rect x="0" y="0" width="24" height="24"/>
-                                                <rect fill="#000000" opacity="0.3" x="2" y="5" width="20" height="14" rx="2"/>
-                                                <rect fill="#000000" x="2" y="8" width="20" height="3"/>
-                                                <rect fill="#000000" opacity="0.3" x="16" y="14" width="4" height="2" rx="1"/>
+                                                <polygon points="0 0 24 0 24 24 0 24"/>
+                                                <path d="M18,14 C16.343,14 15,12.657 15,11 C15,9.343 16.343,8 18,8 C19.657,8 21,9.343 21,11 C21,12.657 19.657,14 18,14 Z M9,11 C6.791,11 5,9.209 5,7 C5,4.791 6.791,3 9,3 C11.209,3 13,4.791 13,7 C13,9.209 11.209,11 9,11 Z" fill="#000000" opacity="0.3"/>
+                                                <path d="M17.6,15 C21.007,15.037 23.788,16.759 23.997,20.4 C24.005,20.547 23.997,21 23.453,21 L19.6,21 C19.6,18.749 18.856,16.672 17.6,15 Z M0.001,20.199 C0.388,15.427 4.262,13 8.983,13 C13.771,13 17.705,15.293 17.998,20.2 C18.010,20.395 17.998,21 17.247,21 C13.541,21 8.035,21 0.728,21 C0.477,21 -0.021,20.459 0.001,20.199 Z" fill="#000000"/>
                                             </g>
                                         </svg>
                                     </span>
-                                    <span class="menu-text">
-                                        Digital Cards
-                                        {{-- assigned inline: this layout mixes inline and block PHP directives, which Blade mis-pairs if more are added --}}
-                                        @if(($newCardAlerts = auth()->user()->unreadNotifications()->where('type', \App\Notifications\DigitalCardReceivedNotification::class)->count()) > 0)<span class="ml-1 badge badge-pill badge-success">{{ $newCardAlerts }}</span>@endif
-                                    </span>
+                                    <span class="menu-text">Members</span>
                                     <i class="menu-arrow"></i>
                                 </a>
                                 <div class="menu-submenu">
                                     <i class="menu-arrow"></i>
                                     <ul class="menu-subnav">
-                                        <li class="menu-item @if(request()->is('cards') || (request()->is('cards/*') && !request()->is('cards/received*'))) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('cards.index') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
-                                                <span class="menu-text">My Cards</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('users/index*') && request('tab') !== 'saving') menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('users.index') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">All Members</span></a>
                                         </li>
-                                        <li class="menu-item @if(request()->is('cards/received*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('cards.received') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-line"><span></span></i>
-                                                <span class="menu-text">
-                                                    Received Cards
-                                                    @if($newCardAlerts > 0)<span class="ml-1 badge badge-pill badge-success">{{ $newCardAlerts }} new</span>@endif
-                                                </span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('users/index*') && request('tab') === 'saving') menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ url('users/index?tab=saving') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Saving Members</span></a>
                                         </li>
-                                    </ul>
-                                </div>
-                            </li>
-
-                            @php
-                                $savingRootId  = \App\Models\Setting::first()?->saving_parent_user_id;
-                                $hasSavingAccess = auth()->id() == $savingRootId
-                                    || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated);
-                                // Which wallet groups this member sees (same rules as before the menu split):
-                                //   saving_only → Saving Wallet (Saving Account)
-                                //   both        → Saving Wallet (4 pages) + Standard Wallet
-                                //   standard    → Standard Wallet
-                                $walletCase = ($isSavingOnly && auth()->user()->can_login)
-                                    ? 'saving_only'
-                                    : ($hasSavingAccess ? 'both' : 'standard');
-                            @endphp
-
-                            {{-- ══ Wallets: Online Wallet first, then Transactions ══ --}}
-                            <li class="menu-item menu-item-submenu @if(request()->is('wallets/online*') || request()->is('wallets/show-transaction-history*')) menu-item-open @endif"
-                                aria-haspopup="true" data-menu-toggle="hover">
-                                <a href="javascript:;" class="menu-link menu-toggle">
-                                    <span class="svg-icon menu-icon">
-                                        <!--begin::Svg Icon | path:assets/media/svg/icons/Code/Compiling.svg-->
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                            viewBox="0 0 24 24" version="1.1">
-                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <rect x="0" y="0" width="24" height="24" />
-                                                <circle fill="#000000" opacity="0.3" cx="20.5" cy="12.5"
-                                                    r="1.5" />
-                                                <rect fill="#000000" opacity="0.3"
-                                                    transform="translate(12.000000, 6.500000) rotate(-15.000000) translate(-12.000000, -6.500000) "
-                                                    x="3" y="3" width="18" height="7" rx="1" />
-                                                <path
-                                                    d="M22,9.33681558 C21.5453723,9.12084552 21.0367986,9 20.5,9 C18.5670034,9 17,10.5670034 17,12.5 C17,14.4329966 18.5670034,16 20.5,16 C21.0367986,16 21.5453723,15.8791545 22,15.6631844 L22,18 C22,19.1045695 21.1045695,20 20,20 L4,20 C2.8954305,20 2,19.1045695 2,18 L2,6 C2,4.8954305 2.8954305,4 4,4 L20,4 C21.1045695,4 22,4.8954305 22,6 L22,9.33681558 Z"
-                                                    fill="#000000" />
-                                            </g>
-                                        </svg>
-                                        <!--end::Svg Icon-->
-                                    </span>
-                                    <span class="menu-text">Wallets</span>
-                                    <i class="menu-arrow"></i>
-                                </a>
-                                <div class="menu-submenu">
-                                    <i class="menu-arrow"></i>
-                                    <ul class="menu-subnav">
-                                        <li class="menu-item @if(request()->is('wallets/online*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.online') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Online Wallet</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('users/deleted*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('deleted.users') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Deleted Members</span></a>
                                         </li>
-                                        <li class="menu-item @if(request()->is('wallets/show-transaction-history*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('show.transaction.history') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Transactions</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('users/change-parent*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.change.parent') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Change Parent</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('users/activation-code*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('user.activation.code') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Activation Codes</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('reconciliation/office-admins*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.office-admins.index') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Staff Roles</span></a>
                                         </li>
                                     </ul>
                                 </div>
                             </li>
 
-                            {{-- ══ Saving Wallet (own menu) ══ --}}
-                            @if($walletCase !== 'standard')
-                            <li class="menu-item menu-item-submenu @if(request()->is('wallets/saving*') || (request()->is('saving-roi-report*') && !auth()->user()->hasRole('admin'))) menu-item-open @endif"
+                            {{-- Savings Program --}}
+                            <li class="menu-item menu-item-submenu @if((request()->is('saving-accounts*') && !request()->is('saving-accounts/commission-config*')) || request()->is('saving-roi-report*')) menu-item-open @endif"
                                 aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
                                     <span class="svg-icon menu-icon">
@@ -538,46 +634,93 @@
                                             </g>
                                         </svg>
                                     </span>
-                                    <span class="menu-text">Saving Wallet</span>
+                                    <span class="menu-text">
+                                        Savings Program
+                                        @if(($savingAlerts = \App\Models\User::where('saving_enrolled', true)->where('account_type', '!=', 'saving')->where('saving_enrollment_activated', false)->count() + \App\Models\SavingInstalmentCommission::where('status', 'pending')->count()) > 0)
+                                            <span class="ml-1 badge badge-pill badge-warning">{{ $savingAlerts }}</span>
+                                        @endif
+                                    </span>
                                     <i class="menu-arrow"></i>
                                 </a>
                                 <div class="menu-submenu">
                                     <i class="menu-arrow"></i>
                                     <ul class="menu-subnav">
-                                        <li class="menu-item @if(request()->is('wallets/saving-account*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.saving.account') }}" class="menu-link">
+                                        <li class="menu-item @if(request()->is('saving-accounts') || (request()->is('saving-accounts/*') && !request()->is('saving-accounts/enrollments*') && !request()->is('saving-accounts/instalment-commissions*') && !request()->is('saving-accounts/adjust-plan*') && !request()->is('saving-accounts/commission-config*'))) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.saving.index') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Saving Accounts</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('saving-accounts/enrollments*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.saving.enrollments') }}" class="menu-link">
                                                 <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Saving Account</span>
+                                                <span class="menu-text">
+                                                    Enrollments
+                                                    @if(($pendingEnrollments = \App\Models\User::where('saving_enrolled', true)->where('account_type', '!=', 'saving')->where('saving_enrollment_activated', false)->count()) > 0)
+                                                        <span class="ml-1 badge badge-pill badge-warning">{{ $pendingEnrollments }}</span>
+                                                    @endif
+                                                </span>
                                             </a>
                                         </li>
-                                        @if($walletCase === 'both')
-                                        <li class="menu-item @if(request()->is('wallets/saving-direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.saving.direct.indirect') }}" class="menu-link">
+                                        <li class="menu-item @if(request()->is('saving-accounts/instalment-commissions*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.saving.instalment-commissions') }}" class="menu-link">
                                                 <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Savings Direct / Indirect</span>
+                                                <span class="menu-text">
+                                                    Instalment Commissions
+                                                    @if(($pendingInstalmentCommissions = \App\Models\SavingInstalmentCommission::where('status', 'pending')->count()) > 0)
+                                                        <span class="ml-1 badge badge-pill badge-warning">{{ $pendingInstalmentCommissions }}</span>
+                                                    @endif
+                                                </span>
                                             </a>
                                         </li>
-                                        <li class="menu-item @if(request()->is('wallets/saving-roi*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.saving.roi') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Savings ROI</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('saving-accounts/adjust-plan*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.saving.adjust-plan') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Adjust Instalment Plan</span></a>
                                         </li>
-                                        <li class="menu-item @if(request()->is('saving-roi-report*') && !auth()->user()->hasRole('admin')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('saving.roi.report') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Saving ROI Report</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('saving-roi-report*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.saving.roi.report') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Saving ROI Report</span></a>
                                         </li>
-                                        @endif
                                     </ul>
                                 </div>
                             </li>
-                            @endif
 
-                            {{-- ══ Standard Wallet (own menu) ══ --}}
-                            @if($walletCase !== 'saving_only')
-                            <li class="menu-item menu-item-submenu @if(request()->is('wallets/investment*') || request()->is('wallets/direct-indirect*') || request()->is('wallets/roi*') || request()->is('wallets/rewards*') || request()->is('wallets/profit-share*') || request()->is('wallets/incentive-wallets*')) menu-item-open @endif"
+                            {{-- Finance --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('withdrawals/requests*') || request()->is('withdrawals/analytics*') || request()->is('account/top-ups*') || request()->is('users/incentive-wallet*')) menu-item-open @endif"
+                                aria-haspopup="true" data-menu-toggle="hover">
+                                <a href="javascript:;" class="menu-link menu-toggle">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <rect fill="#000000" opacity="0.3" x="2" y="6" width="20" height="13" rx="2"/>
+                                                <circle fill="#000000" cx="12" cy="12.5" r="3"/>
+                                                <rect fill="#000000" x="4" y="3" width="16" height="2" rx="1"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">Finance</span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('withdrawals/requests*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('withdrawals.requests') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Withdrawal Requests</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('withdrawals/analytics*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('withdrawals.analytics') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Withdrawal Analytics</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('account/top-ups') || (request()->is('account/top-ups/*') && !request()->is('account/top-ups/analytics*'))) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('account.topups.index') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Account Top-ups</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('account/top-ups/analytics*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('account.topups.analytics') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Top-up Analytics</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('users/incentive-wallet*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.incentive.wallet') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Incentive Wallet</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            {{-- ROI & Rental --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('roi-monitoring*') || request()->is('users/roi/payments*') || request()->is('rental*') || request()->is('roi-reversal*')) menu-item-open @endif"
                                 aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
                                     <span class="svg-icon menu-icon">
@@ -590,799 +733,186 @@
                                             </g>
                                         </svg>
                                     </span>
-                                    <span class="menu-text">Standard Wallet</span>
+                                    <span class="menu-text">ROI &amp; Rental</span>
                                     <i class="menu-arrow"></i>
                                 </a>
                                 <div class="menu-submenu">
                                     <i class="menu-arrow"></i>
                                     <ul class="menu-subnav">
-                                        <li class="menu-item @if(request()->is('wallets/investment*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.investment') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Investment Wallet</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('roi-monitoring*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('users.roi.monitoring') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">ROI Monitoring</span></a>
                                         </li>
-                                        <li class="menu-item @if(request()->is('wallets/direct-indirect*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.direct.indirect') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Direct / Indirect</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('users/roi/payments*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('roi.payments') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">ROI Payments</span></a>
                                         </li>
-                                        <li class="menu-item @if(request()->is('wallets/rewards*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.rewards') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Rewards</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('rental*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('rental.percentage') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Rental Percentage</span></a>
                                         </li>
-                                        <li class="menu-item @if(request()->is('wallets/roi*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.roi') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">ROI</span>
-                                            </a>
-                                        </li>
-                                        <li class="menu-item @if(request()->is('wallets/profit-share*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.profit.share') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Profit Share</span>
-                                            </a>
-                                        </li>
-                                        <li class="menu-item" aria-haspopup="true">
-                                            <a href="@" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Rank</span>
-                                            </a>
-                                        </li>
-                                        <li class="menu-item @if(request()->is('wallets/incentive-wallets*')) menu-item-active @endif" aria-haspopup="true">
-                                            <a href="{{ route('wallets.incentive') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Incentive Wallets</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('roi-reversal*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.roi-reversal.index') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">ROI Reversal</span></a>
                                         </li>
                                     </ul>
                                 </div>
                             </li>
-                            @endif
 
-                            {{-- Team Performance Tracker --}}
-                            <li class="menu-item @if(request()->is('team-performance*')) menu-item-active @endif" aria-haspopup="true">
-                                <a href="{{ route('team.performance') }}" class="menu-link">
-                                    <span class="menu-icon">
-                                        <i class="fas fa-chart-bar" style="font-size:1.1rem;"></i>
-                                    </span>
-                                    <span class="menu-text">Team Performance</span>
-                                </a>
-                            </li>
-
-                            <li class="menu-section">
-                                <h4 class="menu-text">Profile Setting</h4>
-                                <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
-                            </li>
-
-                            <li class="menu-item menu-item-submenu @if (request()->is('profile*')) menu-item-open @endif"
+                            {{-- Rewards --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('pending-rewards*') || request()->is('reward-review*')) menu-item-open @endif"
                                 aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
                                     <span class="svg-icon menu-icon">
-                                        <!--begin::Svg Icon | path:assets/media/svg/icons/General/Settings-1.svg-->
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                            viewBox="0 0 24 24" version="1.1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <rect x="0" y="0" width="24" height="24" />
-                                                <path
-                                                    d="M7,3 L17,3 C19.209139,3 21,4.790861 21,7 C21,9.209139 19.209139,11 17,11 L7,11 C4.790861,11 3,9.209139 3,7 C3,4.790861 4.790861,3 7,3 Z M7,9 C8.1045695,9 9,8.1045695 9,7 C9,5.8954305 8.1045695,5 7,5 C5.8954305,5 5,5.8954305 5,7 C5,8.1045695 5.8954305,9 7,9 Z"
-                                                    fill="#000000" />
-                                                <path
-                                                    d="M7,13 L17,13 C19.209139,13 21,14.790861 21,17 C21,19.209139 19.209139,21 17,21 L7,21 C4.790861,21 3,19.209139 3,17 C3,14.790861 4.790861,13 7,13 Z M17,19 C18.1045695,19 19,18.1045695 19,17 C19,15.8954305 18.1045695,15 17,15 C15.8954305,15 15,15.8954305 15,17 C15,18.1045695 15.8954305,19 17,19 Z"
-                                                    fill="#000000" opacity="0.3" />
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <path d="M12,4.5 L14.351,9.264 L19.608,10.028 L15.804,13.736 L16.702,18.972 L12,16.5 L7.298,18.972 L8.196,13.736 L4.392,10.028 L9.649,9.264 Z" fill="#000000"/>
                                             </g>
                                         </svg>
-                                        <!--end::Svg Icon-->
                                     </span>
-                                    <span class="menu-text">Profile</span>
+                                    <span class="menu-text">Rewards</span>
                                     <i class="menu-arrow"></i>
                                 </a>
                                 <div class="menu-submenu">
                                     <i class="menu-arrow"></i>
                                     <ul class="menu-subnav">
-
-                                        <li class="menu-item" aria-haspopup="true">
-                                            <a href="{{ route('profile.edit') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Personal Information</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('pending-rewards*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.pending-rewards.index') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Pending Rewards</span></a>
                                         </li>
-                                        <li class="menu-item" aria-haspopup="true">
-                                            <a href="{{ route('account.information') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Account Information</span>
-                                            </a>
+                                        <li class="menu-item @if(request()->is('reward-review*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.reward-review.index') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Reward Review</span></a>
                                         </li>
-
-                                        <li class="menu-item" aria-haspopup="true">
-                                            <a href="{{ route('profile.change.password') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Change Password</span>
-                                            </a>
-                                        </li>
-
-
-                                        <li class="menu-item" aria-haspopup="true">
-                                            <a href="{{ route('social.account.information') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Social Account Information</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item" aria-haspopup="true">
-                                            <a href="{{ route('profile.bank.details') }}" class="menu-link">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Bank Account Information</span>
-                                            </a>
-                                        </li>
-
                                     </ul>
                                 </div>
                             </li>
-                            @role('admin')
-                                <li class="menu-section">
-                                    <h4 class="menu-text">Product Details</h4>
-                                    <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
-                                </li>
-                                <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
-                                    <a href="javascript:;" class="menu-link menu-toggle">
-                                        <span class="svg-icon menu-icon">
-                                            <!--begin::Svg Icon | path:assets/media/svg/icons/Design/PenAndRuller.svg-->
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                                viewBox="0 0 24 24" version="1.1">
-                                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                    <rect x="0" y="0" width="24" height="24" />
-                                                    <path
-                                                        d="M3,16 L5,16 C5.55228475,16 6,15.5522847 6,15 C6,14.4477153 5.55228475,14 5,14 L3,14 L3,12 L5,12 C5.55228475,12 6,11.5522847 6,11 C6,10.4477153 5.55228475,10 5,10 L3,10 L3,8 L5,8 C5.55228475,8 6,7.55228475 6,7 C6,6.44771525 5.55228475,6 5,6 L3,6 L3,4 C3,3.44771525 3.44771525,3 4,3 L10,3 C10.5522847,3 11,3.44771525 11,4 L11,19 C11,19.5522847 10.5522847,20 10,20 L4,20 C3.44771525,20 3,19.5522847 3,19 L3,16 Z"
-                                                        fill="#000000" opacity="0.3" />
-                                                    <path
-                                                        d="M16,3 L19,3 C20.1045695,3 21,3.8954305 21,5 L21,15.2485298 C21,15.7329761 20.8241635,16.200956 20.5051534,16.565539 L17.8762883,19.5699562 C17.6944473,19.7777745 17.378566,19.7988332 17.1707477,19.6169922 C17.1540423,19.602375 17.1383289,19.5866616 17.1237117,19.5699562 L14.4948466,16.565539 C14.1758365,16.200956 14,15.7329761 14,15.2485298 L14,5 C14,3.8954305 14.8954305,3 16,3 Z"
-                                                        fill="#000000" />
-                                                </g>
-                                            </svg>
-                                            <!--end::Svg Icon-->
-                                        </span>
-                                        <span class="menu-text">Product</span>
-                                        <i class="menu-arrow"></i>
-                                    </a>
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('product.index') }}" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">List</span>
 
-                                                </a>
-                                            </li>
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('product.create') }}" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Create</span>
+                            {{-- Digital Cards (admin) --}}
+                            <li class="menu-item @if(request()->is('admin/digital-cards*') && !request()->is('admin/digital-cards/settings*')) menu-item-active @endif" aria-haspopup="true">
+                                <a href="{{ route('admin.cards.index') }}" class="menu-link">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <rect fill="#000000" opacity="0.3" x="2" y="5" width="20" height="14" rx="2"/>
+                                                <rect fill="#000000" x="2" y="8" width="20" height="3"/>
+                                                <rect fill="#000000" opacity="0.3" x="16" y="14" width="4" height="2" rx="1"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">
+                                        Digital Cards
+                                        @if(($cardsPendingReview = \App\Models\DigitalCard::where('status', 'reserved')->count()) > 0)
+                                            <span class="ml-1 badge badge-pill badge-warning">{{ $cardsPendingReview }}</span>
+                                        @endif
+                                    </span>
+                                </a>
+                            </li>
 
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-
-                                <li class="menu-section">
-                                    <h4 class="menu-text">User Details</h4>
-                                    <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
-                                </li>
-                                <li class="menu-item menu-item-submenu @if (request()->is('users*')) menu-item-open @endif ""
-                                    aria-haspopup="true" data-menu-toggle="hover">
-                                    <a href="javascript:;" class="menu-link menu-toggle">
-                                        <span class="svg-icon menu-icon">
-                                            <!--begin::Svg Icon | path:assets/media/svg/icons/Design/PenAndRuller.svg-->
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                                viewBox="0 0 24 24" version="1.1">
-                                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                    <rect x="0" y="0" width="24" height="24" />
-                                                    <circle fill="#000000" opacity="0.3" cx="12" cy="12"
-                                                        r="10" />
-                                                    <path
-                                                        d="M12,11 C10.8954305,11 10,10.1045695 10,9 C10,7.8954305 10.8954305,7 12,7 C13.1045695,7 14,7.8954305 14,9 C14,10.1045695 13.1045695,11 12,11 Z M7.00036205,16.4995035 C7.21569918,13.5165724 9.36772908,12 11.9907452,12 C14.6506758,12 16.8360465,13.4332455 16.9988413,16.5 C17.0053266,16.6221713 16.9988413,17 16.5815,17 L7.4041679,17 C7.26484009,17 6.98863236,16.6619875 7.00036205,16.4995035 Z"
-                                                        fill="#000000" opacity="0.3" />
-                                                </g>
-                                            </svg>
-                                        </span>
-                                        <span class="menu-text">Users Info</span>
-                                        <i class="menu-arrow"></i>
-                                    </a>
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('users.index') }}" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Members</span>
-                                                    <span class="menu-label">
-                                                        <span class="label label-rounded label-primary">
-                                                            {{ $inactiveUsersAre }} </span>
-                                                    </span>
-                                                </a>
-                                            </li>
-
-                                            <li class="menu-item menu-item-submenu @if(request()->is('genealogy/saving-tree*')) menu-item-active @endif" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('genealogy.saving.tree') }}" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Saving Account Tree</span>
-                                                </a>
-                                            </li>
-                                            @if((auth()->user()->account_type === 'saving' && auth()->user()->can_login) || (auth()->user()->saving_enrolled && auth()->user()->saving_enrollment_activated))
-                                            <li class="menu-item menu-item-submenu @if(request()->is('genealogy/my-saving-tree*')) menu-item-active @endif" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('genealogy.my.saving.tree') }}" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">My Savings Tree</span>
-                                                </a>
-                                            </li>
-                                            @endif
-
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('user.activation.code') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Activation Code</span>
-
-                                            </a>
-                                            </li>
-
-
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('deleted.users') }}" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Deleted Members</span>
-
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('withdrawals.requests') }}"
-                                                    class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Withdrawal Requests</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu @if (request()->is('withdrawals/analytics*')) menu-item-active @endif" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('withdrawals.analytics') }}"
-                                                    class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Withdrawal Analytics</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('account.topups.index') }}"
-                                                    class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Account Topup</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu @if (request()->is('account/top-ups/analytics*')) menu-item-active @endif" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('account.topups.analytics') }}"
-                                                    class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">TopUp Analytics</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('users.roi.monitoring') }}"
-                                                    class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text"> ROI Monitoring</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu @if(request()->is('users/incentive-wallet*')) menu-item-active @endif" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('admin.incentive.wallet') }}"
-                                                    class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Incentive Wallet</span>
-                                                </a>
-                                            </li>
-                                            <li class="menu-item menu-item-submenu @if(request()->is('users/change-parent*')) menu-item-active @endif" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('admin.change.parent') }}"
-                                                    class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Change Parent</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-
-                                </li>
-
-                                <li class="menu-section">
-                                    <h4 class="menu-text">Reports</h4>
-                                    <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
-                                </li>
-                                <li class="menu-item menu-item-submenu @if (request()->is('report*')) menu-item-open @endif ""
-                                    aria-haspopup="true" data-menu-toggle="hover">
-                                    <a href="javascript:;" class="menu-link menu-toggle">
-                                        <span class="svg-icon menu-icon">
-                                            <!--begin::Svg Icon | path:assets/media/svg/icons/Design/PenAndRuller.svg-->
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                                viewBox="0 0 24 24" version="1.1">
-                                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                    <rect x="0" y="0" width="24" height="24" />
-                                                    <path
-                                                        d="M4.00246329,12.2004927 L13,14 L13,4.06189375 C16.9463116,4.55399184 20,7.92038235 20,12 C20,16.418278 16.418278,20 12,20 C7.64874861,20 4.10886412,16.5261253 4.00246329,12.2004927 Z"
-                                                        fill="#000000" opacity="0.3" />
-                                                    <path
-                                                        d="M3.0603968,10.0120794 C3.54712466,6.05992157 6.91622084,3 11,3 L11,11.6 L3.0603968,10.0120794 Z"
-                                                        fill="#000000" />
-                                                </g>
-                                            </svg>
-                                        </span>
-                                        <span class="menu-text">Reports</span>
-                                        <i class="menu-arrow"></i>
-                                    </a>
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('report.genealogy.tree') }}"
-                                                    class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Genealogy Tree Report </span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('report.genealogy.tree.view') }}"
-                                                    class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Genealogy Tree View </span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-                                
-                            @endrole
-
-                            @role('admin')
-                                <li class="menu-section">
-                                    <h4 class="menu-text">Rental Details</h4>
-                                    <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
-                                </li>
-                                <li class="menu-item menu-item-submenu @if (request()->is('rental*')) menu-item-open @endif ""
-                                    aria-haspopup="true" data-menu-toggle="hover">
-                                    <a href="javascript:;" class="menu-link menu-toggle">
-                                        <span class="svg-icon menu-icon">
-                                            <!--begin::Svg Icon | path:assets/media/svg/icons/Design/PenAndRuller.svg-->
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                                viewBox="0 0 24 24" version="1.1">
-                                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                    <rect x="0" y="0" width="24" height="24" />
-                                                    <path
-                                                        d="M7.825,10.225 C7.2,9.475 6.85,8.4 6.85,7.375 C6.85,4.55 9.15,2.05 12.35,2.05 C15.45,2.05 17.8,4.45 17.875,7.425 L15.075,7.425 C15.075,5.85 13.975,4.6 12.35,4.6 C10.75,4.6 9.6,5.775 9.6,7.375 C9.6,8.26626781 10.0162926,9.06146809 10.6676674,9.58392078 C10.7130614,9.62033024 10.7238389,12.2340233 10.7,17.425 L17.5444449,17.425 C17.8205873,17.425 18.0444449,17.6488576 18.0444449,17.925 C18.0444449,17.9869142 18.0329457,18.0482899 18.0105321,18.1060047 L17.3988817,19.6810047 C17.3242018,19.8733052 17.1390868,20 16.9327944,20 L6.3,20 C6.02385763,20 5.8,19.7761424 5.8,19.5 L5.8,17.925 C5.8,17.6488576 6.02385763,17.425 6.3,17.425 L7.925,17.425 L7.925,12.475 L7.825,10.225 Z"
-                                                        fill="#000000" />
-                                                    <path
-                                                        d="M4.3618034,11.2763932 L4.8618034,10.2763932 C4.94649941,10.1070012 5.11963097,10 5.30901699,10 L15.190983,10 C15.4671254,10 15.690983,10.2238576 15.690983,10.5 C15.690983,10.5776225 15.6729105,10.6541791 15.6381966,10.7236068 L15.1381966,11.7236068 C15.0535006,11.8929988 14.880369,12 14.690983,12 L4.80901699,12 C4.53287462,12 4.30901699,11.7761424 4.30901699,11.5 C4.30901699,11.4223775 4.32708954,11.3458209 4.3618034,11.2763932 Z"
-                                                        fill="#000000" opacity="0.3" />
-                                                </g>
-                                            </svg>
-                                        </span>
-                                        <span class="menu-text">Rental</span>
-                                        <i class="menu-arrow"></i>
-                                    </a>
-
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('roi.payments') }}" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Roi Payments</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="menu-submenu">
-                                        <i class="menu-arrow"></i>
-                                        <ul class="menu-subnav">
-                                            <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                                data-menu-toggle="hover">
-                                                <a href="{{ route('rental.percentage') }}" class="menu-link menu-toggle">
-                                                    <i class="menu-bullet menu-bullet-dot">
-                                                        <span></span>
-                                                    </i>
-                                                    <span class="menu-text">Set Rental Percentage</span>
-
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-
-                                </li>
-                            @endrole
-                            <li class="menu-item menu-item-submenu @if (request()->is('rental*')) menu-item-open @endif ""
+                            {{-- Reports --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('report*') || request()->is('genealogy/saving-tree*')) menu-item-open @endif"
                                 aria-haspopup="true" data-menu-toggle="hover">
                                 <a href="javascript:;" class="menu-link menu-toggle">
                                     <span class="svg-icon menu-icon">
-                                        <!--begin::Svg Icon | path:assets/media/svg/icons/Design/PenAndRuller.svg-->
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                            viewBox="0 0 24 24" version="1.1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <rect x="0" y="0" width="24" height="24" />
-                                                <circle fill="#000000" opacity="0.3" cx="12" cy="12"
-                                                    r="10" />
-                                                <path
-                                                    d="M14.5,11 C15.0522847,11 15.5,11.4477153 15.5,12 L15.5,15 C15.5,15.5522847 15.0522847,16 14.5,16 L9.5,16 C8.94771525,16 8.5,15.5522847 8.5,15 L8.5,12 C8.5,11.4477153 8.94771525,11 9.5,11 L9.5,10.5 C9.5,9.11928813 10.6192881,8 12,8 C13.3807119,8 14.5,9.11928813 14.5,10.5 L14.5,11 Z M12,9 C11.1715729,9 10.5,9.67157288 10.5,10.5 L10.5,11 L13.5,11 L13.5,10.5 C13.5,9.67157288 12.8284271,9 12,9 Z"
-                                                    fill="#000000" />
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <path d="M5.857,2 L13.736,2 C14.091,2 14.434,2.126 14.705,2.355 L19.469,6.384 C19.806,6.669 20,7.088 20,7.529 L20,19.083 C20,20.874 19.980,21 18.143,21 L5.857,21 C4.020,21 4,20.874 4,19.083 L4,3.917 C4,2.126 4.020,2 5.857,2 Z" fill="#000000" opacity="0.3"/>
+                                                <rect fill="#000000" x="7" y="10" width="2" height="7" rx="1"/>
+                                                <rect fill="#000000" x="11" y="12" width="2" height="5" rx="1"/>
+                                                <rect fill="#000000" x="15" y="8" width="2" height="9" rx="1"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">Reports</span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('report/genealogy') || (request()->is('report/genealogy/*') && !request()->is('report/genealogy/tree*'))) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('report.genealogy.tree') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Genealogy Tree Report</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('report/genealogy/tree*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('report.genealogy.tree.view') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Genealogy Tree View</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('genealogy/saving-tree*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('genealogy.saving.tree') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Saving Account Tree</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            {{-- Settings --}}
+                            <li class="menu-item menu-item-submenu @if(request()->is('setting*') || request()->is('roi-settings*') || request()->is('reward-settings*') || request()->is('saving-accounts/commission-config*') || request()->is('admin/digital-cards/settings*')) menu-item-open @endif"
+                                aria-haspopup="true" data-menu-toggle="hover">
+                                <a href="javascript:;" class="menu-link menu-toggle">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <path d="M7,3 L17,3 C19.209139,3 21,4.790861 21,7 C21,9.209139 19.209139,11 17,11 L7,11 C4.790861,11 3,9.209139 3,7 C3,4.790861 4.790861,3 7,3 Z M7,9 C8.1045695,9 9,8.1045695 9,7 C9,5.8954305 8.1045695,5 7,5 C5.8954305,5 5,5.8954305 5,7 C5,8.1045695 5.8954305,9 7,9 Z" fill="#000000"/>
+                                                <path d="M7,13 L17,13 C19.209139,13 21,14.790861 21,17 C21,19.209139 19.209139,21 17,21 L7,21 C4.790861,21 3,19.209139 3,17 C3,14.790861 4.790861,13 7,13 Z M17,19 C18.1045695,19 19,18.1045695 19,17 C19,15.8954305 18.1045695,15 17,15 C15.8954305,15 15,15.8954305 15,17 C15,18.1045695 15.8954305,19 17,19 Z" fill="#000000" opacity="0.3"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span class="menu-text">Settings</span>
+                                    <i class="menu-arrow"></i>
+                                </a>
+                                <div class="menu-submenu">
+                                    <i class="menu-arrow"></i>
+                                    <ul class="menu-subnav">
+                                        <li class="menu-item @if(request()->is('setting/basic*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('setting.basic') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Basic Settings</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('roi-settings') || request()->is('roi-settings/update*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.roi-settings.index') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">ROI Settings</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('roi-settings/user-plans*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.roi-settings.user-plans') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">User Plans (Gold/Silver)</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('roi-settings/commission-bonuses*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.roi-settings.commission-bonuses') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Commission &amp; Bonuses</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('roi-settings/profit-share-settings*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.roi-settings.profit-share-settings') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Profit Share Settings</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('reward-settings*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.reward-settings.index') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Reward Settings</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('setting/saving-account*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('setting.saving') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Saving Account Settings</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('saving-accounts/commission-config*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.saving.commission-config') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Instalment Commission Rates</span></a>
+                                        </li>
+                                        <li class="menu-item @if(request()->is('admin/digital-cards/settings*')) menu-item-active @endif" aria-haspopup="true">
+                                            <a href="{{ route('admin.cards.settings') }}" class="menu-link"><i class="menu-bullet menu-bullet-dot"><span></span></i><span class="menu-text">Card Settings</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            @endif {{-- $isAdmin --}}
+
+                            {{-- ═════════════════════════ LOGOUT ═════════════════════════ --}}
+                            <li class="menu-section">
+                                <h4 class="menu-text">Session</h4>
+                                <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
+                            </li>
+                            <li class="menu-item" aria-haspopup="true">
+                                <a href="#" class="menu-link" onclick="event.preventDefault(); document.getElementById('sidebar-logout-form').submit();">
+                                    <span class="svg-icon menu-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <rect x="0" y="0" width="24" height="24"/>
+                                                <path d="M14.0069431,7.00607258 C13.4546584,7.00607258 13.0069431,6.55855153 13.0069431,6.00650634 C13.0069431,5.45446114 13.4546584,5.00694009 14.0069431,5.00694009 L15.0069431,5.00694009 C17.2160821,5.00694009 19.0069431,6.7970243 19.0069431,9.00520507 L19.0069431,15.001735 C19.0069431,17.2099158 17.2160821,19 15.0069431,19 L3.00694311,19 C0.797804106,19 -0.993056895,17.2099158 -0.993056895,15.001735 L-0.993056895,8.99826498 C-0.993056895,6.7900842 0.797804106,5 3.00694311,5 L4.00694793,5 C4.55923268,5 5.00694793,5.44752105 5.00694793,5.99956624 C5.00694793,6.55161144 4.55923268,6.99913249 4.00694793,6.99913249 L3.00694311,6.99913249 C1.90237361,6.99913249 1.00694311,7.89417459 1.00694311,8.99826498 L1.00694311,15.001735 C1.00694311,16.1058254 1.90237361,17.0008675 3.00694311,17.0008675 L15.0069431,17.0008675 C16.1115126,17.0008675 17.0069431,16.1058254 17.0069431,15.001735 L17.0069431,9.00520507 C17.0069431,7.90111468 16.1115126,7.00607258 15.0069431,7.00607258 L14.0069431,7.00607258 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" transform="translate(9.006943, 12.000000) scale(-1, 1) rotate(-90.000000) translate(-9.006943, -12.000000) "/>
+                                                <rect fill="#000000" opacity="0.3" transform="translate(14.000000, 12.000000) rotate(-270.000000) translate(-14.000000, -12.000000) " x="13" y="6" width="2" height="12" rx="1"/>
+                                                <path d="M21.7928932,9.79289322 C22.1834175,9.40236893 22.8165825,9.40236893 23.2071068,9.79289322 C23.5976311,10.1834175 23.5976311,10.8165825 23.2071068,11.2071068 L20.2071068,14.2071068 C19.8165825,14.5976311 19.1834175,14.5976311 18.7928932,14.2071068 L15.7928932,11.2071068 C15.4023689,10.8165825 15.4023689,10.1834175 15.7928932,9.79289322 C16.1834175,9.40236893 16.8165825,9.40236893 17.2071068,9.79289322 L19.5,12.0857864 L21.7928932,9.79289322 Z" fill="#000000" fill-rule="nonzero" transform="translate(19.500000, 12.000000) rotate(-90.000000) translate(-19.500000, -12.000000) "/>
                                             </g>
                                         </svg>
                                     </span>
                                     <span class="menu-text">Logout</span>
-                                    <i class="menu-arrow"></i>
                                 </a>
-                                <div class="menu-submenu">
-                                    <i class="menu-arrow"></i>
-                                    <ul class="menu-subnav">
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="#"
-                                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                                                class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Logout</span>
-                                            </a>
-                                        </li>
-                                        <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                            style="display: none;">
-                                            @csrf
-                                        </form>
-                                    </ul>
-                                </div>
+                                <form id="sidebar-logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    @csrf
+                                </form>
                             </li>
-
-                            @role('admin')
-                            <li class="menu-section">
-                                <h4 class="menu-text">System Settings</h4>
-                                <i class="menu-icon ki ki-bold-more-hor icon-md"></i>
-                            </li>
-                            <li class="menu-item menu-item-submenu @if (request()->is('settings*')) menu-item-open @endif ""
-                                aria-haspopup="true" data-menu-toggle="hover">
-                                <a href="javascript:;" class="menu-link menu-toggle">
-                                    <span class="svg-icon menu-icon">
-                                        <!--begin::Svg Icon | path:assets/media/svg/icons/Design/PenAndRuller.svg-->
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
-                                            viewBox="0 0 24 24" version="1.1">
-                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <rect x="0" y="0" width="24" height="24"/>
-                                                <path d="M18.6225,9.75 L18.75,9.75 C19.9926407,9.75 21,10.7573593 21,12 C21,13.2426407 19.9926407,14.25 18.75,14.25 L18.6854912,14.249994 C18.4911876,14.250769 18.3158978,14.366855 18.2393549,14.5454486 C18.1556809,14.7351461 18.1942911,14.948087 18.3278301,15.0846699 L18.372535,15.129375 C18.7950334,15.5514036 19.03243,16.1240792 19.03243,16.72125 C19.03243,17.3184208 18.7950334,17.8910964 18.373125,18.312535 C17.9510964,18.7350334 17.3784208,18.97243 16.78125,18.97243 C16.1840792,18.97243 15.6114036,18.7350334 15.1896699,18.3128301 L15.1505513,18.2736469 C15.008087,18.1342911 14.7951461,18.0956809 14.6054486,18.1793549 C14.426855,18.2558978 14.310769,18.4311876 14.31,18.6225 L14.31,18.75 C14.31,19.9926407 13.3026407,21 12.06,21 C10.8173593,21 9.81,19.9926407 9.81,18.75 C9.80552409,18.4999185 9.67898539,18.3229986 9.44717599,18.2361469 C9.26485393,18.1556809 9.05191298,18.1942911 8.91533009,18.3278301 L8.870625,18.372535 C8.44859642,18.7950334 7.87592081,19.03243 7.27875,19.03243 C6.68157919,19.03243 6.10890358,18.7950334 5.68746499,18.373125 C5.26496665,17.9510964 5.02757002,17.3784208 5.02757002,16.78125 C5.02757002,16.1840792 5.26496665,15.6114036 5.68716991,15.1896699 L5.72635306,15.1505513 C5.86570889,15.008087 5.90431906,14.7951461 5.82064513,14.6054486 C5.74410223,14.426855 5.56881236,14.310769 5.3775,14.31 L5.25,14.31 C4.00735931,14.31 3,13.3026407 3,12.06 C3,10.8173593 4.00735931,9.81 5.25,9.81 C5.50008154,9.80552409 5.67700139,9.67898539 5.76385306,9.44717599 C5.84431906,9.26485393 5.80570889,9.05191298 5.67216991,8.91533009 L5.62746499,8.870625 C5.20496665,8.44859642 4.96757002,7.87592081 4.96757002,7.27875 C4.96757002,6.68157919 5.20496665,6.10890358 5.626875,5.68746499 C6.04890358,5.26496665 6.62157919,5.02757002 7.21875,5.02757002 C7.81592081,5.02757002 8.38859642,5.26496665 8.81033009,5.68716991 L8.84944872,5.72635306 C8.99191298,5.86570889 9.20485393,5.90431906 9.38717599,5.82385306 L9.49484664,5.80114977 C9.65041313,5.71688974 9.7492905,5.55401473 9.75,5.3775 L9.75,5.25 C9.75,4.00735931 10.7573593,3 12,3 C13.2426407,3 14.25,4.00735931 14.25,5.25 L14.249994,5.31450877 C14.250769,5.50881236 14.366855,5.68410223 14.552824,5.76385306 C14.7351461,5.84431906 14.948087,5.80570889 15.0846699,5.67216991 L15.129375,5.62746499 C15.5514036,5.20496665 16.1240792,4.96757002 16.72125,4.96757002 C17.3184208,4.96757002 17.8910964,5.20496665 18.312535,5.626875 C18.7350334,6.04890358 18.97243,6.62157919 18.97243,7.21875 C18.97243,7.81592081 18.7350334,8.38859642 18.3128301,8.81033009 L18.2736469,8.84944872 C18.1342911,8.99191298 18.0956809,9.20485393 18.1761469,9.38717599 L18.1988502,9.49484664 C18.2831103,9.65041313 18.4459853,9.7492905 18.6225,9.75 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"/>
-                                                <path d="M12,15 C13.6568542,15 15,13.6568542 15,12 C15,10.3431458 13.6568542,9 12,9 C10.3431458,9 9,10.3431458 9,12 C9,13.6568542 10.3431458,15 12,15 Z" fill="#000000"/>
-                                            </g>
-                                        </svg>
-                                    </span>
-                                    <span class="menu-text">Setting</span>
-                                    <i class="menu-arrow"></i>
-                                </a>
-
-                                <div class="menu-submenu">
-                                    <i class="menu-arrow"></i>
-                                    <ul class="menu-subnav">
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('setting.basic') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Basic Setting</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div> 
-
-                                 <div class="menu-submenu">
-                                    <i class="menu-arrow"></i>
-                                    <ul class="menu-subnav">
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.pending-rewards.index') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Pending Rewards</span>
-                                            </a>
-                                        </li>
-
-
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.reward-settings.index') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Reward Settings</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.reward-review.index') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Reward Review (Temp)</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.roi-settings.index') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">ROI Settings</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu @if(request()->routeIs('setting.saving')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('setting.saving') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Saving Account Settings</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu @if(request()->routeIs('admin.cards.settings*')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.cards.settings') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Card Settings</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu @if(request()->is('saving-accounts*') && !request()->is('saving-accounts/enrollments*')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.saving.index') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Saving Accounts</span>
-                                            </a>
-                                        </li>
-
-                                        @php($pendingEnrollments = \App\Models\User::where('saving_enrolled',true)->where('account_type','!=','saving')->where('saving_enrollment_activated',false)->count())
-                                        <li class="menu-item menu-item-submenu @if(request()->is('saving-accounts/enrollments*')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.saving.enrollments') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">
-                                                    Saving Enrollments
-                                                    @if($pendingEnrollments > 0)
-                                                        <span class="ml-1 badge badge-pill badge-warning">{{ $pendingEnrollments }}</span>
-                                                    @endif
-                                                </span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu @if(request()->is('saving-roi-report*') && auth()->user()->hasRole('admin')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.saving.roi.report') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Saving ROI Report</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu @if(request()->is('admin/digital-cards*') && !request()->routeIs('admin.cards.settings*')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.cards.index') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">
-                                                    Digital Cards
-                                                    @if(($cardsPendingReview = \App\Models\DigitalCard::where('status', 'reserved')->count()) > 0)
-                                                        <span class="ml-1 badge badge-pill badge-warning">{{ $cardsPendingReview }}</span>
-                                                    @endif
-                                                </span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu @if(request()->is('users/index') && request('tab') === 'saving') menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ url('users/index?tab=saving') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Saving Members List</span>
-                                            </a>
-                                        </li>
-
-                                        @php($pendingInstalmentCommissions = \App\Models\SavingInstalmentCommission::where('status','pending')->count())
-                                        <li class="menu-item menu-item-submenu @if(request()->is('saving-accounts/instalment-commissions*')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.saving.instalment-commissions') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">
-                                                    Instalment Commissions
-                                                    @if($pendingInstalmentCommissions > 0)
-                                                        <span class="ml-1 badge badge-pill badge-warning">{{ $pendingInstalmentCommissions }}</span>
-                                                    @endif
-                                                </span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu @if(request()->is('admin/saving-accounts/adjust-plan*')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.saving.adjust-plan') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Adjust Instalment Plan</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu @if(request()->is('saving-accounts/commission-config*')) menu-item-active @endif" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.saving.commission-config') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot"><span></span></i>
-                                                <span class="menu-text">Instalment Commission Rates</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.roi-settings.user-plans') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">User Plans (Gold/Silver)</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.roi-settings.commission-bonuses') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Commission & Bonuses</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.roi-settings.profit-share-settings') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">Profit Share Settings</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="menu-item menu-item-submenu" aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="{{ route('admin.roi-reversal.index') }}" class="menu-link menu-toggle">
-                                                <i class="menu-bullet menu-bullet-dot">
-                                                    <span></span>
-                                                </i>
-                                                <span class="menu-text">ROI Reversal</span>
-                                            </a>
-                                        </li>
-
-
-                                    </ul>
-                                    
-                                </div> 
-
-                               
-
-                            </li>
-                        @endrole
-
                         </ul>
                         <!--end::Menu Nav-->
                     </div>
@@ -1405,6 +935,8 @@
 
                                 <div class="flex-wrap mb-4 d-flex align-items-center" style="gap:0.5rem;">
                                     <!-- Hidden links for JS reference -->
+                                    {{-- Staff accounts (office admin / operator) have no referral link --}}
+                                    @if(Auth::user()->reflink && !$isOperatorOnly)
                                     <span id="refLink"
                                         style="display: none;"> {{ url('/register/ref/' . Auth::user()->reflink->link) }}</span>
                                     @if(Auth::user()->canSeeSavingLink())
@@ -1416,8 +948,9 @@
                                     <button onclick="copyToClipboard()" class="btn btn-sm rounded-0 btn-info">
                                         Copy Referral Link
                                     </button>
+                                    @endif
 
-                                    @if(Auth::user()->canSeeSavingLink())
+                                    @if(Auth::user()->reflink && !$isOperatorOnly && Auth::user()->canSeeSavingLink())
                                     <!-- Savings Program referral link -->
                                     <button onclick="copySavingLinkToClipboard()" class="btn btn-sm rounded-0 btn-success">
                                         Copy Savings Program Link
@@ -2357,12 +1890,14 @@
                     <div class="container-fluid align-items-center justify-content-between ">
                         <!--begin::Info-->
                         <div class="flex-wrap mr-2 align-items-center d-flex" style="gap:1rem;">
+                            @if(Auth::user()->reflink && !$isOperatorOnly)
                             <!-- Standard referral link -->
                             <p class="mt-2 mb-2 ml-5 text-dark font-weight-bold" style="cursor:pointer;" onclick="copyToClipboard()" title="Copy standard referral link">
                                 {{ url('/register/ref/' . Auth::user()->reflink->link) }}
                                 <i class="la la-copy"></i>
                             </p>
-                            @if(Auth::user()->canSeeSavingLink())
+                            @endif
+                            @if(Auth::user()->reflink && !$isOperatorOnly && Auth::user()->canSeeSavingLink())
                             <!-- Savings Program referral link -->
                             <p class="mt-2 mb-2 text-success font-weight-bold" style="cursor:pointer;" onclick="copySavingLinkToClipboard()" title="Copy Savings Program link">
                                 {{ url('/register/ref/' . Auth::user()->reflink->link . '?type=saving') }}
@@ -2456,6 +1991,7 @@
             <!--begin::Nav-->
             <div class="p-0 navi navi-spacer-x-0">
                 <!--begin::Item-->
+                @if(!$isOperatorOnly)
                 <a href="{{ route('profile.edit') }}" class="navi-item">
                     <div class="navi-link">
                         <div class="mr-3 symbol symbol-40 bg-light">
@@ -2486,6 +2022,7 @@
                         </div>
                     </div>
                 </a>
+                @endif
                 <!--end:Item-->
                 <!--begin::Item-->
                 <a href="custom/apps/user/profile-3.html" class="navi-item">

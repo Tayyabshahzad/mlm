@@ -106,6 +106,22 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         return $this->hasMany(\App\Models\SavingInstalment::class);
     }
 
+    /**
+     * Staff-only Data Entry Operator: has the 'operator' role and no member,
+     * admin or office-admin role. These accounts may only use Payment Sheets.
+     */
+    public function isDataEntryOperatorOnly(): bool
+    {
+        return $this->hasRole('operator') && !$this->hasAnyRole(['admin', 'member', 'office-admin']);
+    }
+
+    /** Staff account (created from Staff Roles) that no longer holds any role that grants access. */
+    public function isStaffWithoutAccess(): bool
+    {
+        return (bool) $this->is_staff_account
+            && !$this->hasAnyRole(['admin', 'member', 'office-admin', 'operator']);
+    }
+
     public function isSavingAccount(): bool
     {
         return $this->account_type === 'saving';

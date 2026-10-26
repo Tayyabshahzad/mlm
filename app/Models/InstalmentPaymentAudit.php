@@ -18,6 +18,12 @@ class InstalmentPaymentAudit extends Model
     public const BLOCKED           = 'verification_blocked'; // duplicate reference, amount mismatch, …
     public const ROLE_ASSIGNED     = 'office_admin_assigned';
     public const ROLE_REMOVED      = 'office_admin_removed';
+    public const SHEET_UPLOADED    = 'payment_sheet_uploaded';
+    public const SHEET_REJECTED    = 'payment_sheet_rejected';
+    public const STAFF_CREATED     = 'staff_account_created';
+    public const STAFF_ACTIVATED   = 'staff_account_activated';
+    public const STAFF_DEACTIVATED = 'staff_account_deactivated';
+    public const STAFF_PASSWORD    = 'staff_password_changed';
 
     public const LABELS = [
         self::VERIFIED      => 'Bank Payment Verified',
@@ -25,8 +31,14 @@ class InstalmentPaymentAudit extends Model
         self::REJECTED      => 'Rejected — Not Received in Bank',
         self::REVERSED      => 'Reconciliation Reversed',
         self::BLOCKED       => 'Verification Blocked',
-        self::ROLE_ASSIGNED => 'Office Admin Role Assigned',
-        self::ROLE_REMOVED  => 'Office Admin Role Removed',
+        self::ROLE_ASSIGNED => 'Staff Role Assigned',
+        self::ROLE_REMOVED  => 'Staff Role Removed',
+        self::SHEET_UPLOADED => 'Payment Sheet Uploaded',
+        self::SHEET_REJECTED => 'Payment Sheet Rejected',
+        self::STAFF_CREATED     => 'Staff Account Created',
+        self::STAFF_ACTIVATED   => 'Staff Account Activated',
+        self::STAFF_DEACTIVATED => 'Staff Account Deactivated',
+        self::STAFF_PASSWORD    => 'Staff Password Changed',
     ];
 
     protected $fillable = [

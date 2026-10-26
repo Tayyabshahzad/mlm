@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             \App\Http\Middleware\AdminImpersonation::class,
+            // Before CheckUserStatus: inactive / role-less staff are logged out, not sent to the member "waiting" page
+            \App\Http\Middleware\RestrictDataEntryOperator::class,
             \App\Http\Middleware\CheckUserStatus::class,
             \App\Http\Middleware\CheckBlockedUser::class,
            // \App\Http\Middleware\CheckRole::class,

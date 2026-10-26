@@ -153,6 +153,18 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class, 'role:admin|offic
         Route::post('instalment/{instalment}/reject', 'reject')->middleware('throttle:30,1')->name('reconciliation.reject');
     });
 
+// Payment Sheet upload — admins and data entry operators
+Route::middleware(['auth', 'verified', CheckUserStatus::class, 'role:admin|operator'])
+    ->prefix('payment-sheets')
+    ->controller(\App\Http\Controllers\Admin\PaymentSheetController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('payment-sheets.index');
+        Route::get('/template', 'template')->name('payment-sheets.template');
+        Route::post('/', 'upload')->middleware('throttle:10,1')->name('payment-sheets.upload');
+        Route::get('/{batch}', 'show')->name('payment-sheets.show');
+        Route::get('/{batch}/download', 'download')->name('payment-sheets.download');
+    });
+
 // Admin Routes
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     // KYC admin actions
@@ -202,7 +214,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         Route::delete('delete', 'delete')->name('product.delete');
     });
     Route::prefix('report')->controller(ReportController::class)->group(function () {
-        Route::get('genealogy/{id?}', 'genealogyTree')->name('report.genealogy.tree');
+        // {id} must be numeric, otherwise "genealogy/tree" (Tree View) was swallowed by this route
+        Route::get('genealogy/{id?}', 'genealogyTree')->whereNumber('id')->name('report.genealogy.tree');
         Route::get('genealogy/download/{id}', 'downloadTeamHierarchy')->name('report.genealogy.tree.download');
         Route::get('genealogy/tree', 'treeView')->name('report.genealogy.tree.view');
     }); 
@@ -332,6 +345,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::prefix('reconciliation/office-admins')->controller(\App\Http\Controllers\Admin\OfficeAdminController::class)->group(function () {
         Route::get('/', 'index')->name('admin.office-admins.index');
         Route::post('/', 'assign')->name('admin.office-admins.assign');
+        Route::post('/create-account', 'createAccount')->name('admin.office-admins.create');
+        Route::post('/{user}/toggle-active', 'toggleActive')->name('admin.office-admins.toggle');
+        Route::post('/{user}/password', 'changePassword')->name('admin.office-admins.password');
         Route::delete('/{user}', 'remove')->name('admin.office-admins.remove');
     });
 

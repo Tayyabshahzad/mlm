@@ -270,6 +270,16 @@ class FrontEndController extends Controller
 
         $user = Auth::user();
 
+        // ── Staff-only accounts (no member/admin role) go straight to their tool ──
+        if (!$user->hasAnyRole(['admin', 'member'])) {
+            if ($user->hasRole('office-admin')) {
+                return redirect()->route('reconciliation.index');
+            }
+            if ($user->isDataEntryOperatorOnly()) {
+                return app(\App\Http\Controllers\Admin\PaymentSheetController::class)->dashboard();
+            }
+        }
+
         // ── Dedicated saving-account users get their own dashboard ───────────
         if ($user->account_type === 'saving') {
             return $this->savingDashboard($user, $accountService);

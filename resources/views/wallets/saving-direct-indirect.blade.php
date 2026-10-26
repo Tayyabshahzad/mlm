@@ -1,6 +1,51 @@
 @extends('demo.layout.app')
 @section('title', 'Savings Program — Direct / Indirect Commissions')
 
+@section('custom_css')
+<style>
+    /* Violet wallet theme (theme "info" violet #8950FC) — this page only */
+    .wv-card { color: #fff; border: 0; }
+    .wv-card--direct   { background: linear-gradient(135deg, #8950fc 0%, #6f3fe6 100%); }
+    .wv-card--indirect { background: linear-gradient(135deg, #a47bff 0%, #8950fc 100%); }
+    .wv-card--balance  { background: #eee5ff; color: #5b2bc9; border: 1px solid #d9c6ff; }
+    .wv-card--balance .wv-muted { color: #7a52d6; }
+
+    .wv-option {
+        display: flex; align-items: center; width: 100%; text-align: left;
+        background: #faf7ff; border: 2px solid #c9adff; border-radius: 12px;
+        padding: 1rem 1.25rem; cursor: pointer;
+        transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+    }
+    .wv-option:hover { background: #f3ecff; border-color: #8950fc; box-shadow: 0 6px 18px rgba(137, 80, 252, .18); }
+    .wv-option:focus { outline: none; }
+    .wv-option:focus-visible { box-shadow: 0 0 0 .25rem rgba(137, 80, 252, .35); border-color: #8950fc; }
+    .wv-option:active, .wv-option.is-selected { background: #e9dcff; border-color: #6f3fe6; transform: scale(.995); }
+    .wv-option[disabled] { cursor: not-allowed; opacity: .55; box-shadow: none; transform: none; background: #faf7ff; border-color: #e2d6ff; }
+
+    .wv-option__icon {
+        flex: 0 0 48px; height: 48px; border-radius: 50%; margin-right: 1rem;
+        display: flex; align-items: center; justify-content: center;
+        background: #8950fc; color: #fff; font-size: 1.5rem;
+    }
+    .wv-option__title { font-weight: 700; color: #3f2a7a; font-size: 1.1rem; }
+    .wv-chip {
+        display: inline-block; padding: .2rem .6rem; border-radius: 20px; font-size: .8rem; font-weight: 600;
+        background: #eee5ff; color: #6f3fe6; margin: .25rem .35rem 0 0;
+    }
+    .wv-option__amount { margin-left: auto; text-align: right; padding-left: 1rem; }
+    .wv-option__amount strong { display: block; color: #5b2bc9; font-size: 1.35rem; }
+
+    .wv-btn { background: #8950fc; border-color: #8950fc; color: #fff; }
+    .wv-btn:hover, .wv-btn:focus { background: #7337ee; border-color: #7337ee; color: #fff; }
+    .wv-btn:active { background: #5f2bd4 !important; border-color: #5f2bd4 !important; }
+    .wv-btn:focus-visible { box-shadow: 0 0 0 .2rem rgba(137, 80, 252, .4); }
+
+    #savingCommissionTransferModal .modal-header { background: #eee5ff; border-bottom-color: #d9c6ff; }
+    #savingCommissionTransferModal .modal-title { color: #4b23b5; }
+    #savingCommissionTransferModal .form-control:focus { border-color: #8950fc; box-shadow: 0 0 0 .2rem rgba(137, 80, 252, .2); background-color: #fff; }
+</style>
+@endsection
+
 @section('content')
 <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
 
@@ -53,41 +98,54 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-3 mb-3">
-                    <div class="card card-custom bg-success text-white h-100">
+                    <div class="card card-custom wv-card wv-card--direct h-100">
                         <div class="card-body py-4 text-center">
                             <div style="font-size:1.4rem;font-weight:700;">${{ number_format($totalDirect, 2) }}</div>
-                            <div class="font-size-sm mt-1">Direct (Level 1)</div>
+                            <div class="font-size-sm mt-1">Saving Direct (Level 1)</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-3 mb-3">
-                    <div class="card card-custom bg-info text-white h-100">
+                    <div class="card card-custom wv-card wv-card--indirect h-100">
                         <div class="card-body py-4 text-center">
                             <div style="font-size:1.4rem;font-weight:700;">${{ number_format($totalIndirect, 2) }}</div>
-                            <div class="font-size-sm mt-1">Indirect (Levels 2–7)</div>
+                            <div class="font-size-sm mt-1">Saving Indirect (Levels 2–7)</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-3 mb-3">
-                    <div class="card card-custom bg-warning text-white h-100">
+                    <div class="card card-custom wv-card wv-card--balance h-100">
                         <div class="card-body py-4 text-center">
                             <div style="font-size:1.4rem;font-weight:700;">${{ number_format($currentBalance, 2) }}</div>
-                            <div class="font-size-sm mt-1">Available Balance</div>
+                            <div class="font-size-sm mt-1 wv-muted">Available to Transfer</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Transfer Button --}}
-            @if($currentBalance > 0)
+            {{-- Transfer option: Saving Direct + Indirect → Online Wallet --}}
             <div class="mb-6">
-                <button type="button" class="btn btn-warning font-weight-bold"
-                    data-toggle="modal" data-target="#savingCommissionTransferModal">
-                    <i class="la la-exchange-alt"></i> Transfer to Online Wallet
+                <button type="button" class="wv-option" data-toggle="modal" data-target="#savingCommissionTransferModal"
+                        @if($currentBalance <= 0) disabled @endif>
+                    <span class="wv-option__icon"><i class="la la-exchange-alt"></i></span>
+                    <span>
+                        <span class="wv-option__title d-block">Transfer to Online Wallet</span>
+                        <span class="wv-chip">Saving Direct ${{ number_format($totalDirect, 2) }}</span>
+                        <span class="wv-chip">Saving Indirect ${{ number_format($totalIndirect, 2) }}</span>
+                        <span class="d-block text-muted font-size-sm mt-1">
+                            @if($currentBalance > 0)
+                                Minimum transfer: ${{ number_format($setting->saving_commission_min_transfer ?? 10.70, 2) }}
+                            @else
+                                Nothing available to transfer yet.
+                            @endif
+                        </span>
+                    </span>
+                    <span class="wv-option__amount">
+                        <span class="text-muted font-size-sm">Available</span>
+                        <strong>${{ number_format($currentBalance, 2) }}</strong>
+                    </span>
                 </button>
-                <span class="text-muted font-size-sm ml-3">Minimum transfer: ${{ number_format($setting->saving_commission_min_transfer ?? 10.70, 2) }}</span>
             </div>
-            @endif
 
             {{-- Commission Rate Info --}}
             <div class="card card-custom gutter-b">
@@ -161,7 +219,7 @@
             <form action="{{ route('wallet.saving.commission.to.online') }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title font-weight-bold">Transfer Saving Commissions to Online Wallet</h5>
+                    <h5 class="modal-title font-weight-bold"><i class="la la-exchange-alt mr-1"></i> Saving Direct / Indirect → Online Wallet</h5>
                     <button type="button" class="close" data-dismiss="modal"><i class="ki ki-close"></i></button>
                 </div>
                 <div class="modal-body">
@@ -174,7 +232,7 @@
                             step="0.01" required
                             placeholder="Enter amount">
                         <div class="mt-2">
-                            <strong class="text-warning">Available Balance: ${{ number_format($currentBalance, 2) }}</strong><br>
+                            <strong style="color:#6f3fe6;">Available Balance: ${{ number_format($currentBalance, 2) }}</strong><br>
                             <small class="text-muted">Minimum Transfer: ${{ number_format($setting->saving_commission_min_transfer ?? 10.70, 2) }}</small>
                         </div>
                     </div>
@@ -188,7 +246,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning btn-sm font-weight-bold">Confirm Transfer</button>
+                    <button type="submit" class="btn wv-btn btn-sm font-weight-bold">Confirm Transfer</button>
                 </div>
             </form>
         </div>

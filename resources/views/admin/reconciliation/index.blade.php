@@ -14,7 +14,7 @@
                 </ul>
             </div>
             @role('admin')
-                <a href="{{ route('admin.office-admins.index') }}" class="btn btn-light-primary btn-sm font-weight-bold">Manage Office Admins</a>
+                <a href="{{ route('admin.office-admins.index') }}" class="btn btn-light-primary btn-sm font-weight-bold">Manage Staff Roles</a>
             @endrole
         </div>
     </div>
