@@ -65,9 +65,14 @@ it('renders Saving Enrollments with enrolled members listed', function () {
     $admin = viUser();
     $admin->assignRole('admin');
     $enrolled = viUser(['name' => 'Enrolled Person', 'saving_enrolled' => true, 'saving_enrollment_activated' => false]);
+    // An already-activated enrollment (activated_at is stored as a plain string — no model cast)
+    viUser(['name' => 'Activated Person', 'saving_enrolled' => true, 'saving_enrollment_activated' => true,
+        'saving_enrollment_activated_at' => '2026-10-20 14:30:00', 'saving_plan_start_date' => '2026-10-01']);
 
     $this->actingAs($admin)->get(route('admin.saving.enrollments'))
         ->assertOk()
+        ->assertSee('Activated Person')
+        ->assertSee('20 Oct 2026 14:30')
         ->assertSee('Enrolled Person')
         ->assertSee(route('admin.saving.show', $enrolled), false)
         ->assertSee('@ ' . $enrolled->username)

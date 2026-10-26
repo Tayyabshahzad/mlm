@@ -162,7 +162,7 @@
                                         @if($user->saving_enrollment_activated)
                                             <span class="badge badge-light-success">Activated</span>
                                             <div class="text-muted font-size-xs mt-1">
-                                                {{ $user->saving_enrollment_activated_at?->format('d M Y H:i') }}
+                                                {{ $user->saving_enrollment_activated_at ? \Carbon\Carbon::parse($user->saving_enrollment_activated_at)->format('d M Y H:i') : '' }}
                                             </div>
                                         @else
                                             <span class="badge badge-light-warning">Pending</span>
