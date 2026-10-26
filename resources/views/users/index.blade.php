@@ -483,7 +483,7 @@
                     <select id="dueUserId" class="form-control" style="border-radius:8px; border:1.5px solid #d1dbe6; font-size:.875rem; height:38px;">
                         <option value="">— All Members —</option>
                         @foreach($savingUsers as $su)
-                            <option value="{{ $su->id }}">{{ $su->name }} (@{{ $su->username }})</option>
+                            <option value="{{ $su->id }}">{{ $su->name }} ({{ '@' . $su->username }})</option>
                         @endforeach
                     </select>
                 </div>

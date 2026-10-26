@@ -253,7 +253,7 @@
                             <select name="user_id" id="dueUserId" class="form-control">
                                 <option value="">— All Members —</option>
                                 @foreach($savingUsers as $su)
-                                    <option value="{{ $su->id }}">{{ $su->name }} (@{{ $su->username }})</option>
+                                    <option value="{{ $su->id }}">{{ $su->name }} ({{ '@' . $su->username }})</option>
                                 @endforeach
                             </select>
                         </div>

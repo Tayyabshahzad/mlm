@@ -757,7 +757,7 @@
                                     </td>
                                     <td>
                                         <div class="font-weight-bold">{{ $pc->ancestor->name ?? '—' }}</div>
-                                        <div class="text-muted small">@{{ $pc->ancestor->username ?? '' }}</div>
+                                        <div class="text-muted small">{{ '@' . ($pc->ancestor->username ?? '') }}</div>
                                     </td>
                                     <td class="text-center">
                                         <span class="badge badge-{{ $pc->level == 1 ? 'primary' : 'secondary' }}">L{{ $pc->level }}</span>

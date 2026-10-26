@@ -87,7 +87,7 @@
                                     </td> 
                                     <td>
                                         <button type="button" 
-                                            @if(! $teamMember->can_login == 1)
+                                            @if(! $teamMember->can_login == 1 && \Illuminate\Support\Facades\Route::has('genealogy.team.member.status.update'))
                                                 data-toggle="modal"
                                                 data-target="#changeStatus"
                                             @endif
@@ -112,6 +112,8 @@
     <!--end::Entry-->
 </div>
 
+{{-- The status-update route was never implemented; only render this modal if it exists --}}
+@if(\Illuminate\Support\Facades\Route::has('genealogy.team.member.status.update'))
 <div class="modal fade" id="changeStatus" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -140,7 +142,8 @@
             </form>
         </div>
     </div>
-</div> 
+</div>
+@endif
 <div class="modal fade" id="userDetails" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

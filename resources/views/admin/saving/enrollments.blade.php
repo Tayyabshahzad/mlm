@@ -109,8 +109,8 @@
                                 <tr>
                                     <td>
                                         <div>
-                                            <a href="{{ route('users.show', $user) }}" class="font-weight-bolder text-dark-75 d-block">{{ $user->name }}</a>
-                                            <span class="text-muted font-size-sm">@{{ $user->username }} &bull; {{ $user->email }}</span>
+                                            <a href="{{ route('admin.saving.show', $user) }}" class="font-weight-bolder text-dark-75 d-block">{{ $user->name }}</a>
+                                            <span class="text-muted font-size-sm">@ {{ $user->username }} &bull; {{ $user->email }}</span>
                                         </div>
                                     </td>
                                     <td>
