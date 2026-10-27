@@ -58,9 +58,17 @@ class TeamPerformanceController extends Controller
             ? User::select('id', 'name', 'username')->orderBy('name')->get()
             : collect();
 
+        // Income from downline (new + existing members), dated by when it was earned
+        $incomeService = app(\App\Services\DownlineIncomeService::class);
+        $monthIncome   = $incomeService->summary($targetUser, now()->startOfMonth(), now());
+        $periodIncome  = $request->filled('from') || $request->filled('to')
+            ? $incomeService->summary($targetUser, $from, $to)
+            : null;
+
         return view('performance.index', compact(
             'targetUser', 'isSuperAdmin', 'allUsers',
-            'users', 'levelCounts', 'totalCount'
+            'users', 'levelCounts', 'totalCount',
+            'monthIncome', 'periodIncome'
         ));
     }
 }

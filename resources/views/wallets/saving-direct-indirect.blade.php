@@ -123,6 +123,99 @@
                 </div>
             </div>
 
+            {{-- Current month's income: saving commission from ALL downline (new + existing) --}}
+            <div class="card card-custom gutter-b" style="border:1px solid #e2d6ff;">
+                <div class="card-header border-0 py-4 d-flex align-items-center justify-content-between flex-wrap">
+                    <h3 class="card-title font-weight-bolder mb-0" style="color:#4b23b5;">
+                        <i class="fas fa-calendar-check mr-2" style="color:#8950fc;"></i>
+                        Current Month Income — {{ $monthIncome['from']->format('F Y') }}
+                    </h3>
+                    <span class="text-muted font-size-sm">{{ $monthIncome['from']->format('d M') }} – {{ now()->format('d M Y') }} · from new &amp; existing downline</span>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row">
+                        <div class="col-12 col-md-3 mb-3">
+                            <div class="card card-custom wv-card wv-card--direct h-100">
+                                <div class="card-body py-4 text-center">
+                                    <div class="font-size-sm" style="opacity:.85;">This Month</div>
+                                    <div style="font-size:1.6rem;font-weight:800;line-height:1.2;">${{ number_format($monthIncome['net'], 2) }}</div>
+                                    <div style="font-size:.72rem;opacity:.8;">from {{ $monthIncome['members'] }} member(s)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md mb-3">
+                            <div class="card card-custom wv-card wv-card--balance h-100">
+                                <div class="card-body py-4 text-center">
+                                    <div class="font-size-sm wv-muted">Direct (L1)</div>
+                                    <div class="font-weight-bolder font-size-h4">${{ number_format($monthIncome['direct'], 2) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md mb-3">
+                            <div class="card card-custom wv-card wv-card--balance h-100">
+                                <div class="card-body py-4 text-center">
+                                    <div class="font-size-sm wv-muted">Indirect (L2–7)</div>
+                                    <div class="font-weight-bolder font-size-h4">${{ number_format($monthIncome['indirect'], 2) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md mb-3">
+                            <div class="card card-custom h-100" style="background:#eefbf3;">
+                                <div class="card-body py-4 text-center">
+                                    <div class="text-muted font-size-sm">From New Downline</div>
+                                    <div class="font-weight-bolder font-size-h4 text-success">${{ number_format($monthIncome['from_new'], 2) }}</div>
+                                    <div class="text-muted" style="font-size:.72rem;">{{ $monthIncome['new_members'] }} joined this month</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md mb-3">
+                            <div class="card card-custom h-100" style="background:#f3f6f9;">
+                                <div class="card-body py-4 text-center">
+                                    <div class="text-muted font-size-sm">From Existing Downline</div>
+                                    <div class="font-weight-bolder font-size-h4 text-dark">${{ number_format($monthIncome['from_existing'], 2) }}</div>
+                                    <div class="text-muted" style="font-size:.72rem;">{{ $monthIncome['members'] - $monthIncome['new_members'] }} joined earlier</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if($monthIncome['adjustments'] > 0)
+                        <div class="text-muted font-size-sm mb-3">
+                            Gross ${{ number_format($monthIncome['gross'], 2) }} − corrections ${{ number_format($monthIncome['adjustments'], 2) }}
+                            = <strong>${{ number_format($monthIncome['net'], 2) }}</strong>
+                        </div>
+                    @endif
+
+                    @if($monthIncome['top_members']->isNotEmpty())
+                        <div class="table-responsive">
+                            <table class="table table-sm table-vertical-center mb-0">
+                                <thead><tr class="text-muted"><th>Downline Member</th><th>Level</th><th>Joined</th><th class="text-right">This Month</th></tr></thead>
+                                <tbody>
+                                @foreach($monthIncome['top_members'] as $m)
+                                    <tr>
+                                        <td><span class="font-weight-bold">{{ $m['name'] ?? 'Deleted member' }}</span>
+                                            @if($m['username'])<span class="text-muted small">{{ '@' . $m['username'] }}</span>@endif</td>
+                                        <td>{{ $m['level'] ?? '—' }}</td>
+                                        <td class="small text-nowrap">
+                                            {{ $m['joined_at']?->format('d M Y') ?? '—' }}
+                                            @if($m['is_new'])
+                                                <span class="label label-inline label-light-success font-weight-bold ml-1">New</span>
+                                            @else
+                                                <span class="label label-inline label-light-dark font-weight-bold ml-1">Existing</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-right font-weight-bold">${{ number_format($m['amount'], 2) }}</td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p class="text-muted mb-0">No saving commission earned yet this month.</p>
+                    @endif
+                </div>
+            </div>
+
             {{-- Transfer option: Saving Direct + Indirect → Online Wallet --}}
             <div class="mb-6">
                 <button type="button" class="wv-option" data-toggle="modal" data-target="#savingCommissionTransferModal"

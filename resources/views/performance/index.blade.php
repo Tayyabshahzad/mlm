@@ -118,6 +118,136 @@
                 </div>
             </div>
 
+            {{-- ── CURRENT MONTH INCOME FROM DOWNLINE (new + existing members) ── --}}
+            <div class="card card-custom gutter-b">
+                <div class="card-header border-0 py-4 d-flex align-items-center justify-content-between flex-wrap">
+                    <h3 class="card-title font-weight-bolder text-dark mb-0">
+                        <i class="fas fa-coins mr-2" style="color:#8950fc;"></i>
+                        Current Month Income — {{ $monthIncome['from']->format('F Y') }}
+                    </h3>
+                    <span class="text-muted font-size-sm">
+                        {{ $monthIncome['from']->format('d M') }} – {{ now()->format('d M Y') }} ·
+                        commission from all downline, new and existing
+                        @if($targetUser->id !== auth()->id()) · <strong>{{ $targetUser->name }}</strong>@endif
+                    </span>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row">
+                        <div class="col-12 col-md-3 mb-3">
+                            <div class="card card-custom h-100" style="background:linear-gradient(135deg,#8950fc,#5f2bd4);color:#fff;">
+                                <div class="card-body py-4 text-center">
+                                    <div style="font-size:.78rem;opacity:.85;">Net Income This Month</div>
+                                    <div style="font-size:2rem;font-weight:800;line-height:1.2;">${{ number_format($monthIncome['net'], 2) }}</div>
+                                    <div style="font-size:.72rem;opacity:.75;">from {{ $monthIncome['members'] }} downline member(s)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md mb-3">
+                            <div class="card card-custom h-100 bg-light-info">
+                                <div class="card-body py-4 text-center">
+                                    <div class="text-muted font-size-sm">Direct / Indirect</div>
+                                    <div class="font-weight-bolder font-size-h4">${{ number_format($monthIncome['direct_indirect'], 2) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md mb-3">
+                            <div class="card card-custom h-100 bg-light-info">
+                                <div class="card-body py-4 text-center">
+                                    <div class="text-muted font-size-sm">Profit Share</div>
+                                    <div class="font-weight-bolder font-size-h4">${{ number_format($monthIncome['profit_share'], 2) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md mb-3">
+                            <div class="card card-custom h-100" style="background:#eefbf3;">
+                                <div class="card-body py-4 text-center">
+                                    <div class="text-muted font-size-sm">From New Downline</div>
+                                    <div class="font-weight-bolder font-size-h4 text-success">${{ number_format($monthIncome['from_new'], 2) }}</div>
+                                    <div class="text-muted" style="font-size:.72rem;">{{ $monthIncome['new_members'] }} joined this month</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md mb-3">
+                            <div class="card card-custom h-100" style="background:#f3f6f9;">
+                                <div class="card-body py-4 text-center">
+                                    <div class="text-muted font-size-sm">From Existing Downline</div>
+                                    <div class="font-weight-bolder font-size-h4 text-dark">${{ number_format($monthIncome['from_existing'], 2) }}</div>
+                                    <div class="text-muted" style="font-size:.72rem;">{{ $monthIncome['members'] - $monthIncome['new_members'] }} joined earlier</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if($monthIncome['adjustments'] > 0)
+                        <div class="alert alert-custom alert-light-warning py-2 mb-4">
+                            <div class="alert-text font-size-sm">
+                                Gross commission ${{ number_format($monthIncome['gross'], 2) }}
+                                − adjustments / reversals ${{ number_format($monthIncome['adjustments'], 2) }}
+                                = <strong>net ${{ number_format($monthIncome['net'], 2) }}</strong>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($periodIncome)
+                        <div class="alert alert-custom alert-light-primary py-2 mb-4">
+                            <div class="alert-text font-size-sm">
+                                <strong>Selected period</strong> ({{ $periodIncome['from']->format('d M Y') }} – {{ $periodIncome['to']->format('d M Y') }}):
+                                net income <strong>${{ number_format($periodIncome['net'], 2) }}</strong>
+                                · Direct/Indirect ${{ number_format($periodIncome['direct_indirect'], 2) }}
+                                · Profit Share ${{ number_format($periodIncome['profit_share'], 2) }}
+                                · from {{ $periodIncome['members'] }} member(s)
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="row">
+                        <div class="col-lg-5 mb-4">
+                            <h6 class="font-weight-bolder mb-3">Income by Level</h6>
+                            <table class="table table-sm table-vertical-center mb-0">
+                                <thead><tr class="text-muted"><th>Level</th><th>Members</th><th class="text-right">Income</th></tr></thead>
+                                <tbody>
+                                @forelse($monthIncome['by_level'] as $row)
+                                    <tr>
+                                        <td>{{ $row['level'] ? 'Level ' . $row['level'] : 'Other' }}</td>
+                                        <td>{{ $row['members'] }}</td>
+                                        <td class="text-right font-weight-bold">${{ number_format($row['amount'], 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="3" class="text-center text-muted py-4">No downline commission yet this month.</td></tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-lg-7 mb-4">
+                            <h6 class="font-weight-bolder mb-3">Top Earning Downline This Month</h6>
+                            <table class="table table-sm table-vertical-center mb-0">
+                                <thead><tr class="text-muted"><th>Member</th><th>Level</th><th>Joined</th><th class="text-right">Income</th></tr></thead>
+                                <tbody>
+                                @forelse($monthIncome['top_members'] as $m)
+                                    <tr>
+                                        <td><span class="font-weight-bold">{{ $m['name'] ?? 'Deleted member' }}</span>
+                                            @if($m['username'])<span class="text-muted small">{{ '@' . $m['username'] }}</span>@endif</td>
+                                        <td>{{ $m['level'] ?? '—' }}</td>
+                                        <td class="small text-nowrap">
+                                            {{ $m['joined_at']?->format('d M Y') ?? '—' }}
+                                            @if($m['is_new'])
+                                                <span class="label label-inline label-light-success font-weight-bold ml-1">New</span>
+                                            @else
+                                                <span class="label label-inline label-light-dark font-weight-bold ml-1">Existing</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-right font-weight-bold">${{ number_format($m['amount'], 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No downline commission yet this month.</td></tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {{-- ── SUMMARY LEVEL CARDS ─────────────────────────── --}}
             @php
                 $levelColors = [
