@@ -132,6 +132,20 @@ it('reverses overpaid profit share from the profit share wallet, then online, an
     // running again takes nothing more
     $this->artisan('profit-share:reverse-overpayments', ['--apply' => true, '--force' => true, '--allow-negative' => true])->assertSuccessful();
     expect($bal('online'))->toBe(-1.0);
+
+    // the member sees why the online wallet is negative
+    $this->actingAs($upline)->get(route('wallets.online'))->assertOk()
+        ->assertSee('Your Online Wallet is negative: -$1.00', false)
+        ->assertSee('$5.00', false)
+        ->assertSee('profit share that was paid to you by mistake', false);
+});
+
+it('shows no reversal notice when the online wallet is not negative', function () {
+    $user = psUser();
+    psWallet($user, 'online', 10.00, ['commission_type' => 'online', 'level' => 'online']);
+
+    $this->actingAs($user)->get(route('wallets.online'))->assertOk()
+        ->assertDontSee('Your Online Wallet is negative');
 });
 
 it('skips excluded members', function () {

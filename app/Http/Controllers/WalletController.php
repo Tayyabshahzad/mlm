@@ -52,7 +52,23 @@ class WalletController extends Controller
         $walletSum = Wallet::where('user_id', $userId)->sum('balance');
         $setting = Setting::first();
 
-        return view('wallets.online',compact('availableBalance','onlineWallets','withDrawsRequests','walletSum','setting','totalEarned','earningsBreakdown','roiStats','totalEarning','currentBalance'));
+        // Online wallet is negative because profit share paid by mistake was taken back
+        $profitShareReversal = null;
+        if ($availableBalance < 0) {
+            $fromOnline = $onlineWallets->where('wallet_src', \App\Services\ProfitShareAuditService::REVERSAL_SRC);
+            if ($fromOnline->isNotEmpty()) {
+                $profitShareReversal = [
+                    'total'       => abs((float) Wallet::where('user_id', $userId)
+                        ->where('wallet_type', 'profit_share_reversal')
+                        ->where('wallet_src', \App\Services\ProfitShareAuditService::REVERSAL_SRC)
+                        ->sum('total_amount')),
+                    'from_online' => abs((float) $fromOnline->sum('total_amount')),
+                    'date'        => $fromOnline->max('created_at'),
+                ];
+            }
+        }
+
+        return view('wallets.online',compact('availableBalance','onlineWallets','withDrawsRequests','walletSum','setting','totalEarned','earningsBreakdown','roiStats','totalEarning','currentBalance','profitShareReversal'));
     }
 
     /**

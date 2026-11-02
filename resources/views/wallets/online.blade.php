@@ -37,8 +37,27 @@
         <div class="container"> 
 
 
-            <div class="order-1 col-lg-12 col-xxl-12 order-xxl-2"> 
-                @if(!Auth::user()->freez_wallet )   
+            <div class="order-1 col-lg-12 col-xxl-12 order-xxl-2">
+                @if(!empty($profitShareReversal))
+                    <div class="alert alert-custom alert-light-danger fade show mb-5" role="alert">
+                        <div class="alert-icon"><i class="flaticon-warning"></i></div>
+                        <div class="alert-text">
+                            <div class="font-weight-bolder mb-1">
+                                Your Online Wallet is negative: -${{ number_format(abs($availableBalance), 2) }}
+                            </div>
+                            On {{ \Carbon\Carbon::parse($profitShareReversal['date'])->format('d M Y') }},
+                            <strong>${{ number_format($profitShareReversal['total'], 2) }}</strong> of profit share that was paid to you by mistake
+                            (level target not met / wrong upline / paid twice) was taken back.
+                            Your profit share wallet did not have enough balance, so
+                            <strong>${{ number_format($profitShareReversal['from_online'], 2) }}</strong> was deducted from your Online Wallet.
+                            <div class="mt-2">
+                                Any amount you transfer to your Online Wallet will first clear this negative balance.
+                                Withdrawal, member transfer and top-up will work again once your balance is positive.
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                @if(!Auth::user()->freez_wallet )
                 @if(!(float) Auth::user()->negative_pv > 0)
                         <div class="card card-custom card-stretch gutter-b ">  
                             <div class="border-0 card-header">  
@@ -146,7 +165,7 @@
                                 <div class="d-flex flex-column flex-grow-1">
                                     <a href="#" class="mb-1 font-weight-bold text-dark-75 text-hover-primary font-size-lg">Available Balance</a>
                                     <small class="text-muted">Current spendable balance in your online wallet</small>
-                                    <span class="font-weight-bold text-success">${{ number_format($availableBalance, 2) }}</span>
+                                    <span class="font-weight-bold {{ $availableBalance < 0 ? 'text-danger' : 'text-success' }}">{{ $availableBalance < 0 ? '-' : '' }}${{ number_format(abs($availableBalance), 2) }}</span>
                                 </div>  
                                 <div class="mr-5 symbol symbol-45 symbol-light">
                                     <span class="symbol-label">
