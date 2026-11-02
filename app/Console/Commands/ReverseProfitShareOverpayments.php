@@ -218,12 +218,12 @@ class ReverseProfitShareOverpayments extends Command
         };
 
         $sheet('Overpaid (reverse)', ['Username', 'Name', 'Plan', 'Extra paid', 'Already reversed', 'To reverse', 'From profit share wallet', 'From online wallet', 'Not recoverable', 'Profit share balance', 'Online balance', 'Online after', 'Why', 'Active members now', 'Period'],
-            array_values(array_map(fn ($p) => [$p['username'], $p['name'], $p['plan'], $p['over'], $p['done'], $p['todo'], $p['fromPs'], $p['fromOnline'], $p['short'], $p['ps'], $p['online'], round($p['online'] - $p['fromOnline'], 2), $reasons($p['reasons']['over']), $p['levels'], $p['first'] . ' → ' . $p['last']], $plan)));
+            array_values(array_map(fn ($p) => [$p['username'], $p['name'], $p['plan'], $p['over'], $p['done'], $p['todo'], $p['fromPs'], $p['fromOnline'], $p['short'], $p['ps'], $p['online'], round($p['online'] - $p['fromOnline'], 2), $reasons($p['reasons']['over']), $p['levels'], implode(' → ', $p['period']['over'] ?? [])], $plan)));
 
         $under = array_filter($result['users'], fn ($p) => $p['under'] > 0.004);
         uasort($under, fn ($a, $b) => $b['under'] <=> $a['under']);
         $sheet('Underpaid (decide)', ['Username', 'Name', 'Plan', 'Missed amount', 'Why', 'Active members now', 'Period'],
-            array_values(array_map(fn ($p) => [$p['username'], $p['name'], $p['plan'], $p['under'], $reasons($p['reasons']['under']), $p['levels'], $p['first'] . ' → ' . $p['last']], $under)));
+            array_values(array_map(fn ($p) => [$p['username'], $p['name'], $p['plan'], $p['under'], $reasons($p['reasons']['under']), $p['levels'], implode(' → ', $p['period']['under'] ?? [])], $under)));
 
         $agg = [];
         foreach ($result['lines'] as $l) {

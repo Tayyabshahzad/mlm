@@ -25,6 +25,9 @@ class ProfitShareAuditService
     /** wallet_src used by the reversal command (also used to find what was already reversed) */
     public const REVERSAL_SRC = 'profit_share_audit';
 
+    /** wallet_src of the profit_share rows that pay members what they missed (excluded from the audit) */
+    public const MISSED_SRC = 'profit_share_audit_missed';
+
     private array $users = [];
     private array $activeFrom = [];
     private array $anc = [];
@@ -51,7 +54,9 @@ class ProfitShareAuditService
 
         $ps = [];
         $psDays = [];
-        foreach (DB::table('wallets')->where('wallet_type', 'profit_share')->orderBy('id')
+        foreach (DB::table('wallets')->where('wallet_type', 'profit_share')
+            ->where(fn ($q) => $q->whereNull('wallet_src')->orWhere('wallet_src', '!=', self::MISSED_SRC))
+            ->orderBy('id')
             ->get(['id', 'user_id', 'wallet_from', 'level', 'total_amount', 'percentage', 'created_at']) as $w) {
             $day = substr($w->created_at, 0, 10);
             $ps[$w->wallet_from][$day][$w->user_id][(int) $w->level][] = $w;
@@ -229,11 +234,11 @@ class ProfitShareAuditService
         $per = [];
         foreach ($this->lines as $l) {
             $p = &$per[$l['user']];
-            $p ??= ['over' => 0.0, 'under' => 0.0, 'reasons' => ['over' => [], 'under' => []], 'first' => $l['day'], 'last' => $l['day']];
-            $p[$l['type']] += $l['amt'];
-            $p['reasons'][$l['type']][$l['reason']] = ($p['reasons'][$l['type']][$l['reason']] ?? 0) + $l['amt'];
-            $p['first'] = min($p['first'], $l['day']);
-            $p['last'] = max($p['last'], $l['day']);
+            $p ??= ['over' => 0.0, 'under' => 0.0, 'reasons' => ['over' => [], 'under' => []], 'period' => []];
+            $t = $l['type'];
+            $p[$t] += $l['amt'];
+            $p['reasons'][$t][$l['reason']] = ($p['reasons'][$t][$l['reason']] ?? 0) + $l['amt'];
+            $p['period'][$t] = [min($p['period'][$t][0] ?? $l['day'], $l['day']), max($p['period'][$t][1] ?? $l['day'], $l['day'])];
             unset($p);
         }
         foreach ($per as $id => &$p) {

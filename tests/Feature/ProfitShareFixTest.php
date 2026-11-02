@@ -148,6 +148,33 @@ it('shows no reversal notice when the online wallet is not negative', function (
         ->assertDontSee('Your Online Wallet is negative');
 });
 
+it('pays the rightful upline what was missed, once, without it being flagged as overpaid', function () {
+    $rightful = psUser();
+    psWallet($rightful, 'roi', 1, ['created_at' => now()->subMonth(), 'updated_at' => now()->subMonth()]); // has an investment
+    $wrong    = psUser();                        // saving-tree upline got it instead
+    $roiUser  = psActive($rightful, 1);
+    for ($i = 0; $i < 9; $i++) psActive($rightful, 1); // 10 active → L1 target met
+    psTree($wrong, $roiUser, 1, 'saving');
+
+    psWallet($roiUser, 'roi', 100.00);
+    psWallet($wrong, 'profit_share', 3.50, ['wallet_from' => $roiUser->id, 'level' => '1', 'percentage' => 3.5]);
+
+    $this->artisan('profit-share:pay-missed')->assertSuccessful();
+    expect(psPaid($rightful))->toBe(0.0);                      // dry run
+
+    $this->artisan('profit-share:pay-missed', ['--apply' => true, '--force' => true])->assertSuccessful();
+    expect(psPaid($rightful))->toBe(3.5)
+        ->and((float) DB::table('wallets')->where('user_id', $rightful->id)->where('wallet_type', 'profit_share')->sum('balance'))->toBe(3.5);
+
+    $this->artisan('profit-share:pay-missed', ['--apply' => true, '--force' => true])->assertSuccessful();
+    expect(psPaid($rightful))->toBe(3.5);                      // never twice
+
+    // the credit is not treated as an overpayment; the wrong upline is
+    $result = app(\App\Services\ProfitShareAuditService::class)->run();
+    expect((float) ($result['users'][$rightful->id]['over'] ?? 0))->toBe(0.0)
+        ->and($result['users'][$wrong->id]['over'])->toBe(3.5);
+});
+
 it('skips excluded members', function () {
     $upline = psUser();
     $roiUser = psActive($upline, 1);
