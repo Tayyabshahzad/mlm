@@ -43,9 +43,25 @@ class ROICommissionService
      */
     public function generateCommissions(User $user, float $roiAmount): void
     {
+        // Profit share is paid once per ROI entry. The ROI wallet row is always
+        // created before this is called, so the latest one is the ROI being shared.
+        $roiEntry = Wallet::where('user_id', $user->id)
+            ->where('wallet_type', 'roi')
+            ->orderByDesc('id')
+            ->first(['id', 'total_amount']);
+
+        if (!$roiEntry) {
+            Log::warning("Profit share skipped for user {$user->id}: no ROI entry found");
+            return;
+        }
+
+        // Never share more than the ROI entry itself (callers passing a
+        // multi-day "recent ROI" total caused inflated payouts).
+        $roiAmount = min($roiAmount, (float) $roiEntry->total_amount + 0.01);
+
         foreach (self::COMMISSION_LEVELS as $level => $percentage) {
             try {
-                $this->processLevelCommission($user, $roiAmount, $level, $percentage);
+                $this->processLevelCommission($user, $roiAmount, $level, $percentage, (int) $roiEntry->id);
             } catch (\Exception $e) {
                 Log::error("Failed to process commission for level {$level}: " . $e->getMessage());
             }
@@ -56,12 +72,25 @@ class ROICommissionService
      * Process commission for a specific level
      * FIXED: Now gives commission for ALL users at the level, not just minimum required
      */
-    private function processLevelCommission(User $user, float $roiAmount, int $level, float $percentage): void
+    private function processLevelCommission(User $user, float $roiAmount, int $level, float $percentage, int $roiEntryId): void
     {
         // Find the ancestor at this level (the person who will receive commission)
         $ancestor = $this->getAncestorByLevel($user, $level);
 
         if (!$ancestor || !$this->isAncestorEligibleForCommission($ancestor, $level)) {
+            return;
+        }
+
+        // Already paid for this ROI entry (profit share rows are created after it)
+        $alreadyPaid = Wallet::where('user_id', $ancestor->id)
+            ->where('wallet_type', 'profit_share')
+            ->where('wallet_from', $user->id)
+            ->where('level', $level)
+            ->where('id', '>', $roiEntryId)
+            ->exists();
+
+        if ($alreadyPaid) {
+            Log::info("Profit share skipped: ancestor {$ancestor->id} already paid at level {$level} for ROI entry {$roiEntryId}");
             return;
         }
 
@@ -160,20 +189,31 @@ class ROICommissionService
     }
 
     /**
-     * Get ACTIVE users at exact level (not just count).
-     * Mirrors countUsersAtExactLevel — only active, unblocked users are returned.
+     * Get ACTIVE users at exact level of the STANDARD tree (not just count).
+     * Mirrors countUsersAtExactLevel.
      */
     private function getAllUsersAtLevel(int $ancestorId, int $level): \Illuminate\Support\Collection
     {
         return User::whereIn('id', function ($query) use ($ancestorId, $level) {
-            $query->select('referral_trees.descendant_id')
-                ->from('referral_trees')
-                ->join('users', 'users.id', '=', 'referral_trees.descendant_id')
-                ->where('referral_trees.ancestor_id', $ancestorId)
-                ->where('referral_trees.level', $level)
-                ->where('users.can_login', 1)
-                ->where('users.blocked', false);
+            $this->activeStandardMembersAtLevel($query->select('referral_trees.descendant_id'), $ancestorId, $level);
         })->get();
+    }
+
+    /**
+     * Profit share rules (client confirmed):
+     *  - only the STANDARD referral tree counts (never the saving/committee tree)
+     *  - a member is ACTIVE when they hold a standard investment and are not deleted
+     */
+    private function activeStandardMembersAtLevel($query, int $ancestorId, int $level)
+    {
+        return $query->from('referral_trees')
+            ->join('users', 'users.id', '=', 'referral_trees.descendant_id')
+            ->where('referral_trees.ancestor_id', $ancestorId)
+            ->where('referral_trees.level', $level)
+            ->where('referral_trees.tree_type', 'standard')
+            ->whereNull('users.deleted_at')
+            ->where('users.roi_eligible_investment_amount', '>', 0)
+            ->where(fn ($q) => $q->where('users.account_type', 'standard_investment')->orWhereNull('users.account_type'));
     }
 
     /**
@@ -232,23 +272,18 @@ class ROICommissionService
     }
 
     /**
-     * Count ACTIVE users at exact level only (not cumulative).
-     * Only users who can_login and are not blocked count toward the threshold —
-     * inactive/blocked referrals must not let an ancestor unlock profit sharing.
+     * Count ACTIVE members at this exact level of the STANDARD tree (not cumulative).
+     * Level 2 needs 50 members AT level 2 — other levels never count towards it.
      */
     private function countUsersAtExactLevel(int $ancestorId, int $level): int
     {
-        return DB::table('referral_trees')
-            ->join('users', 'users.id', '=', 'referral_trees.descendant_id')
-            ->where('referral_trees.ancestor_id', $ancestorId)
-            ->where('referral_trees.level', $level)
-            ->where('users.can_login', 1)
-            ->where('users.blocked', false)
-            ->count();
+        return $this->activeStandardMembersAtLevel(DB::query(), $ancestorId, $level)
+            ->distinct()
+            ->count('referral_trees.descendant_id');
     }
 
     /**
-     * Get ancestor user by level
+     * Get the STANDARD-tree ancestor at this level
      */
     private function getAncestorByLevel(User $user, int $level): ?User
     {
@@ -256,7 +291,8 @@ class ROICommissionService
             $query->select('ancestor_id')
                 ->from('referral_trees')
                 ->where('descendant_id', $user->id)
-                ->where('level', $level);
+                ->where('level', $level)
+                ->where('tree_type', 'standard');
         })->first();
     }
 
