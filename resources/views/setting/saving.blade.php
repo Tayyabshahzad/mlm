@@ -39,9 +39,17 @@
                         </div>
                     @endif
 
-                    {{-- ── Form 1: Registration & ROI ───────────────────────── --}}
+                    @if(session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            {{ session('error') }}
+                            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                        </div>
+                    @endif
+
+                    {{-- ── Form 1: Registration & Plan (own save) ───────────── --}}
                     <form method="POST" action="{{ route('setting.saving.update') }}">
                         @csrf
+                        <input type="hidden" name="section" value="registration">
 
                         {{-- Registration & Plan --}}
                         <div class="card card-custom gutter-b">
@@ -89,8 +97,20 @@
                                     = <strong>${{ ($setting->saving_registration_fee ?? 5) + ($setting->saving_min_deposit ?? 19) }}</strong>
                                     (enforced on the registration form)
                                 </div>
+
+                                <div class="text-right mt-5">
+                                    <button type="submit" class="btn btn-primary font-weight-bold px-8">
+                                        Save Registration &amp; Plan
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                    </form>
+
+                    {{-- ── Form 2: Daily ROI (own save) ─────────────────────── --}}
+                    <form method="POST" action="{{ route('setting.saving.update') }}">
+                        @csrf
+                        <input type="hidden" name="section" value="roi">
 
                         {{-- Daily ROI --}}
                         <div class="card card-custom gutter-b">
@@ -138,15 +158,14 @@
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <div class="text-right mt-5">
+                                    <button type="submit" class="btn btn-primary font-weight-bold px-8">
+                                        Save Daily ROI
+                                    </button>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="text-right mb-6">
-                            <button type="submit" class="btn btn-primary font-weight-bold px-8">
-                                Save Registration &amp; ROI Settings
-                            </button>
-                        </div>
-
                     </form>
 
                     {{-- ── Default Commission Levels (per-level individual save) ── --}}

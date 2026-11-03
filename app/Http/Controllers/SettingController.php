@@ -74,55 +74,40 @@ class SettingController extends Controller
         return view('setting.saving', compact('setting'));
     }
 
+    /**
+     * Each card on the saving settings page saves on its own (section = registration | roi).
+     * Commission levels and campaign rates have their own forms (update-level / toggle-campaign),
+     * so they are never touched here.
+     */
     public function updateSavingSettings(Request $request)
     {
-        $request->validate([
-            'saving_registration_fee'    => 'required|numeric|min:0',
-            'saving_min_deposit'         => 'required|numeric|min:0',
-            'saving_monthly_instalment'  => 'required|numeric|min:0',
-            'saving_plan_months'         => 'required|integer|min:1',
-            'saving_roi_daily_rate'      => 'required|numeric|min:0|max:100',
-            'saving_commission_l1'       => 'required|numeric|min:0|max:100',
-            'saving_commission_l2'       => 'required|numeric|min:0|max:100',
-            'saving_commission_l3'       => 'required|numeric|min:0|max:100',
-            'saving_commission_l4'       => 'required|numeric|min:0|max:100',
-            'saving_commission_l5'       => 'required|numeric|min:0|max:100',
-            'saving_commission_l6'       => 'required|numeric|min:0|max:100',
-            'saving_commission_l7'       => 'required|numeric|min:0|max:100',
-            'saving_campaign_l1'         => 'nullable|numeric|min:0|max:100',
-            'saving_campaign_l2'         => 'nullable|numeric|min:0|max:100',
-            'saving_campaign_l3'         => 'nullable|numeric|min:0|max:100',
-            'saving_campaign_l4'         => 'nullable|numeric|min:0|max:100',
-            'saving_campaign_l5'         => 'nullable|numeric|min:0|max:100',
-            'saving_campaign_l6'         => 'nullable|numeric|min:0|max:100',
-            'saving_campaign_l7'         => 'nullable|numeric|min:0|max:100',
-        ]);
+        $sections = [
+            'registration' => [
+                'label' => 'Registration & Plan',
+                'rules' => [
+                    'saving_registration_fee'   => 'required|numeric|min:0',
+                    'saving_min_deposit'        => 'required|numeric|min:0',
+                    'saving_monthly_instalment' => 'required|numeric|min:0',
+                    'saving_plan_months'        => 'required|integer|min:1',
+                ],
+            ],
+            'roi' => [
+                'label' => 'Daily ROI',
+                'rules' => [
+                    'saving_roi_daily_rate' => 'required|numeric|min:0|max:100',
+                ],
+            ],
+        ];
 
-        $setting = Setting::first();
-        $setting->update([
-            'saving_registration_fee'   => $request->saving_registration_fee,
-            'saving_min_deposit'        => $request->saving_min_deposit,
-            'saving_monthly_instalment' => $request->saving_monthly_instalment,
-            'saving_plan_months'        => $request->saving_plan_months,
-            'saving_roi_daily_rate'     => $request->saving_roi_daily_rate,
-            'saving_commission_l1'      => $request->saving_commission_l1,
-            'saving_commission_l2'      => $request->saving_commission_l2,
-            'saving_commission_l3'      => $request->saving_commission_l3,
-            'saving_commission_l4'      => $request->saving_commission_l4,
-            'saving_commission_l5'      => $request->saving_commission_l5,
-            'saving_commission_l6'      => $request->saving_commission_l6,
-            'saving_commission_l7'      => $request->saving_commission_l7,
-            'saving_campaign_enabled'   => $request->boolean('saving_campaign_enabled'),
-            'saving_campaign_l1'        => $request->saving_campaign_l1,
-            'saving_campaign_l2'        => $request->saving_campaign_l2,
-            'saving_campaign_l3'        => $request->saving_campaign_l3,
-            'saving_campaign_l4'        => $request->saving_campaign_l4,
-            'saving_campaign_l5'        => $request->saving_campaign_l5,
-            'saving_campaign_l6'        => $request->saving_campaign_l6,
-            'saving_campaign_l7'        => $request->saving_campaign_l7,
-        ]);
+        $section = $sections[$request->input('section')] ?? null;
+        if (!$section) {
+            return back()->with('error', 'Unknown settings section.');
+        }
 
-        return back()->with('success', 'Saving account settings updated successfully.');
+        $data = $request->validate($section['rules']);
+        Setting::first()->update($data);
+
+        return back()->with('success', $section['label'] . ' settings updated successfully.');
     }
 
     public function toggleCampaign(Request $request)
