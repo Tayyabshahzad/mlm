@@ -492,12 +492,11 @@ class WalletController extends Controller
 
         $setting = Setting::first();
 
-        // Current month's saving commission from ALL downline (new + existing), dated by when it was earned
-        $monthIncome = app(\App\Services\DownlineIncomeService::class)
-            ->summary($user, now()->startOfMonth(), now(), ['direct_indirect'], 'saving_instalment');
+        // This month + previous month saving commission from ALL downline (new + existing), dated by when it was earned
+        $savingIncome = app(\App\Services\DownlineIncomeService::class)->savingMonthly($user, request('income_month'));
 
         return view('wallets.saving-direct-indirect', compact(
-            'entries', 'totalDirect', 'totalIndirect', 'totalEarning', 'currentBalance', 'setting', 'monthIncome'
+            'entries', 'totalDirect', 'totalIndirect', 'totalEarning', 'currentBalance', 'setting', 'savingIncome'
         ));
     }
 

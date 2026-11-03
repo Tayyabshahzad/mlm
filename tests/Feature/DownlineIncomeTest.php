@@ -139,8 +139,54 @@ it('shows current month saving commission from new AND existing downline on the 
         ->and($s['from_existing'])->toBe(1.33);
 
     $this->actingAs($me)->get(route('wallets.saving.direct.indirect'))->assertOk()
-        ->assertSee('Current Month Income')
+        ->assertSee('Saving Commission Income')
         ->assertSee('$1.50')
         ->assertSee('Old Saver')->assertSee('Existing')
         ->assertSee('New Saver')->assertSee('New');
+});
+
+it('shows previous month saving commission on the Savings page and on the dashboard', function () {
+    $me  = diUser(['account_type' => 'saving', 'saving_registration_completed' => true, 'can_login' => true]);
+    $old = diUser(['name' => 'Last Month Saver', 'created_at' => now()->subMonths(4)]);
+    DB::table('referral_trees')->insert(['ancestor_id' => $me->id, 'descendant_id' => $old->id, 'level' => 1, 'tree_type' => 'saving']);
+
+    $saving = ['source_type' => 'saving_instalment', 'commission_type' => 'direct'];
+    diWallet($me, $old, 'direct_indirect', 2.22, now()->subMonthNoOverflow()->startOfMonth()->addDays(3), $saving); // previous month
+    diWallet($me, $old, 'direct_indirect', 1.11, now()->startOfMonth()->addHours(1), $saving);                       // this month
+    diWallet($me, $old, 'direct_indirect', 9.99, now()->subMonthsNoOverflow(2)->startOfMonth(), $saving);           // 2 months ago — neither
+
+    $s = app(DownlineIncomeService::class)->savingMonthly($me);
+    expect($s['current']['net'])->toBe(1.11)
+        ->and($s['previous']['net'])->toBe(2.22)
+        ->and($s['previous']['from']->format('Y-m'))->toBe(now()->subMonthNoOverflow()->format('Y-m'));
+
+    $prevLabel = now()->subMonthNoOverflow()->format('M Y');
+    $this->actingAs($me)->get(route('wallets.saving.direct.indirect'))->assertOk()
+        ->assertSee('Previous Month')->assertSee($prevLabel)->assertSee('$2.22')->assertSee('$1.11');
+
+    $this->actingAs($me)->get(route('dashboard'))->assertOk()
+        ->assertSee('Saving Commission Income')->assertSee('Previous Month')->assertSee('$2.22')->assertSee('Last Month Saver');
+});
+
+it('lets the member pick an older month with the month filter', function () {
+    $me  = diUser(['account_type' => 'saving', 'saving_registration_completed' => true, 'can_login' => true]);
+    $old = diUser(['name' => 'Older Saver', 'created_at' => now()->subMonths(6)]);
+    DB::table('referral_trees')->insert(['ancestor_id' => $me->id, 'descendant_id' => $old->id, 'level' => 1, 'tree_type' => 'saving']);
+
+    $older = now()->subMonthsNoOverflow(3);
+    diWallet($me, $old, 'direct_indirect', 4.44, $older->copy()->startOfMonth()->addDays(5), ['source_type' => 'saving_instalment', 'commission_type' => 'direct']);
+
+    $s = app(DownlineIncomeService::class)->savingMonthly($me, $older->format('Y-m'));
+    expect($s['selected']['net'])->toBe(4.44)
+        ->and($s['current']['net'])->toBe(0.0);
+
+    // invalid / future months are ignored
+    expect(app(DownlineIncomeService::class)->savingMonthly($me, 'abc'))->not->toHaveKey('selected')
+        ->and(app(DownlineIncomeService::class)->savingMonthly($me, now()->addMonths(2)->format('Y-m')))->not->toHaveKey('selected');
+
+    foreach (['wallets.saving.direct.indirect', 'dashboard'] as $page) {
+        $this->actingAs($me)->get(route($page, ['income_month' => $older->format('Y-m')]))->assertOk()
+            ->assertSee($older->format('F Y'))->assertSee('$4.44')->assertSee('Older Saver')
+            ->assertSee('name="income_month"', false);
+    }
 });

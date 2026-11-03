@@ -26,6 +26,44 @@ class DownlineIncomeService
     public const TYPES = ['direct_indirect', 'profit_share'];
 
     /**
+     * Saving-plan commission for this month (so far), the whole previous month and,
+     * optionally, any older month the member picks ("YYYY-MM").
+     *
+     * @return array{current: array, previous: array, selected?: array, selected_month?: string}
+     */
+    public function savingMonthly(User $member, ?string $month = null): array
+    {
+        $prev = now()->subMonthNoOverflow();
+        $sum  = fn (Carbon $from, Carbon $to) => $this->summary($member, $from, $to, ['direct_indirect'], 'saving_instalment');
+
+        $result = [
+            'current'  => $sum(now()->startOfMonth(), now()),
+            'previous' => $sum($prev->copy()->startOfMonth(), $prev->copy()->endOfMonth()),
+        ];
+
+        $picked = $this->parseMonth($month);
+        if ($picked && $picked->lt($prev->copy()->startOfMonth())) {
+            $result['selected'] = $sum($picked->copy(), $picked->copy()->endOfMonth());
+        }
+        if ($picked) {
+            $result['selected_month'] = $picked->format('Y-m');
+        }
+
+        return $result;
+    }
+
+    /** "YYYY-MM" → first day of that month, or null when invalid / in the future */
+    private function parseMonth(?string $month): ?Carbon
+    {
+        if (!$month || !preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month)) {
+            return null;
+        }
+        $date = Carbon::createFromFormat('Y-m-d', $month . '-01')->startOfDay();
+
+        return $date->year >= 2020 && $date->lte(now()->startOfMonth()) ? $date : null;
+    }
+
+    /**
      * @param string[]    $types      wallet types to count (default: direct_indirect + profit_share)
      * @param string|null $sourceType limit to one source, e.g. 'saving_instalment' for the Savings wallet
      */

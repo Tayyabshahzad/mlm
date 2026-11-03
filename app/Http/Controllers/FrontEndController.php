@@ -377,6 +377,7 @@ class FrontEndController extends Controller
 
             $savingData = [
                 'saving_enrolled'           => true,
+                'saving_income'             => app(\App\Services\DownlineIncomeService::class)->savingMonthly($user, request('income_month')),
                 'saving_deposit'            => $wallets->where('wallet_type', 'saving')->sum('balance'),
                 'saving_direct'             => Wallet::where('user_id', $user->id)
                                                     ->where('wallet_type', 'direct_indirect')
@@ -550,6 +551,7 @@ class FrontEndController extends Controller
             'saving_direct'             => $savingDirect,
             'saving_indirect'           => $savingIndirect,
             'saving_direct_team_count'  => $savingDirectTeamCount,
+            'saving_income'             => $isActivated ? app(\App\Services\DownlineIncomeService::class)->savingMonthly($user, request('income_month')) : null,
         ];
 
         $reward = collect(); // saving users have no reward tree

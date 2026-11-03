@@ -739,6 +739,10 @@
         @endif
     </div>
     @endif
+
+    @if(!empty($data['saving_income']))
+        @include('wallets.partials.saving-monthly-income', ['savingIncome' => $data['saving_income'], 'smiId' => 'smi-dash'])
+    @endif
     @endif
 
     {{-- ═══════════════════════════════════════
