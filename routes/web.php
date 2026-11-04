@@ -75,6 +75,7 @@ Route::middleware(['auth', 'verified', CheckUserStatus::class])->group(function 
     Route::prefix('genealogy')->controller(GenealogyController::class)->group(function () {
         Route::get('team', 'team')->name('genealogy.team');
         Route::get('team/members', 'teamMembers')->name('genealogy.team.members');
+        Route::get('team/member/{member}', 'teamMemberDetails')->whereNumber('member')->name('genealogy.team.member');
         Route::get('saving-tree', 'savingTree')->name('genealogy.saving.tree');
         Route::get('my-saving-tree', 'mySavingTree')->name('genealogy.my.saving.tree');
         Route::get('saving-tree/{user}', 'adminUserSavingTree')->name('genealogy.admin.user.saving.tree');

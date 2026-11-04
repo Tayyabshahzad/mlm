@@ -86,3 +86,19 @@ it('renders the team members page instead of crashing', function () {
 
     $this->actingAs($sponsor)->get(route('genealogy.team.members'))->assertOk()->assertSee('Direct Member');
 });
+
+it('every @section in a Blade view is closed', function () {
+    // An unclosed @section('content') makes the page body print before <!DOCTYPE html>,
+    // so the browser shows it unstyled (quirks mode) until the CSS catches up.
+    $bad = [];
+    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(resource_path('views')));
+    foreach ($files as $f) {
+        if (!str_ends_with($f, '.blade.php')) continue;
+        $s = preg_replace('/\{\{--.*?--\}\}/s', '', file_get_contents($f));
+        $open  = preg_match_all('/@section\s*\(\s*([\'"])[^\'"]+\1\s*\)/', $s);
+        $close = preg_match_all('/@(endsection|stop|show|append|overwrite)\b/', $s);
+        if ($open !== $close) $bad[] = str_replace(resource_path('views') . DIRECTORY_SEPARATOR, '', $f) . " (opened {$open}, closed {$close})";
+    }
+
+    expect($bad)->toBe([]);
+});
