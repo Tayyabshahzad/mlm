@@ -197,6 +197,27 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         return $this->hasMany(User::class, 'sponsor_id'); // Adjust 'parent_id' based on your schema
     }
 
+    /**
+     * True when $other is in this member's own line: anywhere in their upline
+     * or anywhere in their downline, in the standard OR saving tree.
+     * Members in other teams (left/right, cousins) are not in the line.
+     */
+    public function isInMyLine(User $other): bool
+    {
+        if ($other->id === $this->id) {
+            return false;
+        }
+        if ($other->id === $this->sponsor_id || $other->sponsor_id === $this->id) {
+            return true;
+        }
+
+        return \Illuminate\Support\Facades\DB::table('referral_trees')
+            ->where(fn ($q) => $q
+                ->where(fn ($d) => $d->where('ancestor_id', $this->id)->where('descendant_id', $other->id))   // downline
+                ->orWhere(fn ($u) => $u->where('ancestor_id', $other->id)->where('descendant_id', $this->id))) // upline
+            ->exists();
+    }
+
     public function parent()
     {
         return $this->belongsTo(User::class, 'sponsor_id');

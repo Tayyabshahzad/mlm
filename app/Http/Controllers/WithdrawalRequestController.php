@@ -194,7 +194,14 @@ class WithdrawalRequestController extends Controller
 
         if (!$recipient) {
             return redirect()->back()->with('error', 'Recipient not exists');
-        }  
+        }
+        if ($recipient->id === $sender->id) {
+            return redirect()->back()->with('error', 'You cannot transfer to yourself.');
+        }
+        // Member transfer is allowed only inside your own line (your upline or your downline)
+        if (!$sender->isInMyLine($recipient)) {
+            return redirect()->back()->with('error', "You can only transfer to members in your own line (your upline or your downline). {$recipient->username} is not in your line.");
+        }
         $amount = $request->amount;  
         $onlineWalletSum = Wallet::where('wallet_type', 'online')
                                 ->where('user_id', $sender->id)

@@ -675,9 +675,10 @@
                             <input type="text" class="mb-2 form-control form-control-sm form-control-solid" 
                              name="member_account"   
                              required  
-                             placeholder="Enter Member Account email or password"
-                             >  
-                        </div>  
+                             placeholder="Enter member username or email"
+                             >
+                             <small class="text-muted">You can transfer only to members in your own line — your upline or your downline.</small>
+                        </div>
 
                         <div class="col-lg-12 col-xl-12">
                             <label for="" class="mr-2 font-weight-bold">
