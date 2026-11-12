@@ -433,7 +433,8 @@ class RegisteredUserController extends Controller
 
         $candidate = $base;
         $count = 1;
-        while (User::where('username', $candidate)->exists()) {
+        // include deleted accounts: the database keeps their usernames unique too
+        while (User::withTrashed()->where('username', $candidate)->exists()) {
             $candidate = $base . '-' . $count++;
         }
         return $candidate;

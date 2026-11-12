@@ -75,10 +75,14 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
     
     public function delete(): bool|null
     {
-        // Free up email and username before soft-deleting so they can be reused
+        // Free up email, username and CNIC before soft-deleting so they can be reused.
+        // The CNIC stays readable as "del<id>-<cnic>".
         $suffix = $this->id . '_' . time();
         $this->email    = 'deleted_' . $suffix . '@deleted.invalid';
         $this->username = 'deleted_' . $suffix;
+        if ($this->cnic && !str_starts_with($this->cnic, 'del')) {
+            $this->cnic = 'del' . $this->id . '-' . $this->cnic;
+        }
         $this->save();
 
         return parent::delete();
