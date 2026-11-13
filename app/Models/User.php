@@ -75,8 +75,13 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
     
     public function delete(): bool|null
     {
-        // Free up email, username and CNIC before soft-deleting so they can be reused.
-        // The CNIC stays readable as "del<id>-<cnic>".
+        if ($this->isForceDeleting()) {
+            return parent::delete();
+        }
+
+        // Free everything that must be unique (email, username, CNIC, referral link)
+        // before soft-deleting, so the same person can register again.
+        // The old values stay readable with a "deleted_" / "del<id>-" prefix.
         $suffix = $this->id . '_' . time();
         $this->email    = 'deleted_' . $suffix . '@deleted.invalid';
         $this->username = 'deleted_' . $suffix;
@@ -85,7 +90,59 @@ class User extends Authenticatable implements ShouldQueue,HasMedia
         }
         $this->save();
 
+        \Illuminate\Support\Facades\DB::table('referral_links')
+            ->where('user_id', $this->id)->where('link', 'not like', 'del%')
+            ->update(['link' => \Illuminate\Support\Facades\DB::raw("CONCAT('del', user_id, '-', link)"), 'is_active' => false]);
+
         return parent::delete();
+    }
+
+    /**
+     * Why this account can NOT be removed permanently (empty = safe to remove).
+     * Removing a user cascades in the database: their whole downline (users.sponsor_id)
+     * and commissions they generated for others (wallets.wallet_from) would go too,
+     * so only accounts nobody else depends on may be removed for good.
+     */
+    public function permanentDeleteBlockers(): array
+    {
+        $db = \Illuminate\Support\Facades\DB::class;
+        $id = $this->id;
+        $checks = [
+            'has members under them'                => fn () => $db::table('users')->where('sponsor_id', $id)->exists()
+                                                             || $db::table('referral_trees')->where('ancestor_id', $id)->exists(),
+            'gave commission/profit to other users'  => fn () => $db::table('wallets')->where('wallet_from', $id)->where('user_id', '!=', $id)->exists()
+                                                             || $db::table('commission_logs')->where('source_user_id', $id)->where('user_id', '!=', $id)->exists()
+                                                             || $db::table('saving_instalment_commissions')->where('user_id', $id)->exists(),
+            'has approved withdrawals'              => fn () => $db::table('with_drawalequests')->where('user_id', $id)->where('status', 'approved')->exists(),
+            'has member transfers'                  => fn () => $db::table('wallets')->where('user_id', $id)->where('commission_type', 'Member Transfer')->exists(),
+            'is linked to digital cards'            => fn () => $db::table('digital_cards')->where(fn ($q) => $q->where('generated_by', $id)->orWhere('recipient_id', $id)->orWhere('shared_by', $id)->orWhere('cancelled_by', $id))->exists()
+                                                             || $db::table('digital_card_events')->where(fn ($q) => $q->where('actor_id', $id)->orWhere('from_user_id', $id)->orWhere('to_user_id', $id))->exists(),
+            'is linked to bank / payment sheet records' => fn () => $db::table('bank_payment_reconciliations')->where(fn ($q) => $q->where('user_id', $id)->orWhere('verified_by', $id)->orWhere('reversed_by', $id))->exists()
+                                                             || $db::table('instalment_payment_audits')->where('actor_id', $id)->exists()
+                                                             || $db::table('instalment_upload_rows')->where('user_id', $id)->exists()
+                                                             || $db::table('instalment_upload_batches')->where('uploaded_by', $id)->exists(),
+            'created activation codes'              => fn () => $db::table('activation_codes')->where('generated_by', $id)->exists(),
+            'is a staff / admin account'            => fn () => $this->roles()->whereIn('name', ['admin', 'super-admin', 'operator', 'office-admin'])->exists(),
+        ];
+
+        return array_keys(array_filter($checks, fn ($check) => $check()));
+    }
+
+    /** Remove the account and all of its own data for good (only when nothing blocks it). */
+    public function deletePermanently(): void
+    {
+        if ($blockers = $this->permanentDeleteBlockers()) {
+            throw new \RuntimeException('Cannot delete permanently: ' . implode(', ', $blockers));
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () {
+            $this->roles()->detach();
+            $this->permissions()->detach();
+            \Illuminate\Support\Facades\DB::table('notifications')->where('notifiable_type', static::class)->where('notifiable_id', $this->id)->delete();
+            \Illuminate\Support\Facades\DB::table('transaction_logs')->where('user_id', $this->id)->delete();
+            // own wallets, profile, referral link, tree rows, instalments, investments … go by database cascade
+            $this->forceDelete();
+        });
     }
 
     public function registerMediaCollections(): void

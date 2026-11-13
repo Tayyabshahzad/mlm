@@ -587,7 +587,19 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'User not found.');
         }
 
-        // Lock all operations before soft-deleting
+        $username = $user->username;
+
+        // A wrongly created account that nobody else depends on → remove it for good,
+        // so the same person can simply register again.
+        $blockers = $user->permanentDeleteBlockers();
+        if (!$blockers) {
+            $user->deletePermanently();
+
+            return redirect()->back()->with('success', "User {$username} has been deleted permanently. They can register again with the same details.");
+        }
+
+        // Account has a team / money history → keep the record, but lock it and free
+        // its username, email, CNIC and referral link so they can be used again.
         $user->update([
             'can_login'    => 0,
             'blocked'      => 1,
@@ -595,11 +607,10 @@ class UserController extends Controller
             'freez_wallet' => 1,
             'roi_status'   => 'stopped',
         ]);
-
-        // Soft delete — sets deleted_at, keeps DB record intact, no cascade
         $user->delete();
 
-        return redirect()->back()->with('success', 'User account has been deactivated.');
+        return redirect()->back()->with('success', "User {$username} has been deactivated (not removed permanently because the account " . implode(', ', $blockers)
+            . '). Their username, email, CNIC and referral link are free to use again.');
     }
 
     /**
