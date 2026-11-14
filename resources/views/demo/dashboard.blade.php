@@ -3,6 +3,7 @@
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap');
 
 /* ═══════════════════════════════════════════
    GVI DASHBOARD — CareOps Style
@@ -323,6 +324,58 @@
     .grid-2 { grid-template-columns: 1fr; }
     .grid-3 { grid-template-columns: repeat(2,1fr); }
 }
+/* ── Event banner (launch ceremony + anniversary) ─────────── */
+.ev {
+    position: relative; overflow: hidden; border-radius: 20px; margin-bottom: 1.25rem;
+    background: radial-gradient(120% 140% at 0% 0%, #2B2B8F 0%, #1A1A5E 45%, #0F1238 100%);
+    color: #fff; box-shadow: 0 18px 40px -18px rgba(27, 27, 94, .55);
+    border: 1px solid rgba(245, 196, 81, .35);
+}
+.ev::before, .ev::after {
+    content: ''; position: absolute; border-radius: 50%; pointer-events: none; filter: blur(2px);
+}
+.ev::before { width: 340px; height: 340px; right: -110px; top: -150px; background: radial-gradient(circle, rgba(245,196,81,.30), transparent 65%); }
+.ev::after  { width: 280px; height: 280px; left: -90px; bottom: -150px; background: radial-gradient(circle, rgba(91,91,214,.55), transparent 65%); }
+.ev-confetti { position: absolute; inset: 0; pointer-events: none; opacity: .55;
+    background-image:
+        radial-gradient(circle, #F5C451 1.6px, transparent 2px),
+        radial-gradient(circle, #ffffff 1.2px, transparent 1.6px),
+        radial-gradient(circle, #10B981 1.4px, transparent 1.8px);
+    background-size: 90px 90px, 130px 130px, 170px 170px;
+    background-position: 10px 20px, 60px 70px, 30px 110px;
+}
+.ev-inner { position: relative; z-index: 1; padding: 1.6rem 1.75rem 1.4rem; }
+.ev-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.ev-badge { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .8rem; border-radius: 999px;
+    background: rgba(245,196,81,.15); border: 1px solid rgba(245,196,81,.45); color: #F5C451;
+    font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.ev-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #F5C451; box-shadow: 0 0 0 4px rgba(245,196,81,.2); animation: evPulse 1.8s ease-in-out infinite; }
+@keyframes evPulse { 50% { box-shadow: 0 0 0 7px rgba(245,196,81,0); } }
+.ev-date { font-size: .78rem; color: rgba(255,255,255,.7); font-weight: 600; }
+.ev-title { margin-top: .9rem; font-family: 'Noto Nastaliq Urdu', serif; direction: rtl; text-align: center;
+    font-size: clamp(1.45rem, 2.6vw, 2.1rem); line-height: 2.1; font-weight: 700;
+    background: linear-gradient(90deg, #FFE7A3, #F5C451, #FFE7A3); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ev-sub { text-align: center; color: rgba(255,255,255,.75); font-size: .85rem; margin-top: -.2rem; letter-spacing: .02em; }
+.ev-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+.ev-card { direction: rtl; text-align: right; border-radius: 16px; padding: 1.1rem 1.25rem 1rem;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(4px); }
+.ev-card-head { display: flex; align-items: center; gap: .75rem; }
+.ev-ico { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 1.45rem;
+    background: linear-gradient(135deg, rgba(245,196,81,.35), rgba(245,196,81,.08)); border: 1px solid rgba(245,196,81,.4); }
+.ev-card h3 { font-family: 'Noto Nastaliq Urdu', serif; font-size: 1.08rem; line-height: 2; font-weight: 700; color: #fff; }
+.ev-card .en { display: block; direction: ltr; text-align: right; font-family: 'Inter', sans-serif; font-size: .7rem; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase; color: #F5C451; margin-top: -.25rem; }
+.ev-card p { font-family: 'Noto Nastaliq Urdu', serif; font-size: .92rem; line-height: 2.2; color: rgba(255,255,255,.85); margin-top: .55rem; }
+.ev-foot { direction: rtl; margin-top: 1.1rem; padding-top: .9rem; border-top: 1px dashed rgba(255,255,255,.18);
+    display: flex; align-items: center; justify-content: center; gap: .6rem; flex-wrap: wrap; text-align: center;
+    font-family: 'Noto Nastaliq Urdu', serif; font-size: .95rem; line-height: 2.1; color: #fff; }
+.ev-foot b { color: #F5C451; font-weight: 700; }
+@media (max-width: 768px) {
+    .ev-inner { padding: 1.2rem 1rem 1.1rem; }
+    .ev-cards { grid-template-columns: 1fr; }
+    .ev-top { justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) { .ev-badge .dot { animation: none; } }
 </style>
 
 <div class="db">
@@ -331,14 +384,12 @@
 {{-- ── TICKER ───────────────────────────── --}}
 <div class="ticker">
     <div class="ticker-track">
-        <span class="t-item">☪ Eid Milad-un-Nabi ﷺ Mubarak! — GVI family ki taraf se tamam members ko dil ki gehraiyon se mubarakbaad <span class="t-sep"></span></span>
-        <span class="t-item">🌙 12 Rabi-ul-Awwal — Huzoor Nabi Kareem ﷺ ki seerat hamein mehnat, ikhlas aur umeed ka raasta dikhati hai <span class="t-sep"></span></span>
-        <span class="t-item">☪ Rehmat-ul-Alameen ﷺ — Milad Mubarak! GVI ke sath apna aur apnon ka mustaqbil roshan karen <span class="t-sep"></span></span>
-        <span class="t-item">🕌 عید میلاد النبی ﷺ مبارک — 12 ربیع الاول — GVI ki poori team ki taraf se khushamdeed <span class="t-sep"></span></span>
-        <span class="t-item">☪ Eid Milad-un-Nabi ﷺ Mubarak! — GVI family ki taraf se tamam members ko dil ki gehraiyon se mubarakbaad <span class="t-sep"></span></span>
-        <span class="t-item">🌙 12 Rabi-ul-Awwal — Huzoor Nabi Kareem ﷺ ki seerat hamein mehnat, ikhlas aur umeed ka raasta dikhati hai <span class="t-sep"></span></span>
-        <span class="t-item">☪ Rehmat-ul-Alameen ﷺ — Milad Mubarak! GVI ke sath apna aur apnon ka mustaqbil roshan karen <span class="t-sep"></span></span>
-        <span class="t-item">🕌 عید میلاد النبی ﷺ مبارک — 12 ربیع الاول — GVI ki poori team ki taraf se khushamdeed <span class="t-sep"></span></span>
+        @for ($i = 0; $i < 2; $i++){{-- duplicated once so the scrolling loop is seamless --}}
+        <span class="t-item">🚀 Aaj Global Visioners Tradings &amp; Educations ki Launching Ceremony hai — ek naye safar ka aaghaz! <span class="t-sep"></span></span>
+        <span class="t-item">🎂 Al-Awan ki Doosri Saalgirah Mubarak — do saal ka kamyaab safar, aap sab ke saath <span class="t-sep"></span></span>
+        <span class="t-item">✨ آج دوہری خوشی کا دن — گلوبل وژنرز ٹریڈنگز اینڈ ایجوکیشنز کی لانچنگ اور الاعوان کی دوسری سالگرہ <span class="t-sep"></span></span>
+        <span class="t-item">💐 GVI family ki taraf se tamam members ko dil ki gehraiyon se mubarakbaad <span class="t-sep"></span></span>
+        @endfor
     </div>
 </div>
 
@@ -365,6 +416,52 @@
 
 {{-- ── BODY ─────────────────────────────── --}}
 <div class="db-body">
+
+    {{-- ── EVENT BANNER: launch ceremony + Al-Awan 2nd anniversary (shows until end of 14 Nov 2026) ── --}}
+    @if(now()->lte(\Carbon\Carbon::parse('2026-11-14 23:59:59', config('app.timezone'))))
+    <section class="ev" aria-label="Today's celebrations">
+        <div class="ev-confetti"></div>
+        <div class="ev-inner">
+            <div class="ev-top">
+                <span class="ev-badge"><span class="dot"></span> Today's Celebration</span>
+                <span class="ev-date">{{ now()->format('l, d F Y') }}</span>
+            </div>
+
+            <h2 class="ev-title">آج دوہری خوشی کا دن ہے — مبارک ہو!</h2>
+            <div class="ev-sub">A double celebration for the entire GVI family</div>
+
+            <div class="ev-cards">
+                <div class="ev-card">
+                    <div class="ev-card-head">
+                        <div class="ev-ico">🚀</div>
+                        <div>
+                            <h3>گلوبل وژنرز ٹریڈنگز اینڈ ایجوکیشنز</h3>
+                            <span class="en">Launching Ceremony</span>
+                        </div>
+                    </div>
+                    <p>آج ہم ایک نئے سفر کا آغاز کر رہے ہیں۔ فاریکس ٹریڈنگ کی معیاری تعلیم اور عملی رہنمائی اب آپ کی دسترس میں ہے — سیکھیں، آگے بڑھیں اور کامیابی کی نئی منزلیں طے کریں۔</p>
+                </div>
+
+                <div class="ev-card">
+                    <div class="ev-card-head">
+                        <div class="ev-ico">🎂</div>
+                        <div>
+                            <h3>الاعوان کی دوسری سالگرہ</h3>
+                            <span class="en">2nd Anniversary · Cake Cutting</span>
+                        </div>
+                    </div>
+                    <p>دو سال کا یہ کامیاب سفر آپ سب کے اعتماد، محنت اور ساتھ کا ثمر ہے۔ آئیے کیک کٹنگ کی اس خوشی میں مل کر شریک ہوں اور آنے والے سالوں کو مزید روشن بنائیں۔</p>
+                </div>
+            </div>
+
+            <div class="ev-foot">
+                <span>💐</span>
+                <span><b>GVI فیملی</b> کی جانب سے تمام ممبران کو دلی مبارکباد — آپ کا ساتھ ہی ہماری اصل طاقت ہے</span>
+                <span>💐</span>
+            </div>
+        </div>
+    </section>
+    @endif
 
     {{-- Alerts --}}
     @php $kycUser = auth()->user(); @endphp
